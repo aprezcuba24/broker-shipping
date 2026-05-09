@@ -1,0 +1,133 @@
+# -----------------------------------------------------------------------------
+# Node / pnpm / npm / yarn
+# -----------------------------------------------------------------------------
+node_modules
+.pnpm-store
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# -----------------------------------------------------------------------------
+# Python / uv / virtualenv
+# -----------------------------------------------------------------------------
+.venv
+**/.venv
+venv
+**/venv
+.env.venv
+*.py[cod]
+*$py.class
+**/__pycache__
+*.so
+.Python
+*.egg
+*.egg-info
+*.egg-info/
+.eggs
+pip-wheel-metadata
+*.manifest
+*.spec
+.mypy_cache
+.dmypy.json
+dmypy.json
+.pytype
+.ruff_cache
+.tox
+.nox
+.pytest_cache
+.coverage
+.coverage.*
+htmlcov
+coverage.xml
+*.cover
+.hypothesis
+celerybeat-schedule
+celerybeat.pid
+
+# -----------------------------------------------------------------------------
+# Build / bundlers (Vite, etc.)
+# -----------------------------------------------------------------------------
+dist
+**/dist
+.turbo
+*.tsbuildinfo
+.next
+.nuxt
+.output
+.parcel-cache
+.eslintcache
+.stylelintcache
+*.local
+
+# -----------------------------------------------------------------------------
+# Tests / E2E
+# -----------------------------------------------------------------------------
+playwright-report
+test-results
+blob-report
+
+# -----------------------------------------------------------------------------
+# Entorno y secretos (no subir credenciales)
+# -----------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+!.env*.example
+secrets/
+*.pem
+*.key
+
+# -----------------------------------------------------------------------------
+# Capacitor / Android / Gradle
+# -----------------------------------------------------------------------------
+# Artefactos y máquina local; el código del proyecto nativo puede versionarse.
+**/.gradle/
+**/local.properties
+**/captures/
+**/.cxx/
+**/*.apk
+**/*.aab
+**/*.ap_
+**/*.dex
+**/*.class
+**/build/
+**/android/
+
+# -----------------------------------------------------------------------------
+# Capacitor / iOS (por si añadís plataforma Apple)
+# -----------------------------------------------------------------------------
+**/ios/App/Pods/
+**/ios/App/build/
+**/ios/DerivedData/
+**/*.xcuserstate
+**/*.xcworkspace/xcuserdata/
+**/ios/**/xcuserdata/
+
+# -----------------------------------------------------------------------------
+# IDE / editores
+# -----------------------------------------------------------------------------
+.idea
+*.swp
+*.swo
+*~
+.vscode/*
+!.vscode/extensions.json
+
+# -----------------------------------------------------------------------------
+# SO
+# -----------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+
+# -----------------------------------------------------------------------------
+# Logs y temporales
+# -----------------------------------------------------------------------------
+*.log
+logs/
+tmp/
+temp/
+.cache

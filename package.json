@@ -1,0 +1,14 @@
+{
+  "name": "broker-monorepo",
+  "private": true,
+  "scripts": {
+    "dev:backoffice": "pnpm --filter @broker/backoffice dev",
+    "dev:admin": "pnpm --filter @broker/admin dev",
+    "dev:seller-apk": "pnpm --filter @broker/seller-apk dev",
+    "dev:api": "cd services/api && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "build": "pnpm -r --filter './apps/*' run build"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
