@@ -5,6 +5,8 @@ from fastapi import FastAPI
 from redis.asyncio import Redis
 
 from app.config import settings
+from app.modules import app_modules
+from app.routes import router as core_router
 
 
 @asynccontextmanager
@@ -23,19 +25,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+for module in app_modules:
+    tag = module.prefix.strip("/").replace("-", "_") or "module"
+    app.include_router(module.get_router(), prefix=module.prefix, tags=[tag])
 
-@app.get("/health")
-async def health() -> dict[str, str]:
-    try:
-        pong = await app.state.redis.ping()
-    except Exception:
-        pong = False
-    return {
-        "status": "ok" if pong else "degraded",
-        "redis": "ok" if pong else "unreachable",
-    }
-
-
-@app.get("/")
-async def root() -> dict[str, str]:
-    return {"service": "broker-api", "docs": "/docs"}
+app.include_router(core_router)
