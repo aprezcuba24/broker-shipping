@@ -1,3 +1,3 @@
-from app.events.names import PRODUCTS_MODULE_ROOT_ACCESSED
+from app.lib.event_base import Event
 
-__all__ = ["PRODUCTS_MODULE_ROOT_ACCESSED"]
+__all__ = ["Event"]
