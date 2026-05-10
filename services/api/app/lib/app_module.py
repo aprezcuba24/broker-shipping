@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 
 from fastapi import APIRouter
+
+from app.lib.event_dispatcher import EventDispatcher
 
 
 class AppModule(ABC):
@@ -14,3 +17,7 @@ class AppModule(ABC):
     @abstractmethod
     def get_router(self) -> APIRouter:
         """Return all routes owned by this module."""
+
+    @abstractmethod
+    def get_listener_registrar(self) -> Callable[[EventDispatcher], None]:
+        """Return a function that subscribes this module's event handlers on ``dispatcher``."""

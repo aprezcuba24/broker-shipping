@@ -5,7 +5,9 @@ from fastapi import FastAPI
 from redis.asyncio import Redis
 
 from app.config import settings
-from app.modules import app_modules
+from app.lib.event_dispatcher import EventDispatcher
+from app.lib.register_modules import register_modules
+from app.modules import get_app_modules
 from app.routes import router as core_router
 
 
@@ -25,8 +27,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-for module in app_modules:
-    tag = module.prefix.strip("/").replace("-", "_") or "module"
-    app.include_router(module.get_router(), prefix=module.prefix, tags=[tag])
+dispatcher = EventDispatcher()
+app.state.dispatcher = dispatcher
+app_modules = get_app_modules()
+register_modules(app, app_modules, dispatcher)
 
 app.include_router(core_router)
