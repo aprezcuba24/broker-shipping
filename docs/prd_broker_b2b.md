@@ -293,7 +293,7 @@ Opciones:
 
 - Vite
 - React Query
-- Zustand o Redux
+- Zustand
 - Tailwind
 
 ### Mobile
@@ -309,20 +309,8 @@ Opciones:
 Deploy en PaaS:
 
 Opciones:
-- Railway
-- Render
-- Fly.io
-- Coolify
-
----
-
-## Futuro
-
-Posible migración parcial a:
-- AWS
-- Kubernetes
-- microservicios
-- arquitectura event-driven avanzada
+- [Render](https://render.com/)
+- [seenode](https://seenode.com)
 
 ---
 
@@ -442,7 +430,6 @@ Expandir conectividad.
 
 - [ ] Shopify
 - [ ] WooCommerce
-- [ ] Magento
 
 ### ERP
 
