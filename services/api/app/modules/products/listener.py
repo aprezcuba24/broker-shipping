@@ -1,6 +1,14 @@
+import logging
+
 from app.lib.event_dispatcher import EventDispatcher
+from app.modules.products.events import ProductCreated
+
+logger = logging.getLogger(__name__)
 
 
-def register_listeners(_dispatcher: EventDispatcher) -> None:
-    """Register products-domain event handlers on the shared dispatcher."""
-    pass
+async def _on_product_created(event: ProductCreated) -> None:
+    logger.info("product created: id=%s name=%s", event.entity.id, event.entity.name)
+
+
+def register_listeners(dispatcher: EventDispatcher) -> None:
+    dispatcher.subscribe(ProductCreated, _on_product_created)

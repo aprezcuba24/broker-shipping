@@ -1,14 +1,14 @@
 import logging
 
 from app.lib.event_dispatcher import EventDispatcher
-from app.modules.products.events import ProductsModuleRootAccessed
+from app.modules.products.events import ProductCreated
 
 logger = logging.getLogger(__name__)
 
 
-async def _on_products_module_root_accessed(event: ProductsModuleRootAccessed) -> None:
-    logger.info("organization listener: products module root accessed (source=%s)", event.source)
+async def _on_product_created(event: ProductCreated) -> None:
+    logger.info("organization noticed new product: id=%s", event.entity.id)
 
 
 def register_listeners(dispatcher: EventDispatcher) -> None:
-    dispatcher.subscribe(ProductsModuleRootAccessed, _on_products_module_root_accessed)
+    dispatcher.subscribe(ProductCreated, _on_product_created)

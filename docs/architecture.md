@@ -61,6 +61,47 @@ flowchart TB
 
 En este diagrama, **seller-apk** es a la vez cliente web (Vite) y contenedor nativo Android cuando se sincroniza con Capacitor; la relación lógica con el backend es la misma que las otras SPAs.
 
+## Capas de la API
+
+Cada módulo de dominio (`app/modules/<dominio>/`) sigue esta estructura:
+
+```
+modules/<dominio>/
+  models/           ← SQLModel(table=True)
+  repositories/     ← hereda de Resource[T]  (app/lib/resource.py)
+  services/         ← hereda de BaseService[T]  (app/lib/base_service.py)
+  events.py         ← hereda de EntityEvent[T]  (app/lib/event_base.py)
+  listener.py       ← suscripciones al EventDispatcher
+  routes.py         ← endpoints delegan al servicio
+  deps.py           ← make_service_depends → ServiceDep
+```
+
+### Clases base genéricas (`app/lib/`)
+
+| Clase | Archivo | Qué resuelve |
+|-------|---------|--------------|
+| `Resource[T]` | `resource.py` | CRUD async sobre `AsyncSession`. Los repositorios heredan sin repetir código. |
+| `BaseService[T]` | `base_service.py` | CRUD que delega al `Resource`, con hooks `on_create`, `on_update`, `on_delete`, `on_get`, `on_list`. |
+| `EntityEvent[T]` | `event_base.py` | Evento con campo `entity: T` tipado. |
+| `PostCommitQueue` | `post_commit.py` | Cola por request; se drena solo tras `session.commit()` exitoso. |
+| `make_service_depends` | `db_utils.py` | Fábrica genérica de `Depends` que construye repo + servicio por petición. |
+
+```mermaid
+flowchart LR
+  R[routes.py] --> S[BaseService]
+  S --> Rep[Resource]
+  Rep --> Ses[AsyncSession]
+  S -.->|"post_commit_emit"| Q[PostCommitQueue]
+  Ses -.->|"commit OK"| Q
+  Q --> Bus[EventDispatcher]
+```
+
+### Eventos de dominio (post-commit)
+
+Los eventos se ejecutan **solo después de un commit exitoso**. El servicio llama `self.post_commit_emit(event)` dentro de un hook `on_*`; la cola se drena tras `session.commit()`. En rollback se descarta. Si un handler falla post-commit, se registra en log sin afectar la respuesta HTTP.
+
+Las clases de evento heredan de `EntityEvent[T]` y se definen **bajo demanda** en `events.py`. Ver `app/modules/products/events.py` (`ProductCreated`) como ejemplo.
+
 ## Referencias
 
 - Producto y roadmap: [PRD B2B](prd_broker_b2b.md).
