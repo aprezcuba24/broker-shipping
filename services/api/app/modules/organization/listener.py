@@ -1,12 +1,18 @@
 import logging
 
+from dishka import FromDishka
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.lib.event_dispatcher import EventDispatcher
 from app.modules.products.events import ProductCreated
 
 logger = logging.getLogger(__name__)
 
 
-async def _on_product_created(event: ProductCreated) -> None:
+async def _on_product_created(
+    event: ProductCreated,
+    session: FromDishka[AsyncSession],  # noqa: ARG001 — available for DB work
+) -> None:
     logger.info("organization noticed new product: id=%s", event.entity.id)
 
 

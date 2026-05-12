@@ -1,23 +1,11 @@
 from app.lib.app_module import AppModule
-from app.lib.db_utils import make_service_depends
-from app.lib.dependencies import (
-    EventDispatcherDep,
-    PostCommitDep,
-    SessionDep,
-    get_event_dispatcher,
-    get_post_commit_queue,
-)
 from app.lib.event_dispatcher import EventDispatcher
 from app.lib.post_commit import PostCommitQueue
+from app.lib.providers import AppProvider
 
 __all__ = [
     "AppModule",
+    "AppProvider",
     "EventDispatcher",
-    "EventDispatcherDep",
-    "PostCommitDep",
     "PostCommitQueue",
-    "SessionDep",
-    "get_event_dispatcher",
-    "get_post_commit_queue",
-    "make_service_depends",
 ]
