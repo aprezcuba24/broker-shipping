@@ -72,7 +72,7 @@ modules/<dominio>/
   services/         ← hereda de BaseService[T]  (app/lib/base_service.py)
   events.py         ← hereda de EntityEvent[T]  (app/lib/event_base.py)
   listener.py       ← suscripciones al EventDispatcher
-  routes.py         ← endpoints delegan al servicio
+  routes/           ← un router por recurso; `__init__.py` agrupa con `include_router`
   deps.py           ← make_service_depends → ServiceDep
 ```
 
@@ -88,7 +88,7 @@ modules/<dominio>/
 
 ```mermaid
 flowchart LR
-  R[routes.py] --> S[BaseService]
+  R[routes/] --> S[BaseService]
   S --> Rep[Resource]
   Rep --> Ses[AsyncSession]
   S -.->|"post_commit_emit"| Q[PostCommitQueue]
