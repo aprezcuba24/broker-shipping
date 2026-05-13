@@ -5,11 +5,8 @@ from __future__ import annotations
 import os
 from collections.abc import AsyncIterator
 
-# Instantiate Settings with the test database URL (before app imports).
-os.environ.setdefault(
-    "DATABASE_URL",
-    "postgresql+asyncpg://broker:broker@localhost:5432/broker_test",
-)
+# Base de datos de test (mismo host/puerto/credenciales que en `.env`; solo cambia el nombre).
+os.environ["POSTGRES_DB"] = os.environ.get("POSTGRES_DB_TEST", "broker_test")
 
 import pytest
 import pytest_asyncio

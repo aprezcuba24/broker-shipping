@@ -21,11 +21,11 @@ Plataforma API-first: **FastAPI** + **PostgreSQL** / **Redis** / **S3** (MinIO l
 docker compose up -d
 ```
 
-Copia [`.env.example`](.env.example) a `.env` en la raíz (o en `services/api`) y ajusta URLs si cambias puertos.
+Copia [`.env.example`](.env.example) a `.env` en la **raíz del monorepo** (junto a `docker-compose.yml`). Ahí se definen Postgres, Redis, MinIO y S3; Compose sustituye las mismas variables al levantar contenedores.
 
-- Postgres: `localhost:5432` (usuario/clave/db `broker` por defecto en Compose)
-- Redis: `localhost:6379`
-- MinIO API: `localhost:9000`, consola: `localhost:9001` (usuario/clave por defecto `minio` / `minio_secret`)
+- **Postgres (host):** `POSTGRES_HOST` / `POSTGRES_PORT` (por defecto `localhost:6432`), usuario/clave/db con `POSTGRES_*`.
+- **Redis:** `REDIS_HOST` / `REDIS_PORT`.
+- **MinIO:** API `MINIO_API_PORT`, consola `MINIO_CONSOLE_PORT`, credenciales `MINIO_ROOT_*`.
 
 ## Instalar dependencias Node
 
@@ -52,11 +52,11 @@ uv sync
 uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-**Migraciones (Alembic):** definir `DATABASE_URL_SYNC` (driver sync, p. ej. `postgresql://broker:broker@localhost:5432/broker`) y ejecutar `uv run alembic upgrade head` dentro de `services/api`.
+**Migraciones (Alembic):** con el `.env` de la raíz cargado, ejecuta `pnpm migrate:api` o `uv run alembic upgrade head` dentro de `services/api` (la URL síncrona sale de las mismas variables `POSTGRES_*`; véase [`services/api/app/config.py`](services/api/app/config.py)).
 
 ## S3 / MinIO / AWS
 
-En desarrollo puedes apuntar `AWS_ENDPOINT_URL` a MinIO (p. ej. `http://localhost:9000`) y usar las mismas variables que en `.env.example`. En producción con **AWS S3**, deja `AWS_ENDPOINT_URL` vacío y configura bucket y credenciales IAM.
+En desarrollo puedes apuntar `AWS_ENDPOINT_URL` a MinIO (el host/puerto debe coincidir con `MINIO_API_PORT`, p. ej. `http://localhost:9000`) y alinear `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` con `MINIO_ROOT_*`. En producción con **AWS S3**, deja `AWS_ENDPOINT_URL` vacío y configura bucket y credenciales IAM.
 
 Cliente mínimo en el código: [`services/api/app/s3_util.py`](services/api/app/s3_util.py).
 
