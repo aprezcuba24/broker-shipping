@@ -1,7 +1,8 @@
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from typing import Any, Generic, TypeVar
 from uuid import UUID
 
+from fastapi import HTTPException
 from sqlmodel import SQLModel
 
 from app.lib.event_base import Event
@@ -80,6 +81,38 @@ class BaseService(Generic[T]):
         await self._repo.delete(entity)
         await self.on_delete(entity)
         return True
+
+    async def get_or_404(
+        self,
+        *,
+        entity_id: UUID | None = None,
+        entity: T | None = None,
+        detail: str = "Not found",
+    ) -> T:
+        if entity_id is not None and entity is not None:
+            msg = "get_or_404: pass entity_id XOR entity"
+            raise ValueError(msg)
+        if entity_id is None and entity is None:
+            msg = "get_or_404: requires entity_id or entity"
+            raise ValueError(msg)
+        candidate: T | None
+        if entity_id is not None:
+            candidate = await self.get(entity_id)
+        else:
+            candidate = entity
+        if candidate is None:
+            raise HTTPException(status_code=404, detail=detail)
+        return candidate
+
+    async def patch(
+        self,
+        entity_id: UUID,
+        body: Mapping[str, Any],
+        *,
+        allowed_keys: frozenset[str],
+    ) -> T | None:
+        data = {k: v for k, v in body.items() if k in allowed_keys}
+        return await self.update(entity_id, data)
 
     # ── Hooks (override in subclass) ────────────────────────
 
