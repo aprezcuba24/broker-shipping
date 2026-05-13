@@ -1,11 +1,11 @@
 from app.lib.app_module import AppModule
-from app.lib.dependencies import EventDispatcherDep, SessionDep, get_event_dispatcher
 from app.lib.event_dispatcher import EventDispatcher
+from app.lib.post_commit import PostCommitQueue
+from app.lib.providers import AppProvider
 
 __all__ = [
     "AppModule",
+    "AppProvider",
     "EventDispatcher",
-    "EventDispatcherDep",
-    "SessionDep",
-    "get_event_dispatcher",
+    "PostCommitQueue",
 ]

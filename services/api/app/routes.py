@@ -1,12 +1,15 @@
-from fastapi import APIRouter, Request
+from dishka import FromDishka
+from dishka.integrations.fastapi import DishkaRoute
+from fastapi import APIRouter
+from redis.asyncio import Redis
 
-router = APIRouter()
+router = APIRouter(route_class=DishkaRoute)
 
 
 @router.get("/health")
-async def health(request: Request) -> dict[str, str]:
+async def health(redis: FromDishka[Redis]) -> dict[str, str]:
     try:
-        pong = await request.app.state.redis.ping()
+        pong = await redis.ping()
     except Exception:
         pong = False
     return {

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 
+from dishka import Provider
 from fastapi import APIRouter
 from sqlmodel import SQLModel
 
@@ -26,3 +27,7 @@ class AppModule(ABC):
     @abstractmethod
     def get_models(self) -> tuple[type[SQLModel], ...]:
         """SQLModel table classes (``table=True``) registered in the shared metadata for this domain."""
+
+    @abstractmethod
+    def get_provider(self) -> Provider:
+        """Return the Dishka provider that registers this module's DI bindings."""

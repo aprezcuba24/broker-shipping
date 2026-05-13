@@ -1,10 +1,10 @@
-import os
 from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
+from app.config import settings
 from app.db.model_loader import load_module_models
 
 load_module_models()
@@ -18,10 +18,7 @@ target_metadata = SQLModel.metadata
 
 
 def get_sync_url() -> str:
-    return os.getenv(
-        "DATABASE_URL_SYNC",
-        "postgresql://broker:broker@localhost:5432/broker",
-    )
+    return settings.database_url_sync
 
 
 def run_migrations_offline() -> None:
