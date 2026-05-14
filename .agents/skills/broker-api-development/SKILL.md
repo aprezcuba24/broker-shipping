@@ -4,10 +4,11 @@ description: >-
   Guides development of the FastAPI backend in services/api: adding domain
   modules, models (SQLModel), repositories (Resource), services (BaseService),
   routes (DishkaRoute), events (EntityEvent), listeners (EventDispatcher),
-  Dishka DI providers, Alembic migrations, and pytest-asyncio tests. Use when
-  working in services/api, adding a new domain module, writing or reviewing
-  routes/services/repositories/listeners, generating Alembic revisions, or
-  authoring pytest tests for the API.
+  Dishka DI providers, Alembic migrations, security (JWT via AuthX +
+  per-organization API keys via @require_* route decorators), and
+  pytest-asyncio tests. Use when working in services/api, adding a new domain
+  module, writing or reviewing routes/services/repositories/listeners,
+  generating Alembic revisions, or authoring pytest tests for the API.
 ---
 
 # Broker API Development
@@ -18,7 +19,9 @@ Canonical reference: `services/api/app/modules/products/` (fully implemented CRU
 
 ```mermaid
 flowchart LR
-  Route["FastAPI route (DishkaRoute)"] --> Service["BaseService[T]"]
+  Auth["@require_user / @require_api_key / @require_user_or_api_key"]
+  Auth --> Route["FastAPI route (DishkaRoute)"]
+  Route --> Service["BaseService[T]"]
   Service --> Repo["Resource[T]"]
   Repo --> Session[(AsyncSession)]
   Service -->|"post_commit_emit"| Queue[PostCommitQueue]
@@ -37,7 +40,7 @@ For a new domain `foo`, create this tree under `services/api/app/modules/foo/`:
 
 ```
 foo/
-├── __init__.py               # exports FooModule
+├── __init__.py               # package marker (avoid importing FooModule here)
 ├── module.py                 # AppModule subclass
 ├── provider.py               # Dishka Provider
 ├── events.py                 # domain event classes
@@ -58,10 +61,14 @@ foo/
 
 Then register in `services/api/app/modules/__init__.py`:
 
+- Keep each domain package’s `__init__.py` **free of eager imports** (e.g. do not import `FooModule` from `app/modules/foo/__init__.py`). Import concrete modules from `app.modules.foo.module` in `get_app_modules()` only. This avoids import cycles with `app.lib.security`.
+- Routes are normally protected with `@require_user`, `@require_api_key`, or `@require_user_or_api_key` from `app.lib.security` (see §9). Tenancy glue (`UserOrganization`, `ApiKey`) belongs in `app/modules/organization/`.
+
 ```python
 def get_app_modules() -> tuple[AppModule, ...]:
     return (
         ProductsModule(),
+        UserModule(),
         OrganizationModule(),
         FooModule(),          # add here
     )
@@ -114,6 +121,32 @@ class Foo(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     name: str = Field(max_length=255)
     created_at: datetime = Field(default_factory=utc_now)
+```
+
+**Membership (composite PK)** — lives in the `organization` module; FK to `user` and `organization`:
+
+```python
+class UserOrganization(SQLModel, table=True):
+    user_id: UUID = Field(foreign_key="user.id", primary_key=True)
+    organization_id: UUID = Field(foreign_key="organization.id", primary_key=True)
+    joined_at: datetime = Field(default_factory=utc_now)
+```
+
+**Organization API key** (hashed secret + lookup prefix; raw key shown once at creation):
+
+```python
+class ApiKey(SQLModel, table=True):
+    IMMUTABLE_FIELDS: ClassVar[frozenset[str]] = frozenset(
+        {"id", "organization_id", "prefix", "secret_hash", "created_at"}
+    )
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    organization_id: UUID = Field(foreign_key="organization.id", index=True)
+    name: str = Field(max_length=255)
+    prefix: str = Field(max_length=12, unique=True, index=True)
+    secret_hash: str = Field(max_length=64)
+    last_used_at: datetime | None = Field(default=None)
+    created_at: datetime = Field(default_factory=utc_now)
+    revoked_at: datetime | None = Field(default=None)
 ```
 
 - `utc_now` returns naive UTC — keep all timestamps consistent.
@@ -324,6 +357,42 @@ router = APIRouter()
 router.include_router(foo.router)
 ```
 
+### Route authentication (`app.lib.security`)
+
+- **JWT (users)** — `Authorization: Bearer <access_token>`. Tokens are issued with **AuthX** (`authx`); signing configuration mirrors `settings.jwt_secret_key`, `settings.jwt_algorithm`, `settings.jwt_access_token_minutes`. Login/signup live under `/users/`.
+- **API keys (external systems)** — `X-API-Key: bk_<prefix>_<secret_hex>`. Only **prefix + SHA-256 hash** of the secret are stored; verification uses `secrets.compare_digest`. Keys belong to an **organization** and support revocation (`revoked_at`).
+- **Principals** — frozen **Pydantic** models `UserPrincipal` / `ApiKeyPrincipal`; union alias `Principal = UserPrincipal | ApiKeyPrincipal`.
+- **Decorators** — attach auth **below** `@router.<method>(...)` and **above** the handler (decorators apply bottom-up). Put parameters **without** defaults (`path`, `body`) **before** `principal`; declare `principal` **last** so injecting `Annotated[..., Depends(...)]` stays valid Python.
+
+```python
+from dishka import FromDishka
+from dishka.integrations.fastapi import DishkaRoute
+from fastapi import APIRouter
+
+from app.lib.security import Principal, UserPrincipal, require_user_or_api_key, require_user
+from app.modules.foo.models import Foo
+from app.modules.foo.services import FooService
+
+router = APIRouter(route_class=DishkaRoute)
+
+
+@router.get("/", response_model=list[Foo])
+@require_user_or_api_key
+async def list_foos(service: FromDishka[FooService], principal: Principal):
+    _ = principal  # or use tenant/org context when applicable
+    return await service.list()
+
+
+@router.get("/report/summary")
+@require_user
+async def summary(service: FromDishka[FooService], principal: UserPrincipal):
+    ...
+```
+
+**Dishka interop** — resolver functions (`_resolve_user`, `_resolve_api_key`, `_resolve_user_or_api_key`) in `app/lib/security/dependencies.py` are decorated with `@inject` from `dishka.integrations.fastapi` so nested `FromDishka[...]` parameters resolve correctly inside dependency chains.
+
+**Package imports** — `app.lib.security.__init__` exports principals eagerly and loads `@require_*` decorators via module `__getattr__` so importing `app.lib.security.api_keys` does **not** create circular imports with domain services.
+
 ---
 
 ## 10. Alembic migrations
@@ -380,13 +449,27 @@ class FooFactory:
         return entity.model_dump(mode="json")
 ```
 
+### Auth helpers for HTTP tests
+
+Use `tests/factories/auth_helpers.py`:
+
+```python
+from tests.factories.auth_helpers import bearer_headers, api_key_headers
+
+r = await client.get("/products/", headers=bearer_headers(user_id=user_row["id"]))
+r = await client.get("/products/", headers=api_key_headers(raw_key=key))
+```
+
 ### Register in conftest.py
 
 1. Add `foo` to the `TRUNCATE` statement in `_truncate_tables`:
 
 ```python
 await conn.execute(
-    text("TRUNCATE TABLE product, organization, foo RESTART IDENTITY CASCADE")
+    text(
+        'TRUNCATE TABLE api_key, user_organization, "user", product, organization, foo '
+        "RESTART IDENTITY CASCADE"
+    )
 )
 ```
 
@@ -406,13 +489,15 @@ import pytest
 from httpx import AsyncClient
 from uuid import uuid4
 
+from tests.factories.auth_helpers import bearer_headers
 from tests.factories.foo_factory import FooFactory
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")
 
 
-async def test_list_foos_empty(client: AsyncClient) -> None:
-    r = await client.get("/foos/")
+async def test_list_foos_empty(client: AsyncClient, user_factory) -> None:
+    u = await user_factory.build()
+    r = await client.get("/foos/", headers=bearer_headers(user_id=u["id"]))
     assert r.status_code == 200
     assert r.json() == []
 
@@ -464,9 +549,9 @@ Settings live in `app/config.py` (Pydantic Settings). The `.env` file at the mon
 | `POSTGRES_*` | DB host, port, user, password, db name |
 | `POSTGRES_DB_TEST` | Test database name (default `broker_test`) |
 | `REDIS_*` | Redis connection |
-| `AWS_*` / `S3_BUCKET` | S3 / MinIO storage |
-
-`settings.database_url` — async (`asyncpg`); `settings.database_url_sync` — sync (Alembic).
+| `JWT_SECRET_KEY` | symmetric signing secret for AuthX access tokens |
+| `JWT_ALGORITHM` | e.g. `HS256` |
+| `JWT_ACCESS_TOKEN_MINUTES` | access token lifetime |
 
 ---
 
@@ -477,9 +562,8 @@ Settings live in `app/config.py` (Pydantic Settings). The `.env` file at the mon
 - **One module = one URL prefix.** Mounting is centralized in `register_modules`.
 - **Listener side effects must be idempotent.** They run in a fresh scope; retries are possible.
 - **Use `utc_now()` for all timestamp defaults** to stay consistent with existing columns (naive UTC stored without timezone).
-- **Custom DB queries belong in the repository**, not the service.
-
----
+- **Protect HTTP routes** with the right decorator (`@require_user`, `@require_api_key`, or `@require_user_or_api_key`). Add `principal` **only** when the handler needs identity or tenant context.
+- **Never log raw API keys.** Persist hashed secrets (`secret_hash`) plus a short `prefix` for lookups.
 
 ## 14. New module checklist
 
@@ -497,4 +581,5 @@ Settings live in `app/config.py` (Pydantic Settings). The `.env` file at the mon
 - [ ] Create `tests/factories/foo_factory.py`
 - [ ] Add `foo` to `TRUNCATE` list in `tests/conftest.py`
 - [ ] Register `foo_factory` fixture in `tests/conftest.py` and re-export from `tests/factories/__init__.py`
-- [ ] Write `tests/foo/test_foo_routes.py` covering list, create, get, patch, delete, and 404 cases
+- [ ] Decide route authentication (`@require_user`, `@require_api_key`, or `@require_user_or_api_key`) and parameter order (`principal` last)
+- [ ] Attach `Authorization` / `X-API-Key` headers in route tests (`tests/factories/auth_helpers.py`)
