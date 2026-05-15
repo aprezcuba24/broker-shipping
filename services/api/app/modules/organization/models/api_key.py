@@ -19,6 +19,8 @@ class ApiKeyBase(SQLModel):
 
 
 class ApiKey(ApiKeyBase, table=True):
+    __tablename__ = "api_key"
+
     IMMUTABLE_FIELDS: ClassVar[frozenset[str]] = frozenset(
         {"id", "organization_id", "prefix", "secret_hash", "created_at"}
     )
