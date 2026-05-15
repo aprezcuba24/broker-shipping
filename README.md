@@ -52,6 +52,8 @@ uv sync
 uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+Documentación con la API en marcha: **Swagger** (`http://localhost:8000/docs`), **ReDoc** (`http://localhost:8000/redoc`), y el esquema **OpenAPI en JSON** en `http://localhost:8000/openapi.json` (p. ej. `curl -s http://localhost:8000/openapi.json` o importar en Postman / generadores de cliente).
+
 **Migraciones (Alembic):** con el `.env` de la raíz cargado, ejecuta `pnpm migrate:api` o `uv run alembic upgrade head` dentro de `services/api` (la URL síncrona sale de las mismas variables `POSTGRES_*`; véase [`services/api/app/config.py`](services/api/app/config.py)).
 
 ## S3 / MinIO / AWS

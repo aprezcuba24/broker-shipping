@@ -6,30 +6,31 @@ from dishka.integrations.fastapi import FastapiProvider, setup_dishka
 from fastapi import FastAPI
 
 from app.lib.event_dispatcher import EventDispatcher
+from app.lib.openapi import OPENAPI_TAGS, SWAGGER_UI_PARAMETERS, attach_openapi
 from app.lib.providers import AppProvider
 from app.lib.register_modules import register_modules
 from app.modules import get_app_modules
 from app.routes import router as core_router
 
+_lifespan_app_modules = get_app_modules()
+
+_dishka_container = make_async_container(
+    AppProvider(),
+    *(m.get_provider() for m in _lifespan_app_modules),
+    FastapiProvider(),
+)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    app_modules = get_app_modules()
-    container = make_async_container(
-        AppProvider(),
-        *(m.get_provider() for m in app_modules),
-        FastapiProvider(),
-    )
-    setup_dishka(container=container, app=app)
-
-    dispatcher = await container.get(EventDispatcher)
-    dispatcher.bind_container(container)
-    register_modules(app, app_modules, dispatcher)
+    dispatcher = await _dishka_container.get(EventDispatcher)
+    dispatcher.bind_container(_dishka_container)
+    register_modules(app, _lifespan_app_modules, dispatcher)
 
     try:
         yield
     finally:
-        await container.close()
+        await _dishka_container.close()
 
 
 app = FastAPI(
@@ -37,6 +38,14 @@ app = FastAPI(
     description="API-first B2B broker (scaffold).",
     version="0.1.0",
     lifespan=lifespan,
+    openapi_tags=OPENAPI_TAGS,
+    swagger_ui_parameters=SWAGGER_UI_PARAMETERS,
 )
+
+
+setup_dishka(container=_dishka_container, app=app)
+
+attach_openapi(app)
+
 
 app.include_router(core_router)

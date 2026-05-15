@@ -42,6 +42,14 @@ class Settings(BaseSettings):
     jwt_algorithm: str = Field(default="HS256")
     jwt_access_token_minutes: int = Field(default=60 * 24)
 
+    openapi_server_url: str | None = Field(
+        default=None,
+        description=(
+            "If set (e.g. https://api.example.com), injected into "
+            "`servers` on the OpenAPI document for Swagger / clients."
+        ),
+    )
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def database_url(self) -> str:

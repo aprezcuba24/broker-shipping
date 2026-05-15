@@ -2,6 +2,18 @@
 
 FastAPI service. Use [uv](https://docs.astral.sh/uv/) from this directory: `uv sync`, `uv run uvicorn app.main:app --reload`.
 
+## Documentación interactiva
+
+Con la API levantada en `localhost` y puerto **8000** (por ejemplo `pnpm dev:api` desde la raíz del monorepo o `uvicorn … --port 8000`):
+
+| Ruta | Herramienta |
+|------|-------------|
+| [`http://localhost:8000/docs`](http://localhost:8000/docs) | **Swagger UI** |
+| [`http://localhost:8000/redoc`](http://localhost:8000/redoc) | **ReDoc** |
+| [`http://localhost:8000/openapi.json`](http://localhost:8000/openapi.json) | **OpenAPI** (documento JSON; clientes codegen, CI, proxies) |
+
+Ejemplo rápido: `curl -s http://localhost:8000/openapi.json | head`.
+
 ## Configuración
 
 Toda la configuración local compartida vive en el `.env` de la **raíz del monorepo** (mismo fichero que usa Docker Compose). La clase [`app/config.py`](app/config.py) construye `database_url`, `database_url_sync` y `redis_url` a partir de `POSTGRES_*`, `REDIS_*`, etc.

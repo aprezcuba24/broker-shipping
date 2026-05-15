@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from typing import Annotated
 from uuid import UUID
 
 from dishka import FromDishka
 from dishka.integrations.fastapi import inject
-from fastapi import HTTPException, Request
-from fastapi.security import APIKeyHeader
+from fastapi import Depends, HTTPException
+from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
 
 from app.lib.security.api_keys import split_raw
 from app.lib.security.principal import ApiKeyPrincipal, Principal, UserPrincipal
@@ -13,22 +14,21 @@ from app.lib.security.tokens import decode_access_token_from_string
 from app.modules.organization.services.api_key_service import ApiKeyService
 from app.modules.user.repositories.user_repository import UserRepository
 
-_api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
-
-
-def _bearer_token(request: Request) -> str | None:
-    authz = request.headers.get("Authorization")
-    if not authz or not authz.lower().startswith("bearer "):
-        return None
-    return authz.split(" ", 1)[1].strip()
+# Shared scheme instances so OpenAPI `components.securitySchemes` stays stable + named.
+broker_bearer = HTTPBearer(auto_error=False, scheme_name="BrokerBearer")
+broker_api_key = APIKeyHeader(
+    name="X-API-Key",
+    auto_error=False,
+    scheme_name="BrokerApiKey",
+)
 
 
 @inject
 async def _resolve_user(
-    request: Request,
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(broker_bearer)],
     user_repo: FromDishka[UserRepository],
 ) -> UserPrincipal:
-    token = _bearer_token(request)
+    token = credentials.credentials.strip() if credentials else None
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
     try:
@@ -43,10 +43,10 @@ async def _resolve_user(
 
 @inject
 async def _resolve_api_key(
-    request: Request,
+    raw_key: Annotated[str | None, Depends(broker_api_key)],
     api_key_service: FromDishka[ApiKeyService],
 ) -> ApiKeyPrincipal:
-    raw = await _api_key_header(request)
+    raw = raw_key
     if not raw:
         raise HTTPException(status_code=401, detail="API key required")
     key = await api_key_service.verify_raw(raw)
@@ -60,11 +60,12 @@ async def _resolve_api_key(
 
 @inject
 async def _resolve_user_or_api_key(
-    request: Request,
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(broker_bearer)],
+    raw_key: Annotated[str | None, Depends(broker_api_key)],
     user_repo: FromDishka[UserRepository],
     api_key_service: FromDishka[ApiKeyService],
 ) -> Principal:
-    token = _bearer_token(request)
+    token = credentials.credentials.strip() if credentials else None
     if token:
         try:
             uid = decode_access_token_from_string(token)
@@ -74,7 +75,7 @@ async def _resolve_user_or_api_key(
             user = await user_repo.get_by_id(uid)
             if user is not None:
                 return UserPrincipal(user_id=user.id, username=user.username)
-    raw = await _api_key_header(request)
+    raw = raw_key
     if raw and split_raw(raw) is not None:
         key = await api_key_service.verify_raw(raw)
         if key is not None:
