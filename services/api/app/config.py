@@ -36,6 +36,12 @@ class Settings(BaseSettings):
     s3_bucket: str | None = None
     aws_endpoint_url: str | None = None
 
+    jwt_secret_key: str = Field(
+        default="dev-only-jwt-secret-min-32-bytes-change-in-production",
+    )
+    jwt_algorithm: str = Field(default="HS256")
+    jwt_access_token_minutes: int = Field(default=60 * 24)
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def database_url(self) -> str:
