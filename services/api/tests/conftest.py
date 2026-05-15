@@ -7,6 +7,8 @@ from collections.abc import AsyncIterator
 
 # Base de datos de test (mismo host/puerto/credenciales que en `.env`; solo cambia el nombre).
 os.environ["POSTGRES_DB"] = os.environ.get("POSTGRES_DB_TEST", "broker_test")
+if len(os.environ.get("JWT_SECRET_KEY", "")) < 32:
+    os.environ["JWT_SECRET_KEY"] = "pytest-jwt-secret-must-be-at-least-thirty-two-bytes"
 
 import pytest
 import pytest_asyncio

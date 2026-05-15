@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 from dishka import FromDishka
 from dishka.integrations.fastapi import inject
 from fastapi import HTTPException, Request
@@ -50,7 +52,10 @@ async def _resolve_api_key(
     key = await api_key_service.verify_raw(raw)
     if key is None:
         raise HTTPException(status_code=401, detail="Invalid API key")
-    return ApiKeyPrincipal(api_key_id=key.id, organization_id=key.organization_id)
+    return ApiKeyPrincipal(
+        api_key_id=UUID(str(key.id)),
+        organization_id=UUID(str(key.organization_id)),
+    )
 
 
 @inject
@@ -73,5 +78,8 @@ async def _resolve_user_or_api_key(
     if raw and split_raw(raw) is not None:
         key = await api_key_service.verify_raw(raw)
         if key is not None:
-            return ApiKeyPrincipal(api_key_id=key.id, organization_id=key.organization_id)
+            return ApiKeyPrincipal(
+                api_key_id=UUID(str(key.id)),
+                organization_id=UUID(str(key.organization_id)),
+            )
     raise HTTPException(status_code=401, detail="Not authenticated")

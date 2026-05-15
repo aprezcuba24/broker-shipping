@@ -17,7 +17,7 @@ async def create_api_key_row(
     org_uuid = organization_id if isinstance(organization_id, UUID) else UUID(str(organization_id))
     raw, prefix, secret_hash = generate_api_key()
     entity = ApiKey(
-        organization_id=organization_id,
+        organization_id=org_uuid,
         name=name,
         prefix=prefix,
         secret_hash=secret_hash,

@@ -18,7 +18,10 @@ class ApiKeyService(BaseService[ApiKey]):
         return frozenset(ApiKey.model_fields.keys()) - ApiKey.IMMUTABLE_FIELDS
 
     def to_api_key_public(self, entity: ApiKey) -> ApiKeyPublic:
-        return ApiKeyPublic(**entity.model_dump(exclude={"secret_hash"}))
+        data = entity.model_dump(exclude={"secret_hash"}, mode="python")
+        data["id"] = UUID(str(data["id"]))
+        data["organization_id"] = UUID(str(data["organization_id"]))
+        return ApiKeyPublic(**data)
 
     async def create_for_organization(self, organization_id: UUID, name: str) -> tuple[str, ApiKey]:
         raw, prefix, secret_hash = generate_api_key()
