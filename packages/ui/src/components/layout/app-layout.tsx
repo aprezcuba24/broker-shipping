@@ -1,4 +1,4 @@
-import { Outlet } from '@tanstack/react-router'
+import { Outlet } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { Sidebar } from './sidebar'
 import { TopHeader } from './top-header'

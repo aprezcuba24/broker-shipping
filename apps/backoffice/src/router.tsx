@@ -1,70 +1,17 @@
-import { AppLayout } from '@broker/ui'
-import {
-  createRootRoute,
-  createRoute,
-  createRouter,
-  Outlet,
-  useNavigate,
-} from '@tanstack/react-router'
-import {
-  backofficeBottomItems,
-  backofficeBrand,
-  backofficeNavItems,
-  backofficeUser,
-} from './config/navigation'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BackofficeLayout } from './layouts/backoffice-layout'
 import { LoginPage } from './pages/login'
 import { ProductListPage } from './pages/product/list'
 
-function RootLayout() {
-  return <Outlet />
-}
-
-function BackofficeLayout() {
-  const navigate = useNavigate()
-
+export default function App() {
   return (
-    <AppLayout
-      headerTitle="Portal proveedores"
-      navItems={backofficeNavItems}
-      bottomItems={backofficeBottomItems}
-      brand={backofficeBrand}
-      user={backofficeUser}
-      onLogout={() => void navigate({ to: '/login' })}
-    />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route element={<BackofficeLayout />}>
+          <Route path="/products" element={<ProductListPage />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   )
-}
-
-const rootRoute = createRootRoute({
-  component: RootLayout,
-})
-
-const loginRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/login',
-  component: LoginPage,
-})
-
-const appLayoutRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  id: 'app',
-  component: BackofficeLayout,
-})
-
-const productsRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/products',
-  component: ProductListPage,
-})
-
-const routeTree = rootRoute.addChildren([
-  loginRoute,
-  appLayoutRoute.addChildren([productsRoute]),
-])
-
-export const router = createRouter({ routeTree })
-
-declare module '@tanstack/react-router' {
-  interface Register {
-    router: typeof router
-  }
 }

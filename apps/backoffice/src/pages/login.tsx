@@ -7,7 +7,7 @@ import {
   CardTitle,
   Input,
 } from '@broker/ui'
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 
 export function LoginPage() {
@@ -16,7 +16,7 @@ export function LoginPage() {
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault()
-    void navigate({ to: '/' })
+    void navigate('/')
   }
 
   return (

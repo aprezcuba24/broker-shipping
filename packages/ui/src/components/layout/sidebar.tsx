@@ -1,10 +1,13 @@
-import { Link } from '@tanstack/react-router'
+import { NavLink } from 'react-router-dom'
 import { X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { SidebarProps } from './types'
 
 const linkClassName =
-  'flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 text-on-surface-variant hover:bg-surface-container-highest/50 hover:translate-x-1 [&.active]:bg-surface-container-lowest [&.active]:text-on-surface [&.active]:shadow-sm [&.active]:font-semibold'
+  'flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 text-on-surface-variant hover:bg-surface-container-highest/50 hover:translate-x-1'
+
+const activeLinkClassName =
+  'bg-surface-container-lowest text-on-surface shadow-sm font-semibold'
 
 export function Sidebar({
   isOpen,
@@ -58,7 +61,7 @@ export function Sidebar({
 
         <nav className="flex-1 space-y-1">
           {navItems.map((item) => (
-            <NavLink key={item.to} item={item} onClose={onClose} />
+            <SidebarNavLink key={item.to} item={item} onClose={onClose} />
           ))}
         </nav>
 
@@ -75,7 +78,7 @@ export function Sidebar({
           ) : null}
 
           {bottomItems.map((item) => (
-            <NavLink key={item.to} item={item} onClose={onClose} />
+            <SidebarNavLink key={item.to} item={item} onClose={onClose} />
           ))}
         </div>
       </aside>
@@ -83,7 +86,7 @@ export function Sidebar({
   )
 }
 
-function NavLink({
+function SidebarNavLink({
   item,
   onClose,
 }: {
@@ -93,15 +96,16 @@ function NavLink({
   const Icon = item.icon
 
   return (
-    <Link
+    <NavLink
       to={item.to}
+      end={item.exact}
       onClick={() => onClose()}
-      activeOptions={item.exact ? { exact: true } : undefined}
-      className={linkClassName}
-      activeProps={{ className: 'active' }}
+      className={({ isActive }) =>
+        [linkClassName, isActive ? activeLinkClassName : ''].join(' ')
+      }
     >
       <Icon className="h-[18px] w-[18px]" />
       <span>{item.label}</span>
-    </Link>
+    </NavLink>
   )
 }

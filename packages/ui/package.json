@@ -8,9 +8,9 @@
     "./styles.css": "./src/styles.css"
   },
   "peerDependencies": {
-    "@tanstack/react-router": "^1.0.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.0.0"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",
