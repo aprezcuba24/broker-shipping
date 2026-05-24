@@ -20,6 +20,13 @@ export {
   TableRow,
   TableCell,
 } from './components/ui/table'
+export { DataTable } from './components/data-table/data-table'
+export { ColumnType } from './components/data-table/types'
+export type {
+  ColumnDef,
+  DataTableProps,
+  DataTablePagination,
+} from './components/data-table/types'
 export {
   Dialog,
   DialogPortal,
