@@ -3,7 +3,7 @@ from __future__ import annotations
 import secrets
 from uuid import UUID
 
-from app.lib.base_service import BaseService
+from app.lib.persistence import BaseService
 from app.lib.security.api_keys import generate_api_key, hash_secret, split_raw
 from app.modules.organization.models import ApiKey, ApiKeyPublic
 

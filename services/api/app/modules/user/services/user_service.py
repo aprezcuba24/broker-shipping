@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from app.lib.base_service import BaseService
+from app.lib.persistence import BaseService
 from app.lib.security.passwords import verify_password
 from app.lib.security.tokens import encode_access_token
 from app.modules.user.events import UserCreated

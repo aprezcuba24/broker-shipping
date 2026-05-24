@@ -1,6 +1,6 @@
 from sqlmodel import Field
 
-from app.lib.organization_entity_model import OrganizationEntityModel
+from app.lib.persistence import OrganizationEntityModel
 
 
 class Category(OrganizationEntityModel, table=True):

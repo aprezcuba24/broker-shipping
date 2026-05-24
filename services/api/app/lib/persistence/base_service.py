@@ -7,8 +7,8 @@ from sqlmodel import SQLModel
 
 from app.lib.event_base import Event
 from app.lib.event_dispatcher import EventDispatcher
+from app.lib.persistence.resource import Resource
 from app.lib.post_commit import PostCommitQueue
-from app.lib.resource import Resource
 from app.lib.utils import utc_now
 
 T = TypeVar("T", bound=SQLModel)

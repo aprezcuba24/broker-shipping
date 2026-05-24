@@ -1,6 +1,6 @@
 from sqlalchemy import select
 
-from app.lib.resource import Resource
+from app.lib.persistence import Resource
 from app.modules.user.models import User
 
 

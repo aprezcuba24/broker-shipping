@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from uuid import UUID
 
-from app.lib.base_service import BaseService
+from app.lib.persistence import BaseService
 from app.lib.event_dispatcher import EventDispatcher
 from app.lib.post_commit import PostCommitQueue
 from app.modules.organization.models import Organization

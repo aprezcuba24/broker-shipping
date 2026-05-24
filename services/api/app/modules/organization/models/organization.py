@@ -1,6 +1,6 @@
 from sqlmodel import Field
 
-from app.lib.entity_model import EntityModel
+from app.lib.persistence import EntityModel
 
 
 class Organization(EntityModel, table=True):

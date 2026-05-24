@@ -3,7 +3,7 @@ from uuid import UUID
 
 from sqlmodel import Field
 
-from app.lib.entity_model import EntityModel
+from app.lib.persistence.entity_model import EntityModel
 
 
 class OrganizationEntityModel(EntityModel):

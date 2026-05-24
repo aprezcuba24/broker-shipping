@@ -4,7 +4,7 @@ from uuid import UUID
 
 from fastapi import HTTPException
 
-from app.lib.organization_entity_model import OrganizationEntityModel
+from app.lib.persistence.organization_entity_model import OrganizationEntityModel
 
 O = TypeVar("O", bound=OrganizationEntityModel)
 

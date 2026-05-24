@@ -1,7 +1,6 @@
-from app.lib.base_service import BaseService
+from app.lib.persistence import BaseService, OrgScopedServiceMixin
 from app.modules.products.events import ProductCreated
 from app.modules.products.models import Product
-from app.lib.org_scoped_service import OrgScopedServiceMixin
 
 
 class ProductService(OrgScopedServiceMixin[Product], BaseService[Product]):

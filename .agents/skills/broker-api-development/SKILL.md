@@ -107,10 +107,10 @@ class FooModule(AppModule):
 
 ### EntityModel (standard CRUD entities)
 
-Most domain tables with UUID primary key and timestamps inherit from `EntityModel` in `app/lib/entity_model.py`:
+Most domain tables with UUID primary key and timestamps inherit from `EntityModel` in `app/lib/persistence/entity_model.py`:
 
 ```python
-# app/lib/entity_model.py
+# app/lib/persistence/entity_model.py
 class EntityModel(SQLModel):
     IMMUTABLE_FIELDS: ClassVar[frozenset[str]] = frozenset({"id", "created_at", "updated_at"})
     id: UUID = Field(default_factory=uuid4, primary_key=True)
@@ -126,7 +126,7 @@ class EntityModel(SQLModel):
 # models/foo.py
 from sqlmodel import Field
 
-from app.lib.entity_model import EntityModel
+from app.lib.persistence import EntityModel
 
 
 class Foo(EntityModel, table=True):
@@ -137,19 +137,19 @@ Only declare domain-specific fields in the subclass — do not repeat `id`, `cre
 
 ### OrganizationEntityModel (multi-tenant CRUD)
 
-Tables scoped to one organization inherit from `OrganizationEntityModel` in `app/lib/organization_entity_model.py` (extends `EntityModel` with `organization_id` and tenant-safe `IMMUTABLE_FIELDS`):
+Tables scoped to one organization inherit from `OrganizationEntityModel` in `app/lib/persistence/organization_entity_model.py` (extends `EntityModel` with `organization_id` and tenant-safe `IMMUTABLE_FIELDS`):
 
 ```python
 from sqlmodel import Field
 
-from app.lib.organization_entity_model import OrganizationEntityModel
+from app.lib.persistence import OrganizationEntityModel
 
 
 class Foo(OrganizationEntityModel, table=True):
     name: str = Field(max_length=255)
 ```
 
-Used by `Product`, `Category`, and future tenant-scoped entities. Repositories: `OrgScopedRepositoryMixin` from `app.lib.org_scoped_resource`. Services: `OrgScopedServiceMixin` from `app.lib.org_scoped_service` (e.g. `list_for_organization`, `get_or_404_for_organization`). Routes pass `organization_id_for(principal)` from `app.lib.security`.
+Used by `Product`, `Category`, and future tenant-scoped entities. Repositories: `OrgScopedRepositoryMixin` from `app.lib.persistence`. Services: `OrgScopedServiceMixin` from `app.lib.persistence` (e.g. `list_for_organization`, `get_or_404_for_organization`). Routes pass `organization_id_for(principal)` from `app.lib.security`.
 
 **When NOT to use EntityModel** — models with a different key shape or timestamp needs define their own fields (see below).
 
@@ -194,11 +194,11 @@ __all__ = ["MODULE_MODELS", "Foo"]
 
 ## 4. Repository
 
-Subclass `Resource[Model]` from `app/lib/resource.py`. The model class is inferred from the generic parameter; the body is `pass` unless custom queries are needed.
+Subclass `Resource[Model]` from `app/lib/persistence/resource.py`. The model class is inferred from the generic parameter; the body is `pass` unless custom queries are needed.
 
 ```python
 # repositories/foo_repository.py
-from app.lib.resource import Resource
+from app.lib.persistence import Resource
 from app.modules.foo.models import Foo
 
 class FooRepository(Resource[Foo]):
@@ -213,11 +213,11 @@ Built-in methods: `list_all`, `get_by_id`, `create`, `update`, `delete`.
 
 ## 5. Service
 
-Subclass `BaseService[Model]` from `app/lib/base_service.py`. Inherits full CRUD plus `get_or_404` and `patch`.
+Subclass `BaseService[Model]` from `app/lib/persistence/base_service.py`. Inherits full CRUD plus `get_or_404` and `patch`.
 
 ```python
 # services/foo_service.py
-from app.lib.base_service import BaseService
+from app.lib.persistence import BaseService
 from app.modules.foo.events import FooCreated
 from app.modules.foo.models import Foo
 

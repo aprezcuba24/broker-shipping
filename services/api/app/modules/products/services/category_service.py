@@ -1,6 +1,5 @@
-from app.lib.base_service import BaseService
+from app.lib.persistence import BaseService, OrgScopedServiceMixin
 from app.modules.products.models import Category
-from app.lib.org_scoped_service import OrgScopedServiceMixin
 
 
 class CategoryService(OrgScopedServiceMixin[Category], BaseService[Category]):

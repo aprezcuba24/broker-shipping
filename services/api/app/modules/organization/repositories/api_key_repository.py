@@ -2,7 +2,7 @@ from uuid import UUID
 
 from sqlalchemy import select
 
-from app.lib.resource import Resource
+from app.lib.persistence import Resource
 from app.modules.organization.models import ApiKey
 
 

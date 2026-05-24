@@ -4,8 +4,8 @@ from uuid import UUID
 
 from sqlalchemy import select
 
-from app.lib.organization_entity_model import OrganizationEntityModel
-from app.lib.resource import Resource
+from app.lib.persistence.organization_entity_model import OrganizationEntityModel
+from app.lib.persistence.resource import Resource
 
 O = TypeVar("O", bound=OrganizationEntityModel)
 
