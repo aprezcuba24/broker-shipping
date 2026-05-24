@@ -1,14 +1,7 @@
-from datetime import datetime
-from typing import ClassVar
-from uuid import UUID, uuid4
+from sqlmodel import Field
 
-from sqlmodel import Field, SQLModel
-
-from app.lib.utils import utc_now
+from app.lib.entity_model import EntityModel
 
 
-class Product(SQLModel, table=True):
-    IMMUTABLE_FIELDS: ClassVar[frozenset[str]] = frozenset({"id", "created_at"})
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
+class Product(EntityModel, table=True):
     name: str = Field(max_length=255)
-    created_at: datetime = Field(default_factory=utc_now)

@@ -9,6 +9,7 @@ from app.lib.event_base import Event
 from app.lib.event_dispatcher import EventDispatcher
 from app.lib.post_commit import PostCommitQueue
 from app.lib.resource import Resource
+from app.lib.utils import utc_now
 
 T = TypeVar("T", bound=SQLModel)
 
@@ -112,6 +113,10 @@ class BaseService(Generic[T]):
         allowed_keys: frozenset[str],
     ) -> T | None:
         data = {k: v for k, v in body.items() if k in allowed_keys}
+        if not data:
+            return await self.get(entity_id)
+        if "updated_at" in self._repo._model.model_fields:
+            data["updated_at"] = utc_now()
         return await self.update(entity_id, data)
 
     # ── Hooks (override in subclass) ────────────────────────

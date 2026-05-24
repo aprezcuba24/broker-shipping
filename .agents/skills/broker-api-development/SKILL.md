@@ -2,12 +2,12 @@
 name: broker-api-development
 description: >-
   Guides development of the FastAPI backend in services/api: adding domain
-  modules, models (SQLModel), repositories (Resource), services (BaseService),
-  routes (DishkaRoute), events (EntityEvent), listeners (EventDispatcher),
-  Dishka DI providers, Alembic migrations, security (JWT via AuthX +
-  per-organization API keys via @require_* route decorators), and
-  pytest-asyncio tests. Use when working in services/api, adding a new domain
-  module, writing or reviewing routes/services/repositories/listeners,
+  modules, models (EntityModel / SQLModel), repositories (Resource),
+  services (BaseService), routes (DishkaRoute), events (EntityEvent),
+  listeners (EventDispatcher), Dishka DI providers, Alembic migrations,
+  security (JWT via AuthX + per-organization API keys via @require_* route
+  decorators), and pytest-asyncio tests. Use when working in services/api,
+  adding a new domain module, writing or reviewing routes/services/repositories/listeners,
   generating Alembic revisions, or authoring pytest tests for the API.
 ---
 
@@ -105,23 +105,37 @@ class FooModule(AppModule):
 
 ## 3. Models (SQLModel)
 
+### EntityModel (standard CRUD entities)
+
+Most domain tables with UUID primary key and timestamps inherit from `EntityModel` in `app/lib/entity_model.py`:
+
+```python
+# app/lib/entity_model.py
+class EntityModel(SQLModel):
+    IMMUTABLE_FIELDS: ClassVar[frozenset[str]] = frozenset({"id", "created_at", "updated_at"})
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    created_at: datetime = Field(default_factory=utc_now)
+    updated_at: datetime | None = Field(default=None)
+```
+
+- No `table=True` on the mixin (same pattern as `UserBase` / `ApiKeyBase`).
+- `IMMUTABLE_FIELDS` is centralized so PATCH routes cannot modify `id` or timestamps.
+- Used by `Category`, `Product`, and `Organization`. New CRUD entities should inherit it too.
+
 ```python
 # models/foo.py
-from datetime import datetime
-from typing import ClassVar
-from uuid import UUID, uuid4
+from sqlmodel import Field
 
-from sqlmodel import Field, SQLModel
-
-from app.lib.utils import utc_now
+from app.lib.entity_model import EntityModel
 
 
-class Foo(SQLModel, table=True):
-    IMMUTABLE_FIELDS: ClassVar[frozenset[str]] = frozenset({"id", "created_at"})
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
+class Foo(EntityModel, table=True):
     name: str = Field(max_length=255)
-    created_at: datetime = Field(default_factory=utc_now)
 ```
+
+Only declare domain-specific fields in the subclass — do not repeat `id`, `created_at`, `updated_at`, or `IMMUTABLE_FIELDS`.
+
+**When NOT to use EntityModel** — models with a different key shape or timestamp needs define their own fields (see below).
 
 **Membership (composite PK)** — lives in the `organization` module; FK to `user` and `organization`:
 
@@ -150,7 +164,9 @@ class ApiKey(SQLModel, table=True):
 ```
 
 - `utc_now` returns naive UTC — keep all timestamps consistent.
-- Declare `IMMUTABLE_FIELDS` when the resource exposes PATCH; omit it for write-once resources.
+- For `EntityModel` subclasses, `IMMUTABLE_FIELDS` is inherited; override only if the entity adds extra immutable columns (e.g. `organization_id` on `Category` would stay patchable unless added to a subclass override).
+- For non-`EntityModel` tables that expose PATCH, declare `IMMUTABLE_FIELDS` on the model; omit it for write-once resources.
+- `updated_at` is set automatically by `BaseService.patch` on update — never accept it from the client payload.
 - Export from `models/__init__.py`:
 
 ```python
@@ -202,6 +218,16 @@ class FooService(BaseService[Foo]):
     async def on_create(self, entity: Foo) -> None:
         self.post_commit_emit(FooCreated(entity=entity))
 ```
+
+### `BaseService.patch` (do not override in subclasses)
+
+`patch` is implemented once in `BaseService` and should not be reimplemented in domain services:
+
+1. Filters `body` to `allowed_keys`.
+2. If no allowed keys remain, returns the entity via `get` (no DB write).
+3. If the model has an `updated_at` field, sets it to `utc_now()` before calling `update`.
+
+Models without `updated_at` (e.g. `User`, `ApiKey`) are unaffected — the timestamp step is skipped automatically.
 
 Lifecycle hooks to override: `on_create`, `on_update`, `on_delete`, `on_get`, `on_list`. Use `post_commit_emit` — events fire only after the DB commit succeeds.
 
@@ -558,6 +584,8 @@ Settings live in `app/config.py` (Pydantic Settings). The `.env` file at the mon
 ## 13. Key conventions
 
 - **Never call the repository directly from a route.** All business logic goes through `BaseService`.
+- **Inherit `EntityModel` for standard UUID + timestamp CRUD tables** (`id`, `created_at`, `updated_at`, shared `IMMUTABLE_FIELDS`).
+- **Do not override `BaseService.patch`** — `updated_at` and empty-body early return are handled in the base class.
 - **Use `post_commit_emit`, not `dispatcher.emit` directly.** Events must fire only after the commit succeeds.
 - **One module = one URL prefix.** Mounting is centralized in `register_modules`.
 - **Listener side effects must be idempotent.** They run in a fresh scope; retries are possible.
@@ -568,7 +596,7 @@ Settings live in `app/config.py` (Pydantic Settings). The `.env` file at the mon
 ## 14. New module checklist
 
 - [ ] Create the directory tree under `app/modules/foo/`
-- [ ] Implement `Foo` model (`table=True`, UUID pk, `created_at`, optional `IMMUTABLE_FIELDS`)
+- [ ] Implement `Foo` model (`EntityModel, table=True` for standard CRUD; only domain fields in the subclass)
 - [ ] Export `MODULE_MODELS` from `models/__init__.py`
 - [ ] Implement `FooRepository(Resource[Foo])`
 - [ ] Implement `FooService(BaseService[Foo])` with hooks and `creation_exclude` / `patch_allowed_keys` as needed
