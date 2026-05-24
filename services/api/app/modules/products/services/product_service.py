@@ -1,9 +1,10 @@
 from app.lib.base_service import BaseService
 from app.modules.products.events import ProductCreated
 from app.modules.products.models import Product
+from app.lib.org_scoped_service import OrgScopedServiceMixin
 
 
-class ProductService(BaseService[Product]):
+class ProductService(OrgScopedServiceMixin[Product], BaseService[Product]):
     @classmethod
     def creation_exclude(cls) -> frozenset[str]:
         return Product.IMMUTABLE_FIELDS

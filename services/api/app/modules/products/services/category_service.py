@@ -1,8 +1,9 @@
 from app.lib.base_service import BaseService
 from app.modules.products.models import Category
+from app.lib.org_scoped_service import OrgScopedServiceMixin
 
 
-class CategoryService(BaseService[Category]):
+class CategoryService(OrgScopedServiceMixin[Category], BaseService[Category]):
     @classmethod
     def creation_exclude(cls) -> frozenset[str]:
         return Category.IMMUTABLE_FIELDS

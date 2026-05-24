@@ -1,6 +1,6 @@
-from app.lib.resource import Resource
 from app.modules.products.models import Product
+from app.lib.org_scoped_resource import OrgScopedRepositoryMixin
 
 
-class ProductRepository(Resource[Product]):
+class ProductRepository(OrgScopedRepositoryMixin[Product]):
     pass

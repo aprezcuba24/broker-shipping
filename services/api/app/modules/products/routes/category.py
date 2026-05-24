@@ -5,7 +5,7 @@ from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Body, Response
 
-from app.lib.security import require_user_or_api_key
+from app.lib.security import Principal, organization_id_for, require_user_or_api_key
 from app.modules.products.models import Category
 from app.modules.products.services import CategoryService
 
@@ -14,20 +14,36 @@ router = APIRouter(route_class=DishkaRoute)
 
 @router.get("/", response_model=list[Category])
 @require_user_or_api_key
-async def list_categories(service: FromDishka[CategoryService]):
-    return await service.list()
+async def list_categories(service: FromDishka[CategoryService], principal: Principal):
+    return await service.list_for_organization(organization_id_for(principal))
 
 
 @router.get("/{category_id}", response_model=Category)
 @require_user_or_api_key
-async def get_category(category_id: UUID, service: FromDishka[CategoryService]):
-    return await service.get_or_404(entity_id=category_id, detail="Category not found")
+async def get_category(
+    category_id: UUID,
+    service: FromDishka[CategoryService],
+    principal: Principal,
+):
+    return await service.get_or_404_for_organization(
+        category_id,
+        organization_id_for(principal),
+        detail="Category not found",
+    )
 
 
 @router.post("/", response_model=Category, status_code=201)
 @require_user_or_api_key
-async def create_category(body: Category, service: FromDishka[CategoryService]):
-    entity = Category(**body.model_dump(exclude=CategoryService.creation_exclude()))
+async def create_category(
+    body: Category,
+    service: FromDishka[CategoryService],
+    principal: Principal,
+):
+    oid = organization_id_for(principal)
+    entity = Category(
+        **body.model_dump(exclude=CategoryService.creation_exclude()),
+        organization_id=oid,
+    )
     return await service.create(entity)
 
 
@@ -37,7 +53,10 @@ async def patch_category(
     category_id: UUID,
     payload: Annotated[dict[str, Any], Body(...)],
     service: FromDishka[CategoryService],
+    principal: Principal,
 ):
+    oid = organization_id_for(principal)
+    await service.get_or_404_for_organization(category_id, oid, detail="Category not found")
     return await service.get_or_404(
         entity=await service.patch(
             category_id,
@@ -50,7 +69,12 @@ async def patch_category(
 
 @router.delete("/{category_id}", status_code=204)
 @require_user_or_api_key
-async def delete_category(category_id: UUID, service: FromDishka[CategoryService]):
-    await service.get_or_404(entity_id=category_id, detail="Category not found")
+async def delete_category(
+    category_id: UUID,
+    service: FromDishka[CategoryService],
+    principal: Principal,
+):
+    oid = organization_id_for(principal)
+    await service.get_or_404_for_organization(category_id, oid, detail="Category not found")
     await service.delete(category_id)
     return Response(status_code=204)

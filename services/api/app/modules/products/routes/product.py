@@ -5,7 +5,7 @@ from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Body, Response
 
-from app.lib.security import require_user_or_api_key
+from app.lib.security import Principal, organization_id_for, require_user_or_api_key
 from app.modules.products.models import Product
 from app.modules.products.services import ProductService
 
@@ -14,20 +14,36 @@ router = APIRouter(route_class=DishkaRoute)
 
 @router.get("/", response_model=list[Product])
 @require_user_or_api_key
-async def list_products(service: FromDishka[ProductService]):
-    return await service.list()
+async def list_products(service: FromDishka[ProductService], principal: Principal):
+    return await service.list_for_organization(organization_id_for(principal))
 
 
 @router.get("/{product_id}", response_model=Product)
 @require_user_or_api_key
-async def get_product(product_id: UUID, service: FromDishka[ProductService]):
-    return await service.get_or_404(entity_id=product_id, detail="Product not found")
+async def get_product(
+    product_id: UUID,
+    service: FromDishka[ProductService],
+    principal: Principal,
+):
+    return await service.get_or_404_for_organization(
+        product_id,
+        organization_id_for(principal),
+        detail="Product not found",
+    )
 
 
 @router.post("/", response_model=Product, status_code=201)
 @require_user_or_api_key
-async def create_product(body: Product, service: FromDishka[ProductService]):
-    entity = Product(**body.model_dump(exclude=ProductService.creation_exclude()))
+async def create_product(
+    body: Product,
+    service: FromDishka[ProductService],
+    principal: Principal,
+):
+    oid = organization_id_for(principal)
+    entity = Product(
+        **body.model_dump(exclude=ProductService.creation_exclude()),
+        organization_id=oid,
+    )
     return await service.create(entity)
 
 
@@ -37,7 +53,10 @@ async def patch_product(
     product_id: UUID,
     payload: Annotated[dict[str, Any], Body(...)],
     service: FromDishka[ProductService],
+    principal: Principal,
 ):
+    oid = organization_id_for(principal)
+    await service.get_or_404_for_organization(product_id, oid, detail="Product not found")
     return await service.get_or_404(
         entity=await service.patch(
             product_id,
@@ -50,7 +69,12 @@ async def patch_product(
 
 @router.delete("/{product_id}", status_code=204)
 @require_user_or_api_key
-async def delete_product(product_id: UUID, service: FromDishka[ProductService]):
-    await service.get_or_404(entity_id=product_id, detail="Product not found")
+async def delete_product(
+    product_id: UUID,
+    service: FromDishka[ProductService],
+    principal: Principal,
+):
+    oid = organization_id_for(principal)
+    await service.get_or_404_for_organization(product_id, oid, detail="Product not found")
     await service.delete(product_id)
     return Response(status_code=204)

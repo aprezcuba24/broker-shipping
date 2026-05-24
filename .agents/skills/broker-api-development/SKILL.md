@@ -120,7 +120,7 @@ class EntityModel(SQLModel):
 
 - No `table=True` on the mixin (same pattern as `UserBase` / `ApiKeyBase`).
 - `IMMUTABLE_FIELDS` is centralized so PATCH routes cannot modify `id` or timestamps.
-- Used by `Category`, `Product`, and `Organization`. New CRUD entities should inherit it too.
+- Used by `Organization` and other global (non-tenant) CRUD tables. New standard CRUD entities without per-org scope should inherit it.
 
 ```python
 # models/foo.py
@@ -134,6 +134,22 @@ class Foo(EntityModel, table=True):
 ```
 
 Only declare domain-specific fields in the subclass — do not repeat `id`, `created_at`, `updated_at`, or `IMMUTABLE_FIELDS`.
+
+### OrganizationEntityModel (multi-tenant CRUD)
+
+Tables scoped to one organization inherit from `OrganizationEntityModel` in `app/lib/organization_entity_model.py` (extends `EntityModel` with `organization_id` and tenant-safe `IMMUTABLE_FIELDS`):
+
+```python
+from sqlmodel import Field
+
+from app.lib.organization_entity_model import OrganizationEntityModel
+
+
+class Foo(OrganizationEntityModel, table=True):
+    name: str = Field(max_length=255)
+```
+
+Used by `Product`, `Category`, and future tenant-scoped entities. Repositories: `OrgScopedRepositoryMixin` from `app.lib.org_scoped_resource`. Services: `OrgScopedServiceMixin` from `app.lib.org_scoped_service` (e.g. `list_for_organization`, `get_or_404_for_organization`). Routes pass `organization_id_for(principal)` from `app.lib.security`.
 
 **When NOT to use EntityModel** — models with a different key shape or timestamp needs define their own fields (see below).
 
@@ -164,7 +180,7 @@ class ApiKey(SQLModel, table=True):
 ```
 
 - `utc_now` returns naive UTC — keep all timestamps consistent.
-- For `EntityModel` subclasses, `IMMUTABLE_FIELDS` is inherited; override only if the entity adds extra immutable columns (e.g. `organization_id` on `Category` would stay patchable unless added to a subclass override).
+- For `EntityModel` / `OrganizationEntityModel` subclasses, `IMMUTABLE_FIELDS` is inherited; override only if the entity adds extra immutable columns beyond the mixin defaults.
 - For non-`EntityModel` tables that expose PATCH, declare `IMMUTABLE_FIELDS` on the model; omit it for write-once resources.
 - `updated_at` is set automatically by `BaseService.patch` on update — never accept it from the client payload.
 - Export from `models/__init__.py`:
