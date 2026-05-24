@@ -1,0 +1,166 @@
+@import 'tw-animate-css';
+
+/* ── shadcn CSS variables ───────────────────────────────────── */
+:root {
+  --background: 210 20% 98%;
+  --foreground: 200 24% 18%;
+  --card: 0 0% 100%;
+  --card-foreground: 200 24% 18%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 200 24% 18%;
+  --primary: 226 14% 40%;
+  --primary-foreground: 240 33% 99%;
+  --secondary: 213 18% 39%;
+  --secondary-foreground: 240 33% 99%;
+  --muted: 200 18% 95%;
+  --muted-foreground: 195 10% 37%;
+  --accent: 200 18% 95%;
+  --accent-foreground: 200 24% 18%;
+  --destructive: 2 44% 44%;
+  --destructive-foreground: 0 50% 99%;
+  --border: 200 18% 88%;
+  --input: 200 18% 88%;
+  --ring: 226 14% 40%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 200 40% 4%;
+  --foreground: 200 18% 95%;
+  --card: 200 40% 4%;
+  --card-foreground: 200 18% 95%;
+  --popover: 200 40% 4%;
+  --popover-foreground: 200 18% 95%;
+  --primary: 228 40% 92%;
+  --primary-foreground: 226 14% 40%;
+  --secondary: 217 33% 18%;
+  --secondary-foreground: 200 18% 95%;
+  --muted: 217 33% 18%;
+  --muted-foreground: 200 18% 68%;
+  --accent: 217 33% 18%;
+  --accent-foreground: 200 18% 95%;
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 200 18% 95%;
+  --border: 217 33% 18%;
+  --input: 217 33% 18%;
+  --ring: 213 27% 84%;
+}
+
+@theme {
+  /* ── Typography ─────────────────────────────────────────────── */
+  --font-headline: Manrope, sans-serif;
+  --font-body: Inter, sans-serif;
+
+  /* ── shadcn primitives (CSS-var based) ─────────────────────── */
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  /* ── Stitch "Analytical Lens" design tokens ────────────────── */
+  --color-on-surface: #2a3439;
+  --color-on-surface-variant: #566166;
+  --color-on-primary: #f7f7ff;
+  --color-on-secondary: #f8f8ff;
+  --color-on-tertiary: #e2fff9;
+  --color-on-error: #fff7f6;
+  --color-on-background: #2a3439;
+
+  --color-surface: #f7f9fb;
+  --color-surface-bright: #f7f9fb;
+  --color-surface-dim: #cfdce3;
+  --color-surface-tint: #565e74;
+  --color-surface-variant: #d9e4ea;
+  --color-surface-container: #e8eff3;
+  --color-surface-container-low: #f0f4f7;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-high: #e1e9ee;
+  --color-surface-container-highest: #d9e4ea;
+
+  --color-ds-primary: #565e74;
+  --color-primary-dim: #4a5268;
+  --color-primary-container: #dae2fd;
+  --color-primary-fixed: #dae2fd;
+  --color-primary-fixed-dim: #ccd4ee;
+  --color-on-primary-container: #4a5167;
+
+  --color-ds-secondary: #526074;
+  --color-secondary-dim: #465468;
+  --color-secondary-container: #d5e3fc;
+  --color-secondary-fixed: #d5e3fc;
+  --color-secondary-fixed-dim: #c7d5ed;
+  --color-on-secondary-container: #455367;
+
+  --color-tertiary: #006b62;
+  --color-tertiary-dim: #005e56;
+  --color-tertiary-container: #91feef;
+  --color-tertiary-fixed: #91feef;
+  --color-tertiary-fixed-dim: #83efe1;
+  --color-on-tertiary-container: #006259;
+
+  --color-error: #9f403d;
+  --color-error-container: #fe8983;
+  --color-on-error-container: #752121;
+  --color-error-dim: #4e0309;
+
+  --color-outline: #717c82;
+  --color-outline-variant: #a9b4b9;
+
+  --color-inverse-surface: #0b0f10;
+  --color-inverse-on-surface: #9a9d9f;
+  --color-inverse-primary: #dae2fd;
+
+  /* ── Border radius ─────────────────────────────────────────── */
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-headline;
+  }
+}
+
+/* ── Custom scrollbar (Stitch "Analytical Lens" style) ──────── */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d9e4ea;
+  border-radius: 10px;
+}

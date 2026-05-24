@@ -1,31 +1,36 @@
-import { useQuery } from '@tanstack/react-query'
+import { AppLayout } from '@broker/ui'
 import {
   createRootRoute,
   createRoute,
   createRouter,
   Outlet,
+  useNavigate,
 } from '@tanstack/react-router'
-import { useAppStore } from './appStore'
+import {
+  backofficeBottomItems,
+  backofficeBrand,
+  backofficeNavItems,
+  backofficeUser,
+} from './config/navigation'
+import { LoginPage } from './pages/login'
+import { PlaceholderPage } from './pages/placeholder-page'
 
 function RootLayout() {
-  const n = useAppStore((s) => s.n)
-  const q = useQuery({
-    queryKey: ['scaffold'],
-    queryFn: () => Promise.resolve('ok'),
-  })
+  return <Outlet />
+}
+
+function BackofficeLayout() {
+  const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 font-sans text-slate-900">
-      <h1 className="text-2xl font-semibold">Portal proveedores</h1>
-      <p className="text-slate-600">
-        Broker B2B — carpeta{' '}
-        <code className="rounded bg-slate-200 px-1">apps/backoffice</code>
-      </p>
-      <p className="mt-2 text-sm text-slate-500">
-        Zustand n={n} · react-query: {q.data ?? '…'}
-      </p>
-      <Outlet />
-    </div>
+    <AppLayout
+      headerTitle="Portal proveedores"
+      navItems={backofficeNavItems}
+      bottomItems={backofficeBottomItems}
+      brand={backofficeBrand}
+      user={backofficeUser}
+      onLogout={() => void navigate({ to: '/login' })}
+    />
   )
 }
 
@@ -33,13 +38,71 @@ const rootRoute = createRootRoute({
   component: RootLayout,
 })
 
-const indexRoute = createRoute({
+const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/',
-  component: () => <p className="mt-4 text-slate-700">Hola.</p>,
+  path: '/login',
+  component: LoginPage,
 })
 
-const routeTree = rootRoute.addChildren([indexRoute])
+const appLayoutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  id: 'app',
+  component: BackofficeLayout,
+})
+
+const dashboardRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/',
+  component: () => (
+    <PlaceholderPage
+      title="Dashboard"
+      description="Vista general del portal de proveedores."
+    />
+  ),
+})
+
+const catalogRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/catalog',
+  component: () => (
+    <PlaceholderPage
+      title="Catálogo"
+      description="Gestión de productos y categorías del proveedor."
+    />
+  ),
+})
+
+const settingsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/settings',
+  component: () => (
+    <PlaceholderPage
+      title="Configuración"
+      description="Preferencias y ajustes del portal."
+    />
+  ),
+})
+
+const supportRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/support',
+  component: () => (
+    <PlaceholderPage
+      title="Soporte"
+      description="Ayuda y contacto con el equipo Broker."
+    />
+  ),
+})
+
+const routeTree = rootRoute.addChildren([
+  loginRoute,
+  appLayoutRoute.addChildren([
+    dashboardRoute,
+    catalogRoute,
+    settingsRoute,
+    supportRoute,
+  ]),
+])
 
 export const router = createRouter({ routeTree })
 

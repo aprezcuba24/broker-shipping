@@ -2,6 +2,7 @@
   "name": "broker-monorepo",
   "private": true,
   "scripts": {
+    "dev": "bash scripts/dev.sh",
     "dev:backoffice": "pnpm --filter @broker/backoffice dev",
     "dev:admin": "pnpm --filter @broker/admin dev",
     "dev:seller-apk": "pnpm --filter @broker/seller-apk dev",

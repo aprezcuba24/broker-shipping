@@ -1,31 +1,36 @@
-import { useQuery } from '@tanstack/react-query'
+import { AppLayout } from '@broker/ui'
 import {
   createRootRoute,
   createRoute,
   createRouter,
   Outlet,
+  useNavigate,
 } from '@tanstack/react-router'
-import { useAppStore } from './appStore'
+import {
+  adminBottomItems,
+  adminBrand,
+  adminNavItems,
+  adminUser,
+} from './config/navigation'
+import { LoginPage } from './pages/login'
+import { PlaceholderPage } from './pages/placeholder-page'
 
 function RootLayout() {
-  const n = useAppStore((s) => s.n)
-  const q = useQuery({
-    queryKey: ['scaffold'],
-    queryFn: () => Promise.resolve('ok'),
-  })
+  return <Outlet />
+}
+
+function AdminLayout() {
+  const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 font-sans text-slate-900">
-      <h1 className="text-2xl font-semibold">Administración global</h1>
-      <p className="text-slate-600">
-        Broker B2B — carpeta{' '}
-        <code className="rounded bg-slate-200 px-1">apps/admin</code>
-      </p>
-      <p className="mt-2 text-sm text-slate-500">
-        Zustand n={n} · react-query: {q.data ?? '…'}
-      </p>
-      <Outlet />
-    </div>
+    <AppLayout
+      headerTitle="Administración global"
+      navItems={adminNavItems}
+      bottomItems={adminBottomItems}
+      brand={adminBrand}
+      user={adminUser}
+      onLogout={() => void navigate({ to: '/login' })}
+    />
   )
 }
 
@@ -33,13 +38,83 @@ const rootRoute = createRootRoute({
   component: RootLayout,
 })
 
-const indexRoute = createRoute({
+const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/',
-  component: () => <p className="mt-4 text-slate-700">Hola.</p>,
+  path: '/login',
+  component: LoginPage,
 })
 
-const routeTree = rootRoute.addChildren([indexRoute])
+const appLayoutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  id: 'app',
+  component: AdminLayout,
+})
+
+const dashboardRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/',
+  component: () => (
+    <PlaceholderPage
+      title="Dashboard"
+      description="Vista general de la administración global."
+    />
+  ),
+})
+
+const organizationsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/organizations',
+  component: () => (
+    <PlaceholderPage
+      title="Organizaciones"
+      description="Gestión de organizaciones y tenants del ecosistema B2B."
+    />
+  ),
+})
+
+const usersRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/users',
+  component: () => (
+    <PlaceholderPage
+      title="Usuarios"
+      description="Administración de usuarios y permisos globales."
+    />
+  ),
+})
+
+const settingsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/settings',
+  component: () => (
+    <PlaceholderPage
+      title="Configuración"
+      description="Ajustes de la plataforma de administración."
+    />
+  ),
+})
+
+const supportRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/support',
+  component: () => (
+    <PlaceholderPage
+      title="Soporte"
+      description="Ayuda y contacto interno."
+    />
+  ),
+})
+
+const routeTree = rootRoute.addChildren([
+  loginRoute,
+  appLayoutRoute.addChildren([
+    dashboardRoute,
+    organizationsRoute,
+    usersRoute,
+    settingsRoute,
+    supportRoute,
+  ]),
+])
 
 export const router = createRouter({ routeTree })
 
