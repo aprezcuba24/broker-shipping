@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
+from fastapi import HTTPException
 from pydantic import BaseModel, ConfigDict
 
 
@@ -10,6 +11,7 @@ class UserPrincipal(BaseModel):
 
     user_id: UUID
     username: str
+    organization_id: UUID | None = None
 
 
 class ApiKeyPrincipal(BaseModel):
@@ -20,3 +22,13 @@ class ApiKeyPrincipal(BaseModel):
 
 
 Principal = UserPrincipal | ApiKeyPrincipal
+
+
+def organization_id_for(principal: Principal) -> UUID:
+    match principal:
+        case ApiKeyPrincipal(organization_id=oid):
+            return oid
+        case UserPrincipal(organization_id=oid) if oid is not None:
+            return oid
+        case _:
+            raise HTTPException(status_code=400, detail="Organization context required")

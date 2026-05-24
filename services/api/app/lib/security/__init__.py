@@ -4,12 +4,18 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.lib.security.principal import ApiKeyPrincipal, Principal, UserPrincipal
+from app.lib.security.principal import (
+    ApiKeyPrincipal,
+    Principal,
+    UserPrincipal,
+    organization_id_for,
+)
 
 __all__ = [
     "ApiKeyPrincipal",
     "Principal",
     "UserPrincipal",
+    "organization_id_for",
     "require_api_key",
     "require_user",
     "require_user_or_api_key",

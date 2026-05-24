@@ -24,6 +24,10 @@ async def test_openapi_components_and_hybrid_products_security(client: AsyncClie
     assert schemes["BrokerApiKey"].get("type") == "apiKey"
     assert schemes["BrokerApiKey"].get("name") == "X-API-Key"
     assert schemes["BrokerApiKey"].get("in") == "header"
+    assert "BrokerOrganization" in schemes
+    assert schemes["BrokerOrganization"].get("type") == "apiKey"
+    assert schemes["BrokerOrganization"].get("name") == "X-Organization-Id"
+    assert schemes["BrokerOrganization"].get("in") == "header"
 
     prod_get = schema["paths"]["/products/"]["get"]
     assert prod_get["security"] == OPENAPI_OR_SECURITY

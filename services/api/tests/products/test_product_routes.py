@@ -3,17 +3,22 @@ import pytest_asyncio
 from httpx import AsyncClient
 from uuid import uuid4
 
-from tests.factories.auth_helpers import bearer_headers
+from tests.factories.auth_helpers import tenant_headers
 from tests.factories.product_factory import ProductFactory
 from tests.factories.user_factory import UserFactory
+from tests.factories.organization_factory import OrganizationFactory
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")
 
 
 @pytest_asyncio.fixture
-async def auth_headers(user_factory: UserFactory) -> dict[str, str]:
+async def auth_headers(
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+) -> dict[str, str]:
     u = await user_factory.build()
-    return bearer_headers(user_id=u["id"])
+    org = await organization_factory.build(user_id=u["id"])
+    return tenant_headers(user_id=u["id"], organization_id=org["id"])
 
 
 async def test_list_products_empty_when_no_rows(

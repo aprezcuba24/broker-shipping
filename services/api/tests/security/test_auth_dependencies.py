@@ -1,7 +1,13 @@
 import pytest
 from httpx import AsyncClient
+from uuid import uuid4
 
-from tests.factories.auth_helpers import api_key_headers, bearer_headers
+from tests.factories.auth_helpers import (
+    api_key_headers,
+    bearer_headers,
+    organization_headers,
+    tenant_headers,
+)
 from tests.factories.organization_factory import OrganizationFactory
 from tests.factories.user_factory import UserFactory
 
@@ -15,12 +21,90 @@ async def test_products_require_auth(client: AsyncClient) -> None:
 async def test_products_with_jwt(
     client: AsyncClient,
     user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
 ) -> None:
     u = await user_factory.build()
-    headers = bearer_headers(user_id=u["id"])
+    org = await organization_factory.build(user_id=u["id"])
+    headers = tenant_headers(user_id=u["id"], organization_id=org["id"])
     r = await client.get("/products/", headers=headers)
     assert r.status_code == 200
     assert r.json() == []
+
+
+async def test_products_jwt_without_organization_header_returns_400(
+    client: AsyncClient,
+    user_factory: UserFactory,
+) -> None:
+    u = await user_factory.build()
+    r = await client.get("/products/", headers=bearer_headers(user_id=u["id"]))
+    assert r.status_code == 400
+    assert r.json()["detail"] == "Organization context required"
+
+
+async def test_products_jwt_non_member_organization_returns_403(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+) -> None:
+    owner = await user_factory.build(username="owner_products")
+    outsider = await user_factory.build(username="outsider_products")
+    org = await organization_factory.build(user_id=owner["id"])
+    headers = tenant_headers(user_id=outsider["id"], organization_id=org["id"])
+    r = await client.get("/products/", headers=headers)
+    assert r.status_code == 403
+    assert r.json()["detail"] == "Forbidden"
+
+
+async def test_products_jwt_invalid_organization_header_returns_400(
+    client: AsyncClient,
+    user_factory: UserFactory,
+) -> None:
+    u = await user_factory.build()
+    headers = bearer_headers(user_id=u["id"])
+    headers["X-Organization-Id"] = "not-a-uuid"
+    r = await client.get("/products/", headers=headers)
+    assert r.status_code == 400
+    assert r.json()["detail"] == "Invalid organization id"
+
+
+async def test_users_me_without_organization_header_ok(
+    client: AsyncClient,
+    user_factory: UserFactory,
+) -> None:
+    u = await user_factory.build()
+    r = await client.get("/users/me", headers=bearer_headers(user_id=u["id"]))
+    assert r.status_code == 200
+    assert r.json()["id"] == u["id"]
+
+
+async def test_users_me_with_valid_organization_header_ok(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+) -> None:
+    u = await user_factory.build()
+    org = await organization_factory.build(user_id=u["id"])
+    headers = {
+        **bearer_headers(user_id=u["id"]),
+        **organization_headers(organization_id=org["id"]),
+    }
+    r = await client.get("/users/me", headers=headers)
+    assert r.status_code == 200
+    assert r.json()["id"] == u["id"]
+
+
+async def test_users_me_with_unknown_organization_header_returns_403(
+    client: AsyncClient,
+    user_factory: UserFactory,
+) -> None:
+    u = await user_factory.build()
+    headers = {
+        **bearer_headers(user_id=u["id"]),
+        **organization_headers(organization_id=uuid4()),
+    }
+    r = await client.get("/users/me", headers=headers)
+    assert r.status_code == 403
+    assert r.json()["detail"] == "Forbidden"
 
 
 async def test_products_with_api_key(

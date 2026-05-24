@@ -16,7 +16,10 @@ OPENAPI_TAGS: list[dict[str, str]] = [
     },
     {
         "name": "products",
-        "description": "Product catalog CRUD protected with JWT Bearer **or** organization `X-API-Key`.",
+        "description": (
+            "Product catalog CRUD protected with JWT Bearer **or** organization `X-API-Key`. "
+            "JWT requests must also send `X-Organization-Id` for a membership the user belongs to."
+        ),
     },
     {
         "name": "organizations",
