@@ -13,7 +13,7 @@ import {
   backofficeUser,
 } from './config/navigation'
 import { LoginPage } from './pages/login'
-import { PlaceholderPage } from './pages/placeholder-page'
+import { ProductListPage } from './pages/product/list'
 
 function RootLayout() {
   return <Outlet />
@@ -50,58 +50,15 @@ const appLayoutRoute = createRoute({
   component: BackofficeLayout,
 })
 
-const dashboardRoute = createRoute({
+const productsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
-  path: '/',
-  component: () => (
-    <PlaceholderPage
-      title="Dashboard"
-      description="Vista general del portal de proveedores."
-    />
-  ),
-})
-
-const catalogRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/catalog',
-  component: () => (
-    <PlaceholderPage
-      title="Catálogo"
-      description="Gestión de productos y categorías del proveedor."
-    />
-  ),
-})
-
-const settingsRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/settings',
-  component: () => (
-    <PlaceholderPage
-      title="Configuración"
-      description="Preferencias y ajustes del portal."
-    />
-  ),
-})
-
-const supportRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/support',
-  component: () => (
-    <PlaceholderPage
-      title="Soporte"
-      description="Ayuda y contacto con el equipo Broker."
-    />
-  ),
+  path: '/products',
+  component: ProductListPage,
 })
 
 const routeTree = rootRoute.addChildren([
   loginRoute,
-  appLayoutRoute.addChildren([
-    dashboardRoute,
-    catalogRoute,
-    settingsRoute,
-    supportRoute,
-  ]),
+  appLayoutRoute.addChildren([productsRoute]),
 ])
 
 export const router = createRouter({ routeTree })

@@ -15,7 +15,7 @@ export const backofficeBrand: SidebarBrand = {
 
 export const backofficeNavItems: NavItem[] = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-  { to: '/catalog', label: 'Catálogo', icon: Package },
+  { to: '/products', label: 'Catálogo', icon: Package },
 ]
 
 export const backofficeBottomItems: NavItem[] = [
