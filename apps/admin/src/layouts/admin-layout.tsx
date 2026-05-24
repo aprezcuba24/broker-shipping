@@ -1,14 +1,20 @@
-import { AppLayout } from '@broker/ui'
+import { useAuth } from '@broker/api'
+import { AppLayout, initialsFromUsername } from '@broker/ui'
 import { useNavigate } from 'react-router-dom'
 import {
   adminBottomItems,
   adminBrand,
   adminNavItems,
-  adminUser,
 } from '../config/navigation'
 
 export function AdminLayout() {
   const navigate = useNavigate()
+  const { user, logout } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+    void navigate('/login')
+  }
 
   return (
     <AppLayout
@@ -16,8 +22,16 @@ export function AdminLayout() {
       navItems={adminNavItems}
       bottomItems={adminBottomItems}
       brand={adminBrand}
-      user={adminUser}
-      onLogout={() => navigate('/login')}
+      user={
+        user
+          ? {
+              name: user.username,
+              role: 'Acceso global',
+              initials: initialsFromUsername(user.username),
+            }
+          : undefined
+      }
+      onLogout={handleLogout}
     />
   )
 }

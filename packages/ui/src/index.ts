@@ -1,4 +1,8 @@
 export { cn } from './lib/utils'
+export { initialsFromUsername } from './lib/initials'
+
+export { LoginForm } from './components/auth/login-form'
+export type { LoginFields, LoginFormProps } from './components/auth/login-form'
 
 export { Button, buttonVariants } from './components/ui/button'
 export {

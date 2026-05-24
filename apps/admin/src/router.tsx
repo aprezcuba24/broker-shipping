@@ -1,3 +1,4 @@
+import { RequireAuth } from '@broker/api'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AdminLayout } from './layouts/admin-layout'
 import { LoginPage } from './pages/login'
@@ -8,7 +9,13 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route element={<AdminLayout />}>
+        <Route
+          element={
+            <RequireAuth loginPath="/login">
+              <AdminLayout />
+            </RequireAuth>
+          }
+        >
           <Route path="/organizations" element={<OrganizationListPage />} />
         </Route>
       </Routes>

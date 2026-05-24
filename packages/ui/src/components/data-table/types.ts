@@ -1,12 +1,14 @@
 import type { ReactNode } from 'react'
 
-export enum ColumnType {
-  Text = 'text',
-  Date = 'date',
-  DateTime = 'datetime',
-  Number = 'number',
-  Boolean = 'boolean',
-}
+export const ColumnType = {
+  Text: 'text',
+  Date: 'date',
+  DateTime: 'datetime',
+  Number: 'number',
+  Boolean: 'boolean',
+} as const
+
+export type ColumnType = (typeof ColumnType)[keyof typeof ColumnType]
 
 export type ColumnDef<TData> = {
   id: string

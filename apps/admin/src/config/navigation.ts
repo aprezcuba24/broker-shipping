@@ -23,9 +23,3 @@ export const adminBottomItems: NavItem[] = [
   { to: '/settings', label: 'Configuración', icon: Settings },
   { to: '/support', label: 'Soporte', icon: HelpCircle },
 ]
-
-export const adminUser = {
-  name: 'Administrador',
-  role: 'Acceso global',
-  initials: 'A',
-}

@@ -22,9 +22,3 @@ export const backofficeBottomItems: NavItem[] = [
   { to: '/settings', label: 'Configuración', icon: Settings },
   { to: '/support', label: 'Soporte', icon: HelpCircle },
 ]
-
-export const backofficeUser = {
-  name: 'Proveedor',
-  role: 'Portal B2B',
-  initials: 'P',
-}

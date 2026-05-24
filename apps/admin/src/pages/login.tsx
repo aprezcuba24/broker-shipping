@@ -1,56 +1,22 @@
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Input,
-} from '@broker/ui'
+import { loginSchema, useAuth } from '@broker/api'
+import { LoginForm } from '@broker/ui'
 import { useNavigate } from 'react-router-dom'
-import { useState } from 'react'
 
 export function LoginPage() {
   const navigate = useNavigate()
-  const [password, setPassword] = useState('')
-
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault()
-    void navigate('/')
-  }
+  const { login, isLoggingIn, loginError } = useAuth()
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md border-border shadow-lg">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-headline">Broker</CardTitle>
-          <CardDescription>
-            Administración global. Introduce la contraseña para continuar.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <label
-                htmlFor="password"
-                className="text-sm font-medium text-foreground"
-              >
-                Contraseña
-              </label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-              />
-            </div>
-            <Button type="submit" className="w-full">
-              Entrar
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+    <LoginForm
+      title="Broker"
+      description="Administración global. Introduce tus credenciales para continuar."
+      schema={loginSchema}
+      isSubmitting={isLoggingIn}
+      error={loginError}
+      onSubmit={async (values) => {
+        await login(values)
+        void navigate('/organizations')
+      }}
+    />
   )
 }
