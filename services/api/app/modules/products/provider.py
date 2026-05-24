@@ -3,8 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.lib.event_dispatcher import EventDispatcher
 from app.lib.post_commit import PostCommitQueue
-from app.modules.products.repositories import ProductRepository
-from app.modules.products.services import ProductService
+from app.modules.products.repositories import CategoryRepository, ProductRepository
+from app.modules.products.services import CategoryService, ProductService
 
 
 class ProductsProvider(Provider):
@@ -26,3 +26,11 @@ class ProductsProvider(Provider):
             dispatcher=dispatcher,
             post_commit=post_commit,
         )
+
+    @provide
+    def category_repository(self, session: AsyncSession) -> CategoryRepository:
+        return CategoryRepository(session)
+
+    @provide
+    def category_service(self, repo: CategoryRepository) -> CategoryService:
+        return CategoryService(repository=repo)
