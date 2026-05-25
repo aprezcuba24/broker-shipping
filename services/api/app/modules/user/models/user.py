@@ -20,6 +20,7 @@ class User(UserBase, table=True):
     )
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     password_hash: str = Field(max_length=255)
+    is_super_admin: bool = Field(default=False)
     created_at: datetime = Field(default_factory=utc_now)
 
 

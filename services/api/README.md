@@ -14,6 +14,20 @@ Con la API levantada en `localhost` y puerto **8000** (por ejemplo `pnpm dev:api
 
 Ejemplo rápido: `curl -s http://localhost:8000/openapi.json | head`.
 
+## Contrato para el frontend (RPC / orval)
+
+Sin levantar el servidor, exporta el esquema a `packages/api/openapi.json`:
+
+```bash
+# Desde la raíz del monorepo
+pnpm rpc:schema
+
+# O desde services/api
+uv run python scripts/export_openapi.py
+```
+
+Luego genera el cliente TypeScript: `pnpm rpc:client` o `pnpm rpc` (ambos pasos).
+
 ## Configuración
 
 Toda la configuración local compartida vive en el `.env` de la **raíz del monorepo** (mismo fichero que usa Docker Compose). La clase [`app/config.py`](app/config.py) construye `database_url`, `database_url_sync` y `redis_url` a partir de `POSTGRES_*`, `REDIS_*`, etc.
