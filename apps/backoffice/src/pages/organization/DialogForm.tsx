@@ -18,6 +18,7 @@ export type DialogFormProps = {
   ButtonModalProps,
   | 'onAccept'
   | 'onCancel'
+  | 'onSubmit'
   | 'isLoading'
   | 'open'
   | 'onOpenChange'

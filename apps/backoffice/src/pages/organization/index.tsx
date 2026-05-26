@@ -1,5 +1,6 @@
-import { Button, ConfirmDialog, HeaderPage } from '@broker/ui'
+import { ConfirmDialog, HeaderPage } from '@broker/ui'
 import { Building2, Plus } from 'lucide-react'
+import { DialogForm } from './DialogForm'
 import { OrganizationList } from './list'
 import { OrganizationFormModal } from './modal'
 import { useOrganizations } from './use-organizations'
@@ -11,15 +12,17 @@ export function OrganizationPage() {
     page,
     setPage,
     modalOpen,
-    modalMode,
     editingOrg,
     deleteTarget,
     formError,
+    createFormKey,
+    isCreating,
     isSubmitting,
     isDeleting,
-    openCreate,
     openEdit,
     closeModal,
+    submitCreate,
+    resetCreateForm,
     submitForm,
     requestDelete,
     cancelDelete,
@@ -27,7 +30,7 @@ export function OrganizationPage() {
   } = useOrganizations()
 
   const formDefaults = {
-    name: modalMode === 'edit' && editingOrg ? editingOrg.name : '',
+    name: editingOrg?.name ?? '',
   }
 
   return (
@@ -37,10 +40,19 @@ export function OrganizationPage() {
         description="Gestiona las organizaciones a las que tienes acceso."
         icon={Building2}
       >
-        <Button
+        <DialogForm
           label="Nueva organización"
           icon={Plus}
-          onClick={openCreate}
+          title="Nueva organización"
+          acceptLabel="Crear"
+          defaultValues={{ name: '' }}
+          formKey={String(createFormKey)}
+          onSubmit={submitCreate}
+          isSubmitting={isCreating}
+          error={formError}
+          onOpenChange={(open) => {
+            if (!open) resetCreateForm()
+          }}
         />
       </HeaderPage>
 
@@ -53,18 +65,20 @@ export function OrganizationPage() {
         onDelete={requestDelete}
       />
 
-      <OrganizationFormModal
-        open={modalOpen}
-        onOpenChange={(open) => {
-          if (!open) closeModal()
-        }}
-        mode={modalMode}
-        organizationId={editingOrg?.id}
-        defaultValues={formDefaults}
-        onSubmit={submitForm}
-        isSubmitting={isSubmitting}
-        error={formError}
-      />
+      {modalOpen && editingOrg && (
+        <OrganizationFormModal
+          open={modalOpen}
+          onOpenChange={(open) => {
+            if (!open) closeModal()
+          }}
+          mode="edit"
+          organizationId={editingOrg.id}
+          defaultValues={formDefaults}
+          onSubmit={submitForm}
+          isSubmitting={isSubmitting}
+          error={formError}
+        />
+      )}
 
       <ConfirmDialog
         open={deleteTarget !== null}

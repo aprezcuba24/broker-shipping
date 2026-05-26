@@ -18,10 +18,10 @@ export function useOrganizations() {
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [modalOpen, setModalOpen] = useState(false)
-  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
   const [editingOrg, setEditingOrg] = useState<Organization | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Organization | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
+  const [createFormKey, setCreateFormKey] = useState(0)
 
   const { data: organizations = [], isLoading } = useListOrganizationsOrganizationsGet()
 
@@ -35,7 +35,6 @@ export function useOrganizations() {
     mutation: {
       onSuccess: () => {
         invalidateList()
-        setModalOpen(false)
         setFormError(null)
       },
       onError: (error) => {
@@ -67,19 +66,24 @@ export function useOrganizations() {
     },
   })
 
-  const openCreate = useCallback(() => {
-    setFormError(null)
-    setEditingOrg(null)
-    setModalMode('create')
-    setModalOpen(true)
-  }, [])
-
   const openEdit = useCallback((org: Organization) => {
     setFormError(null)
     setEditingOrg(org)
-    setModalMode('edit')
     setModalOpen(true)
   }, [])
+
+  const resetCreateForm = useCallback(() => {
+    setFormError(null)
+    setCreateFormKey((key) => key + 1)
+  }, [])
+
+  const submitCreate = useCallback(
+    async (values: OrganizationFormValues) => {
+      setFormError(null)
+      await createMutation.mutateAsync({ data: { name: values.name } })
+    },
+    [createMutation],
+  )
 
   const closeModal = useCallback(() => {
     setModalOpen(false)
@@ -90,17 +94,13 @@ export function useOrganizations() {
   const submitForm = useCallback(
     (values: OrganizationFormValues) => {
       setFormError(null)
-      if (modalMode === 'create') {
-        createMutation.mutate({ data: { name: values.name } })
-        return
-      }
       if (!editingOrg?.id) return
       patchMutation.mutate({
         organizationId: editingOrg.id,
         data: { name: values.name },
       })
     },
-    [modalMode, editingOrg, createMutation, patchMutation],
+    [editingOrg, patchMutation],
   )
 
   const requestDelete = useCallback((org: Organization) => {
@@ -116,23 +116,23 @@ export function useOrganizations() {
     deleteMutation.mutate({ organizationId: deleteTarget.id })
   }, [deleteTarget, deleteMutation])
 
-  const isSubmitting = createMutation.isPending || patchMutation.isPending
-
   return {
     organizations,
     isLoading,
     page,
     setPage,
     modalOpen,
-    modalMode,
     editingOrg,
     deleteTarget,
     formError,
-    isSubmitting,
+    createFormKey,
+    isCreating: createMutation.isPending,
+    isSubmitting: patchMutation.isPending,
     isDeleting: deleteMutation.isPending,
-    openCreate,
     openEdit,
     closeModal,
+    submitCreate,
+    resetCreateForm,
     submitForm,
     requestDelete,
     cancelDelete,
