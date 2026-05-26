@@ -1,24 +1,10 @@
 import type { Organization } from '@broker/api'
-import { BtnConfirm, DataTable, type ColumnDef } from '@broker/ui'
+import { BtnConfirm, BtnList, DataTable, type ColumnDef } from '@broker/ui'
 import { Pencil, Trash2 } from 'lucide-react'
-import { useMemo } from 'react'
 import { DialogForm } from './DialogForm'
 import { useOrganizations } from './organizations-context'
 
-const PAGE_SIZE = 10
-
-export type OrganizationListProps = {
-  organizations: Organization[]
-  isLoading: boolean
-  page: number
-  onPageChange: (page: number) => void
-}
-
-type OrganizationRowActionsProps = {
-  organization: Organization
-}
-
-function OrganizationRowActions({ organization }: OrganizationRowActionsProps) {
+function OrganizationRowActions({ organization }: { organization: Organization }) {
   const {
     submitEdit,
     clearFormError,
@@ -29,7 +15,7 @@ function OrganizationRowActions({ organization }: OrganizationRowActionsProps) {
   } = useOrganizations()
 
   return (
-    <div className="flex justify-end gap-1">
+    <BtnList>
       <DialogForm
         icon={Pencil}
         label=""
@@ -61,7 +47,7 @@ function OrganizationRowActions({ organization }: OrganizationRowActionsProps) {
       >
         <Trash2 className="h-4 w-4 text-destructive" />
       </BtnConfirm>
-    </div>
+    </BtnList>
   )
 }
 
@@ -77,30 +63,16 @@ const columns: ColumnDef<Organization>[] = [
   },
 ]
 
-export function OrganizationList({
-  organizations,
-  isLoading,
-  page,
-  onPageChange,
-}: OrganizationListProps) {
-  const total = organizations.length
-  const pageData = useMemo(
-    () => organizations.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
-    [organizations, page],
-  )
+export function OrganizationList() {
+  const { organizations, isLoading, page, setPage } = useOrganizations()
 
   return (
     <DataTable
       columns={columns}
-      data={pageData}
+      data={organizations}
       isLoading={isLoading}
       getRowId={(row) => row.id!}
-      pagination={{
-        page,
-        pageSize: PAGE_SIZE,
-        total,
-        onPageChange,
-      }}
+      pagination={{ page, onPageChange: setPage }}
       emptyMessage="No hay organizaciones registradas"
     />
   )

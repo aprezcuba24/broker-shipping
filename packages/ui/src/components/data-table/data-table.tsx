@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import { cn } from '../../lib/utils'
 import {
   Table,
@@ -10,6 +12,8 @@ import {
 import { formatCellValue, inferColumnType } from './formatters'
 import { DataTablePaginationBar } from './pagination'
 import type { ColumnDef, DataTableProps } from './types'
+
+const PAGE_SIZE = 10
 
 const alignClassName = {
   left: 'text-left',
@@ -70,7 +74,25 @@ export function DataTable<TData>({
   emptyMessage = 'No hay datos',
   className,
 }: DataTableProps<TData>) {
-  const showEmptyState = !isLoading && data.length === 0
+  const isClientPagination = pagination.total === undefined
+  const total = pagination.total ?? data.length
+  const pageSize = pagination.pageSize ?? PAGE_SIZE
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const safePage = Math.min(Math.max(pagination.page, 1), totalPages)
+  const pageData = useMemo(() => {
+    if (!isClientPagination) {
+      return data
+    }
+
+    const start = (safePage - 1) * pageSize
+    return data.slice(start, start + pageSize)
+  }, [data, isClientPagination, pageSize, safePage])
+  const paginationBar = {
+    ...pagination,
+    page: safePage,
+    total,
+  }
+  const showEmptyState = !isLoading && total === 0
 
   return (
     <div className={cn('rounded-md border border-border bg-card', className)}>
@@ -103,7 +125,7 @@ export function DataTable<TData>({
               </TableCell>
             </TableRow>
           ) : (
-            data.map((row, index) => (
+            pageData.map((row, index) => (
               <TableRow key={resolveRowId(row, index, getRowId)}>
                 {columns.map((column) => (
                   <TableCell
@@ -121,7 +143,7 @@ export function DataTable<TData>({
           )}
         </TableBody>
       </Table>
-      <DataTablePaginationBar {...pagination} />
+      <DataTablePaginationBar {...paginationBar} />
     </div>
   )
 }

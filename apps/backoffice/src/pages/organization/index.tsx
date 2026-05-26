@@ -17,10 +17,6 @@ export function OrganizationPage() {
 
 function OrganizationPageContent() {
   const {
-    organizations,
-    isLoading,
-    page,
-    setPage,
     formError,
     createFormKey,
     isCreating,
@@ -51,12 +47,7 @@ function OrganizationPageContent() {
         />
       </HeaderPage>
 
-      <OrganizationList
-        organizations={organizations}
-        isLoading={isLoading}
-        page={page}
-        onPageChange={setPage}
-      />
+      <OrganizationList />
     </div>
   )
 }

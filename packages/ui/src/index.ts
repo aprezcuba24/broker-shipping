@@ -16,6 +16,8 @@ export { ButtonModal } from './components/button-modal'
 export type { ButtonModalProps } from './components/button-modal'
 export { BtnConfirm } from './components/btn-confirm'
 export type { BtnConfirmProps } from './components/btn-confirm'
+export { BtnList } from './components/btn-list'
+export type { BtnListProps } from './components/btn-list'
 export { buttonVariants } from './components/ui/button'
 export {
   Card,

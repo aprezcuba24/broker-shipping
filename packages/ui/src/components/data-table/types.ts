@@ -22,8 +22,8 @@ export type ColumnDef<TData> = {
 
 export type DataTablePagination = {
   page: number
-  pageSize: number
-  total: number
+  pageSize?: number
+  total?: number
   onPageChange: (page: number) => void
   onPageSizeChange?: (pageSize: number) => void
 }
