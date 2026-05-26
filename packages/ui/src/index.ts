@@ -14,6 +14,13 @@ export { Button } from './components/button'
 export type { ButtonProps } from './components/button'
 export { ButtonModal } from './components/button-modal'
 export type { ButtonModalProps } from './components/button-modal'
+export { FormModal } from './components/form-modal'
+export type {
+  FormModalFormProps,
+  FormModalHandle,
+  FormModalProps,
+} from './components/form-modal'
+export { useFormSubmitHandle } from './hooks/use-form-submit-handle'
 export { BtnConfirm } from './components/btn-confirm'
 export type { BtnConfirmProps } from './components/btn-confirm'
 export { BtnList } from './components/btn-list'

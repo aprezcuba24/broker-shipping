@@ -1,19 +1,13 @@
-import { Input, Label } from '@broker/ui'
+import {
+  Input,
+  Label,
+  useFormSubmitHandle,
+  type FormModalFormProps,
+} from '@broker/ui'
 import { useForm } from 'react-hook-form'
-import { useImperativeHandle } from 'react'
 import type { OrganizationFormValues } from './organizations-context'
 
-export type OrganizationFormHandle = {
-  submit: () => Promise<void>
-}
-
-export type OrganizationFormProps = {
-  ref?: React.Ref<OrganizationFormHandle>
-  defaultValues?: OrganizationFormValues
-  onSubmit: (values: OrganizationFormValues) => void | Promise<void>
-  isSubmitting?: boolean
-  error?: string | null
-}
+export type OrganizationFormProps = FormModalFormProps<OrganizationFormValues>
 
 export function OrganizationForm({
   ref,
@@ -30,12 +24,7 @@ export function OrganizationForm({
     defaultValues,
   })
 
-  useImperativeHandle(ref, () => ({
-    submit: () =>
-      handleSubmit(onSubmit, () => {
-        throw new Error('validation')
-      })(),
-  }))
+  useFormSubmitHandle(ref, handleSubmit, onSubmit)
 
   return (
     <form
