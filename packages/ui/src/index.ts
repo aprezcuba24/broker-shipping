@@ -4,6 +4,9 @@ export { initialsFromUsername } from './lib/initials'
 export { LoginForm } from './components/auth/login-form'
 export type { LoginFields, LoginFormProps } from './components/auth/login-form'
 
+export { ConfirmDialog } from './components/confirm-dialog'
+export type { ConfirmDialogProps } from './components/confirm-dialog'
+
 export { Button, buttonVariants } from './components/ui/button'
 export {
   Card,

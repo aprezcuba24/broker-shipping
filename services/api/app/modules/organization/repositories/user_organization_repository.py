@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from app.lib.persistence import Resource
 from app.modules.organization.models import UserOrganization
@@ -29,3 +29,11 @@ class UserOrganizationRepository(Resource[UserOrganization]):
             ),
         )
         return result.scalar_one_or_none() is not None
+
+    async def delete_memberships_for_organization(self, organization_id: UUID) -> None:
+        await self._session.execute(
+            delete(UserOrganization).where(
+                UserOrganization.organization_id == organization_id,
+            ),
+        )
+        await self._session.flush()

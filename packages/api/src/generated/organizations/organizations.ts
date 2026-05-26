@@ -29,7 +29,8 @@ import type {
   ApiKeyCreatedResponse,
   ApiKeyPublic,
   HTTPValidationError,
-  Organization
+  Organization,
+  PatchOrganizationOrganizationsOrganizationIdPatchBody
 } from '.././models';
 
 import { brokerFetch } from '../../client';
@@ -192,6 +193,131 @@ export const useCreateOrganizationOrganizationsPost = <TError = HTTPValidationEr
       > => {
 
       const mutationOptions = getCreateOrganizationOrganizationsPostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Patch Organization
+ */
+export const patchOrganizationOrganizationsOrganizationIdPatch = (
+    organizationId: string,
+    patchOrganizationOrganizationsOrganizationIdPatchBody: PatchOrganizationOrganizationsOrganizationIdPatchBody,
+ options?: SecondParameter<typeof brokerFetch>,) => {
+      
+      
+      return brokerFetch<Organization>(
+      {url: `/organizations/${organizationId}`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: patchOrganizationOrganizationsOrganizationIdPatchBody
+    },
+      options);
+    }
+  
+
+
+export const getPatchOrganizationOrganizationsOrganizationIdPatchMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchOrganizationOrganizationsOrganizationIdPatch>>, TError,{organizationId: string;data: PatchOrganizationOrganizationsOrganizationIdPatchBody}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof patchOrganizationOrganizationsOrganizationIdPatch>>, TError,{organizationId: string;data: PatchOrganizationOrganizationsOrganizationIdPatchBody}, TContext> => {
+
+const mutationKey = ['patchOrganizationOrganizationsOrganizationIdPatch'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchOrganizationOrganizationsOrganizationIdPatch>>, {organizationId: string;data: PatchOrganizationOrganizationsOrganizationIdPatchBody}> = (props) => {
+          const {organizationId,data} = props ?? {};
+
+          return  patchOrganizationOrganizationsOrganizationIdPatch(organizationId,data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PatchOrganizationOrganizationsOrganizationIdPatchMutationResult = NonNullable<Awaited<ReturnType<typeof patchOrganizationOrganizationsOrganizationIdPatch>>>
+    export type PatchOrganizationOrganizationsOrganizationIdPatchMutationBody = PatchOrganizationOrganizationsOrganizationIdPatchBody
+    export type PatchOrganizationOrganizationsOrganizationIdPatchMutationError = HTTPValidationError
+
+    /**
+ * @summary Patch Organization
+ */
+export const usePatchOrganizationOrganizationsOrganizationIdPatch = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchOrganizationOrganizationsOrganizationIdPatch>>, TError,{organizationId: string;data: PatchOrganizationOrganizationsOrganizationIdPatchBody}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof patchOrganizationOrganizationsOrganizationIdPatch>>,
+        TError,
+        {organizationId: string;data: PatchOrganizationOrganizationsOrganizationIdPatchBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPatchOrganizationOrganizationsOrganizationIdPatchMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Delete Organization
+ */
+export const deleteOrganizationOrganizationsOrganizationIdDelete = (
+    organizationId: string,
+ options?: SecondParameter<typeof brokerFetch>,) => {
+      
+      
+      return brokerFetch<void>(
+      {url: `/organizations/${organizationId}`, method: 'DELETE'
+    },
+      options);
+    }
+  
+
+
+export const getDeleteOrganizationOrganizationsOrganizationIdDeleteMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteOrganizationOrganizationsOrganizationIdDelete>>, TError,{organizationId: string}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteOrganizationOrganizationsOrganizationIdDelete>>, TError,{organizationId: string}, TContext> => {
+
+const mutationKey = ['deleteOrganizationOrganizationsOrganizationIdDelete'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteOrganizationOrganizationsOrganizationIdDelete>>, {organizationId: string}> = (props) => {
+          const {organizationId} = props ?? {};
+
+          return  deleteOrganizationOrganizationsOrganizationIdDelete(organizationId,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteOrganizationOrganizationsOrganizationIdDeleteMutationResult = NonNullable<Awaited<ReturnType<typeof deleteOrganizationOrganizationsOrganizationIdDelete>>>
+    
+    export type DeleteOrganizationOrganizationsOrganizationIdDeleteMutationError = HTTPValidationError
+
+    /**
+ * @summary Delete Organization
+ */
+export const useDeleteOrganizationOrganizationsOrganizationIdDelete = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteOrganizationOrganizationsOrganizationIdDelete>>, TError,{organizationId: string}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteOrganizationOrganizationsOrganizationIdDelete>>,
+        TError,
+        {organizationId: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteOrganizationOrganizationsOrganizationIdDeleteMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

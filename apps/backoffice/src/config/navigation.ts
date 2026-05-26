@@ -1,4 +1,5 @@
 import {
+  Building2,
   HelpCircle,
   LayoutDashboard,
   Package,
@@ -16,6 +17,7 @@ export const backofficeBrand: SidebarBrand = {
 export const backofficeNavItems: NavItem[] = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { to: '/products', label: 'Catálogo', icon: Package },
+  { to: '/organizations', label: 'Organizaciones', icon: Building2 },
 ]
 
 export const backofficeBottomItems: NavItem[] = [

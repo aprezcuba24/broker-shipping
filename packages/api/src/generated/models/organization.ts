@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { OrganizationUpdatedAt } from './organizationUpdatedAt';
+import type { OrganizationDeletedAt } from './organizationDeletedAt';
 
 export interface Organization {
   id?: string;
@@ -13,4 +14,5 @@ export interface Organization {
   updated_at?: OrganizationUpdatedAt;
   /** @maxLength 255 */
   name: string;
+  deleted_at?: OrganizationDeletedAt;
 }
