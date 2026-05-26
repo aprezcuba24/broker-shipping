@@ -37,10 +37,11 @@ export function OrganizationPage() {
         description="Gestiona las organizaciones a las que tienes acceso."
         icon={Building2}
       >
-        <Button type="button" onClick={openCreate}>
-          <Plus className="h-4 w-4" />
-          Nueva organización
-        </Button>
+        <Button
+          label="Nueva organización"
+          icon={Plus}
+          onClick={openCreate}
+        />
       </HeaderPage>
 
       <OrganizationList
@@ -71,11 +72,7 @@ export function OrganizationPage() {
           if (!open) cancelDelete()
         }}
         title="Eliminar organización"
-        description={
-          deleteTarget
-            ? `¿Seguro que deseas eliminar «${deleteTarget.name}»? Esta acción no se puede deshacer.`
-            : ''
-        }
+        description={`¿Seguro que deseas eliminar «${deleteTarget?.name}»? Esta acción no se puede deshacer.`}
         confirmLabel="Eliminar"
         variant="destructive"
         onConfirm={confirmDelete}

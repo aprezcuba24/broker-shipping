@@ -10,7 +10,9 @@ export type { ConfirmDialogProps } from './components/confirm-dialog'
 export { HeaderPage } from './components/header-page'
 export type { HeaderPageProps } from './components/header-page'
 
-export { Button, buttonVariants } from './components/ui/button'
+export { Button } from './components/button'
+export type { ButtonProps } from './components/button'
+export { buttonVariants } from './components/ui/button'
 export {
   Card,
   CardHeader,
