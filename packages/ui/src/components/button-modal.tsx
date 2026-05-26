@@ -15,7 +15,7 @@ export type ButtonModalProps = {
   title: string
   cancelLabel?: string
   acceptLabel?: string
-  onAccept?: () => void
+  onAccept?: () => void | Promise<void>
   onCancel?: () => void
   isLoading?: boolean
   open?: boolean
@@ -47,10 +47,14 @@ export function ButtonModal({
     [isControlled, onOpenChange]
   )
 
-  const handleAccept = React.useCallback(() => {
+  const handleAccept = React.useCallback(async () => {
     if (isLoading) return
-    onAccept?.()
-    setOpen(false)
+    try {
+      await onAccept?.()
+      setOpen(false)
+    } catch {
+      // Validación o error del handler: mantener el modal abierto
+    }
   }, [isLoading, onAccept, setOpen])
 
   const handleCancel = React.useCallback(() => {

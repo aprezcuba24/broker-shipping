@@ -1,21 +1,26 @@
-import { Button, Input, Label } from '@broker/ui'
+import { Input, Label } from '@broker/ui'
 import { useForm } from 'react-hook-form'
+import { useImperativeHandle } from 'react'
 import type { OrganizationFormValues } from './use-organizations'
 
+export type OrganizationFormHandle = {
+  submit: () => Promise<void>
+}
+
 export type OrganizationFormProps = {
+  ref?: React.Ref<OrganizationFormHandle>
   defaultValues?: OrganizationFormValues
-  onSubmit: (values: OrganizationFormValues) => void
+  onSubmit: (values: OrganizationFormValues) => void | Promise<void>
   isSubmitting?: boolean
   error?: string | null
-  submitLabel: string
 }
 
 export function OrganizationForm({
+  ref,
   defaultValues = { name: '' },
   onSubmit,
   isSubmitting = false,
   error = null,
-  submitLabel,
 }: OrganizationFormProps) {
   const {
     register,
@@ -25,8 +30,18 @@ export function OrganizationForm({
     defaultValues,
   })
 
+  useImperativeHandle(ref, () => ({
+    submit: () =>
+      handleSubmit(onSubmit, () => {
+        throw new Error('validation')
+      })(),
+  }))
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form
+      className="space-y-4"
+      onSubmit={(event) => event.preventDefault()}
+    >
       <div className="space-y-2">
         <Label htmlFor="organization-name">Nombre</Label>
         <Input
@@ -44,12 +59,6 @@ export function OrganizationForm({
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
-
-      <div className="flex justify-end gap-2">
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Guardando…' : submitLabel}
-        </Button>
-      </div>
     </form>
   )
 }
