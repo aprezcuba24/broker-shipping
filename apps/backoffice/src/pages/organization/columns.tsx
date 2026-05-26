@@ -1,5 +1,5 @@
 import type { Organization } from '@broker/api'
-import { BtnConfirm, BtnList, DataTable, type ColumnDef } from '@broker/ui'
+import { BtnConfirm, BtnList, type ColumnDef } from '@broker/ui'
 import { Pencil, Trash2 } from 'lucide-react'
 import { DialogForm } from './DialogForm'
 import { useOrganizations } from './organizations-context'
@@ -51,7 +51,7 @@ function OrganizationRowActions({ organization }: { organization: Organization }
   )
 }
 
-const columns: ColumnDef<Organization>[] = [
+export const columns: ColumnDef<Organization>[] = [
   { id: 'name', header: 'Nombre', accessor: 'name' },
   { id: 'created_at', header: 'Creado', accessor: 'created_at' },
   { id: 'updated_at', header: 'Actualizado', accessor: 'updated_at' },
@@ -62,18 +62,3 @@ const columns: ColumnDef<Organization>[] = [
     cell: (row) => <OrganizationRowActions organization={row} />,
   },
 ]
-
-export function OrganizationList() {
-  const { organizations, isLoading, page, setPage } = useOrganizations()
-
-  return (
-    <DataTable
-      columns={columns}
-      data={organizations}
-      isLoading={isLoading}
-      getRowId={(row) => row.id!}
-      pagination={{ page, onPageChange: setPage }}
-      emptyMessage="No hay organizaciones registradas"
-    />
-  )
-}

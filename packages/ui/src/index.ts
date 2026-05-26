@@ -9,6 +9,8 @@ export type { ConfirmDialogProps } from './components/confirm-dialog'
 
 export { HeaderPage } from './components/header-page'
 export type { HeaderPageProps } from './components/header-page'
+export { PageWrapper } from './components/page-wrapper'
+export type { PageWrapperProps } from './components/page-wrapper'
 
 export { Button } from './components/button'
 export type { ButtonProps } from './components/button'
