@@ -2,9 +2,20 @@ import { HeaderPage } from '@broker/ui'
 import { Building2, Plus } from 'lucide-react'
 import { DialogForm } from './DialogForm'
 import { OrganizationList } from './list'
-import { useOrganizations } from './use-organizations'
+import {
+  OrganizationsProvider,
+  useOrganizations,
+} from './organizations-context'
 
 export function OrganizationPage() {
+  return (
+    <OrganizationsProvider>
+      <OrganizationPageContent />
+    </OrganizationsProvider>
+  )
+}
+
+function OrganizationPageContent() {
   const {
     organizations,
     isLoading,
@@ -13,13 +24,8 @@ export function OrganizationPage() {
     formError,
     createFormKey,
     isCreating,
-    isSubmitting,
-    isDeleting,
     submitCreate,
     resetCreateForm,
-    submitEdit,
-    clearFormError,
-    deleteOrganization,
   } = useOrganizations()
 
   return (
@@ -50,12 +56,6 @@ export function OrganizationPage() {
         isLoading={isLoading}
         page={page}
         onPageChange={setPage}
-        onSubmitEdit={submitEdit}
-        isSubmitting={isSubmitting}
-        formError={formError}
-        onEditClose={clearFormError}
-        onDelete={deleteOrganization}
-        isDeleting={isDeleting}
       />
     </div>
   )

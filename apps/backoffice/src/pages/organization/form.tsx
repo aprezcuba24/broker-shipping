@@ -1,7 +1,7 @@
 import { Input, Label } from '@broker/ui'
 import { useForm } from 'react-hook-form'
 import { useImperativeHandle } from 'react'
-import type { OrganizationFormValues } from './use-organizations'
+import type { OrganizationFormValues } from './organizations-context'
 
 export type OrganizationFormHandle = {
   submit: () => Promise<void>

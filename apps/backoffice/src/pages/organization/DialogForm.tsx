@@ -4,7 +4,7 @@ import {
   OrganizationForm,
   type OrganizationFormHandle,
 } from './form'
-import type { OrganizationFormValues } from './use-organizations'
+import type { OrganizationFormValues } from './organizations-context'
 
 export type DialogFormProps = {
   onSubmit: (values: OrganizationFormValues) => void | Promise<void>

@@ -8,13 +8,39 @@ import {
   type Organization,
 } from '@broker/api'
 import { useQueryClient } from '@tanstack/react-query'
-import { useCallback, useState } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react'
 
 export type OrganizationFormValues = {
   name: string
 }
 
-export function useOrganizations() {
+export type OrganizationsContextValue = {
+  organizations: Organization[]
+  isLoading: boolean
+  page: number
+  setPage: (page: number) => void
+  formError: string | null
+  createFormKey: number
+  isCreating: boolean
+  isSubmitting: boolean
+  isDeleting: boolean
+  submitCreate: (values: OrganizationFormValues) => Promise<void>
+  resetCreateForm: () => void
+  submitEdit: (org: Organization, values: OrganizationFormValues) => Promise<void>
+  clearFormError: () => void
+  deleteOrganization: (org: Organization) => Promise<void>
+}
+
+const OrganizationsContext = createContext<OrganizationsContextValue | null>(null)
+
+function useOrganizationsState(): OrganizationsContextValue {
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [formError, setFormError] = useState<string | null>(null)
@@ -97,20 +123,50 @@ export function useOrganizations() {
     [deleteMutation],
   )
 
-  return {
-    organizations,
-    isLoading,
-    page,
-    setPage,
-    formError,
-    createFormKey,
-    isCreating: createMutation.isPending,
-    isSubmitting: patchMutation.isPending,
-    isDeleting: deleteMutation.isPending,
-    submitCreate,
-    resetCreateForm,
-    submitEdit,
-    clearFormError,
-    deleteOrganization,
+  return useMemo(
+    () => ({
+      organizations,
+      isLoading,
+      page,
+      setPage,
+      formError,
+      createFormKey,
+      isCreating: createMutation.isPending,
+      isSubmitting: patchMutation.isPending,
+      isDeleting: deleteMutation.isPending,
+      submitCreate,
+      resetCreateForm,
+      submitEdit,
+      clearFormError,
+      deleteOrganization,
+    }),
+    [
+      organizations,
+      isLoading,
+      page,
+      formError,
+      createFormKey,
+      createMutation.isPending,
+      patchMutation.isPending,
+      deleteMutation.isPending,
+      submitCreate,
+      resetCreateForm,
+      submitEdit,
+      clearFormError,
+      deleteOrganization,
+    ],
+  )
+}
+
+export function OrganizationsProvider({ children }: { children: ReactNode }) {
+  const value = useOrganizationsState()
+  return <OrganizationsContext value={value}>{children}</OrganizationsContext>
+}
+
+export function useOrganizations(): OrganizationsContextValue {
+  const context = useContext(OrganizationsContext)
+  if (!context) {
+    throw new Error('useOrganizations must be used within OrganizationsProvider')
   }
+  return context
 }
