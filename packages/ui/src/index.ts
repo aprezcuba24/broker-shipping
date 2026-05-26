@@ -12,6 +12,8 @@ export type { HeaderPageProps } from './components/header-page'
 
 export { Button } from './components/button'
 export type { ButtonProps } from './components/button'
+export { ButtonModal } from './components/button-modal'
+export type { ButtonModalProps } from './components/button-modal'
 export { buttonVariants } from './components/ui/button'
 export {
   Card,
