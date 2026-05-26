@@ -1,4 +1,4 @@
-import { Button, ConfirmDialog } from '@broker/ui'
+import { Button, ConfirmDialog, HeaderPage } from '@broker/ui'
 import { Building2, Plus } from 'lucide-react'
 import { OrganizationList } from './list'
 import { OrganizationFormModal } from './modal'
@@ -32,23 +32,16 @@ export function OrganizationPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-muted-foreground" />
-            <h1 className="text-2xl font-headline font-semibold text-foreground">
-              Organizaciones
-            </h1>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Gestiona las organizaciones a las que tienes acceso.
-          </p>
-        </div>
+      <HeaderPage
+        title="Organizaciones"
+        description="Gestiona las organizaciones a las que tienes acceso."
+        icon={Building2}
+      >
         <Button type="button" onClick={openCreate}>
           <Plus className="h-4 w-4" />
           Nueva organización
         </Button>
-      </div>
+      </HeaderPage>
 
       <OrganizationList
         organizations={organizations}

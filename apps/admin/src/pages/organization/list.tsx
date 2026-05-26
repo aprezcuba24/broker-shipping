@@ -1,4 +1,4 @@
-import { DataTable, type ColumnDef } from '@broker/ui'
+import { DataTable, HeaderPage, type ColumnDef } from '@broker/ui'
 import { useMemo, useState } from 'react'
 
 import {
@@ -29,16 +29,10 @@ export function OrganizationListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-headline font-semibold text-foreground">
-            Organizaciones
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Gestiona las organizaciones registradas en la plataforma.
-          </p>
-        </div>
-      </div>
+      <HeaderPage
+        title="Organizaciones"
+        description="Gestiona las organizaciones registradas en la plataforma."
+      />
 
       <DataTable
         columns={columns}

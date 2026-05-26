@@ -7,6 +7,9 @@ export type { LoginFields, LoginFormProps } from './components/auth/login-form'
 export { ConfirmDialog } from './components/confirm-dialog'
 export type { ConfirmDialogProps } from './components/confirm-dialog'
 
+export { HeaderPage } from './components/header-page'
+export type { HeaderPageProps } from './components/header-page'
+
 export { Button, buttonVariants } from './components/ui/button'
 export {
   Card,
