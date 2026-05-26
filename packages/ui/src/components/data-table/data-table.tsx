@@ -21,6 +21,16 @@ const alignClassName = {
   right: 'text-right',
 } as const
 
+const hideOnClassName = {
+  sm: 'hidden sm:table-cell',
+  md: 'hidden md:table-cell',
+  lg: 'hidden lg:table-cell',
+} as const
+
+function columnVisibilityClass<TData>(column: ColumnDef<TData>) {
+  return column.hideOn ? hideOnClassName[column.hideOn] : undefined
+}
+
 function getCellValue<TData>(row: TData, column: ColumnDef<TData>): unknown {
   const key = column.accessor ?? column.id
   return (row as Record<string, unknown>)[key]
@@ -29,7 +39,7 @@ function getCellValue<TData>(row: TData, column: ColumnDef<TData>): unknown {
 function resolveRowId<TData>(
   row: TData,
   index: number,
-  getRowId?: (row: TData) => string
+  getRowId?: (row: TData) => string,
 ): string {
   if (getRowId) {
     return getRowId(row)
@@ -49,14 +59,18 @@ function renderCellContent<TData>(row: TData, column: ColumnDef<TData>) {
   return formatCellValue(value, type)
 }
 
-function LoadingRows({ columnCount }: { columnCount: number }) {
+function LoadingRows<TData>({ columns }: { columns: ColumnDef<TData>[] }) {
   return (
     <>
       {Array.from({ length: 3 }).map((_, rowIndex) => (
         <TableRow key={`loading-${rowIndex}`}>
-          {Array.from({ length: columnCount }).map((__, colIndex) => (
-            <TableCell key={`loading-${rowIndex}-${colIndex}`}>
-              <div className="h-4 w-full max-w-[12rem] animate-pulse rounded bg-muted" />
+          {columns.map((column) => (
+            <TableCell
+              key={`loading-${rowIndex}-${column.id}`}
+              data-column={column.id}
+              className={cn(columnVisibilityClass(column), column.className)}
+            >
+              <div className="h-3.5 w-full max-w-[12rem] animate-pulse rounded bg-muted" />
             </TableCell>
           ))}
         </TableRow>
@@ -95,16 +109,18 @@ export function DataTable<TData>({
   const showEmptyState = !isLoading && total === 0
 
   return (
-    <div className={cn('rounded-md border border-border bg-card', className)}>
+    <div className={cn('broker-data-table', className)}>
       <Table>
         <TableHeader>
           <TableRow>
             {columns.map((column) => (
               <TableHead
                 key={column.id}
+                data-column={column.id}
                 className={cn(
                   alignClassName[column.align ?? 'left'],
-                  column.className
+                  columnVisibilityClass(column),
+                  column.className,
                 )}
               >
                 {column.header}
@@ -114,7 +130,7 @@ export function DataTable<TData>({
         </TableHeader>
         <TableBody>
           {isLoading ? (
-            <LoadingRows columnCount={columns.length} />
+            <LoadingRows columns={columns} />
           ) : showEmptyState ? (
             <TableRow>
               <TableCell
@@ -130,9 +146,11 @@ export function DataTable<TData>({
                 {columns.map((column) => (
                   <TableCell
                     key={column.id}
+                    data-column={column.id}
                     className={cn(
                       alignClassName[column.align ?? 'left'],
-                      column.className
+                      columnVisibilityClass(column),
+                      column.className,
                     )}
                   >
                     {renderCellContent(row, column)}

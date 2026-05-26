@@ -27,6 +27,8 @@ export function OrganizationTable() {
           key="create"
           label="Nueva organización"
           icon={Plus}
+          size="sm"
+          className="w-full sm:w-auto"
           title="Nueva organización"
           acceptLabel="Crear"
           defaultValues={{ name: '' }}

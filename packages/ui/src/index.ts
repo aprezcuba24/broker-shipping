@@ -33,6 +33,25 @@ export { BtnConfirm } from './components/btn-confirm'
 export type { BtnConfirmProps } from './components/btn-confirm'
 export { BtnList } from './components/btn-list'
 export type { BtnListProps } from './components/btn-list'
+export { RowActions } from './components/row-actions'
+export type { RowActionsProps } from './components/row-actions'
+export {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuCheckboxItem,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuGroup,
+  DropdownMenuPortal,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuRadioGroup,
+} from './components/dropdown-menu'
 export { buttonVariants } from './components/ui/button'
 export {
   Card,

@@ -5,5 +5,5 @@ export type BtnListProps = {
 }
 
 export function BtnList({ children }: BtnListProps) {
-  return <div className="flex justify-end gap-1">{children}</div>
+  return <div className="flex w-full justify-end gap-2 sm:w-auto">{children}</div>
 }

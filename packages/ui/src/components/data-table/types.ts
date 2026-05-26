@@ -16,6 +16,8 @@ export type ColumnDef<TData> = {
   accessor?: keyof TData & string
   type?: ColumnType
   align?: 'left' | 'center' | 'right'
+  /** Hidden below this breakpoint (mobile-first). */
+  hideOn?: 'sm' | 'md' | 'lg'
   className?: string
   cell?: (row: TData) => ReactNode
 }

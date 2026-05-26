@@ -27,15 +27,16 @@ Compound components with lifted state:
 
 ```
 Page (index.tsx)
-└── {Entity}Provider          ← useCRUD + React context
+└── {Entities}Provider        ← useCRUD + React context
     └── {Entity}Table         ← PageWrapper + DataTable + create DialogForm
-        └── columns           ← row data + RowActions (edit DialogForm, BtnConfirm delete)
+        └── columns           ← ColumnDef[] + BtnList (edit DialogForm, BtnConfirm delete)
             └── DialogForm    ← react-hook-form + ButtonModal
 ```
 
-- **State/actions** live in `{entity}-context.tsx` via `useCRUD` from `@broker/ui`.
+- **State/actions** live in `{entities}-context.tsx` via `useCRUD` from `@broker/ui`.
 - **UI** reads context with `use{Entities}()` — no prop drilling for mutations.
 - **Forms** are modal dialogs (`DialogForm`), not separate routes.
+- **Create** uses `DialogForm` with a visible trigger (toolbar). **Edit/delete** in each row use `DialogForm` / `BtnConfirm` with icon triggers inside `BtnList`.
 
 ---
 
@@ -46,9 +47,9 @@ Create one folder per entity under `apps/backoffice/src/pages/{entity}/`:
 ```
 pages/{entity}/
 ├── index.tsx                 # Page: Provider + Table
-├── {entity}-context.tsx      # FormValues, Provider, hook
+├── {entities}-context.tsx    # FormValues, Provider, hook
 ├── table.tsx                 # PageWrapper, create button, DataTable
-├── columns.tsx               # ColumnDef[] + RowActions
+├── columns.tsx               # ColumnDef[] + per-row actions
 └── DialogForm.tsx            # Shared create/edit modal form
 ```
 
@@ -62,63 +63,63 @@ pages/{entity}/
 | Provider / hook | `{Entities}Provider`, `use{Entities}` | `OrganizationsProvider`, `useOrganizations` |
 | Form values type | `{Entity}FormValues` | `OrganizationFormValues` |
 | Table export | `{Entity}Table` | `OrganizationTable` |
+| Row actions component | local name (e.g. `RowActions`) | `RowActions` in `columns.tsx` — not `@broker/ui` `RowActions` |
 
 ---
 
 ## 1. Context — `{entities}-context.tsx`
 
-Wire Orval hooks into `useCRUD`. Map form values to mutation variables.
+Wire Orval hooks into `useCRUD`. Map form values to mutation variables. Use **explicit** generic types copied from the generated hook variable shapes (see `packages/api/src/generated/`).
 
 ```tsx
 import {
-  getList{Entities}{Route}GetQueryKey,
-  useCreate{Entity}{Route}Post,
-  useDelete{Entity}{Route}{IdParam}Delete,
-  useList{Entities}{Route}Get,
-  usePatch{Entity}{Route}{IdParam}Patch,
-  type {Entity},
+  getListOrganizationsOrganizationsGetQueryKey,
+  useCreateOrganizationOrganizationsPost,
+  useDeleteOrganizationOrganizationsOrganizationIdDelete,
+  useListOrganizationsOrganizationsGet,
+  usePatchOrganizationOrganizationsOrganizationIdPatch,
+  type Organization,
 } from '@broker/api'
 import { useCRUD, type CrudContextValue } from '@broker/ui'
 import { createContext, useContext, type ReactNode } from 'react'
 
-export type {Entity}FormValues = {
+export type OrganizationFormValues = {
   name: string
-  // …one field per editable form input
 }
 
-export type {Entities}ContextValue = CrudContextValue<
-  {Entity},
-  {Entity}FormValues
+export type OrganizationsContextValue = CrudContextValue<
+  Organization,
+  OrganizationFormValues
 >
 
-const {Entities}Context = createContext<{Entities}ContextValue | null>(null)
+const OrganizationsContext = createContext<OrganizationsContextValue | null>(null)
 
-export function {Entities}Provider({ children }: { children: ReactNode }) {
+export function OrganizationsProvider({ children }: { children: ReactNode }) {
   const value = useCRUD<
-    {Entity},
-    {Entity}FormValues,
-    TCreateVariables,   // infer from useCreate hook
-    TPatchVariables,
-    TDeleteVariables
+    Organization,
+    OrganizationFormValues,
+    { data: { name: string } },
+    { organizationId: string; data: { name: string } },
+    { organizationId: string }
   >({
-    useList: useList{Entities}{Route}Get,
-    getListQueryKey: getList{Entities}{Route}GetQueryKey,
-    useCreate: useCreate{Entity}{Route}Post,
-    usePatch: usePatch{Entity}{Route}{IdParam}Patch,
-    useDelete: useDelete{Entity}{Route}{IdParam}Delete,
+    useList: useListOrganizationsOrganizationsGet,
+    getListQueryKey: getListOrganizationsOrganizationsGetQueryKey,
+    useCreate: useCreateOrganizationOrganizationsPost,
+    usePatch: usePatchOrganizationOrganizationsOrganizationIdPatch,
+    useDelete: useDeleteOrganizationOrganizationsOrganizationIdDelete,
     toCreateVariables: (values) => ({ data: { name: values.name } }),
-    toPatchVariables: (item, values) =>
-      item.id ? { {idParam}: item.id, data: { name: values.name } } : null,
-    toDeleteVariables: (item) =>
-      item.id ? { {idParam}: item.id } : null,
+    toPatchVariables: (org, values) =>
+      org.id ? { organizationId: org.id, data: { name: values.name } } : null,
+    toDeleteVariables: (org) =>
+      org.id ? { organizationId: org.id } : null,
   })
-  return <{Entities}Context value={value}>{children}</{Entities}Context>
+  return <OrganizationsContext value={value}>{children}</OrganizationsContext>
 }
 
-export function use{Entities}(): {Entities}ContextValue {
-  const context = useContext({Entities}Context)
+export function useOrganizations(): OrganizationsContextValue {
+  const context = useContext(OrganizationsContext)
   if (!context) {
-    throw new Error('use{Entities} must be used within {Entities}Provider')
+    throw new Error('useOrganizations must be used within OrganizationsProvider')
   }
   return context
 }
@@ -126,7 +127,7 @@ export function use{Entities}(): {Entities}ContextValue {
 
 **Rules:**
 - `toPatchVariables` / `toDeleteVariables` return `null` when `item.id` is missing — mutation is skipped.
-- Match variable shapes exactly to generated hook types (check `packages/api/src/generated/`).
+- Patch/delete id param name comes from OpenAPI (e.g. `organizationId`, `categoryId`) — match generated types exactly.
 - Do not duplicate list invalidation or error formatting — `useCRUD` handles that via `formatApiError` and `getListQueryKey()`.
 
 **Org-scoped entities:** routes require `X-Organization-Id`. The API client adds it from `configureApi({ getOrganizationId })` — no extra header logic in the page. Ensure the active org is set in auth before hitting tenant endpoints.
@@ -135,7 +136,7 @@ export function use{Entities}(): {Entities}ContextValue {
 
 ## 2. Dialog form — `DialogForm.tsx`
 
-Single modal form reused for create (toolbar) and edit (row action).
+Single modal form reused for create (toolbar button) and edit (row icon button). Omit `Form` from `FormModalProps` and implement the form inline (organization does not use `FormModal` wrapper).
 
 ```tsx
 import {
@@ -166,8 +167,13 @@ export function DialogForm({
   ...buttonProps
 }: DialogFormProps) {
   const formRef = useRef<FormModalHandle>(null)
-  const { register, handleSubmit, reset, formState: { errors } } =
-    useForm<{Entity}FormValues>({ defaultValues })
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<{Entity}FormValues>({ defaultValues })
 
   useEffect(() => {
     reset(defaultValues)
@@ -185,10 +191,27 @@ export function DialogForm({
       isLoading={isSubmitting}
       open={open}
       onOpenChange={onOpenChange}
+      hideTrigger={open !== undefined}
       {...buttonProps}
     >
-      <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-        {/* fields with register() + errors */}
+      <form className="space-y-3" onSubmit={(event) => event.preventDefault()}>
+        <div className="space-y-2">
+          <Label htmlFor="{entity}-name">Nombre</Label>
+          <Input
+            id="{entity}-name"
+            maxLength={255}
+            autoFocus
+            disabled={isSubmitting}
+            {...register('name', {
+              required: 'El nombre es obligatorio',
+              maxLength: { value: 255, message: 'Máximo 255 caracteres' },
+            })}
+          />
+          {errors.name && (
+            <p className="text-sm text-destructive">{errors.name.message}</p>
+          )}
+        </div>
+
         {error && <p className="text-sm text-destructive">{error}</p>}
       </form>
     </ButtonModal>
@@ -202,10 +225,14 @@ export function DialogForm({
 - UI copy in Spanish (labels, validation messages, modal titles).
 - Set unique `id` / `htmlFor` per field (`{entity}-name`).
 - Pass `error={formError}` from context for API errors; call `clearFormError()` / `resetCreateForm()` in `onOpenChange` when modal closes.
+- **Create / edit (default):** pass trigger props (`label`, `icon`, `variant`, `size`, …) — no `open` prop; `ButtonModal` renders the trigger.
+- **Controlled modal (optional):** pass `open` + `onOpenChange`; `hideTrigger={open !== undefined}` hides the trigger (same as `FormModal` in `@broker/ui`).
 
 ---
 
 ## 3. Columns — `columns.tsx`
+
+Per-row actions: `BtnList` wrapping an edit `DialogForm` (icon trigger) and `BtnConfirm` (icon trigger + built-in confirm dialog). No local `useState` for modal open — triggers open modals via `@broker/ui`.
 
 ```tsx
 import type { {Entity} } from '@broker/api'
@@ -215,8 +242,14 @@ import { DialogForm } from './DialogForm'
 import { use{Entities} } from './{entities}-context'
 
 function RowActions({ item }: { item: {Entity} }) {
-  const { submitEdit, clearFormError, isSubmitting, formError, deleteItem, isDeleting } =
-    use{Entities}()
+  const {
+    submitEdit,
+    clearFormError,
+    isSubmitting,
+    formError,
+    deleteItem,
+    isDeleting,
+  } = use{Entities}()
 
   return (
     <BtnList>
@@ -233,14 +266,17 @@ function RowActions({ item }: { item: {Entity} }) {
         onSubmit={(values) => submitEdit(item, values)}
         isSubmitting={isSubmitting}
         error={formError}
-        onOpenChange={(open) => { if (!open) clearFormError() }}
+        onOpenChange={(open) => {
+          if (!open) clearFormError()
+        }}
       />
       <BtnConfirm
+        type="button"
         variant="ghost"
         size="icon"
         aria-label={`Eliminar ${item.name}`}
         title="Eliminar …"
-        description={`¿Seguro que deseas eliminar «${item.name}»? …`}
+        description={`¿Seguro que deseas eliminar «${item.name}»? Esta acción no se puede deshacer.`}
         confirmLabel="Eliminar"
         confirmVariant="destructive"
         onConfirm={() => deleteItem(item)}
@@ -254,12 +290,21 @@ function RowActions({ item }: { item: {Entity} }) {
 
 export const columns: ColumnDef<{Entity}>[] = [
   { id: 'name', header: 'Nombre', accessor: 'name' },
-  { id: 'created_at', header: 'Creado', accessor: 'created_at', type: 'datetime' },
-  { id: 'actions', header: '', align: 'right', cell: (row) => <RowActions item={row} /> },
+  { id: 'created_at', header: 'Creado', accessor: 'created_at' },
+  { id: 'updated_at', header: 'Actualizado', accessor: 'updated_at' },
+  {
+    id: 'actions',
+    header: '',
+    align: 'right',
+    cell: (row) => <RowActions item={row} />,
+  },
 ]
 ```
 
-Use `accessor` + optional `type` (`text`, `date`, `datetime`, `number`, `boolean`) for default cell rendering. Use `cell` for custom content or actions.
+- Use `accessor` for default cell rendering; add `type: 'datetime'` when the API returns ISO timestamps.
+- Include timestamp columns present on the API model (`created_at`, `updated_at`, …).
+- Optional: `hideOn: 'sm' | 'md' | 'lg'` on non-essential columns for narrower viewports (`DataTable` supports it; organization omits it today).
+- Do not confuse the local `RowActions` cell component with `RowActions` from `@broker/ui` (dropdown menu) — the canonical pattern uses `BtnList` + icon buttons.
 
 ---
 
@@ -267,35 +312,46 @@ Use `accessor` + optional `type` (`text`, `date`, `datetime`, `number`, `boolean
 
 ```tsx
 import { DataTable, PageWrapper } from '@broker/ui'
-import { Icon, Plus } from 'lucide-react'
+import { Building2, Plus } from 'lucide-react'
 import { DialogForm } from './DialogForm'
 import { columns } from './columns'
 import { use{Entities} } from './{entities}-context'
 
 export function {Entity}Table() {
   const {
-    formError, createFormKey, isCreating, submitCreate, resetCreateForm,
-    items, isLoading, page, setPage,
+    formError,
+    createFormKey,
+    isCreating,
+    submitCreate,
+    resetCreateForm,
+    items,
+    isLoading,
+    page,
+    setPage,
   } = use{Entities}()
 
   return (
     <PageWrapper
-      title="…"
-      description="…"
-      icon={Icon}
+      title="Organizaciones"
+      description="Gestiona las organizaciones a las que tienes acceso."
+      icon={Building2}
       buttons={[
         <DialogForm
           key="create"
-          label="Nueva …"
+          label="Nueva organización"
           icon={Plus}
-          title="Nueva …"
+          size="sm"
+          className="w-full sm:w-auto"
+          title="Nueva organización"
           acceptLabel="Crear"
           defaultValues={{ name: '' }}
           formKey={String(createFormKey)}
           onSubmit={submitCreate}
           isSubmitting={isCreating}
           error={formError}
-          onOpenChange={(open) => { if (!open) resetCreateForm() }}
+          onOpenChange={(open) => {
+            if (!open) resetCreateForm()
+          }}
         />,
       ]}
     >
@@ -305,7 +361,7 @@ export function {Entity}Table() {
         isLoading={isLoading}
         getRowId={(row) => row.id!}
         pagination={{ page, onPageChange: setPage }}
-        emptyMessage="No hay … registrados"
+        emptyMessage="No hay organizaciones registradas"
       />
     </PageWrapper>
   )
@@ -328,6 +384,8 @@ export function {Entity}Page() {
   )
 }
 ```
+
+Router imports the page from the folder entry: `import { OrganizationPage } from './pages/organization'` (resolves to `index.tsx`).
 
 ---
 
@@ -361,19 +419,27 @@ Consumers get this from `use{Entities}()`:
 | `page`, `setPage` | Pagination |
 | `submitCreate`, `isCreating`, `createFormKey`, `resetCreateForm` | Create modal |
 | `submitEdit`, `isSubmitting`, `formError`, `clearFormError` | Edit modal |
-| `deleteItem`, `isDeleting` | Delete confirm |
+| `deleteItem`, `isDeleting` | Delete confirm (`BtnConfirm`) |
 
 ---
 
 ## Checklist
 
 - [ ] Backend CRUD exists; OpenAPI regenerated; hooks exported from `@broker/api`
-- [ ] Folder `pages/{entity}/` with 5 files (index, context, table, columns, DialogForm)
-- [ ] `{Entity}FormValues` matches form fields; mappers match generated mutation types
+- [ ] Folder `pages/{entity}/` with 5 files (index, `{entities}-context`, table, columns, DialogForm)
+- [ ] `{Entity}FormValues` matches form fields; `useCRUD` generics and mappers match generated mutation types
 - [ ] Create uses `createFormKey` + `resetCreateForm`; edit uses `item.id` as `formKey`
-- [ ] Row actions have `aria-label`; delete uses `BtnConfirm` with destructive variant
+- [ ] Row actions: `BtnList` + edit `DialogForm` (icon) + `BtnConfirm` (icon); `clearFormError` on edit close
+- [ ] `aria-label` on icon-only edit/delete triggers
+- [ ] Create button uses `size="sm"` and `className="w-full sm:w-auto"`
 - [ ] Route in `router.tsx` and nav item in `navigation.ts`
 - [ ] Spanish UI strings; field validation aligned with API model
+
+### Mobile-first conventions (inherited from `@broker/ui`)
+
+- `DataTable` adds `.broker-data-table` — denser rows, surface tokens (CSS in `packages/ui/src/styles.css`).
+- `ButtonModal` / `ConfirmDialog` (via `BtnConfirm`) add `.broker-dialog` — top-anchored on mobile, centered on desktop.
+- Do **not** edit shadcn primitives in `packages/ui/src/components/ui/`; style via scoped CSS and wrappers.
 
 ---
 
@@ -382,4 +448,5 @@ Consumers get this from `use{Entities}()`:
 - **Do not** call Orval mutation hooks directly in table/columns — always go through context + `useCRUD`.
 - **Do not** add boolean `isEdit` props to a monolithic form — one `DialogForm`, different `defaultValues` / `onSubmit` at call site.
 - **Do not** skip `formKey` — without it, react-hook-form keeps stale values when reopening modals.
-- **Do not** put CRUD state in `useState` at page level when `useCRUD` already covers the workflow.
+- **Do not** put CRUD list/pagination/mutation state in page-level `useState` when `useCRUD` already covers the workflow.
+- **Do not** use `@broker/ui` `RowActions` dropdown in new CRUD pages unless explicitly migrating away from the `BtnList` + icon pattern used in organization.

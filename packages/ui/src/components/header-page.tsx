@@ -19,7 +19,7 @@ export function HeaderPage({
       <div className="space-y-1">
         <div className="flex items-center gap-2">
           {Icon ? <Icon className="h-6 w-6 text-muted-foreground" /> : null}
-          <h1 className="text-2xl font-headline font-semibold text-foreground">
+          <h1 className="text-xl font-headline font-semibold text-foreground sm:text-2xl">
             {title}
           </h1>
         </div>
@@ -27,7 +27,9 @@ export function HeaderPage({
           <p className="text-sm text-muted-foreground">{description}</p>
         ) : null}
       </div>
-      {children}
+      {children ? (
+        <div className="w-full shrink-0 sm:w-auto">{children}</div>
+      ) : null}
     </div>
   )
 }

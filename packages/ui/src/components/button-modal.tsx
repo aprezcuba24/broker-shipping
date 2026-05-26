@@ -1,5 +1,6 @@
 import * as React from 'react'
 
+import { cn } from '../lib/utils'
 import { Button, type ButtonProps } from './button'
 import {
   Dialog,
@@ -20,6 +21,8 @@ export type ButtonModalProps = {
   isLoading?: boolean
   open?: boolean
   onOpenChange?: (open: boolean) => void
+  /** When true, no trigger button is rendered (for externally controlled modals). */
+  hideTrigger?: boolean
   children: React.ReactNode
 } & Omit<ButtonProps, 'children' | 'onClick'>
 
@@ -32,6 +35,7 @@ export function ButtonModal({
   isLoading = false,
   open,
   onOpenChange,
+  hideTrigger = false,
   children,
   ...buttonProps
 }: ButtonModalProps) {
@@ -44,7 +48,7 @@ export function ButtonModal({
       onOpenChange?.(nextOpen)
       if (!isControlled) setInternalOpen(nextOpen)
     },
-    [isControlled, onOpenChange]
+    [isControlled, onOpenChange],
   )
 
   const handleAccept = React.useCallback(async () => {
@@ -64,25 +68,38 @@ export function ButtonModal({
 
   return (
     <Dialog open={currentOpen} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button {...buttonProps} />
-      </DialogTrigger>
+      {!hideTrigger ? (
+        <DialogTrigger asChild>
+          <Button {...buttonProps} />
+        </DialogTrigger>
+      ) : null}
 
-      <DialogContent>
+      <DialogContent className="broker-dialog">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle className="font-headline">{title}</DialogTitle>
         </DialogHeader>
 
         {children}
 
-        <DialogFooter>
+        <DialogFooter className="broker-dialog-footer">
           <DialogClose asChild>
-            <Button variant="outline" onClick={handleCancel} disabled={isLoading}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full sm:w-auto"
+              onClick={handleCancel}
+              disabled={isLoading}
+            >
               {cancelLabel}
             </Button>
           </DialogClose>
 
-          <Button onClick={handleAccept} disabled={isLoading}>
+          <Button
+            size="sm"
+            className="w-full sm:w-auto"
+            onClick={handleAccept}
+            disabled={isLoading}
+          >
             {isLoading ? 'Procesando…' : acceptLabel}
           </Button>
         </DialogFooter>

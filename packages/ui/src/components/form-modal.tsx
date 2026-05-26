@@ -57,6 +57,7 @@ export function FormModal<TValues>({
       isLoading={isSubmitting}
       open={open}
       onOpenChange={onOpenChange}
+      hideTrigger={open !== undefined}
       {...buttonProps}
     >
       <Form

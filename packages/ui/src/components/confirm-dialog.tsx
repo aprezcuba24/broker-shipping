@@ -36,17 +36,26 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent className="broker-dialog">
         <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogTitle className="font-headline">{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>{cancelLabel}</AlertDialogCancel>
+        <AlertDialogFooter className="broker-dialog-footer">
+          <AlertDialogCancel
+            disabled={isLoading}
+            className={cn(buttonVariants({ size: 'sm' }), 'w-full sm:w-auto')}
+          >
+            {cancelLabel}
+          </AlertDialogCancel>
           <AlertDialogAction
             disabled={isLoading}
             className={cn(
-              variant === 'destructive' && buttonVariants({ variant: 'destructive' }),
+              buttonVariants({
+                size: 'sm',
+                variant: variant === 'destructive' ? 'destructive' : 'default',
+              }),
+              'w-full sm:w-auto',
             )}
             onClick={(event) => {
               event.preventDefault()

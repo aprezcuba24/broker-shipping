@@ -52,10 +52,11 @@ export function DialogForm({
       isLoading={isSubmitting}
       open={open}
       onOpenChange={onOpenChange}
+      hideTrigger={open !== undefined}
       {...buttonProps}
     >
       <form
-        className="space-y-4"
+        className="space-y-3"
         onSubmit={(event) => event.preventDefault()}
       >
         <div className="space-y-2">
@@ -63,6 +64,7 @@ export function DialogForm({
           <Input
             id="organization-name"
             maxLength={255}
+            autoFocus
             disabled={isSubmitting}
             {...register('name', {
               required: 'El nombre es obligatorio',
