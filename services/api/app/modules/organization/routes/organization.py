@@ -41,6 +41,7 @@ async def patch_organization(
     service: FromDishka[OrganizationService],
     principal: UserPrincipal,
 ):
+    await service.get_or_404(entity_id=organization_id)
     return await service.update_for_user(organization_id, principal.user_id, payload)
 
 
@@ -51,5 +52,6 @@ async def delete_organization(
     service: FromDishka[OrganizationService],
     principal: UserPrincipal,
 ):
-    await service.delete_for_user(organization_id, principal.user_id)
+    organization = await service.get_or_404(entity_id=organization_id)
+    await service.delete_for_user(organization, principal.user_id)
     return Response(status_code=204)

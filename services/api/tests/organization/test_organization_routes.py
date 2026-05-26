@@ -6,7 +6,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.organization.models import Organization
+from tests.factories.api_key_factory import ApiKeyFactory
 from tests.factories.auth_helpers import bearer_headers
+from tests.factories.category_factory import CategoryFactory
 from tests.factories.organization_factory import OrganizationFactory
 from tests.factories.product_factory import ProductFactory
 from tests.factories.user_factory import UserFactory
@@ -137,6 +139,30 @@ async def test_delete_organization_without_dependencies_hard_deletes(
 
     r_list = await client.get("/organizations/", headers=headers)
     assert org_id not in [o["id"] for o in r_list.json()]
+
+    result = await db_session.execute(
+        select(Organization).where(Organization.id == UUID(org_id)),
+    )
+    assert result.scalar_one_or_none() is None
+
+
+async def test_delete_organization_with_api_keys_and_categories_hard_deletes(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    api_key_factory: ApiKeyFactory,
+    category_factory: CategoryFactory,
+    db_session: AsyncSession,
+) -> None:
+    u = await user_factory.build()
+    headers = bearer_headers(user_id=u["id"])
+    org = await organization_factory.build(user_id=u["id"])
+    org_id = org["id"]
+    await api_key_factory.build(organization_id=org_id)
+    await category_factory.build(organization_id=org_id)
+
+    r_del = await client.delete(f"/organizations/{org_id}", headers=headers)
+    assert r_del.status_code == 204
 
     result = await db_session.execute(
         select(Organization).where(Organization.id == UUID(org_id)),

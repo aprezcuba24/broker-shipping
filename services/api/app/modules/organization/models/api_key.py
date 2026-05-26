@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import ClassVar
 from uuid import UUID, uuid4
 
+from sqlalchemy import Column, ForeignKey
 from sqlmodel import Field, SQLModel
 
 from app.lib.utils import utc_now
@@ -25,7 +26,13 @@ class ApiKey(ApiKeyBase, table=True):
         {"id", "organization_id", "prefix", "secret_hash", "created_at"}
     )
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    organization_id: UUID = Field(foreign_key="organization.id", index=True)
+    organization_id: UUID = Field(
+        sa_column=Column(
+            ForeignKey("organization.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
+        ),
+    )
     prefix: str = Field(max_length=12, unique=True, index=True)
     secret_hash: str = Field(max_length=64)
 

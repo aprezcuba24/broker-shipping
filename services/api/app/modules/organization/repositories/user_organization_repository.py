@@ -1,6 +1,7 @@
 from uuid import UUID
 
-from sqlalchemy import delete, select
+from fastapi import HTTPException
+from sqlalchemy import select
 
 from app.lib.persistence import Resource
 from app.modules.organization.models import UserOrganization
@@ -21,19 +22,14 @@ class UserOrganizationRepository(Resource[UserOrganization]):
         )
         return list(result.scalars().all())
 
-    async def is_member(self, user_id: UUID, organization_id: UUID) -> bool:
+    async def is_member(self, user_id: UUID, organization_id: UUID, throw_exception = True) -> bool:
         result = await self._session.execute(
             select(UserOrganization.user_id).where(
                 UserOrganization.user_id == user_id,
                 UserOrganization.organization_id == organization_id,
             ),
         )
-        return result.scalar_one_or_none() is not None
-
-    async def delete_memberships_for_organization(self, organization_id: UUID) -> None:
-        await self._session.execute(
-            delete(UserOrganization).where(
-                UserOrganization.organization_id == organization_id,
-            ),
-        )
-        await self._session.flush()
+        entity = result.scalar_one_or_none() is not None
+        if not entity and throw_exception:
+            raise HTTPException(status_code=403, detail="Forbidden")
+        return entity
