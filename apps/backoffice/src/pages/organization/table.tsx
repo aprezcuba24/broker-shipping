@@ -11,7 +11,7 @@ export function OrganizationTable() {
     isCreating,
     submitCreate,
     resetCreateForm,
-    organizations,
+    items,
     isLoading,
     page,
     setPage,
@@ -42,7 +42,7 @@ export function OrganizationTable() {
     >
       <DataTable
         columns={columns}
-        data={organizations}
+        data={items}
         isLoading={isLoading}
         getRowId={(row) => row.id!}
         pagination={{ page, onPageChange: setPage }}

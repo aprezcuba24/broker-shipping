@@ -10,8 +10,8 @@ type DataTablePaginationProps = DataTablePagination & {
 
 export function DataTablePaginationBar({
   page,
-  pageSize,
-  total,
+  pageSize = 10,
+  total = 0,
   onPageChange,
   className,
 }: DataTablePaginationProps) {

@@ -4,13 +4,13 @@ import { Pencil, Trash2 } from 'lucide-react'
 import { DialogForm } from './DialogForm'
 import { useOrganizations } from './organizations-context'
 
-function OrganizationRowActions({ organization }: { organization: Organization }) {
+function RowActions({ organization }: { organization: Organization }) {
   const {
     submitEdit,
     clearFormError,
     isSubmitting,
     formError,
-    deleteOrganization,
+    deleteItem,
     isDeleting,
   } = useOrganizations()
 
@@ -42,7 +42,7 @@ function OrganizationRowActions({ organization }: { organization: Organization }
         description={`¿Seguro que deseas eliminar «${organization.name}»? Esta acción no se puede deshacer.`}
         confirmLabel="Eliminar"
         confirmVariant="destructive"
-        onConfirm={() => deleteOrganization(organization)}
+        onConfirm={() => deleteItem(organization)}
         isLoading={isDeleting}
       >
         <Trash2 className="h-4 w-4 text-destructive" />
@@ -59,6 +59,6 @@ export const columns: ColumnDef<Organization>[] = [
     id: 'actions',
     header: '',
     align: 'right',
-    cell: (row) => <OrganizationRowActions organization={row} />,
+    cell: (row) => <RowActions organization={row} />,
   },
 ]
