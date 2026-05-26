@@ -1,4 +1,4 @@
-import { ConfirmDialog, HeaderPage } from '@broker/ui'
+import { HeaderPage } from '@broker/ui'
 import { Building2, Plus } from 'lucide-react'
 import { DialogForm } from './DialogForm'
 import { OrganizationList } from './list'
@@ -10,7 +10,6 @@ export function OrganizationPage() {
     isLoading,
     page,
     setPage,
-    deleteTarget,
     formError,
     createFormKey,
     isCreating,
@@ -20,9 +19,7 @@ export function OrganizationPage() {
     resetCreateForm,
     submitEdit,
     clearFormError,
-    requestDelete,
-    cancelDelete,
-    confirmDelete,
+    deleteOrganization,
   } = useOrganizations()
 
   return (
@@ -57,20 +54,8 @@ export function OrganizationPage() {
         isSubmitting={isSubmitting}
         formError={formError}
         onEditClose={clearFormError}
-        onDelete={requestDelete}
-      />
-
-      <ConfirmDialog
-        open={deleteTarget !== null}
-        onOpenChange={(open) => {
-          if (!open) cancelDelete()
-        }}
-        title="Eliminar organización"
-        description={`¿Seguro que deseas eliminar «${deleteTarget?.name}»? Esta acción no se puede deshacer.`}
-        confirmLabel="Eliminar"
-        variant="destructive"
-        onConfirm={confirmDelete}
-        isLoading={isDeleting}
+        onDelete={deleteOrganization}
+        isDeleting={isDeleting}
       />
     </div>
   )

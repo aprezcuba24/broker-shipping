@@ -1,5 +1,5 @@
 import type { Organization } from '@broker/api'
-import { Button, DataTable, type ColumnDef } from '@broker/ui'
+import { BtnConfirm, DataTable, type ColumnDef } from '@broker/ui'
 import { Pencil, Trash2 } from 'lucide-react'
 import { useMemo } from 'react'
 import { DialogForm } from './DialogForm'
@@ -19,13 +19,64 @@ export type OrganizationListProps = {
   isSubmitting: boolean
   formError: string | null
   onEditClose: () => void
-  onDelete: (org: Organization) => void
+  onDelete: (org: Organization) => void | Promise<void>
+  isDeleting: boolean
 }
 
 type OrganizationListActions = Pick<
   OrganizationListProps,
-  'onSubmitEdit' | 'onEditClose' | 'isSubmitting' | 'formError' | 'onDelete'
+  'onSubmitEdit' | 'onEditClose' | 'isSubmitting' | 'formError' | 'onDelete' | 'isDeleting'
 >
+
+type OrganizationRowActionsProps = OrganizationListActions & {
+  organization: Organization
+}
+
+function OrganizationRowActions({
+  organization,
+  onSubmitEdit,
+  onEditClose,
+  isSubmitting,
+  formError,
+  onDelete,
+  isDeleting,
+}: OrganizationRowActionsProps) {
+  return (
+    <div className="flex justify-end gap-1">
+      <DialogForm
+        icon={Pencil}
+        label=""
+        variant="ghost"
+        size="icon"
+        aria-label={`Editar ${organization.name}`}
+        title="Editar organización"
+        acceptLabel="Guardar"
+        defaultValues={{ name: organization.name }}
+        formKey={organization.id}
+        onSubmit={(values) => onSubmitEdit(organization, values)}
+        isSubmitting={isSubmitting}
+        error={formError}
+        onOpenChange={(open) => {
+          if (!open) onEditClose()
+        }}
+      />
+      <BtnConfirm
+        type="button"
+        variant="ghost"
+        size="icon"
+        aria-label={`Eliminar ${organization.name}`}
+        title="Eliminar organización"
+        description={`¿Seguro que deseas eliminar «${organization.name}»? Esta acción no se puede deshacer.`}
+        confirmLabel="Eliminar"
+        confirmVariant="destructive"
+        onConfirm={() => onDelete(organization)}
+        isLoading={isDeleting}
+      >
+        <Trash2 className="h-4 w-4 text-destructive" />
+      </BtnConfirm>
+    </div>
+  )
+}
 
 function buildColumns(props: OrganizationListActions): ColumnDef<Organization>[] {
   return [
@@ -36,36 +87,7 @@ function buildColumns(props: OrganizationListActions): ColumnDef<Organization>[]
       id: 'actions',
       header: '',
       align: 'right',
-      cell: (row) => (
-        <div className="flex justify-end gap-1">
-          <DialogForm
-            icon={Pencil}
-            label=""
-            variant="ghost"
-            size="icon"
-            aria-label={`Editar ${row.name}`}
-            title="Editar organización"
-            acceptLabel="Guardar"
-            defaultValues={{ name: row.name }}
-            formKey={row.id}
-            onSubmit={(values) => props.onSubmitEdit(row, values)}
-            isSubmitting={props.isSubmitting}
-            error={props.formError}
-            onOpenChange={(open) => {
-              if (!open) props.onEditClose()
-            }}
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            aria-label={`Eliminar ${row.name}`}
-            onClick={() => props.onDelete(row)}
-          >
-            <Trash2 className="h-4 w-4 text-destructive" />
-          </Button>
-        </div>
-      ),
+      cell: (row) => <OrganizationRowActions organization={row} {...props} />,
     },
   ]
 }

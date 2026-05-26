@@ -17,7 +17,6 @@ export type OrganizationFormValues = {
 export function useOrganizations() {
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
-  const [deleteTarget, setDeleteTarget] = useState<Organization | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
   const [createFormKey, setCreateFormKey] = useState(0)
 
@@ -57,7 +56,6 @@ export function useOrganizations() {
     mutation: {
       onSuccess: () => {
         invalidateList()
-        setDeleteTarget(null)
       },
     },
   })
@@ -91,25 +89,19 @@ export function useOrganizations() {
     [patchMutation],
   )
 
-  const requestDelete = useCallback((org: Organization) => {
-    setDeleteTarget(org)
-  }, [])
-
-  const cancelDelete = useCallback(() => {
-    setDeleteTarget(null)
-  }, [])
-
-  const confirmDelete = useCallback(() => {
-    if (!deleteTarget?.id) return
-    deleteMutation.mutate({ organizationId: deleteTarget.id })
-  }, [deleteTarget, deleteMutation])
+  const deleteOrganization = useCallback(
+    async (org: Organization) => {
+      if (!org.id) return
+      await deleteMutation.mutateAsync({ organizationId: org.id })
+    },
+    [deleteMutation],
+  )
 
   return {
     organizations,
     isLoading,
     page,
     setPage,
-    deleteTarget,
     formError,
     createFormKey,
     isCreating: createMutation.isPending,
@@ -119,8 +111,6 @@ export function useOrganizations() {
     resetCreateForm,
     submitEdit,
     clearFormError,
-    requestDelete,
-    cancelDelete,
-    confirmDelete,
+    deleteOrganization,
   }
 }
