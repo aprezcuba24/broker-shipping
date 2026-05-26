@@ -2,13 +2,32 @@ import type { Organization } from '@broker/api'
 import { Button, DataTable, type ColumnDef } from '@broker/ui'
 import { Pencil, Trash2 } from 'lucide-react'
 import { useMemo } from 'react'
+import { DialogForm } from './DialogForm'
+import type { OrganizationFormValues } from './use-organizations'
 
 const PAGE_SIZE = 10
 
-function buildColumns(
-  onEdit: (org: Organization) => void,
-  onDelete: (org: Organization) => void,
-): ColumnDef<Organization>[] {
+export type OrganizationListProps = {
+  organizations: Organization[]
+  isLoading: boolean
+  page: number
+  onPageChange: (page: number) => void
+  onSubmitEdit: (
+    org: Organization,
+    values: OrganizationFormValues,
+  ) => void | Promise<void>
+  isSubmitting: boolean
+  formError: string | null
+  onEditClose: () => void
+  onDelete: (org: Organization) => void
+}
+
+type OrganizationListActions = Pick<
+  OrganizationListProps,
+  'onSubmitEdit' | 'onEditClose' | 'isSubmitting' | 'formError' | 'onDelete'
+>
+
+function buildColumns(props: OrganizationListActions): ColumnDef<Organization>[] {
   return [
     { id: 'name', header: 'Nombre', accessor: 'name' },
     { id: 'created_at', header: 'Creado', accessor: 'created_at' },
@@ -19,21 +38,29 @@ function buildColumns(
       align: 'right',
       cell: (row) => (
         <div className="flex justify-end gap-1">
-          <Button
-            type="button"
+          <DialogForm
+            icon={Pencil}
+            label=""
             variant="ghost"
             size="icon"
             aria-label={`Editar ${row.name}`}
-            onClick={() => onEdit(row)}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
+            title="Editar organización"
+            acceptLabel="Guardar"
+            defaultValues={{ name: row.name }}
+            formKey={row.id}
+            onSubmit={(values) => props.onSubmitEdit(row, values)}
+            isSubmitting={props.isSubmitting}
+            error={props.formError}
+            onOpenChange={(open) => {
+              if (!open) props.onEditClose()
+            }}
+          />
           <Button
             type="button"
             variant="ghost"
             size="icon"
             aria-label={`Eliminar ${row.name}`}
-            onClick={() => onDelete(row)}
+            onClick={() => props.onDelete(row)}
           >
             <Trash2 className="h-4 w-4 text-destructive" />
           </Button>
@@ -43,26 +70,12 @@ function buildColumns(
   ]
 }
 
-export type OrganizationListProps = {
-  organizations: Organization[]
-  isLoading: boolean
-  page: number
-  onPageChange: (page: number) => void
-  onEdit: (org: Organization) => void
-  onDelete: (org: Organization) => void
-}
+export function OrganizationList(props: OrganizationListProps) {
+  const { organizations, isLoading, page, onPageChange, ...actions } = props
 
-export function OrganizationList({
-  organizations,
-  isLoading,
-  page,
-  onPageChange,
-  onEdit,
-  onDelete,
-}: OrganizationListProps) {
   const columns = useMemo(
-    () => buildColumns(onEdit, onDelete),
-    [onEdit, onDelete],
+    () => buildColumns(actions),
+    [actions],
   )
 
   const total = organizations.length

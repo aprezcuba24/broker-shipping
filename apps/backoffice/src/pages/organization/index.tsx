@@ -2,7 +2,6 @@ import { ConfirmDialog, HeaderPage } from '@broker/ui'
 import { Building2, Plus } from 'lucide-react'
 import { DialogForm } from './DialogForm'
 import { OrganizationList } from './list'
-import { OrganizationFormModal } from './modal'
 import { useOrganizations } from './use-organizations'
 
 export function OrganizationPage() {
@@ -11,27 +10,20 @@ export function OrganizationPage() {
     isLoading,
     page,
     setPage,
-    modalOpen,
-    editingOrg,
     deleteTarget,
     formError,
     createFormKey,
     isCreating,
     isSubmitting,
     isDeleting,
-    openEdit,
-    closeModal,
     submitCreate,
     resetCreateForm,
-    submitForm,
+    submitEdit,
+    clearFormError,
     requestDelete,
     cancelDelete,
     confirmDelete,
   } = useOrganizations()
-
-  const formDefaults = {
-    name: editingOrg?.name ?? '',
-  }
 
   return (
     <div className="space-y-6">
@@ -61,24 +53,12 @@ export function OrganizationPage() {
         isLoading={isLoading}
         page={page}
         onPageChange={setPage}
-        onEdit={openEdit}
+        onSubmitEdit={submitEdit}
+        isSubmitting={isSubmitting}
+        formError={formError}
+        onEditClose={clearFormError}
         onDelete={requestDelete}
       />
-
-      {modalOpen && editingOrg && (
-        <OrganizationFormModal
-          open={modalOpen}
-          onOpenChange={(open) => {
-            if (!open) closeModal()
-          }}
-          mode="edit"
-          organizationId={editingOrg.id}
-          defaultValues={formDefaults}
-          onSubmit={submitForm}
-          isSubmitting={isSubmitting}
-          error={formError}
-        />
-      )}
 
       <ConfirmDialog
         open={deleteTarget !== null}
