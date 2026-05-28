@@ -164,3 +164,120 @@
   background: #d9e4ea;
   border-radius: 10px;
 }
+
+/* ── DataTable density + surface tokens ─────────────────────── */
+.broker-data-table {
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-surface-container-high);
+  background-color: var(--color-surface-container-lowest);
+  box-shadow: 0 1px 2px 0 hsl(0 0% 0% / 0.04);
+  overflow: hidden;
+}
+
+.broker-data-table table thead th {
+  height: 2.5rem;
+  padding-inline: 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  color: var(--color-on-surface-variant);
+}
+
+.broker-data-table table tbody td {
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--color-on-surface);
+}
+
+.broker-data-table table tbody tr {
+  border-color: var(--color-surface-container-high);
+}
+
+.broker-data-table table tbody tr:hover {
+  background-color: color-mix(
+    in oklab,
+    var(--color-surface-container-low) 60%,
+    transparent
+  );
+}
+
+.broker-data-table table td[data-column='actions'],
+.broker-data-table table th[data-column='actions'] {
+  width: 1px;
+  white-space: nowrap;
+  padding-block: 0.25rem;
+  padding-right: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .broker-data-table table td[data-column='actions'],
+  .broker-data-table table th[data-column='actions'] {
+    padding-right: 0.75rem;
+  }
+}
+
+/* ── Dialog: top-anchored on mobile, centered on desktop ────── */
+.broker-dialog {
+  inset: 1rem 1rem auto 1rem;
+  left: 1rem;
+  top: 1rem;
+  right: 1rem;
+  bottom: auto;
+  width: auto;
+  max-width: none;
+  transform: none;
+  translate: 0 0;
+  padding: 1rem;
+  gap: 0.75rem;
+  border-radius: 0.75rem;
+  border-color: var(--color-surface-container-high);
+  background-color: var(--color-surface-container-lowest);
+}
+
+@media (min-width: 640px) {
+  .broker-dialog {
+    inset: auto;
+    left: 50%;
+    right: auto;
+    top: 50%;
+    bottom: auto;
+    width: 100%;
+    max-width: 28rem;
+    transform: translate(-50%, -50%);
+    translate: 0 0;
+    padding: 1.25rem;
+  }
+}
+
+.broker-dialog [data-slot='dialog-title'],
+.broker-dialog > div:first-child > h2 {
+  font-family: var(--font-headline);
+}
+
+.broker-dialog [data-slot='dialog-footer'] {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .broker-dialog [data-slot='dialog-footer'] {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+}
+
+.broker-dialog-footer {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .broker-dialog-footer {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+}

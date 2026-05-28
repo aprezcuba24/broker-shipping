@@ -16,14 +16,16 @@ export type ColumnDef<TData> = {
   accessor?: keyof TData & string
   type?: ColumnType
   align?: 'left' | 'center' | 'right'
+  /** Hidden below this breakpoint (mobile-first). */
+  hideOn?: 'sm' | 'md' | 'lg'
   className?: string
   cell?: (row: TData) => ReactNode
 }
 
 export type DataTablePagination = {
   page: number
-  pageSize: number
-  total: number
+  pageSize?: number
+  total?: number
   onPageChange: (page: number) => void
   onPageSizeChange?: (pageSize: number) => void
 }

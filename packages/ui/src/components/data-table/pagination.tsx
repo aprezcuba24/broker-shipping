@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 import { cn } from '../../lib/utils'
-import { Button } from '../ui/button'
+import { Button } from '../button'
 import type { DataTablePagination } from './types'
 
 type DataTablePaginationProps = DataTablePagination & {
@@ -10,8 +10,8 @@ type DataTablePaginationProps = DataTablePagination & {
 
 export function DataTablePaginationBar({
   page,
-  pageSize,
-  total,
+  pageSize = 10,
+  total = 0,
   onPageChange,
   className,
 }: DataTablePaginationProps) {
@@ -23,40 +23,41 @@ export function DataTablePaginationBar({
   return (
     <div
       className={cn(
-        'flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between',
-        className
+        'flex items-center justify-between gap-2 border-t border-surface-container-high px-3 py-2',
+        className,
       )}
     >
-      <p className="text-sm text-muted-foreground">
+      <p className="hidden text-xs text-on-surface-variant sm:block">
         {total === 0
           ? 'No hay resultados'
           : `Mostrando ${start}–${end} de ${total}`}
       </p>
-      <div className="flex items-center gap-2">
+      <p className="text-xs text-on-surface-variant sm:hidden">
+        {total === 0 ? '0' : `${start}–${end} / ${total}`}
+      </p>
+      <div className="flex items-center gap-1">
         <Button
           type="button"
-          variant="outline"
-          size="sm"
+          variant="ghost"
+          size="icon-sm"
           onClick={() => onPageChange(safePage - 1)}
           disabled={safePage <= 1}
           aria-label="Página anterior"
         >
-          <ChevronLeft className="size-4" />
-          Anterior
+          <ChevronLeft />
         </Button>
-        <span className="min-w-[7rem] text-center text-sm text-muted-foreground">
-          Página {safePage} de {totalPages}
+        <span className="min-w-[3.5rem] text-center text-xs tabular-nums text-on-surface-variant">
+          {safePage} / {totalPages}
         </span>
         <Button
           type="button"
-          variant="outline"
-          size="sm"
+          variant="ghost"
+          size="icon-sm"
           onClick={() => onPageChange(safePage + 1)}
           disabled={safePage >= totalPages}
           aria-label="Página siguiente"
         >
-          Siguiente
-          <ChevronRight className="size-4" />
+          <ChevronRight />
         </Button>
       </div>
     </div>

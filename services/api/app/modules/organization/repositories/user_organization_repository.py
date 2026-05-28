@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from fastapi import HTTPException
 from sqlalchemy import select
 
 from app.lib.persistence import Resource
@@ -21,11 +22,14 @@ class UserOrganizationRepository(Resource[UserOrganization]):
         )
         return list(result.scalars().all())
 
-    async def is_member(self, user_id: UUID, organization_id: UUID) -> bool:
+    async def is_member(self, user_id: UUID, organization_id: UUID, throw_exception = True) -> bool:
         result = await self._session.execute(
             select(UserOrganization.user_id).where(
                 UserOrganization.user_id == user_id,
                 UserOrganization.organization_id == organization_id,
             ),
         )
-        return result.scalar_one_or_none() is not None
+        entity = result.scalar_one_or_none() is not None
+        if not entity and throw_exception:
+            raise HTTPException(status_code=403, detail="Forbidden")
+        return entity

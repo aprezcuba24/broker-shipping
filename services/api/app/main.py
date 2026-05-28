@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from dishka import make_async_container
 from dishka.integrations.fastapi import FastapiProvider, setup_dishka
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.lib.event_dispatcher import EventDispatcher
 from app.lib.openapi import OPENAPI_TAGS, SWAGGER_UI_PARAMETERS, attach_openapi
@@ -42,6 +43,12 @@ app = FastAPI(
     swagger_ui_parameters=SWAGGER_UI_PARAMETERS,
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 setup_dishka(container=_dishka_container, app=app)
 

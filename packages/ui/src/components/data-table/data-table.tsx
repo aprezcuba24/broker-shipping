@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import { cn } from '../../lib/utils'
 import {
   Table,
@@ -11,11 +13,23 @@ import { formatCellValue, inferColumnType } from './formatters'
 import { DataTablePaginationBar } from './pagination'
 import type { ColumnDef, DataTableProps } from './types'
 
+const PAGE_SIZE = 10
+
 const alignClassName = {
   left: 'text-left',
   center: 'text-center',
   right: 'text-right',
 } as const
+
+const hideOnClassName = {
+  sm: 'hidden sm:table-cell',
+  md: 'hidden md:table-cell',
+  lg: 'hidden lg:table-cell',
+} as const
+
+function columnVisibilityClass<TData>(column: ColumnDef<TData>) {
+  return column.hideOn ? hideOnClassName[column.hideOn] : undefined
+}
 
 function getCellValue<TData>(row: TData, column: ColumnDef<TData>): unknown {
   const key = column.accessor ?? column.id
@@ -25,7 +39,7 @@ function getCellValue<TData>(row: TData, column: ColumnDef<TData>): unknown {
 function resolveRowId<TData>(
   row: TData,
   index: number,
-  getRowId?: (row: TData) => string
+  getRowId?: (row: TData) => string,
 ): string {
   if (getRowId) {
     return getRowId(row)
@@ -45,14 +59,18 @@ function renderCellContent<TData>(row: TData, column: ColumnDef<TData>) {
   return formatCellValue(value, type)
 }
 
-function LoadingRows({ columnCount }: { columnCount: number }) {
+function LoadingRows<TData>({ columns }: { columns: ColumnDef<TData>[] }) {
   return (
     <>
       {Array.from({ length: 3 }).map((_, rowIndex) => (
         <TableRow key={`loading-${rowIndex}`}>
-          {Array.from({ length: columnCount }).map((__, colIndex) => (
-            <TableCell key={`loading-${rowIndex}-${colIndex}`}>
-              <div className="h-4 w-full max-w-[12rem] animate-pulse rounded bg-muted" />
+          {columns.map((column) => (
+            <TableCell
+              key={`loading-${rowIndex}-${column.id}`}
+              data-column={column.id}
+              className={cn(columnVisibilityClass(column), column.className)}
+            >
+              <div className="h-3.5 w-full max-w-[12rem] animate-pulse rounded bg-muted" />
             </TableCell>
           ))}
         </TableRow>
@@ -70,19 +88,39 @@ export function DataTable<TData>({
   emptyMessage = 'No hay datos',
   className,
 }: DataTableProps<TData>) {
-  const showEmptyState = !isLoading && data.length === 0
+  const isClientPagination = pagination.total === undefined
+  const total = pagination.total ?? data.length
+  const pageSize = pagination.pageSize ?? PAGE_SIZE
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const safePage = Math.min(Math.max(pagination.page, 1), totalPages)
+  const pageData = useMemo(() => {
+    if (!isClientPagination) {
+      return data
+    }
+
+    const start = (safePage - 1) * pageSize
+    return data.slice(start, start + pageSize)
+  }, [data, isClientPagination, pageSize, safePage])
+  const paginationBar = {
+    ...pagination,
+    page: safePage,
+    total,
+  }
+  const showEmptyState = !isLoading && total === 0
 
   return (
-    <div className={cn('rounded-md border border-border bg-card', className)}>
+    <div className={cn('broker-data-table', className)}>
       <Table>
         <TableHeader>
           <TableRow>
             {columns.map((column) => (
               <TableHead
                 key={column.id}
+                data-column={column.id}
                 className={cn(
                   alignClassName[column.align ?? 'left'],
-                  column.className
+                  columnVisibilityClass(column),
+                  column.className,
                 )}
               >
                 {column.header}
@@ -92,7 +130,7 @@ export function DataTable<TData>({
         </TableHeader>
         <TableBody>
           {isLoading ? (
-            <LoadingRows columnCount={columns.length} />
+            <LoadingRows columns={columns} />
           ) : showEmptyState ? (
             <TableRow>
               <TableCell
@@ -103,14 +141,16 @@ export function DataTable<TData>({
               </TableCell>
             </TableRow>
           ) : (
-            data.map((row, index) => (
+            pageData.map((row, index) => (
               <TableRow key={resolveRowId(row, index, getRowId)}>
                 {columns.map((column) => (
                   <TableCell
                     key={column.id}
+                    data-column={column.id}
                     className={cn(
                       alignClassName[column.align ?? 'left'],
-                      column.className
+                      columnVisibilityClass(column),
+                      column.className,
                     )}
                   >
                     {renderCellContent(row, column)}
@@ -121,7 +161,7 @@ export function DataTable<TData>({
           )}
         </TableBody>
       </Table>
-      <DataTablePaginationBar {...pagination} />
+      <DataTablePaginationBar {...paginationBar} />
     </div>
   )
 }

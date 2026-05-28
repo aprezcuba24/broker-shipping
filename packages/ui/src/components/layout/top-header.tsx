@@ -12,21 +12,30 @@ export function TopHeader({
   onMenuClick,
   onLogout,
   user = defaultUser,
+  headerExtra,
 }: TopHeaderProps) {
   return (
     <header className="bg-surface-container-low/80 backdrop-blur-md sticky top-0 z-40 flex justify-between items-center w-full px-3 sm:px-6 py-3">
-      <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
-        <button
-          type="button"
-          onClick={onMenuClick}
-          className="lg:hidden p-2 -ml-2 hover:bg-surface-container-highest/50 rounded-lg transition-colors"
-        >
-          <Menu className="h-5 w-5 text-on-surface" />
-        </button>
+      <div className="flex flex-1 min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+        <div className="flex min-w-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={onMenuClick}
+            className="lg:hidden p-2 -ml-2 hover:bg-surface-container-highest/50 rounded-lg transition-colors"
+          >
+            <Menu className="h-5 w-5 text-on-surface" />
+          </button>
 
-        <span className="text-lg sm:text-xl font-bold tracking-tight font-headline text-on-surface truncate">
-          {title}
-        </span>
+          <span className="text-lg sm:text-xl font-bold tracking-tight font-headline text-on-surface truncate">
+            {title}
+          </span>
+        </div>
+
+        {headerExtra ? (
+          <div className="w-full min-w-0 sm:w-auto sm:max-w-[14rem] sm:shrink-0">
+            {headerExtra}
+          </div>
+        ) : null}
 
         <div className="hidden sm:block h-6 w-px bg-outline-variant/30 mx-2" />
 
