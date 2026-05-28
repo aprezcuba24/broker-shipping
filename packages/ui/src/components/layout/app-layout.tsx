@@ -12,6 +12,7 @@ export function AppLayout({
   cta,
   onLogout,
   user,
+  headerExtra,
 }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -51,6 +52,7 @@ export function AppLayout({
           onMenuClick={() => setSidebarOpen(true)}
           onLogout={onLogout}
           user={user}
+          headerExtra={headerExtra}
         />
         <div className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 bg-background">
           <Outlet />

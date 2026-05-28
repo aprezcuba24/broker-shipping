@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 export type NavItem = {
   to: string
@@ -39,6 +40,7 @@ export type TopHeaderProps = {
   onMenuClick?: () => void
   onLogout?: () => void
   user?: TopHeaderUser
+  headerExtra?: ReactNode
 }
 
 export type AppLayoutProps = {
@@ -49,4 +51,5 @@ export type AppLayoutProps = {
   cta?: SidebarCta
   onLogout?: () => void
   user?: TopHeaderUser
+  headerExtra?: ReactNode
 }
