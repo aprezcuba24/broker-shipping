@@ -1,5 +1,7 @@
 import { RequireAuth } from '@broker/api'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { ActiveOrganizationProvider } from './contexts/active-organization-context'
+import { AuthProvider } from './contexts/auth-context'
 import { BackofficeLayout } from './layouts/backoffice-layout'
 import { LoginPage } from './pages/login'
 import { CategoryPage } from './pages/category'
@@ -14,7 +16,11 @@ export default function App() {
         <Route
           element={
             <RequireAuth loginPath="/login">
-              <BackofficeLayout />
+              <ActiveOrganizationProvider>
+                <AuthProvider>
+                  <BackofficeLayout />
+                </AuthProvider>
+              </ActiveOrganizationProvider>
             </RequireAuth>
           }
         >
