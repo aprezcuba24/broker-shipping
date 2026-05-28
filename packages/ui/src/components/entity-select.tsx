@@ -8,6 +8,13 @@ import {
 
 type EntityValue = string | number | null | undefined
 
+const ALL_OPTION_VALUE = '__all__'
+
+export type EntitySelectAllOption = {
+  label: string
+  value?: string
+}
+
 export type EntitySelectProps<T extends object> = {
   items: T[]
   value?: string
@@ -15,6 +22,7 @@ export type EntitySelectProps<T extends object> = {
   valueKey?: keyof T
   labelKey?: keyof T
   placeholder?: string
+  allOption?: EntitySelectAllOption
   disabled?: boolean
   id?: string
   'aria-label'?: string
@@ -30,6 +38,7 @@ export function EntitySelect<T extends object>({
   valueKey = 'id' as keyof T,
   labelKey = 'name' as keyof T,
   placeholder,
+  allOption,
   disabled,
   id,
   'aria-label': ariaLabel,
@@ -37,8 +46,19 @@ export function EntitySelect<T extends object>({
   triggerClassName,
   contentClassName,
 }: EntitySelectProps<T>) {
+  const allValue = allOption?.value ?? ALL_OPTION_VALUE
+  const selectValue = allOption && !value ? allValue : value
+
+  const handleValueChange = (next: string) => {
+    if (allOption && next === allValue) {
+      onValueChange('')
+      return
+    }
+    onValueChange(next)
+  }
+
   return (
-    <Select value={value} onValueChange={onValueChange} disabled={disabled}>
+    <Select value={selectValue} onValueChange={handleValueChange} disabled={disabled}>
       <SelectTrigger
         id={id}
         aria-label={ariaLabel}
@@ -48,6 +68,9 @@ export function EntitySelect<T extends object>({
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent align="start" className={contentClassName}>
+        {allOption && (
+          <SelectItem value={allValue}>{allOption.label}</SelectItem>
+        )}
         {items.map((item, index) => {
           const itemValue = item[valueKey as keyof T] as EntityValue
           if (itemValue === null || itemValue === undefined || itemValue === '') {

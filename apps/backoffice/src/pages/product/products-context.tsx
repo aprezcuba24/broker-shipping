@@ -7,7 +7,7 @@ import {
   usePatchProductProductsProductIdPatch,
   type Product,
 } from '@broker/api'
-import { useCRUD, type CrudContextValue } from '@broker/ui'
+import { useCRUD, useUrlSearchFilters, type CrudContextValue } from '@broker/ui'
 import { createContext, useContext, type ReactNode } from 'react'
 import { z } from 'zod'
 
@@ -22,16 +22,30 @@ export const productFormSchema = z.object({
 
 export type ProductFormValues = z.infer<typeof productFormSchema>
 
+export const productListFilterKeys = ['name', 'category_id'] as const
+
+export type ProductListFilters = Record<
+  (typeof productListFilterKeys)[number],
+  string
+>
+
 export type ProductsContextValue = CrudContextValue<
   Product,
   ProductFormValues
->
+> & {
+  filters: ProductListFilters
+  setFilter: (key: keyof ProductListFilters, value: string) => void
+}
 
 const ProductsContext = createContext<ProductsContextValue | null>(null)
 
 export function ProductsProvider({ children }: { children: ReactNode }) {
   const { activeOrganization } = useActiveOrganization()
-  const value = useCRUD<
+  const { filters, setFilter } = useUrlSearchFilters({
+    keys: productListFilterKeys,
+  })
+
+  const crud = useCRUD<
     Product,
     ProductFormValues,
     { data: { name: string; category_id: string } },
@@ -40,6 +54,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
   >({
     useList: useListProductsProductsGet,
     getListQueryKey: getListProductsProductsGetQueryKey,
+    filters,
     useCreate: useCreateProductProductsPost,
     usePatch: usePatchProductProductsProductIdPatch,
     useDelete: useDeleteProductProductsProductIdDelete,
@@ -56,7 +71,12 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     toDeleteVariables: (product) =>
       product.id ? { productId: product.id } : null,
   })
-  return <ProductsContext value={value}>{children}</ProductsContext>
+
+  return (
+    <ProductsContext value={{ ...crud, filters, setFilter }}>
+      {children}
+    </ProductsContext>
+  )
 }
 
 export function useProducts(): ProductsContextValue {

@@ -2,6 +2,7 @@ import { DataTable, PageWrapper } from '@broker/ui'
 import { Package, Plus } from 'lucide-react'
 import { DialogForm } from './DialogForm'
 import { columns } from './columns'
+import { ProductFilters } from './filter'
 import { useProducts } from './products-context'
 
 export function ProductTable() {
@@ -42,6 +43,7 @@ export function ProductTable() {
         />,
       ]}
     >
+      <ProductFilters />
       <DataTable
         columns={columns}
         data={items}
