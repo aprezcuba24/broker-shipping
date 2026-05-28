@@ -1,16 +1,21 @@
 import {
   ButtonModal,
   EntitySelect,
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
   Input,
-  Label,
   useFormSubmitHandle,
   type FormModalHandle,
   type FormModalProps,
 } from '@broker/ui'
 import { useListCategoriesProductsCategoriesGet } from '@broker/api'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useRef } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import type { ProductFormValues } from './products-context'
+import { productFormSchema, type ProductFormValues } from './products-context'
 
 export type DialogFormProps = Omit<
   FormModalProps<ProductFormValues>,
@@ -30,21 +35,16 @@ export function DialogForm({
   const formRef = useRef<FormModalHandle>(null)
   const { data: categories = [] } = useListCategoriesProductsCategoriesGet()
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    reset,
-    formState: { errors },
-  } = useForm<ProductFormValues>({
+  const form = useForm<ProductFormValues>({
+    resolver: zodResolver(productFormSchema),
     defaultValues,
   })
 
   useEffect(() => {
-    reset(defaultValues)
-  }, [formKey, defaultValues, reset])
+    form.reset(defaultValues)
+  }, [formKey, defaultValues, form])
 
-  useFormSubmitHandle(formRef, handleSubmit, onSubmit)
+  useFormSubmitHandle(formRef, form.handleSubmit, onSubmit)
 
   const handleAccept = async () => {
     await formRef.current?.submit()
@@ -60,52 +60,51 @@ export function DialogForm({
       {...buttonProps}
     >
       <form className="space-y-3" onSubmit={(event) => event.preventDefault()}>
-        <div className="space-y-2">
-          <Label htmlFor="product-name">Nombre</Label>
-          <Input
-            id="product-name"
-            maxLength={255}
-            autoFocus
-            disabled={isSubmitting}
-            {...register('name', {
-              required: 'El nombre es obligatorio',
-              maxLength: { value: 255, message: 'Máximo 255 caracteres' },
-            })}
-          />
-          {errors.name && (
-            <p className="text-sm text-destructive">{errors.name.message}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="product-category">Categoría</Label>
+        <FieldGroup>
           <Controller
-            name="category_id"
-            control={control}
-            rules={{ required: 'La categoría es obligatoria' }}
-            render={({ field }) => (
-              <EntitySelect
-                items={categories}
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={isSubmitting}
-                id="product-category"
-                placeholder="Selecciona una categoría"
-                triggerClassName="w-full"
-              />
+            name="name"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="product-name">Nombre</FieldLabel>
+                <Input
+                  {...field}
+                  id="product-name"
+                  maxLength={255}
+                  autoFocus
+                  disabled={isSubmitting}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              </Field>
             )}
           />
-          {errors.category_id && (
-            <p className="text-sm text-destructive">
-              {errors.category_id.message}
-            </p>
-          )}
-          {categories.length === 0 && (
-            <p className="text-sm text-muted-foreground">
-              Crea una categoría primero para poder asignarla al producto.
-            </p>
-          )}
-        </div>
+          <Controller
+            name="category_id"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="product-category">Categoría</FieldLabel>
+                <EntitySelect
+                  items={categories}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isSubmitting}
+                  id="product-category"
+                  placeholder="Selecciona una categoría"
+                  triggerClassName="w-full"
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                {categories.length === 0 && (
+                  <FieldDescription>
+                    Crea una categoría primero para poder asignarla al producto.
+                  </FieldDescription>
+                )}
+              </Field>
+            )}
+          />
+        </FieldGroup>
 
         {error && <p className="text-sm text-destructive">{error}</p>}
       </form>

@@ -12,10 +12,17 @@ import {
   useContext,
   type ReactNode,
 } from 'react'
+import { z } from 'zod'
 
-export type OrganizationFormValues = {
-  name: string
-}
+export const organizationFormSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, 'El nombre es obligatorio')
+    .max(255, 'Máximo 255 caracteres'),
+})
+
+export type OrganizationFormValues = z.infer<typeof organizationFormSchema>
 
 export type OrganizationsContextValue = CrudContextValue<
   Organization,

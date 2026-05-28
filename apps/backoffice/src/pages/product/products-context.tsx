@@ -1,3 +1,4 @@
+import { useActiveOrganization } from '@/contexts/active-organization-context'
 import {
   getListProductsProductsGetQueryKey,
   useCreateProductProductsPost,
@@ -8,11 +9,18 @@ import {
 } from '@broker/api'
 import { useCRUD, type CrudContextValue } from '@broker/ui'
 import { createContext, useContext, type ReactNode } from 'react'
+import { z } from 'zod'
 
-export type ProductFormValues = {
-  name: string
-  category_id: string
-}
+export const productFormSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, 'El nombre es obligatorio')
+    .max(255, 'Máximo 255 caracteres'),
+  category_id: z.string().min(1, 'La categoría es obligatoria'),
+})
+
+export type ProductFormValues = z.infer<typeof productFormSchema>
 
 export type ProductsContextValue = CrudContextValue<
   Product,
@@ -22,6 +30,7 @@ export type ProductsContextValue = CrudContextValue<
 const ProductsContext = createContext<ProductsContextValue | null>(null)
 
 export function ProductsProvider({ children }: { children: ReactNode }) {
+  const { activeOrganization } = useActiveOrganization()
   const value = useCRUD<
     Product,
     ProductFormValues,
@@ -35,7 +44,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     usePatch: usePatchProductProductsProductIdPatch,
     useDelete: useDeleteProductProductsProductIdDelete,
     toCreateVariables: (values) => ({
-      data: { name: values.name, category_id: values.category_id },
+      data: { ...values, organization_id: activeOrganization?.id ?? '' },
     }),
     toPatchVariables: (product, values) =>
       product.id

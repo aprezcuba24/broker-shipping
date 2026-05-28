@@ -13,11 +13,18 @@ import {
   useContext,
   type ReactNode,
 } from 'react'
+import { z } from 'zod'
 
-export type CategoryFormValues = {
-  name: string
-  organization_id?: string | null
-}
+export const categoryFormSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, 'El nombre es obligatorio')
+    .max(255, 'Máximo 255 caracteres'),
+  organization_id: z.string().nullish(),
+})
+
+export type CategoryFormValues = z.infer<typeof categoryFormSchema>
 
 export type CategoriesContextValue = CrudContextValue<
   Category,
@@ -27,10 +34,11 @@ export type CategoriesContextValue = CrudContextValue<
 const CategoriesContext = createContext<CategoriesContextValue | null>(null)
 
 export function CategoriesProvider({ children }: { children: ReactNode }) {
-  const { submitCreate, ...value } = useCRUD<
+  const { activeOrganization } = useActiveOrganization()
+  const value = useCRUD<
     Category,
     CategoryFormValues,
-    { data: { name: string } },
+    { data: Category },
     { categoryId: string; data: { name: string } },
     { categoryId: string }
   >({
@@ -39,7 +47,12 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
     useCreate: useCreateCategoryProductsCategoriesPost,
     usePatch: usePatchCategoryProductsCategoriesCategoryIdPatch,
     useDelete: useDeleteCategoryProductsCategoriesCategoryIdDelete,
-    toCreateVariables: (values) => ({ data: { name: values.name } }),
+    toCreateVariables: (values) => ({
+      data: {
+        ...values,
+        organization_id: values.organization_id ?? activeOrganization?.id ?? '',
+      } as Category,
+    }),
     toPatchVariables: (category, values) =>
       category.id
         ? { categoryId: category.id, data: { name: values.name } }
@@ -47,9 +60,7 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
     toDeleteVariables: (category) =>
       category.id ? { categoryId: category.id } : null,
   })
-  const { activeOrganization } = useActiveOrganization()
-  const create = (values: CategoryFormValues) => submitCreate({ ...values, organization_id: activeOrganization?.id })
-  return <CategoriesContext value={{ ...value, submitCreate: create }}>{children}</CategoriesContext>
+  return <CategoriesContext value={value}>{children}</CategoriesContext>
 }
 
 export function useCategories(): CategoriesContextValue {

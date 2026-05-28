@@ -65,6 +65,19 @@ export {
 } from './components/ui/card'
 export { Input } from './components/ui/input'
 export { Label } from './components/ui/label'
+export {
+  Field,
+  FieldContent,
+  FieldControl,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSeparator,
+  FieldSet,
+  FieldTitle,
+} from './components/ui/field'
 export { Textarea } from './components/ui/textarea'
 export {
   Table,

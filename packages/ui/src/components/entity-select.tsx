@@ -18,6 +18,7 @@ export type EntitySelectProps<T extends object> = {
   disabled?: boolean
   id?: string
   'aria-label'?: string
+  'aria-invalid'?: boolean
   triggerClassName?: string
   contentClassName?: string
 }
@@ -32,12 +33,18 @@ export function EntitySelect<T extends object>({
   disabled,
   id,
   'aria-label': ariaLabel,
+  'aria-invalid': ariaInvalid,
   triggerClassName,
   contentClassName,
 }: EntitySelectProps<T>) {
   return (
     <Select value={value} onValueChange={onValueChange} disabled={disabled}>
-      <SelectTrigger id={id} aria-label={ariaLabel} className={triggerClassName}>
+      <SelectTrigger
+        id={id}
+        aria-label={ariaLabel}
+        aria-invalid={ariaInvalid}
+        className={triggerClassName}
+      >
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent align="start" className={contentClassName}>
