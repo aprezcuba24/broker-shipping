@@ -11,11 +11,17 @@ async def create_product(
     session: AsyncSession,
     *,
     organization_id: UUID | str,
+    category_id: UUID | str,
     name: str | None = None,
 ) -> dict:
     """Insert a Product row and commit so other connections (e.g. HTTP client) see it."""
     oid = organization_id if isinstance(organization_id, UUID) else UUID(str(organization_id))
-    entity = Product(name=name if name is not None else "Factory product", organization_id=oid)
+    cid = category_id if isinstance(category_id, UUID) else UUID(str(category_id))
+    entity = Product(
+        name=name if name is not None else "Factory product",
+        organization_id=oid,
+        category_id=cid,
+    )
     session.add(entity)
     await session.flush()
     await session.commit()
@@ -33,6 +39,7 @@ class ProductFactory:
         self,
         *,
         organization_id: UUID | str,
+        category_id: UUID | str,
         name: str | None = None,
     ) -> dict:
         self._n += 1
@@ -40,5 +47,6 @@ class ProductFactory:
         return await create_product(
             self._session,
             organization_id=organization_id,
+            category_id=category_id,
             name=final_name,
         )
