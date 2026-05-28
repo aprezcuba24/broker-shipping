@@ -2,9 +2,12 @@ from collections.abc import Sequence
 from typing import Any, Generic, TypeVar, get_args
 from uuid import UUID
 
-from sqlalchemy import select
+from pydantic import BaseModel
+from sqlalchemy import ColumnElement, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import SQLModel
+
+from app.lib.persistence.filtering import FilterSpec
 
 T = TypeVar("T", bound=SQLModel)
 
@@ -35,6 +38,21 @@ class Resource(Generic[T]):
 
     async def list_all(self) -> Sequence[T]:
         result = await self._session.execute(select(self._model))
+        return result.scalars().all()
+
+    async def list_filtered(
+        self,
+        *,
+        filters: BaseModel | None = None,
+        filter_spec: FilterSpec[Any] | None = None,
+        where: Sequence[ColumnElement[bool]] = (),
+    ) -> Sequence[T]:
+        stmt = select(self._model)
+        if where:
+            stmt = stmt.where(*where)
+        if filters is not None and filter_spec is not None:
+            stmt = filter_spec.apply(stmt, filters)
+        result = await self._session.execute(stmt)
         return result.scalars().all()
 
     async def get_by_id(self, entity_id: UUID) -> T | None:

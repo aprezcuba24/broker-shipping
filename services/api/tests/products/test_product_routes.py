@@ -159,6 +159,132 @@ async def test_product_from_other_organization_not_visible(
     assert r_get.status_code == 404
 
 
+async def test_list_products_filter_by_category_id(
+    client: AsyncClient,
+    category_factory: CategoryFactory,
+    product_factory: ProductFactory,
+    tenant_context: dict,
+) -> None:
+    category_a = await category_factory.build(organization_id=tenant_context["organization_id"])
+    category_b = await category_factory.build(organization_id=tenant_context["organization_id"])
+    await product_factory.build(
+        organization_id=tenant_context["organization_id"],
+        category_id=category_a["id"],
+        name="In A",
+    )
+    await product_factory.build(
+        organization_id=tenant_context["organization_id"],
+        category_id=category_b["id"],
+        name="In B",
+    )
+
+    r = await client.get(
+        "/products/",
+        params={"category_id": category_a["id"]},
+        headers=tenant_context["headers"],
+    )
+    assert r.status_code == 200
+    names = [p["name"] for p in r.json()]
+    assert names == ["In A"]
+
+
+async def test_list_products_filter_by_name_partial(
+    client: AsyncClient,
+    category_factory: CategoryFactory,
+    product_factory: ProductFactory,
+    tenant_context: dict,
+) -> None:
+    category = await category_factory.build(organization_id=tenant_context["organization_id"])
+    await product_factory.build(
+        organization_id=tenant_context["organization_id"],
+        category_id=category["id"],
+        name="Laptop Pro",
+    )
+    await product_factory.build(
+        organization_id=tenant_context["organization_id"],
+        category_id=category["id"],
+        name="Desktop",
+    )
+
+    r = await client.get(
+        "/products/",
+        params={"name": "lap"},
+        headers=tenant_context["headers"],
+    )
+    assert r.status_code == 200
+    names = [p["name"] for p in r.json()]
+    assert names == ["Laptop Pro"]
+
+
+async def test_list_products_filter_combined(
+    client: AsyncClient,
+    category_factory: CategoryFactory,
+    product_factory: ProductFactory,
+    tenant_context: dict,
+) -> None:
+    category_a = await category_factory.build(organization_id=tenant_context["organization_id"])
+    category_b = await category_factory.build(organization_id=tenant_context["organization_id"])
+    await product_factory.build(
+        organization_id=tenant_context["organization_id"],
+        category_id=category_a["id"],
+        name="Laptop A",
+    )
+    await product_factory.build(
+        organization_id=tenant_context["organization_id"],
+        category_id=category_b["id"],
+        name="Laptop B",
+    )
+
+    r = await client.get(
+        "/products/",
+        params={"category_id": category_a["id"], "name": "lap"},
+        headers=tenant_context["headers"],
+    )
+    assert r.status_code == 200
+    names = [p["name"] for p in r.json()]
+    assert names == ["Laptop A"]
+
+
+async def test_list_products_unknown_filter_param_returns_422(
+    client: AsyncClient,
+    tenant_context: dict,
+) -> None:
+    r = await client.get(
+        "/products/",
+        params={"foo": "bar"},
+        headers=tenant_context["headers"],
+    )
+    assert r.status_code == 422
+
+
+async def test_list_products_filter_respects_org_isolation(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    category_factory: CategoryFactory,
+    product_factory: ProductFactory,
+) -> None:
+    owner = await user_factory.build(username="owner_prod_filter")
+    outsider = await user_factory.build(username="outsider_prod_filter")
+    org_a = await organization_factory.build(user_id=owner["id"], name="Org Filter A")
+    org_b = await organization_factory.build(user_id=outsider["id"], name="Org Filter B")
+    category_b = await category_factory.build(organization_id=org_b["id"])
+    await product_factory.build(
+        organization_id=org_b["id"],
+        category_id=category_b["id"],
+        name="Secret Laptop",
+    )
+
+    headers_a = tenant_headers(user_id=owner["id"], organization_id=org_a["id"])
+    r = await client.get(
+        "/products/",
+        params={"name": "lap", "category_id": category_b["id"]},
+        headers=headers_a,
+    )
+    assert r.status_code == 200
+    assert r.json() == []
+
+
 async def test_api_key_only_sees_own_organization_products(
     client: AsyncClient,
     user_factory: UserFactory,
