@@ -1,10 +1,6 @@
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   ButtonModal,
+  EntitySelect,
   Input,
   Label,
   useFormSubmitHandle,
@@ -88,25 +84,15 @@ export function DialogForm({
             control={control}
             rules={{ required: 'La categoría es obligatoria' }}
             render={({ field }) => (
-              <Select
+              <EntitySelect
+                items={categories}
                 value={field.value}
                 onValueChange={field.onChange}
                 disabled={isSubmitting}
-              >
-                <SelectTrigger id="product-category" className="w-full">
-                  <SelectValue placeholder="Selecciona una categoría" />
-                </SelectTrigger>
-                <SelectContent align="start">
-                  {categories.map((category) => {
-                    if (!category.id) return null
-                    return (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    )
-                  })}
-                </SelectContent>
-              </Select>
+                id="product-category"
+                placeholder="Selecciona una categoría"
+                triggerClassName="w-full"
+              />
             )}
           />
           {errors.category_id && (

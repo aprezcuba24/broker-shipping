@@ -35,6 +35,8 @@ export { BtnList } from './components/btn-list'
 export type { BtnListProps } from './components/btn-list'
 export { RowActions } from './components/row-actions'
 export type { RowActionsProps } from './components/row-actions'
+export { EntitySelect } from './components/entity-select'
+export type { EntitySelectProps } from './components/entity-select'
 export {
   DropdownMenu,
   DropdownMenuTrigger,
