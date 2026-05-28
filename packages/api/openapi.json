@@ -1215,6 +1215,7 @@
         },
         "type": "object",
         "required": [
+          "organization_id",
           "name"
         ],
         "title": "Category"
@@ -1313,11 +1314,17 @@
             "type": "string",
             "maxLength": 255,
             "title": "Name"
+          },
+          "category_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Category Id"
           }
         },
         "type": "object",
         "required": [
-          "name"
+          "name",
+          "category_id"
         ],
         "title": "Product"
       },
