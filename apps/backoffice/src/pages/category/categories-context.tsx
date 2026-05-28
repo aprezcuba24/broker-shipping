@@ -1,3 +1,4 @@
+import { useActiveOrganization } from '@/contexts/active-organization-context'
 import {
   getListCategoriesProductsCategoriesGetQueryKey,
   useCreateCategoryProductsCategoriesPost,
@@ -15,6 +16,7 @@ import {
 
 export type CategoryFormValues = {
   name: string
+  organization_id?: string | null
 }
 
 export type CategoriesContextValue = CrudContextValue<
@@ -25,7 +27,7 @@ export type CategoriesContextValue = CrudContextValue<
 const CategoriesContext = createContext<CategoriesContextValue | null>(null)
 
 export function CategoriesProvider({ children }: { children: ReactNode }) {
-  const value = useCRUD<
+  const { submitCreate, ...value } = useCRUD<
     Category,
     CategoryFormValues,
     { data: { name: string } },
@@ -45,7 +47,9 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
     toDeleteVariables: (category) =>
       category.id ? { categoryId: category.id } : null,
   })
-  return <CategoriesContext value={value}>{children}</CategoriesContext>
+  const { activeOrganization } = useActiveOrganization()
+  const create = (values: CategoryFormValues) => submitCreate({ ...values, organization_id: activeOrganization?.id })
+  return <CategoriesContext value={{ ...value, submitCreate: create }}>{children}</CategoriesContext>
 }
 
 export function useCategories(): CategoriesContextValue {
