@@ -6,8 +6,7 @@ from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Body, Depends, Response
 
 from app.lib.security import Principal, organization_id_for, require_user_or_api_key
-from app.modules.products.list_filters import ProductListFilters, product_list_filters
-from app.modules.products.models import Product
+from app.modules.products.models import Product, ProductListFilters, product_list_filters
 from app.modules.products.services import ProductService
 
 router = APIRouter(route_class=DishkaRoute)

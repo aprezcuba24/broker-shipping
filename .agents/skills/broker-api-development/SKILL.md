@@ -60,12 +60,12 @@ Reference: `app/modules/products/routes/category.py`, `CategoryService`, `Catego
 
 | Operation | Service method |
 |-----------|----------------|
-| List | `list_for_organization(oid)` |
+| List | `list_for_organization(oid, filters=…)` — optional query filters (see **List filtering**) |
 | Get | `get_or_404_for_organization(id, oid, detail=…)` |
 | Create | `create(entity)` with `organization_id=oid` on entity |
 | Patch / delete | `get_or_404_for_organization` first, then `patch` / `delete` |
 
-Repo filters (`list_by_organization`, `get_by_id_for_organization`) live in `OrgScopedRepositoryMixin` — not in routes/services.
+Repo filters (`list_by_organization` → `list_filtered`, `get_by_id_for_organization`) live in `OrgScopedRepositoryMixin` / `Resource` — not in routes/services.
 
 Route pattern: `@require_user_or_api_key`, `principal: Principal` **last**, `oid = organization_id_for(principal)`.
 
@@ -73,11 +73,44 @@ Route pattern: `@require_user_or_api_key`, `principal: Principal` **last**, `oid
 
 ---
 
+## List filtering
+
+Reference: `app/modules/products/models/product.py`, `ProductService`, `routes/product.py`.
+
+Generic layer in `app/lib/persistence/filtering/` (`FilterSpec`, `FilterOperator`, `FilterFieldConfig`). **Single source of truth per entity:** define the spec in the **same file as the SQLModel** (after the class), not a separate `list_filters.py`.
+
+```python
+# models/product.py (after class Product)
+PRODUCT_LIST_FILTER_SPEC = FilterSpec(
+    model=Product,
+    fields={
+        "category_id": FilterFieldConfig(operator=FilterOperator.eq),
+        "name": FilterFieldConfig(operator=FilterOperator.ilike),
+    },
+)
+ProductListFilters = PRODUCT_LIST_FILTER_SPEC.as_params_model()
+product_list_filters = PRODUCT_LIST_FILTER_SPEC.as_dependency()
+```
+
+| Layer | Responsibility |
+|-------|----------------|
+| Model file | `FilterSpec` + `ProductListFilters` + `product_list_filters` dependency |
+| Service | `list_filter_spec()` → return the spec constant |
+| Route | `filters: Annotated[ProductListFilters, Depends(product_list_filters)]` → `list_for_organization(oid, filters=filters)` |
+| Repo | `list_by_organization` adds `organization_id`; `Resource.list_filtered` applies spec |
+
+- Subset of model fields only; types from `model.model_fields`. Unknown query params → 422 (`as_dependency()` checks `request.query_params`).
+- `ilike` = partial case-insensitive; `eq` = exact match. Combined with AND.
+- Entities without list filters: omit spec; default `list_filter_spec()` is `None`.
+- Custom SQL / joins: override `list_filtered` in the repository.
+
+---
+
 ## Repository & service
 
 - Custom SQL (filters, joins) → **repository only**, never route.
 - Global repo methods: `list_all`, `get_by_id`, `create`, `update`, `delete`.
-- Service: implement `creation_exclude()` → `Model.IMMUTABLE_FIELDS`, `patch_allowed_keys()` → `model_fields - IMMUTABLE_FIELDS`.
+- Service: implement `creation_exclude()` → `Model.IMMUTABLE_FIELDS`, `patch_allowed_keys()` → `model_fields - IMMUTABLE_FIELDS`; optional `list_filter_spec()` when the model file defines a `FilterSpec`.
 - Override hooks: `on_create`, `on_update`, `on_delete`, `on_get`, `on_list`. Emit with `post_commit_emit(Event(...))` in `on_create` etc.
 - **Do not override `BaseService.patch`.**
 - No events → omit `dispatcher` / `post_commit` from provider (see `OrganizationProvider`).
@@ -168,3 +201,4 @@ Do not hardcode URLs.
 - [ ] Events/listener/provider (skip dispatcher if no events)
 - [ ] Alembic revision + `upgrade head`
 - [ ] Factory, TRUNCATE entry, fixtures, route tests (+ tenant isolation if org-scoped)
+- [ ] List filters (if needed): `FilterSpec` in `models/foo.py`, `list_filter_spec()` on service, `Depends(foo_list_filters)` on GET list, filter tests (422 for unknown params, isolation)

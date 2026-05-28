@@ -1,7 +1,6 @@
 from app.lib.persistence import BaseService, FilterSpec, OrgScopedServiceMixin
 from app.modules.products.events import ProductCreated
-from app.modules.products.list_filters import PRODUCT_LIST_FILTER_SPEC
-from app.modules.products.models import Product
+from app.modules.products.models import PRODUCT_LIST_FILTER_SPEC, Product
 
 
 class ProductService(OrgScopedServiceMixin[Product], BaseService[Product]):

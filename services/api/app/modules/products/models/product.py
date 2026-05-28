@@ -3,7 +3,7 @@ from uuid import UUID
 from sqlalchemy import Column, ForeignKey
 from sqlmodel import Field
 
-from app.lib.persistence import OrganizationEntityModel
+from app.lib.persistence import FilterFieldConfig, FilterOperator, FilterSpec, OrganizationEntityModel
 
 
 class Product(OrganizationEntityModel, table=True):
@@ -15,3 +15,15 @@ class Product(OrganizationEntityModel, table=True):
             index=True,
         ),
     )
+
+
+PRODUCT_LIST_FILTER_SPEC = FilterSpec(
+    model=Product,
+    fields={
+        "category_id": FilterFieldConfig(operator=FilterOperator.eq),
+        "name": FilterFieldConfig(operator=FilterOperator.ilike),
+    },
+)
+
+ProductListFilters = PRODUCT_LIST_FILTER_SPEC.as_params_model()
+product_list_filters = PRODUCT_LIST_FILTER_SPEC.as_dependency()
