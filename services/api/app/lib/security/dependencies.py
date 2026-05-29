@@ -52,7 +52,7 @@ async def _resolve_user_organization(
         if required:
             raise HTTPException(status_code=400, detail="Organization context required")
         return None
-    if not await user_org_repo.is_member(user_id, organization_id):
+    if not await user_org_repo.is_active_member(user_id, organization_id):
         raise HTTPException(status_code=403, detail="Forbidden")
     return organization_id
 

@@ -6,6 +6,7 @@ from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Body, Response
 
 from app.lib.security import UserPrincipal, require_user
+from app.modules.organization.security import require_org_provider
 from app.modules.organization.models import Organization
 from app.modules.organization.services import OrganizationService
 
@@ -34,24 +35,24 @@ async def list_organizations(
 
 
 @router.patch("/{organization_id}", response_model=Organization)
+@require_org_provider
 @require_user
 async def patch_organization(
     organization_id: UUID,
     payload: Annotated[dict[str, Any], Body(...)],
     service: FromDishka[OrganizationService],
-    principal: UserPrincipal,
 ):
     await service.get_or_404(entity_id=organization_id)
-    return await service.update_for_user(organization_id, principal.user_id, payload)
+    return await service.update_for_user(organization_id, payload)
 
 
 @router.delete("/{organization_id}", status_code=204)
+@require_org_provider
 @require_user
 async def delete_organization(
     organization_id: UUID,
     service: FromDishka[OrganizationService],
-    principal: UserPrincipal,
 ):
     organization = await service.get_or_404(entity_id=organization_id)
-    await service.delete_for_user(organization, principal.user_id)
+    await service.delete_for_user(organization)
     return Response(status_code=204)
