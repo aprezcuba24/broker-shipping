@@ -11,7 +11,7 @@ export interface Category {
   id?: string;
   created_at?: string;
   updated_at?: CategoryUpdatedAt;
-  organization_id?: string;
+  organization_id: string;
   /** @maxLength 255 */
   name: string;
 }

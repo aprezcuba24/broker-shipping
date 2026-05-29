@@ -2,13 +2,16 @@
 name: backoffice-crud
 description: >-
   Backoffice entity CRUD pages in apps/backoffice: context + useCRUD, DataTable,
-  DialogForm, columns with row actions, router and nav registration. Use when
-  adding or modifying admin list/create/edit/delete screens for API entities.
+  DialogForm, filter.tsx (URL-synced list filters), columns with row actions,
+  router and nav registration. Use when adding or modifying admin list/create/edit/delete
+  screens for API entities, including filtered list views.
 ---
 
 # Backoffice CRUD
 
-**Canonical reference:** `apps/backoffice/src/pages/organization/`
+**Canonical reference (CRUD):** `apps/backoffice/src/pages/organization/`
+
+**Canonical reference (list filters):** `apps/backoffice/src/pages/product/`
 
 **Prerequisites:** API module with list/create/patch/delete routes. See [broker-api-development](../broker-api-development/SKILL.md). Regenerate client hooks after OpenAPI changes.
 
@@ -27,8 +30,9 @@ Compound components with lifted state:
 
 ```
 Page (index.tsx)
-└── {Entities}Provider        ← useCRUD + React context
-    └── {Entity}Table         ← PageWrapper + DataTable + create DialogForm
+└── {Entities}Provider        ← useCRUD + useUrlSearchFilters + React context
+    └── {Entity}Table         ← PageWrapper + filter.tsx + DataTable + create DialogForm
+        ├── filter.tsx        ← optional: URL-synced list filters (DebouncedInput, EntitySelect, …)
         └── columns           ← ColumnDef[] + BtnList (edit DialogForm, BtnConfirm delete)
             └── DialogForm    ← react-hook-form + ButtonModal
 ```
@@ -47,8 +51,9 @@ Create one folder per entity under `apps/backoffice/src/pages/{entity}/`:
 ```
 pages/{entity}/
 ├── index.tsx                 # Page: Provider + Table
-├── {entities}-context.tsx    # FormValues, Provider, hook
-├── table.tsx                 # PageWrapper, create button, DataTable
+├── {entities}-context.tsx    # FormValues, filter keys, Provider, hook
+├── table.tsx                 # PageWrapper, create button, filter bar, DataTable
+├── filter.tsx                # optional: list filter form (URL-synced)
 ├── columns.tsx               # ColumnDef[] + per-row actions
 └── DialogForm.tsx            # Shared create/edit modal form
 ```
@@ -63,6 +68,8 @@ pages/{entity}/
 | Provider / hook | `{Entities}Provider`, `use{Entities}` | `OrganizationsProvider`, `useOrganizations` |
 | Form values type | `{Entity}FormValues` | `OrganizationFormValues` |
 | Table export | `{Entity}Table` | `OrganizationTable` |
+| Filter export | `{Entity}Filters` | `ProductFilters` in `filter.tsx` |
+| Filter keys const | `{entity}ListFilterKeys` | `productListFilterKeys` |
 | Row actions component | local name (e.g. `RowActions`) | `RowActions` in `columns.tsx` — not `@broker/ui` `RowActions` |
 
 ---
@@ -70,6 +77,7 @@ pages/{entity}/
 ## 1. Context — `{entities}-context.tsx`
 
 Wire Orval hooks into `useCRUD`. Map form values to mutation variables. Use **explicit** generic types copied from the generated hook variable shapes (see `packages/api/src/generated/`).
+Define validation schema with Zod in the same context file and export `FormValues` from `z.infer`.
 
 ```tsx
 import {
@@ -82,10 +90,17 @@ import {
 } from '@broker/api'
 import { useCRUD, type CrudContextValue } from '@broker/ui'
 import { createContext, useContext, type ReactNode } from 'react'
+import { z } from 'zod'
 
-export type OrganizationFormValues = {
-  name: string
-}
+export const organizationFormSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, 'El nombre es obligatorio')
+    .max(255, 'Máximo 255 caracteres'),
+})
+
+export type OrganizationFormValues = z.infer<typeof organizationFormSchema>
 
 export type OrganizationsContextValue = CrudContextValue<
   Organization,
@@ -129,8 +144,189 @@ export function useOrganizations(): OrganizationsContextValue {
 - `toPatchVariables` / `toDeleteVariables` return `null` when `item.id` is missing — mutation is skipped.
 - Patch/delete id param name comes from OpenAPI (e.g. `organizationId`, `categoryId`) — match generated types exactly.
 - Do not duplicate list invalidation or error formatting — `useCRUD` handles that via `formatApiError` and `getListQueryKey()`.
+- Keep Zod schema messages in Spanish and aligned with API constraints.
 
 **Org-scoped entities:** routes require `X-Organization-Id`. The API client adds it from `configureApi({ getOrganizationId })` — no extra header logic in the page. Ensure the active org is set in auth before hitting tenant endpoints.
+
+### Org-scoped create pattern (reusable)
+
+When entities must be tied to the active organization (e.g. categories), inject `organization_id` from context in `submitCreate`.
+
+Canonical reference: `apps/backoffice/src/pages/category/categories-context.tsx`.
+
+```tsx
+import { useActiveOrganization } from '@/contexts/active-organization-context'
+// ...
+export const categoryFormSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, 'El nombre es obligatorio')
+    .max(255, 'Máximo 255 caracteres'),
+  organization_id: z.string().nullish(),
+})
+
+export type CategoryFormValues = z.infer<typeof categoryFormSchema>
+
+export function CategoriesProvider({ children }: { children: ReactNode }) {
+  const { submitCreate, ...value } = useCRUD<
+    Category,
+    CategoryFormValues,
+    { data: Category },
+    { categoryId: string; data: { name: string } },
+    { categoryId: string }
+  >({
+    // ...
+    toCreateVariables: (values) => ({
+      data: {
+        ...values,
+        organization_id: values.organization_id ?? '',
+      } as Category,
+    }),
+  })
+
+  const { activeOrganization } = useActiveOrganization()
+
+  const create = (values: CategoryFormValues) =>
+    submitCreate({ ...values, organization_id: activeOrganization?.id })
+
+  return (
+    <CategoriesContext value={{ ...value, submitCreate: create }}>
+      {children}
+    </CategoriesContext>
+  )
+}
+```
+
+**Rules for tenant-scoped create:**
+- Keep `organization_id` optional/nullish in `FormValues` if the field is not edited in the modal.
+- Inject active org id only in provider-level `submitCreate` wrapper, not in UI components.
+- Keep dialog form clean (`name` only, etc.); no hidden input for org id.
+- Ensure active organization is selected before create flows.
+
+### List filters pattern (URL-synced)
+
+When the list API supports query filters (backend `FilterSpec`), sync filter state with URL search params and pass them to `useCRUD`.
+
+**Reusable primitives in `@broker/ui`:**
+
+| Export | Use |
+|--------|-----|
+| `useUrlSearchFilters` | Read/write filter keys in the route query string |
+| `pickQueryParams` | Omit empty strings before API request |
+| `DebouncedInput` | Text filters with debounced URL updates (default 300ms) |
+| `ListFilterBar` | Single-row flex layout above the table |
+| `EntitySelect` + `allOption` | Relation filters with a “show all” option |
+
+**Flow:** `filter.tsx` calls `setFilter` → URL updates → context passes `filters` to `useCRUD` → backend filters the result. Pagination resets to page 1 when filters change (handled inside `useCRUD`).
+
+Canonical reference: `apps/backoffice/src/pages/product/products-context.tsx` and `filter.tsx`.
+
+**Context — define filter keys and wire list params:**
+
+```tsx
+import {
+  getListProductsProductsGetQueryKey,
+  useListProductsProductsGet,
+  // …mutations
+  type Product,
+} from '@broker/api'
+import { useCRUD, useUrlSearchFilters, type CrudContextValue } from '@broker/ui'
+
+export const productListFilterKeys = ['name', 'category_id'] as const
+export type ProductListFilters = Record<
+  (typeof productListFilterKeys)[number],
+  string
+>
+
+export type ProductsContextValue = CrudContextValue<
+  Product,
+  ProductFormValues
+> & {
+  filters: ProductListFilters
+  setFilter: (key: keyof ProductListFilters, value: string) => void
+}
+
+export function ProductsProvider({ children }: { children: ReactNode }) {
+  const { filters, setFilter } = useUrlSearchFilters({
+    keys: productListFilterKeys,
+  })
+  const crud = useCRUD<
+    Product,
+    ProductFormValues,
+    /* create / patch / delete variable types */
+  >({
+    useList: useListProductsProductsGet,
+    getListQueryKey: getListProductsProductsGetQueryKey,
+    filters,
+    // …useCreate, usePatch, useDelete, mappers
+  })
+
+  return (
+    <ProductsContext value={{ ...crud, filters, setFilter }}>
+      {children}
+    </ProductsContext>
+  )
+}
+```
+
+**Rules for list filters:**
+- Filter query param names must match the backend `FilterSpec` field names exactly (e.g. `name`, `category_id`).
+- Empty filter values are removed from the URL and omitted from the API request.
+- Text search uses `DebouncedInput`; selects and toggles update the URL immediately.
+- Expose `filters` and `setFilter` from the provider — `filter.tsx` must not call `useUrlSearchFilters` directly (single source of truth in context).
+- Pass the Orval list hook as `useList` and optional `filters` — `useCRUD` adds query params via `brokerFetch` (no manual wrapper in the page).
+- Use `EntitySelect` with `allOption={{ label: 'Todas las categorías' }}` (or equivalent) for optional relation filters — not required in create/edit `DialogForm`.
+- Backend list filters require `FilterSpec` on the API route; see [broker-api-development](../broker-api-development/SKILL.md).
+
+**Filter UI — `filter.tsx`:**
+
+```tsx
+import { useListCategoriesProductsCategoriesGet } from '@broker/api'
+import {
+  DebouncedInput,
+  EntitySelect,
+  ListFilterBar,
+} from '@broker/ui'
+import { useProducts } from './products-context'
+
+export function ProductFilters() {
+  const { filters, setFilter } = useProducts()
+  const { data: categories = [] } = useListCategoriesProductsCategoriesGet()
+
+  return (
+    <ListFilterBar>
+      <DebouncedInput
+        value={filters.name}
+        onDebouncedChange={(value) => setFilter('name', value)}
+        placeholder="Buscar producto…"
+        aria-label="Buscar por nombre"
+        className="min-w-0 flex-1"
+      />
+      <EntitySelect
+        items={categories}
+        value={filters.category_id}
+        onValueChange={(value) => setFilter('category_id', value)}
+        allOption={{ label: 'Todas las categorías' }}
+        placeholder="Categoría"
+        aria-label="Filtrar por categoría"
+        triggerClassName="w-full shrink-0 sm:w-48"
+      />
+    </ListFilterBar>
+  )
+}
+```
+
+**Table — render filters above `DataTable`:**
+
+```tsx
+<PageWrapper ...>
+  <ProductFilters />
+  <DataTable ... />
+</PageWrapper>
+```
+
+Each new filtered entity needs only: filter keys in context (~10 lines), entity-specific fields in `filter.tsx`, and `<{Entity}Filters />` in `table.tsx`.
 
 ---
 
@@ -141,15 +337,22 @@ Single modal form reused for create (toolbar button) and edit (row icon button).
 ```tsx
 import {
   ButtonModal,
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
   Input,
-  Label,
   useFormSubmitHandle,
   type FormModalHandle,
   type FormModalProps,
 } from '@broker/ui'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useRef } from 'react'
-import { useForm } from 'react-hook-form'
-import type { {Entity}FormValues } from './{entities}-context'
+import { Controller, useForm } from 'react-hook-form'
+import {
+  {entity}FormSchema,
+  type {Entity}FormValues,
+} from './{entities}-context'
 
 export type DialogFormProps = Omit<
   FormModalProps<{Entity}FormValues>,
@@ -168,18 +371,16 @@ export function DialogForm({
 }: DialogFormProps) {
   const formRef = useRef<FormModalHandle>(null)
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<{Entity}FormValues>({ defaultValues })
+  const form = useForm<{Entity}FormValues>({
+    resolver: zodResolver({entity}FormSchema),
+    defaultValues,
+  })
 
   useEffect(() => {
-    reset(defaultValues)
-  }, [formKey, defaultValues, reset])
+    form.reset(defaultValues)
+  }, [formKey, defaultValues, form])
 
-  useFormSubmitHandle(formRef, handleSubmit, onSubmit)
+  useFormSubmitHandle(formRef, form.handleSubmit, onSubmit)
 
   const handleAccept = async () => {
     await formRef.current?.submit()
@@ -195,22 +396,26 @@ export function DialogForm({
       {...buttonProps}
     >
       <form className="space-y-3" onSubmit={(event) => event.preventDefault()}>
-        <div className="space-y-2">
-          <Label htmlFor="{entity}-name">Nombre</Label>
-          <Input
-            id="{entity}-name"
-            maxLength={255}
-            autoFocus
-            disabled={isSubmitting}
-            {...register('name', {
-              required: 'El nombre es obligatorio',
-              maxLength: { value: 255, message: 'Máximo 255 caracteres' },
-            })}
+        <FieldGroup>
+          <Controller
+            name="name"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="{entity}-name">Nombre</FieldLabel>
+                <Input
+                  {...field}
+                  id="{entity}-name"
+                  maxLength={255}
+                  autoFocus
+                  disabled={isSubmitting}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
           />
-          {errors.name && (
-            <p className="text-sm text-destructive">{errors.name.message}</p>
-          )}
-        </div>
+        </FieldGroup>
 
         {error && <p className="text-sm text-destructive">{error}</p>}
       </form>
@@ -221,10 +426,12 @@ export function DialogForm({
 
 **Rules:**
 - Use `formKey` to reset form when switching create ↔ edit or reopening create after success (`createFormKey` from context for create; `item.id` for edit).
-- Client validation mirrors API constraints (required, maxLength, etc.).
+- Client validation uses `zodResolver` + context schema.
 - UI copy in Spanish (labels, validation messages, modal titles).
 - Set unique `id` / `htmlFor` per field (`{entity}-name`).
 - Pass `error={formError}` from context for API errors; call `clearFormError()` / `resetCreateForm()` in `onOpenChange` when modal closes.
+- For field-level errors, use `FieldError` inside `Controller`; do not render manual `<p>` error blocks.
+- Add `data-invalid={fieldState.invalid}` to `Field` and `aria-invalid={fieldState.invalid}` to controls.
 - **Create / edit (default):** pass trigger props (`label`, `icon`, `variant`, `size`, …) — no `open` prop; `ButtonModal` renders the trigger.
 - **Controlled modal (optional):** pass `open` + `onOpenChange`; `hideTrigger={open !== undefined}` hides the trigger (same as `FormModal` in `@broker/ui`).
 
@@ -309,6 +516,8 @@ export const columns: ColumnDef<{Entity}>[] = [
 ---
 
 ## 4. Table — `table.tsx`
+
+For filtered lists, render `<{Entity}Filters />` from `./filter.tsx` above `DataTable` (see [List filters pattern](#list-filters-pattern-url-synced)).
 
 ```tsx
 import { DataTable, PageWrapper } from '@broker/ui'
@@ -417,6 +626,7 @@ Consumers get this from `use{Entities}()`:
 |-------|-----|
 | `items`, `isLoading` | DataTable data |
 | `page`, `setPage` | Pagination |
+| `filters`, `setFilter` | List filter bar (only when provider wires URL filters) |
 | `submitCreate`, `isCreating`, `createFormKey`, `resetCreateForm` | Create modal |
 | `submitEdit`, `isSubmitting`, `formError`, `clearFormError` | Edit modal |
 | `deleteItem`, `isDeleting` | Delete confirm (`BtnConfirm`) |
@@ -426,14 +636,16 @@ Consumers get this from `use{Entities}()`:
 ## Checklist
 
 - [ ] Backend CRUD exists; OpenAPI regenerated; hooks exported from `@broker/api`
-- [ ] Folder `pages/{entity}/` with 5 files (index, `{entities}-context`, table, columns, DialogForm)
-- [ ] `{Entity}FormValues` matches form fields; `useCRUD` generics and mappers match generated mutation types
+- [ ] Folder `pages/{entity}/` with 5 files minimum (index, `{entities}-context`, table, columns, DialogForm); add `filter.tsx` when the list API supports query filters
+- [ ] `{Entity}FormValues` is inferred from Zod schema; `useCRUD` generics and mappers match generated mutation types
 - [ ] Create uses `createFormKey` + `resetCreateForm`; edit uses `item.id` as `formKey`
 - [ ] Row actions: `BtnList` + edit `DialogForm` (icon) + `BtnConfirm` (icon); `clearFormError` on edit close
 - [ ] `aria-label` on icon-only edit/delete triggers
 - [ ] Create button uses `size="sm"` and `className="w-full sm:w-auto"`
 - [ ] Route in `router.tsx` and nav item in `navigation.ts`
 - [ ] Spanish UI strings; field validation aligned with API model
+- [ ] Tenant-scoped entities inject `organization_id` from active organization in provider `submitCreate` wrapper
+- [ ] Filtered lists: `useUrlSearchFilters` in context; `useCRUD({ filters, useList, getListQueryKey })`; `filter.tsx` uses `DebouncedInput` for text; URL params match backend `FilterSpec`
 
 ### Mobile-first conventions (inherited from `@broker/ui`)
 
@@ -450,3 +662,8 @@ Consumers get this from `use{Entities}()`:
 - **Do not** skip `formKey` — without it, react-hook-form keeps stale values when reopening modals.
 - **Do not** put CRUD list/pagination/mutation state in page-level `useState` when `useCRUD` already covers the workflow.
 - **Do not** use `@broker/ui` `RowActions` dropdown in new CRUD pages unless explicitly migrating away from the `BtnList` + icon pattern used in organization.
+- **Do not** duplicate inline `register` validation rules when schema already exists in context.
+- **Do not** pass `organization_id` from table/dialog components for tenant-scoped entities; resolve it in provider with active org context.
+- **Do not** call `useUrlSearchFilters` in both context and `filter.tsx` — context owns URL state; filter UI reads `filters` / `setFilter` from `use{Entities}()`.
+- **Do not** use plain `Input` with `onChange` for text list filters — use `DebouncedInput` to avoid excessive API calls.
+- **Do not** store filter state in local `useState` when the URL should be shareable/bookmarkable — sync via `useUrlSearchFilters`.

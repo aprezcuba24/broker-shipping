@@ -1,6 +1,8 @@
 import {
   ButtonModal,
+  EntitySelect,
   Field,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -9,19 +11,20 @@ import {
   type FormModalHandle,
   type FormModalProps,
 } from '@broker/ui'
+import { useListCategoriesProductsCategoriesGet } from '@broker/api'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useRef } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import { categoryFormSchema, type CategoryFormValues } from './categories-context'
+import { productFormSchema, type ProductFormValues } from './products-context'
 
 export type DialogFormProps = Omit<
-  FormModalProps<CategoryFormValues>,
+  FormModalProps<ProductFormValues>,
   'Form'
 >
 
 export function DialogForm({
   onSubmit,
-  defaultValues = { name: '' },
+  defaultValues = { name: '', category_id: '' },
   isSubmitting = false,
   error = null,
   formKey,
@@ -30,9 +33,10 @@ export function DialogForm({
   ...buttonProps
 }: DialogFormProps) {
   const formRef = useRef<FormModalHandle>(null)
+  const { data: categories = [] } = useListCategoriesProductsCategoriesGet()
 
-  const form = useForm<CategoryFormValues>({
-    resolver: zodResolver(categoryFormSchema),
+  const form = useForm<ProductFormValues>({
+    resolver: zodResolver(productFormSchema),
     defaultValues,
   })
 
@@ -55,26 +59,48 @@ export function DialogForm({
       hideTrigger={open !== undefined}
       {...buttonProps}
     >
-      <form
-        className="space-y-3"
-        onSubmit={(event) => event.preventDefault()}
-      >
+      <form className="space-y-3" onSubmit={(event) => event.preventDefault()}>
         <FieldGroup>
           <Controller
             name="name"
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="category-name">Nombre</FieldLabel>
+                <FieldLabel htmlFor="product-name">Nombre</FieldLabel>
                 <Input
                   {...field}
-                  id="category-name"
+                  id="product-name"
                   maxLength={255}
                   autoFocus
                   disabled={isSubmitting}
                   aria-invalid={fieldState.invalid}
                 />
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
+          <Controller
+            name="category_id"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="product-category">Categoría</FieldLabel>
+                <EntitySelect
+                  items={categories}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isSubmitting}
+                  id="product-category"
+                  placeholder="Selecciona una categoría"
+                  triggerClassName="w-full"
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                {categories.length === 0 && (
+                  <FieldDescription>
+                    Crea una categoría primero para poder asignarla al producto.
+                  </FieldDescription>
+                )}
               </Field>
             )}
           />

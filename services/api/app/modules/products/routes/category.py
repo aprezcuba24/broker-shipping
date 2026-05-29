@@ -3,7 +3,9 @@ from uuid import UUID
 
 from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
-from fastapi import APIRouter, Body, Response
+from fastapi import APIRouter, Body, HTTPException, Response
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.lib.security import Principal, organization_id_for, require_user_or_api_key
 from app.modules.products.models import Category
@@ -72,9 +74,17 @@ async def patch_category(
 async def delete_category(
     category_id: UUID,
     service: FromDishka[CategoryService],
+    session: FromDishka[AsyncSession],
     principal: Principal,
 ):
     oid = organization_id_for(principal)
     await service.get_or_404_for_organization(category_id, oid, detail="Category not found")
-    await service.delete(category_id)
+    try:
+        await service.delete(category_id)
+    except IntegrityError as error:
+        await session.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete category with associated products",
+        ) from error
     return Response(status_code=204)

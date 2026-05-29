@@ -174,6 +174,7 @@ async def test_delete_organization_with_dependencies_soft_deletes(
     client: AsyncClient,
     user_factory: UserFactory,
     organization_factory: OrganizationFactory,
+    category_factory: CategoryFactory,
     product_factory: ProductFactory,
     db_session: AsyncSession,
 ) -> None:
@@ -181,7 +182,8 @@ async def test_delete_organization_with_dependencies_soft_deletes(
     headers = bearer_headers(user_id=u["id"])
     org = await organization_factory.build(user_id=u["id"])
     org_id = org["id"]
-    await product_factory.build(organization_id=org_id)
+    category = await category_factory.build(organization_id=org_id)
+    await product_factory.build(organization_id=org_id, category_id=category["id"])
 
     r_del = await client.delete(f"/organizations/{org_id}", headers=headers)
     assert r_del.status_code == 204
@@ -201,13 +203,15 @@ async def test_patch_and_delete_soft_deleted_organization_returns_404(
     client: AsyncClient,
     user_factory: UserFactory,
     organization_factory: OrganizationFactory,
+    category_factory: CategoryFactory,
     product_factory: ProductFactory,
 ) -> None:
     u = await user_factory.build()
     headers = bearer_headers(user_id=u["id"])
     org = await organization_factory.build(user_id=u["id"])
     org_id = org["id"]
-    await product_factory.build(organization_id=org_id)
+    category = await category_factory.build(organization_id=org_id)
+    await product_factory.build(organization_id=org_id, category_id=category["id"])
 
     r_del = await client.delete(f"/organizations/{org_id}", headers=headers)
     assert r_del.status_code == 204

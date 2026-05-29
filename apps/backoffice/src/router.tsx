@@ -6,7 +6,7 @@ import { BackofficeLayout } from './layouts/backoffice-layout'
 import { LoginPage } from './pages/login'
 import { CategoryPage } from './pages/category'
 import { OrganizationPage } from './pages/organization'
-import { ProductListPage } from './pages/product/list'
+import { ProductPage } from './pages/product'
 
 export default function App() {
   return (
@@ -25,7 +25,7 @@ export default function App() {
           }
         >
           <Route index element={<Navigate to="/products" replace />} />
-          <Route path="/products" element={<ProductListPage />} />
+          <Route path="/products" element={<ProductPage />} />
           <Route path="/categories" element={<CategoryPage />} />
           <Route path="/organizations" element={<OrganizationPage />} />
         </Route>

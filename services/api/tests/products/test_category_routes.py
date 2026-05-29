@@ -5,6 +5,7 @@ from uuid import uuid4
 
 from tests.factories.auth_helpers import api_key_headers, tenant_headers
 from tests.factories.category_factory import CategoryFactory
+from tests.factories.product_factory import ProductFactory
 from tests.factories.user_factory import UserFactory
 from tests.factories.organization_factory import OrganizationFactory
 
@@ -95,6 +96,24 @@ async def test_delete_category_returns_204(
         headers=tenant_context["headers"],
     )
     assert r.status_code == 204
+
+
+async def test_delete_category_with_products_returns_400(
+    client: AsyncClient,
+    category_factory: CategoryFactory,
+    product_factory: ProductFactory,
+    tenant_context: dict,
+) -> None:
+    category = await category_factory.build(organization_id=tenant_context["organization_id"])
+    await product_factory.build(
+        organization_id=tenant_context["organization_id"],
+        category_id=category["id"],
+    )
+    r = await client.delete(
+        f"/products/categories/{category['id']}",
+        headers=tenant_context["headers"],
+    )
+    assert r.status_code == 400
 
 
 async def test_category_from_other_organization_not_visible(

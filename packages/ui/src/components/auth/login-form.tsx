@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm, type Resolver } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import type { z } from 'zod'
 import { Button } from '../ui/button'
 import {
@@ -9,8 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from '../ui/card'
+import { Field, FieldError, FieldGroup, FieldLabel } from '../ui/field'
 import { Input } from '../ui/input'
-import { Label } from '../ui/label'
 
 export type LoginFields = {
   username: string
@@ -20,7 +20,10 @@ export type LoginFields = {
 export type LoginFormProps = {
   title: string
   description: string
-  schema: z.ZodType<LoginFields>
+  schema: z.ZodObject<{
+    username: z.ZodString
+    password: z.ZodString
+  }>
   onSubmit: (values: LoginFields) => void | Promise<void>
   isSubmitting?: boolean
   error?: string | null
@@ -36,12 +39,8 @@ export function LoginForm({
   error = null,
   submitLabel = 'Entrar',
 }: LoginFormProps) {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFields>({
-    resolver: zodResolver(schema as never) as Resolver<LoginFields>,
+  const form = useForm<LoginFields>({
+    resolver: zodResolver(schema),
     defaultValues: { username: '', password: '' },
   })
 
@@ -53,37 +52,43 @@ export function LoginForm({
           <CardDescription>{description}</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="username">Usuario</Label>
-              <Input
-                id="username"
-                type="text"
-                autoComplete="username"
-                aria-invalid={Boolean(errors.username)}
-                {...register('username')}
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FieldGroup>
+              <Controller
+                name="username"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="username">Usuario</FieldLabel>
+                    <Input
+                      {...field}
+                      id="username"
+                      type="text"
+                      autoComplete="username"
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
               />
-              {errors.username?.message ? (
-                <p className="text-sm text-destructive">
-                  {errors.username.message}
-                </p>
-              ) : null}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                aria-invalid={Boolean(errors.password)}
-                {...register('password')}
+              <Controller
+                name="password"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="password">Contraseña</FieldLabel>
+                    <Input
+                      {...field}
+                      id="password"
+                      type="password"
+                      autoComplete="current-password"
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
               />
-              {errors.password?.message ? (
-                <p className="text-sm text-destructive">
-                  {errors.password.message}
-                </p>
-              ) : null}
-            </div>
+            </FieldGroup>
             {error ? (
               <p className="text-sm text-destructive" role="alert">
                 {error}

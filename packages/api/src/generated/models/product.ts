@@ -14,4 +14,5 @@ export interface Product {
   organization_id?: string;
   /** @maxLength 255 */
   name: string;
+  category_id: string;
 }

@@ -1,14 +1,21 @@
 import {
   ButtonModal,
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
   Input,
-  Label,
   useFormSubmitHandle,
   type FormModalHandle,
   type FormModalProps,
 } from '@broker/ui'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useRef } from 'react'
-import { useForm } from 'react-hook-form'
-import type { OrganizationFormValues } from './organizations-context'
+import { Controller, useForm } from 'react-hook-form'
+import {
+  organizationFormSchema,
+  type OrganizationFormValues,
+} from './organizations-context'
 
 export type DialogFormProps = Omit<
   FormModalProps<OrganizationFormValues>,
@@ -27,20 +34,16 @@ export function DialogForm({
 }: DialogFormProps) {
   const formRef = useRef<FormModalHandle>(null)
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<OrganizationFormValues>({
+  const form = useForm<OrganizationFormValues>({
+    resolver: zodResolver(organizationFormSchema),
     defaultValues,
   })
 
   useEffect(() => {
-    reset(defaultValues)
-  }, [formKey, defaultValues, reset])
+    form.reset(defaultValues)
+  }, [formKey, defaultValues, form])
 
-  useFormSubmitHandle(formRef, handleSubmit, onSubmit)
+  useFormSubmitHandle(formRef, form.handleSubmit, onSubmit)
 
   const handleAccept = async () => {
     await formRef.current?.submit()
@@ -59,22 +62,26 @@ export function DialogForm({
         className="space-y-3"
         onSubmit={(event) => event.preventDefault()}
       >
-        <div className="space-y-2">
-          <Label htmlFor="organization-name">Nombre</Label>
-          <Input
-            id="organization-name"
-            maxLength={255}
-            autoFocus
-            disabled={isSubmitting}
-            {...register('name', {
-              required: 'El nombre es obligatorio',
-              maxLength: { value: 255, message: 'Máximo 255 caracteres' },
-            })}
+        <FieldGroup>
+          <Controller
+            name="name"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="organization-name">Nombre</FieldLabel>
+                <Input
+                  {...field}
+                  id="organization-name"
+                  maxLength={255}
+                  autoFocus
+                  disabled={isSubmitting}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
           />
-          {errors.name && (
-            <p className="text-sm text-destructive">{errors.name.message}</p>
-          )}
-        </div>
+        </FieldGroup>
 
         {error && <p className="text-sm text-destructive">{error}</p>}
       </form>

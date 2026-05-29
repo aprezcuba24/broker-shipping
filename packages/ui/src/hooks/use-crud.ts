@@ -1,6 +1,13 @@
-import { formatApiError } from '@broker/api'
-import { useQueryClient, type QueryKey } from '@tanstack/react-query'
-import { useCallback, useMemo, useState } from 'react'
+import { brokerFetch, formatApiError } from '@broker/api'
+import {
+  useQuery,
+  useQueryClient,
+  type QueryKey,
+  type UseQueryOptions,
+  type UseQueryResult,
+} from '@tanstack/react-query'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { pickQueryParams } from './use-url-search-filters'
 
 type MutationCallbacks<TError> = {
   onSuccess?: () => void
@@ -14,10 +21,9 @@ type UseCrudMutationHook<TError, TVariables> = (options?: {
   isPending: boolean
 }
 
-type UseCrudListHook<TItem> = () => {
-  data: TItem[] | undefined
-  isLoading: boolean
-}
+type UseCrudOrvalListHook<TItem> = (options?: {
+  query?: Partial<UseQueryOptions<TItem[], unknown, TItem[]>>
+}) => Pick<UseQueryResult<TItem[], unknown>, 'data' | 'isLoading'>
 
 export type UseCrudOptions<
   TItem,
@@ -26,7 +32,7 @@ export type UseCrudOptions<
   TPatchVariables,
   TDeleteVariables,
 > = {
-  useList: UseCrudListHook<TItem>
+  useList: UseCrudOrvalListHook<TItem>
   getListQueryKey: () => QueryKey
   useCreate: UseCrudMutationHook<unknown, TCreateVariables>
   usePatch: UseCrudMutationHook<unknown, TPatchVariables>
@@ -34,6 +40,8 @@ export type UseCrudOptions<
   toCreateVariables: (values: TFormValues) => TCreateVariables
   toPatchVariables: (item: TItem, values: TFormValues) => TPatchVariables | null
   toDeleteVariables: (item: TItem) => TDeleteVariables | null
+  /** When set, list requests include non-empty values as query params (URL-synced filters). */
+  filters?: Record<string, string>
 }
 
 export type CrudContextValue<TItem, TFormValues> = {
@@ -54,6 +62,48 @@ export type CrudContextValue<TItem, TFormValues> = {
 }
 
 export type UseCrudResult<TItem, TFormValues> = CrudContextValue<TItem, TFormValues>
+
+function useCrudListQuery<TItem>(
+  useList: UseCrudOrvalListHook<TItem>,
+  getListQueryKey: () => QueryKey,
+  filters: Record<string, string> | undefined,
+): { data: TItem[] | undefined; isLoading: boolean } {
+  const requestParams = useMemo(
+    () => (filters !== undefined ? pickQueryParams(filters) : undefined),
+    [filters],
+  )
+  const baseQueryKey = getListQueryKey()
+  const listUrl = String(baseQueryKey[0])
+  const usesFilteredFetch = filters !== undefined
+
+  const filteredQuery = useQuery({
+    queryKey: [...baseQueryKey, requestParams ?? {}],
+    queryFn: ({ signal }) =>
+      brokerFetch<TItem[]>({
+        url: listUrl,
+        method: 'GET',
+        params: requestParams,
+        signal,
+      }),
+    enabled: usesFilteredFetch,
+  })
+
+  const defaultQuery = useList({
+    query: usesFilteredFetch ? { enabled: false } : undefined,
+  })
+
+  if (usesFilteredFetch) {
+    return {
+      data: filteredQuery.data,
+      isLoading: filteredQuery.isLoading,
+    }
+  }
+
+  return {
+    data: defaultQuery.data,
+    isLoading: defaultQuery.isLoading,
+  }
+}
 
 export function useCRUD<
   TItem,
@@ -79,6 +129,7 @@ export function useCRUD<
     toCreateVariables,
     toPatchVariables,
     toDeleteVariables,
+    filters,
   } = options
 
   const queryClient = useQueryClient()
@@ -86,13 +137,39 @@ export function useCRUD<
   const [formError, setFormError] = useState<string | null>(null)
   const [createFormKey, setCreateFormKey] = useState(0)
 
-  const { data: items = [], isLoading } = useList()
+  const requestParams = useMemo(
+    () => (filters !== undefined ? pickQueryParams(filters) : undefined),
+    [filters],
+  )
+
+  const listParamsKey = useMemo(
+    () => JSON.stringify(requestParams ?? {}),
+    [requestParams],
+  )
+
+  const prevListParamsKeyRef = useRef(listParamsKey)
+
+  useEffect(() => {
+    if (filters === undefined) return
+    if (prevListParamsKeyRef.current !== listParamsKey) {
+      prevListParamsKeyRef.current = listParamsKey
+      setPage(1)
+    }
+  }, [filters, listParamsKey])
+
+  const { data: items = [], isLoading } = useCrudListQuery(
+    useList,
+    getListQueryKey,
+    filters,
+  )
 
   const invalidateList = useCallback(() => {
+    const baseKey = getListQueryKey()
     void queryClient.invalidateQueries({
-      queryKey: getListQueryKey(),
+      queryKey:
+        filters !== undefined ? [...baseKey, requestParams ?? {}] : baseKey,
     })
-  }, [queryClient, getListQueryKey])
+  }, [queryClient, getListQueryKey, filters, requestParams])
 
   const createMutation = useCreate({
     mutation: {
