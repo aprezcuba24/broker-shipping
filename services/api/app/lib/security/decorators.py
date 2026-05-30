@@ -9,9 +9,10 @@ from fastapi import Depends
 
 from app.lib.security.dependencies import (
     _resolve_api_key,
-    _resolve_user,
     _resolve_user_or_api_key,
+    make_resolve_user,
 )
+from app.modules.organization.models import OrgMemberRole
 
 F = TypeVar("F", bound=Callable[..., Awaitable[Any]])
 
@@ -73,8 +74,22 @@ def _wrap_with_dependency(resolver: Callable[..., Any], func: F) -> F:
     return wrapper  # type: ignore[return-value]
 
 
-def require_user(func: F) -> F:
-    return _wrap_with_dependency(_resolve_user, func)
+def require_user(
+    func: F | OrgMemberRole | None = None,
+    /,
+    *,
+    role: OrgMemberRole | None = None,
+) -> F | Callable[[F], F]:
+    if isinstance(func, OrgMemberRole):
+        role = func
+        func = None
+
+    def decorator(f: F) -> F:
+        return _wrap_with_dependency(make_resolve_user(required_role=role), f)
+
+    if func is not None:
+        return decorator(func)
+    return decorator
 
 
 def require_api_key(func: F) -> F:

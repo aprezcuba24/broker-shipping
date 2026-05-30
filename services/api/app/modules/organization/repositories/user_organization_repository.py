@@ -80,10 +80,11 @@ class UserOrganizationRepository(Resource[UserOrganization]):
             raise HTTPException(status_code=403, detail="Forbidden")
         return active
 
-    async def is_provider(
+    async def has_role(
         self,
         user_id: UUID,
         organization_id: UUID,
+        role: OrgMemberRole,
         *,
         throw_exception: bool = True,
     ) -> bool:
@@ -91,11 +92,25 @@ class UserOrganizationRepository(Resource[UserOrganization]):
         ok = (
             membership is not None
             and membership.is_active
-            and membership.role == OrgMemberRole.provider
+            and membership.role == role
         )
         if not ok and throw_exception:
             raise HTTPException(status_code=403, detail="Forbidden")
         return ok
+
+    async def is_provider(
+        self,
+        user_id: UUID,
+        organization_id: UUID,
+        *,
+        throw_exception: bool = True,
+    ) -> bool:
+        return await self.has_role(
+            user_id,
+            organization_id,
+            OrgMemberRole.provider,
+            throw_exception=throw_exception,
+        )
 
     async def upsert_membership(
         self,

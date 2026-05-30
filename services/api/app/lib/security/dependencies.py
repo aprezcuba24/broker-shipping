@@ -11,6 +11,7 @@ from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBea
 from app.lib.security.api_keys import split_raw
 from app.lib.security.principal import ApiKeyPrincipal, Principal, UserPrincipal
 from app.lib.security.tokens import decode_access_token_from_string
+from app.modules.organization.models import OrgMemberRole
 from app.modules.organization.repositories.user_organization_repository import (
     UserOrganizationRepository,
 )
@@ -57,34 +58,43 @@ async def _resolve_user_organization(
     return organization_id
 
 
-@inject
-async def _resolve_user(
-    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(broker_bearer)],
-    org_id: Annotated[str | None, Depends(broker_organization)],
-    user_repo: FromDishka[UserRepository],
-    user_org_repo: FromDishka[UserOrganizationRepository],
-) -> UserPrincipal:
-    token = credentials.credentials.strip() if credentials else None
-    if not token:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    try:
-        uid = decode_access_token_from_string(token)
-    except ValueError:
-        raise HTTPException(status_code=401, detail="Not authenticated") from None
-    user = await user_repo.get_by_id(uid)
-    if user is None:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    organization_id = await _resolve_user_organization(
-        user.id,
-        org_id,
-        user_org_repo,
-        required=False,
-    )
-    return UserPrincipal(
-        user_id=user.id,
-        username=user.username,
-        organization_id=organization_id,
-    )
+def make_resolve_user(*, required_role: OrgMemberRole | None = None):
+    @inject
+    async def _resolve(
+        credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(broker_bearer)],
+        org_id: Annotated[str | None, Depends(broker_organization)],
+        user_repo: FromDishka[UserRepository],
+        user_org_repo: FromDishka[UserOrganizationRepository],
+    ) -> UserPrincipal:
+        token = credentials.credentials.strip() if credentials else None
+        if not token:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        try:
+            uid = decode_access_token_from_string(token)
+        except ValueError:
+            raise HTTPException(status_code=401, detail="Not authenticated") from None
+        user = await user_repo.get_by_id(uid)
+        if user is None:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        organization_id = await _resolve_user_organization(
+            user.id,
+            org_id,
+            user_org_repo,
+            required=required_role is not None,
+        )
+        if required_role is not None:
+            assert organization_id is not None
+            await user_org_repo.has_role(user.id, organization_id, required_role)
+        return UserPrincipal(
+            user_id=user.id,
+            username=user.username,
+            organization_id=organization_id,
+        )
+
+    return _resolve
+
+
+_resolve_user = make_resolve_user()
 
 
 @inject

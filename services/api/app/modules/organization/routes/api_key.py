@@ -5,7 +5,7 @@ from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, HTTPException, Response
 
 from app.lib.security import require_user
-from app.modules.organization.models import ApiKey, ApiKeyPublic
+from app.modules.organization.models import ApiKey, ApiKeyPublic, OrgMemberRole
 from app.modules.organization.security import require_org_provider
 from app.modules.organization.services import ApiKeyService
 
@@ -31,8 +31,7 @@ async def create_api_key(
 
 
 @router.get("/{organization_id}/api-keys", response_model=list[ApiKeyPublic])
-@require_org_provider
-@require_user
+@require_user(OrgMemberRole.provider)
 async def list_api_keys(
     organization_id: UUID,
     api_keys: FromDishka[ApiKeyService],

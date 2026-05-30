@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.organization.models import Organization
 from tests.factories.api_key_factory import ApiKeyFactory
-from tests.factories.auth_helpers import bearer_headers
+from tests.factories.auth_helpers import bearer_headers, tenant_headers
 from tests.factories.category_factory import CategoryFactory
 from tests.factories.organization_factory import OrganizationFactory
 from tests.factories.product_factory import ProductFactory
@@ -51,7 +51,10 @@ async def test_api_key_create_list_revoke(
     raw = r_create.json()["raw_key"]
     assert raw.startswith("bk_")
 
-    r_list = await client.get(f"/organizations/{org['id']}/api-keys", headers=headers)
+    r_list = await client.get(
+        f"/organizations/{org['id']}/api-keys",
+        headers=tenant_headers(user_id=u["id"], organization_id=org["id"]),
+    )
     assert r_list.status_code == 200
     keys = r_list.json()
     assert len(keys) == 1
