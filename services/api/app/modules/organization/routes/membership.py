@@ -12,11 +12,11 @@ from app.modules.organization.models import (
     InvitationPublic,
     MemberIsActivePatch,
     MemberPublic,
+    OrgMemberRole,
 )
 from app.modules.organization.security import (
     require_invitation_org_provider,
     require_org_not_active_member,
-    require_org_provider,
 )
 from app.modules.organization.services import InvitationService, MembershipService
 
@@ -77,8 +77,7 @@ async def cancel_invitation(
 
 
 @router.get("/{organization_id}/members", response_model=list[MemberPublic])
-@require_org_provider
-@require_user
+@require_user(OrgMemberRole.provider)
 async def list_members(
     organization_id: UUID,
     membership: FromDishka[MembershipService],
@@ -87,8 +86,7 @@ async def list_members(
 
 
 @router.patch("/{organization_id}/members/{user_id}", response_model=MemberPublic)
-@require_org_provider
-@require_user
+@require_user(OrgMemberRole.provider)
 async def patch_member(
     organization_id: UUID,
     user_id: UUID,
@@ -107,8 +105,7 @@ async def patch_member(
     response_model=InvitationCreatedResponse,
     status_code=201,
 )
-@require_org_provider
-@require_user
+@require_user(OrgMemberRole.provider)
 async def create_invitation(
     organization_id: UUID,
     body: CreateInviteBody,
@@ -138,8 +135,7 @@ async def create_join_request(
 
 
 @router.get("/{organization_id}/invitations", response_model=list[InvitationPublic])
-@require_org_provider
-@require_user
+@require_user(OrgMemberRole.provider)
 async def list_organization_invitations(
     organization_id: UUID,
     invitations: FromDishka[InvitationService],

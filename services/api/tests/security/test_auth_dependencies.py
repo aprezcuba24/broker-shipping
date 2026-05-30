@@ -192,7 +192,7 @@ async def test_list_api_keys_seller_with_organization_header_returns_403(
     assert r.json()["detail"] == "Forbidden"
 
 
-async def test_list_api_keys_without_organization_header_returns_400(
+async def test_list_api_keys_without_organization_header_ok_with_path_org(
     client: AsyncClient,
     user_factory: UserFactory,
     organization_factory: OrganizationFactory,
@@ -200,9 +200,15 @@ async def test_list_api_keys_without_organization_header_returns_400(
     u = await user_factory.build()
     org = await organization_factory.build(user_id=u["id"])
 
+    await client.post(
+        f"/organizations/{org['id']}/api-keys",
+        json={"name": "path-org-test"},
+        headers=bearer_headers(user_id=u["id"]),
+    )
+
     r = await client.get(
         f"/organizations/{org['id']}/api-keys",
         headers=bearer_headers(user_id=u["id"]),
     )
-    assert r.status_code == 400
-    assert r.json()["detail"] == "Organization context required"
+    assert r.status_code == 200
+    assert len(r.json()) == 1

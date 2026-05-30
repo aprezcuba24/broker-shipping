@@ -43,12 +43,13 @@ def _parse_organization_id(raw: str | None) -> UUID | None:
 
 async def _resolve_user_organization(
     user_id: UUID,
-    org_raw: str | None,
     user_org_repo: UserOrganizationRepository,
     *,
+    path_organization_id: UUID | None,
+    header_org_raw: str | None,
     required: bool,
 ) -> UUID | None:
-    organization_id = _parse_organization_id(org_raw)
+    organization_id = path_organization_id or _parse_organization_id(header_org_raw)
     if organization_id is None:
         if required:
             raise HTTPException(status_code=400, detail="Organization context required")
@@ -65,6 +66,7 @@ def make_resolve_user(*, required_role: OrgMemberRole | None = None):
         org_id: Annotated[str | None, Depends(broker_organization)],
         user_repo: FromDishka[UserRepository],
         user_org_repo: FromDishka[UserOrganizationRepository],
+        organization_id: UUID | None = None,
     ) -> UserPrincipal:
         token = credentials.credentials.strip() if credentials else None
         if not token:
@@ -78,8 +80,9 @@ def make_resolve_user(*, required_role: OrgMemberRole | None = None):
             raise HTTPException(status_code=401, detail="Not authenticated")
         organization_id = await _resolve_user_organization(
             user.id,
-            org_id,
             user_org_repo,
+            path_organization_id=organization_id if required_role is not None else None,
+            header_org_raw=org_id,
             required=required_role is not None,
         )
         if required_role is not None:
@@ -134,8 +137,9 @@ async def _resolve_user_or_api_key(
             if user is not None:
                 organization_id = await _resolve_user_organization(
                     user.id,
-                    org_id,
                     user_org_repo,
+                    path_organization_id=None,
+                    header_org_raw=org_id,
                     required=True,
                 )
                 return UserPrincipal(
