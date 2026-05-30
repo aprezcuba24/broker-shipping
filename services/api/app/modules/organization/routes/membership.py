@@ -16,7 +16,6 @@ from app.modules.organization.models import (
 )
 from app.modules.organization.security import (
     require_invitation_org_provider,
-    require_org_not_active_member,
 )
 from app.modules.organization.services import InvitationService, MembershipService
 
@@ -124,7 +123,6 @@ async def create_invitation(
     response_model=InvitationPublic,
     status_code=201,
 )
-@require_org_not_active_member
 @require_user
 async def create_join_request(
     organization_id: UUID,

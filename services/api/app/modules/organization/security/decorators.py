@@ -56,30 +56,6 @@ def _append_keyword_param(
     return func, new_sig
 
 
-
-def require_org_not_active_member(func: F) -> F:
-    """Require the user is not already an active member of ``organization_id``."""
-
-    func, _ = _append_keyword_param(
-        func,
-        name=_MEMBERSHIP_PARAM,
-        annotation=FromDishka[MembershipService],
-    )
-
-    @functools.wraps(func)
-    async def wrapper(*args: Any, **kwargs: Any) -> Any:
-        membership = kwargs.pop(_MEMBERSHIP_PARAM)
-        principal = _principal_from_kwargs(kwargs)
-        organization_id: UUID = kwargs["organization_id"]
-        if await membership.is_active_member(principal.user_id, organization_id):
-            raise HTTPException(status_code=400, detail="Already an active member")
-        return await func(*args, **kwargs)
-
-    wrapper.__signature__ = func.__signature__  # type: ignore[attr-defined]
-    wrapper.__annotations__ = getattr(func, "__annotations__", {})
-    return wrapper  # type: ignore[return-value]
-
-
 def require_invitation_org_provider(func: F) -> F:
     """Require provider access to the organization of ``invitation_id``."""
 

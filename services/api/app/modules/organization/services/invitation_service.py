@@ -53,6 +53,8 @@ class InvitationService:
         organization_id: UUID,
         user_id: UUID,
     ) -> InvitationPublic:
+        if await self._user_org_repo.is_active_member(user_id, organization_id, throw_exception=False):
+            raise HTTPException(status_code=400, detail="Already an active member")
         existing = await self._invitation_repo.get_pending_seller_request(
             organization_id,
             user_id,
