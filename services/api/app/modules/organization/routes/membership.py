@@ -14,9 +14,6 @@ from app.modules.organization.models import (
     MemberPublic,
     OrgMemberRole,
 )
-from app.modules.organization.security import (
-    require_invitation_org_provider,
-)
 from app.modules.organization.services import InvitationService, MembershipService
 
 router = APIRouter(route_class=DishkaRoute)
@@ -42,7 +39,6 @@ async def accept_invitation_by_token(
 
 
 @router.post("/invitations/{invitation_id}/accept", response_model=MemberPublic)
-@require_invitation_org_provider
 @require_user
 async def accept_invitation(
     invitation_id: UUID,
@@ -53,7 +49,6 @@ async def accept_invitation(
 
 
 @router.post("/invitations/{invitation_id}/reject", response_model=InvitationPublic)
-@require_invitation_org_provider
 @require_user
 async def reject_invitation(
     invitation_id: UUID,
@@ -64,7 +59,6 @@ async def reject_invitation(
 
 
 @router.delete("/invitations/{invitation_id}", status_code=204)
-@require_invitation_org_provider
 @require_user
 async def cancel_invitation(
     invitation_id: UUID,
