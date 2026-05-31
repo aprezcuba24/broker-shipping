@@ -1,0 +1,136 @@
+from uuid import UUID
+
+from dishka import FromDishka
+from dishka.integrations.fastapi import DishkaRoute
+from fastapi import APIRouter, Response
+
+from app.lib.security import require_user
+from app.modules.organization.models import (
+    AcceptByTokenBody,
+    CreateInviteBody,
+    InvitationCreatedResponse,
+    InvitationPublic,
+    MemberIsActivePatch,
+    MemberPublic,
+    OrgMemberRole,
+)
+from app.modules.organization.services import InvitationService, MembershipService
+from app.modules.user.models import User
+
+router = APIRouter(route_class=DishkaRoute)
+
+
+@router.get("/invitations/mine", response_model=list[InvitationPublic])
+@require_user
+async def list_my_invitations(
+    invitations: FromDishka[InvitationService],
+    user: User,
+):
+    return await invitations.list_my_pending_requests(user.id)
+
+
+@router.post("/invitations/accept-by-token", response_model=MemberPublic)
+@require_user
+async def accept_invitation_by_token(
+    body: AcceptByTokenBody,
+    invitations: FromDishka[InvitationService],
+    user: User,
+):
+    return await invitations.accept_by_token(user.id, body.token)
+
+
+@router.post("/invitations/{invitation_id}/accept", response_model=MemberPublic)
+@require_user
+async def accept_invitation(
+    invitation_id: UUID,
+    invitations: FromDishka[InvitationService],
+    user: User,
+):
+    return await invitations.accept_seller_request(invitation_id, user.id)
+
+
+@router.post("/invitations/{invitation_id}/reject", response_model=InvitationPublic)
+@require_user
+async def reject_invitation(
+    invitation_id: UUID,
+    invitations: FromDishka[InvitationService],
+    user: User,
+):
+    return await invitations.reject_seller_request(invitation_id, user.id)
+
+
+@router.delete("/invitations/{invitation_id}", status_code=204)
+@require_user
+async def cancel_invitation(
+    invitation_id: UUID,
+    invitations: FromDishka[InvitationService],
+    user: User,
+):
+    await invitations.cancel_provider_invite(invitation_id, user.id)
+    return Response(status_code=204)
+
+
+@router.get("/{organization_id}/members", response_model=list[MemberPublic])
+@require_user(OrgMemberRole.provider)
+async def list_members(
+    organization_id: UUID,
+    membership: FromDishka[MembershipService],
+):
+    return await membership.list_members(organization_id)
+
+
+@router.patch("/{organization_id}/members/{user_id}", response_model=MemberPublic)
+@require_user(OrgMemberRole.provider)
+async def patch_member(
+    organization_id: UUID,
+    user_id: UUID,
+    body: MemberIsActivePatch,
+    membership: FromDishka[MembershipService],
+):
+    return await membership.set_member_is_active(
+        organization_id,
+        user_id,
+        is_active=body.is_active,
+    )
+
+
+@router.post(
+    "/{organization_id}/invitations",
+    response_model=InvitationCreatedResponse,
+    status_code=201,
+)
+@require_user(OrgMemberRole.provider)
+async def create_invitation(
+    organization_id: UUID,
+    body: CreateInviteBody,
+    invitations: FromDishka[InvitationService],
+    user: User,
+):
+    return await invitations.create_provider_invite(
+        organization_id,
+        user.id,
+        body.role,
+    )
+
+
+@router.post(
+    "/{organization_id}/join-requests",
+    response_model=InvitationPublic,
+    status_code=201,
+)
+@require_user
+async def create_join_request(
+    organization_id: UUID,
+    invitations: FromDishka[InvitationService],
+    user: User,
+):
+    return await invitations.create_seller_request(organization_id, user.id)
+
+
+@router.get("/{organization_id}/invitations", response_model=list[InvitationPublic])
+@require_user(OrgMemberRole.provider)
+async def list_organization_invitations(
+    organization_id: UUID,
+    invitations: FromDishka[InvitationService],
+):
+    return await invitations.list_pending_for_organization(organization_id)

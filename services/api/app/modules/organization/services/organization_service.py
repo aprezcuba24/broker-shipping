@@ -10,7 +10,7 @@ from app.lib.event_dispatcher import EventDispatcher
 from app.lib.persistence import BaseService
 from app.lib.post_commit import PostCommitQueue
 from app.lib.utils import utc_now
-from app.modules.organization.models import Organization
+from app.modules.organization.models import OrgMemberRole, Organization
 from app.modules.organization.repositories import (
     OrganizationRepository,
     UserOrganizationRepository,
@@ -38,7 +38,12 @@ class OrganizationService(BaseService[Organization]):
 
     async def create_for_user(self, entity: Organization, user_id: UUID) -> Organization:
         org = await self._repo.create(entity)
-        await self._user_org_repo.add_membership(user_id, org.id)
+        await self._user_org_repo.add_membership(
+            user_id,
+            org.id,
+            role=OrgMemberRole.provider,
+            is_active=True,
+        )
         return org
 
     async def list_for_user(self, user_id: UUID) -> Sequence[Organization]:
@@ -48,19 +53,16 @@ class OrganizationService(BaseService[Organization]):
     async def update_for_user(
         self,
         organization_id: UUID,
-        user_id: UUID,
         payload: Mapping[str, Any],
     ) -> Organization:
-        await self._user_org_repo.is_member(user_id, organization_id)
         return await self.patch(
             organization_id,
             payload,
             allowed_keys=self.patch_allowed_keys(),
         )
 
-    async def delete_for_user(self, organization: Organization, user_id: UUID) -> None:
+    async def delete_for_user(self, organization: Organization) -> None:
         organization_id = organization.id
-        await self._user_org_repo.is_member(user_id, organization_id)
         try:
             await self._repo.delete(organization)
         except IntegrityError:

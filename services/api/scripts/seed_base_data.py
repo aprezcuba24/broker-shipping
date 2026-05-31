@@ -84,7 +84,16 @@ async def _ensure_membership(
     )
     if result.scalar_one_or_none() is not None:
         return
-    session.add(UserOrganization(user_id=user_id, organization_id=organization_id))
+    from app.modules.organization.models.enums import OrgMemberRole
+
+    session.add(
+        UserOrganization(
+            user_id=user_id,
+            organization_id=organization_id,
+            role=OrgMemberRole.provider,
+            is_active=True,
+        ),
+    )
 
 
 async def _seed_user(

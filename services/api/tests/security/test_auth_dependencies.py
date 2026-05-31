@@ -131,9 +131,84 @@ async def test_revoked_api_key_rejected(
     org = await organization_factory.build(user_id=u["id"])
     raw, _meta = await api_key_factory.build(organization_id=org["id"])
 
-    r_list = await client.get(f"/organizations/{org['id']}/api-keys", headers=headers)
+    r_list = await client.get(
+        f"/organizations/{org['id']}/api-keys",
+        headers=tenant_headers(user_id=u["id"], organization_id=org["id"]),
+    )
     key_id = r_list.json()[0]["id"]
     await client.delete(f"/organizations/{org['id']}/api-keys/{key_id}", headers=headers)
 
     r = await client.get("/products/", headers=api_key_headers(raw_key=raw))
     assert r.status_code == 401
+
+
+async def test_list_api_keys_provider_with_organization_header_ok(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+) -> None:
+    u = await user_factory.build()
+    org = await organization_factory.build(user_id=u["id"])
+    headers = tenant_headers(user_id=u["id"], organization_id=org["id"])
+
+    await client.post(
+        f"/organizations/{org['id']}/api-keys",
+        json={"name": "list-role-test"},
+        headers=bearer_headers(user_id=u["id"]),
+    )
+
+    r = await client.get(f"/organizations/{org['id']}/api-keys", headers=headers)
+    assert r.status_code == 200
+    assert len(r.json()) == 1
+
+
+async def test_list_api_keys_seller_with_organization_header_returns_403(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+) -> None:
+    provider = await user_factory.build(username="prov_list_role")
+    seller = await user_factory.build(username="sell_list_role")
+    org = await organization_factory.build(user_id=provider["id"])
+    org_id = org["id"]
+
+    r_inv = await client.post(
+        f"/organizations/{org_id}/invitations",
+        json={"role": "seller"},
+        headers=bearer_headers(user_id=provider["id"]),
+    )
+    token = r_inv.json()["token"]
+    await client.post(
+        "/organizations/invitations/accept-by-token",
+        json={"token": token},
+        headers=bearer_headers(user_id=seller["id"]),
+    )
+
+    r = await client.get(
+        f"/organizations/{org_id}/api-keys",
+        headers=tenant_headers(user_id=seller["id"], organization_id=org_id),
+    )
+    assert r.status_code == 403
+    assert r.json()["detail"] == "Forbidden"
+
+
+async def test_list_api_keys_without_organization_header_ok_with_path_org(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+) -> None:
+    u = await user_factory.build()
+    org = await organization_factory.build(user_id=u["id"])
+
+    await client.post(
+        f"/organizations/{org['id']}/api-keys",
+        json={"name": "path-org-test"},
+        headers=bearer_headers(user_id=u["id"]),
+    )
+
+    r = await client.get(
+        f"/organizations/{org['id']}/api-keys",
+        headers=bearer_headers(user_id=u["id"]),
+    )
+    assert r.status_code == 200
+    assert len(r.json()) == 1

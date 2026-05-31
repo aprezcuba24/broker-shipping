@@ -7,7 +7,8 @@ from fastapi import APIRouter, Body, HTTPException, Response
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.lib.security import Principal, organization_id_for, require_user_or_api_key
+from app.lib.security import require_user_or_api_key
+from app.modules.organization.models import Organization
 from app.modules.products.models import Category
 from app.modules.products.services import CategoryService
 
@@ -16,8 +17,11 @@ router = APIRouter(route_class=DishkaRoute)
 
 @router.get("/", response_model=list[Category])
 @require_user_or_api_key
-async def list_categories(service: FromDishka[CategoryService], principal: Principal):
-    return await service.list_for_organization(organization_id_for(principal))
+async def list_categories(
+    service: FromDishka[CategoryService],
+    organization: Organization,
+):
+    return await service.list_for_organization(organization.id)
 
 
 @router.get("/{category_id}", response_model=Category)
@@ -25,11 +29,11 @@ async def list_categories(service: FromDishka[CategoryService], principal: Princ
 async def get_category(
     category_id: UUID,
     service: FromDishka[CategoryService],
-    principal: Principal,
+    organization: Organization,
 ):
     return await service.get_or_404_for_organization(
         category_id,
-        organization_id_for(principal),
+        organization.id,
         detail="Category not found",
     )
 
@@ -39,12 +43,11 @@ async def get_category(
 async def create_category(
     body: Category,
     service: FromDishka[CategoryService],
-    principal: Principal,
+    organization: Organization,
 ):
-    oid = organization_id_for(principal)
     entity = Category(
         **body.model_dump(exclude=CategoryService.creation_exclude()),
-        organization_id=oid,
+        organization_id=organization.id,
     )
     return await service.create(entity)
 
@@ -55,10 +58,13 @@ async def patch_category(
     category_id: UUID,
     payload: Annotated[dict[str, Any], Body(...)],
     service: FromDishka[CategoryService],
-    principal: Principal,
+    organization: Organization,
 ):
-    oid = organization_id_for(principal)
-    await service.get_or_404_for_organization(category_id, oid, detail="Category not found")
+    await service.get_or_404_for_organization(
+        category_id,
+        organization.id,
+        detail="Category not found",
+    )
     return await service.get_or_404(
         entity=await service.patch(
             category_id,
@@ -75,10 +81,13 @@ async def delete_category(
     category_id: UUID,
     service: FromDishka[CategoryService],
     session: FromDishka[AsyncSession],
-    principal: Principal,
+    organization: Organization,
 ):
-    oid = organization_id_for(principal)
-    await service.get_or_404_for_organization(category_id, oid, detail="Category not found")
+    await service.get_or_404_for_organization(
+        category_id,
+        organization.id,
+        detail="Category not found",
+    )
     try:
         await service.delete(category_id)
     except IntegrityError as error:

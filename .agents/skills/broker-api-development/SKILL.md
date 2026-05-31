@@ -52,11 +52,18 @@ Rules:
 
 Reference: `app/modules/products/routes/category.py`, `CategoryService`, `CategoryRepository`.
 
-**Tenant resolution** — `organization_id_for(principal)` (`app/lib/security`):
-- `ApiKeyPrincipal` → org from key row (header `X-API-Key` only).
-- `UserPrincipal` → header `X-Organization-Id`, validated via `UserOrganizationRepository.is_member` (403 if not member). Required on tenant routes via `@require_user_or_api_key`.
+**Tenant resolution** — decorators inject entities directly (`app/lib/security`):
 
-**Never set `organization_id` from request body on create** — always from principal.
+| Decorator | Auth | Injected param |
+|-----------|------|----------------|
+| `@require_user` | JWT | `user: User` |
+| `@require_api_key` | API key | `organization: Organization` |
+| `@require_user_or_api_key` | JWT or API key | `organization: Organization` (user validated internally for JWT, not injected) |
+
+- JWT on tenant routes: header `X-Organization-Id` required; membership validated via `UserOrganizationRepository` (403 if not active member). Super admins bypass membership/role checks.
+- API key: org from key row (header `X-API-Key` only).
+
+**Never set `organization_id` from request body on create** — always from injected `organization.id`.
 
 | Operation | Service method |
 |-----------|----------------|
@@ -67,7 +74,7 @@ Reference: `app/modules/products/routes/category.py`, `CategoryService`, `Catego
 
 Repo filters (`list_by_organization` → `list_filtered`, `get_by_id_for_organization`) live in `OrgScopedRepositoryMixin` / `Resource` — not in routes/services.
 
-Route pattern: `@require_user_or_api_key`, `principal: Principal` **last**, `oid = organization_id_for(principal)`.
+Route pattern: `@require_user_or_api_key`, `organization: Organization`, use `organization.id` for service calls.
 
 **Tests:** `tenant_headers(user_id, organization_id)` or `api_key_headers(raw_key)`. Factory must accept `organization_id`. Add cross-org isolation + API-key scope tests (see `tests/products/test_category_routes.py`).
 
@@ -189,7 +196,7 @@ Do not hardcode URLs.
 
 - Routes → service only, never repository.
 - One module = one URL prefix (`register_modules`).
-- Org-scoped: mixins + `organization_id_for`; never trust client `organization_id`.
+- Org-scoped: mixins + injected `organization.id`; never trust client `organization_id`.
 - Use `post_commit_emit`, not `dispatcher.emit` directly.
 
 ## New module checklist
@@ -197,7 +204,7 @@ Do not hardcode URLs.
 - [ ] Tree under `app/modules/foo/` + `FooModule()` in `get_app_modules()`
 - [ ] Model: `EntityModel` or `OrganizationEntityModel`; export `MODULE_MODELS`
 - [ ] Repository + service (global or org mixins); `creation_exclude` / `patch_allowed_keys`
-- [ ] Routes with auth; org-scoped → `organization_id_for(principal)`
+- [ ] Routes with auth; org-scoped → `organization: Organization` via `@require_user_or_api_key`
 - [ ] Events/listener/provider (skip dispatcher if no events)
 - [ ] Alembic revision + `upgrade head`
 - [ ] Factory, TRUNCATE entry, fixtures, route tests (+ tenant isolation if org-scoped)

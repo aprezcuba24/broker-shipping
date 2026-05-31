@@ -4,7 +4,7 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.organization.models import Organization, UserOrganization
+from app.modules.organization.models import OrgMemberRole, Organization, UserOrganization
 
 
 async def create_organization_for_user(
@@ -17,7 +17,14 @@ async def create_organization_for_user(
     entity = Organization(name=name or "Test Org")
     session.add(entity)
     await session.flush()
-    session.add(UserOrganization(user_id=uid, organization_id=entity.id))
+    session.add(
+        UserOrganization(
+            user_id=uid,
+            organization_id=entity.id,
+            role=OrgMemberRole.provider,
+            is_active=True,
+        ),
+    )
     await session.flush()
     await session.commit()
     return entity.model_dump(mode="json")
