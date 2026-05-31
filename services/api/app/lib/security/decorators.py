@@ -17,60 +17,38 @@ from app.modules.organization.models import OrgMemberRole
 F = TypeVar("F", bound=Callable[..., Awaitable[Any]])
 
 
-def _wrap_with_dependency(resolver: Callable[..., Any], func: F) -> F:
+def _wrap_with_dependency(
+    resolver: Callable[..., Any],
+    func: F,
+    *,
+    inject_param: str,
+) -> F:
     """Attach FastAPI-compatible ``Annotated[..., Depends(resolver)]`` for auth."""
     sig = inspect.signature(func)
-    params: list[inspect.Parameter] = []
-    has_principal = False
-    for p in sig.parameters.values():
-        if p.name == "principal":
-            has_principal = True
-            ann = Annotated[p.annotation, Depends(resolver)]
-            params.append(
-                inspect.Parameter(
-                    "principal",
-                    p.kind,
-                    default=inspect.Parameter.empty,
-                    annotation=ann,
-                ),
-            )
-        else:
-            params.append(p)
-    if not has_principal:
-        params.append(
+    internal = f"_{inject_param}_internal"
+    has_inject = inject_param in sig.parameters
+
+    new_params = [
+        p.replace(annotation=Annotated[p.annotation, Depends(resolver)])
+        if p.name == inject_param
+        else p
+        for p in sig.parameters.values()
+    ]
+    if not has_inject:
+        new_params.append(
             inspect.Parameter(
-                "_principal_internal",
+                internal,
                 inspect.Parameter.KEYWORD_ONLY,
-                default=inspect.Parameter.empty,
                 annotation=Annotated[Any, Depends(resolver)],
             ),
         )
 
-    new_sig = sig.replace(parameters=params)
+    @functools.wraps(func)
+    async def wrapper(*args: Any, **kwargs: Any) -> Any:
+        kwargs.pop(internal, None)
+        return await func(*args, **kwargs)
 
-    if inspect.iscoroutinefunction(func):
-
-        @functools.wraps(func)
-        async def wrapper(*args: Any, **kwargs: Any) -> Any:
-            kwargs.pop("_principal_internal", None)
-            return await func(*args, **kwargs)
-    else:
-
-        @functools.wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:  # pragma: no cover - routes are async
-            kwargs.pop("_principal_internal", None)
-            return func(*args, **kwargs)
-
-    wrapper.__signature__ = new_sig  # type: ignore[attr-defined]
-    # `wraps` copies plain `principal` annotations; Dishka inject reads `__annotations__`
-    # for FastAPI — without Depends here, multiple body fields are inferred.
-    merged_ann = dict(getattr(func, "__annotations__", {}))
-    if has_principal:
-        p_princ = sig.parameters["principal"]
-        merged_ann["principal"] = Annotated[p_princ.annotation, Depends(resolver)]
-    else:
-        merged_ann["_principal_internal"] = Annotated[Any, Depends(resolver)]
-    wrapper.__annotations__ = merged_ann
+    wrapper.__signature__ = sig.replace(parameters=new_params)  # type: ignore[attr-defined]
     return wrapper  # type: ignore[return-value]
 
 
@@ -85,7 +63,11 @@ def require_user(
         func = None
 
     def decorator(f: F) -> F:
-        return _wrap_with_dependency(make_resolve_user(required_role=role), f)
+        return _wrap_with_dependency(
+            make_resolve_user(required_role=role),
+            f,
+            inject_param="user",
+        )
 
     if func is not None:
         return decorator(func)
@@ -93,8 +75,12 @@ def require_user(
 
 
 def require_api_key(func: F) -> F:
-    return _wrap_with_dependency(_resolve_api_key, func)
+    return _wrap_with_dependency(_resolve_api_key, func, inject_param="organization")
 
 
 def require_user_or_api_key(func: F) -> F:
-    return _wrap_with_dependency(_resolve_user_or_api_key, func)
+    return _wrap_with_dependency(
+        _resolve_user_or_api_key,
+        func,
+        inject_param="organization",
+    )

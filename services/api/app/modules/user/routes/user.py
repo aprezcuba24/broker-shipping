@@ -2,7 +2,7 @@ from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter
 
-from app.lib.security import UserPrincipal, require_user
+from app.lib.security import require_user
 from app.lib.security.passwords import hash_password
 from app.modules.user.models import TokenResponse, User, UserLogin, UserPublic, UserSignup
 from app.modules.user.services import UserService
@@ -30,10 +30,5 @@ async def login(body: UserLogin, service: FromDishka[UserService]):
 
 @router.get("/me", response_model=UserPublic)
 @require_user
-async def me(service: FromDishka[UserService], principal: UserPrincipal):
-    user = await service.get_by_id_or_none(principal.user_id)
-    if user is None:
-        from fastapi import HTTPException
-
-        raise HTTPException(status_code=401, detail="Not authenticated")
+async def me(user: User):
     return UserPublic.model_validate(user)

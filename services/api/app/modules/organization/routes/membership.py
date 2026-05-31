@@ -4,7 +4,7 @@ from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Response
 
-from app.lib.security import UserPrincipal, require_user
+from app.lib.security import require_user
 from app.modules.organization.models import (
     AcceptByTokenBody,
     CreateInviteBody,
@@ -15,6 +15,7 @@ from app.modules.organization.models import (
     OrgMemberRole,
 )
 from app.modules.organization.services import InvitationService, MembershipService
+from app.modules.user.models import User
 
 router = APIRouter(route_class=DishkaRoute)
 
@@ -23,9 +24,9 @@ router = APIRouter(route_class=DishkaRoute)
 @require_user
 async def list_my_invitations(
     invitations: FromDishka[InvitationService],
-    principal: UserPrincipal,
+    user: User,
 ):
-    return await invitations.list_my_pending_requests(principal.user_id)
+    return await invitations.list_my_pending_requests(user.id)
 
 
 @router.post("/invitations/accept-by-token", response_model=MemberPublic)
@@ -33,9 +34,9 @@ async def list_my_invitations(
 async def accept_invitation_by_token(
     body: AcceptByTokenBody,
     invitations: FromDishka[InvitationService],
-    principal: UserPrincipal,
+    user: User,
 ):
-    return await invitations.accept_by_token(principal.user_id, body.token)
+    return await invitations.accept_by_token(user.id, body.token)
 
 
 @router.post("/invitations/{invitation_id}/accept", response_model=MemberPublic)
@@ -43,9 +44,9 @@ async def accept_invitation_by_token(
 async def accept_invitation(
     invitation_id: UUID,
     invitations: FromDishka[InvitationService],
-    principal: UserPrincipal,
+    user: User,
 ):
-    return await invitations.accept_seller_request(invitation_id, principal.user_id)
+    return await invitations.accept_seller_request(invitation_id, user.id)
 
 
 @router.post("/invitations/{invitation_id}/reject", response_model=InvitationPublic)
@@ -53,9 +54,9 @@ async def accept_invitation(
 async def reject_invitation(
     invitation_id: UUID,
     invitations: FromDishka[InvitationService],
-    principal: UserPrincipal,
+    user: User,
 ):
-    return await invitations.reject_seller_request(invitation_id, principal.user_id)
+    return await invitations.reject_seller_request(invitation_id, user.id)
 
 
 @router.delete("/invitations/{invitation_id}", status_code=204)
@@ -63,9 +64,9 @@ async def reject_invitation(
 async def cancel_invitation(
     invitation_id: UUID,
     invitations: FromDishka[InvitationService],
-    principal: UserPrincipal,
+    user: User,
 ):
-    await invitations.cancel_provider_invite(invitation_id, principal.user_id)
+    await invitations.cancel_provider_invite(invitation_id, user.id)
     return Response(status_code=204)
 
 
@@ -103,11 +104,11 @@ async def create_invitation(
     organization_id: UUID,
     body: CreateInviteBody,
     invitations: FromDishka[InvitationService],
-    principal: UserPrincipal,
+    user: User,
 ):
     return await invitations.create_provider_invite(
         organization_id,
-        principal.user_id,
+        user.id,
         body.role,
     )
 
@@ -121,9 +122,9 @@ async def create_invitation(
 async def create_join_request(
     organization_id: UUID,
     invitations: FromDishka[InvitationService],
-    principal: UserPrincipal,
+    user: User,
 ):
-    return await invitations.create_seller_request(organization_id, principal.user_id)
+    return await invitations.create_seller_request(organization_id, user.id)
 
 
 @router.get("/{organization_id}/invitations", response_model=list[InvitationPublic])
