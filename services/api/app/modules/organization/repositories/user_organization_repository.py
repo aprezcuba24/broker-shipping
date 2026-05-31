@@ -54,19 +54,6 @@ class UserOrganizationRepository(Resource[UserOrganization]):
         )
         return list(result.scalars().all())
 
-    async def is_member(
-        self,
-        user_id: UUID,
-        organization_id: UUID,
-        *,
-        throw_exception: bool = True,
-    ) -> bool:
-        membership = await self.get_membership(user_id, organization_id)
-        found = membership is not None
-        if not found and throw_exception:
-            raise HTTPException(status_code=403, detail="Forbidden")
-        return found
-
     async def is_active_member(
         self,
         user_id: UUID,
@@ -97,20 +84,6 @@ class UserOrganizationRepository(Resource[UserOrganization]):
         if not ok and throw_exception:
             raise HTTPException(status_code=403, detail="Forbidden")
         return ok
-
-    async def is_provider(
-        self,
-        user_id: UUID,
-        organization_id: UUID,
-        *,
-        throw_exception: bool = True,
-    ) -> bool:
-        return await self.has_role(
-            user_id,
-            organization_id,
-            OrgMemberRole.provider,
-            throw_exception=throw_exception,
-        )
 
     async def upsert_membership(
         self,

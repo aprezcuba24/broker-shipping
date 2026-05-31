@@ -13,10 +13,6 @@ class ApiKeyService(BaseService[ApiKey]):
     def creation_exclude(cls) -> frozenset[str]:
         return ApiKey.IMMUTABLE_FIELDS
 
-    @classmethod
-    def patch_allowed_keys(cls) -> frozenset[str]:
-        return frozenset(ApiKey.model_fields.keys()) - ApiKey.IMMUTABLE_FIELDS
-
     def to_api_key_public(self, entity: ApiKey) -> ApiKeyPublic:
         data = entity.model_dump(exclude={"secret_hash"}, mode="python")
         data["id"] = UUID(str(data["id"]))

@@ -7,30 +7,10 @@ from app.modules.organization.repositories import UserOrganizationRepository
 
 
 class MembershipService:
-    """Membership checks and member listing for organization routes."""
+    """Member listing and activation for organization routes."""
 
     def __init__(self, user_org_repo: UserOrganizationRepository) -> None:
         self._user_org_repo = user_org_repo
-
-    async def is_member(self, user_id: UUID, organization_id: UUID) -> bool:
-        return await self._user_org_repo.is_member(
-            user_id,
-            organization_id,
-            throw_exception=False,
-        )
-
-    async def is_active_member(self, user_id: UUID, organization_id: UUID) -> bool:
-        return await self._user_org_repo.is_active_member(
-            user_id,
-            organization_id,
-            throw_exception=False,
-        )
-
-    async def require_active_member(self, user_id: UUID, organization_id: UUID) -> None:
-        await self._user_org_repo.is_active_member(user_id, organization_id)
-
-    async def require_provider(self, user_id: UUID, organization_id: UUID) -> None:
-        await self._user_org_repo.is_provider(user_id, organization_id)
 
     async def list_members(self, organization_id: UUID) -> list[MemberPublic]:
         rows = await self._user_org_repo.list_by_organization(organization_id)
