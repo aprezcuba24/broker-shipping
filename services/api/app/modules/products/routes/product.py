@@ -7,7 +7,7 @@ from fastapi import APIRouter, Body, Depends, Response
 
 from app.lib.security import require_user_or_api_key
 from app.modules.organization.models import Organization
-from app.modules.products.models import Product, ProductListFilters, product_list_filters
+from app.modules.products.models import Product, ProductCreate, ProductListFilters, product_list_filters
 from app.modules.products.services import ProductService
 
 router = APIRouter(route_class=DishkaRoute)
@@ -43,12 +43,13 @@ async def get_product(
 @router.post("/", response_model=Product, status_code=201)
 @require_user_or_api_key
 async def create_product(
-    body: Product,
+    body: ProductCreate,
     service: FromDishka[ProductService],
     organization: Organization,
 ):
     entity = Product(
-        **body.model_dump(exclude=ProductService.creation_exclude()),
+        name=body.name,
+        category_id=body.category_id,
         organization_id=organization.id,
     )
     return await service.create(entity)

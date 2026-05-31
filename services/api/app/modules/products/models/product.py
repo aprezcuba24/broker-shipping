@@ -1,20 +1,18 @@
 from uuid import UUID
 
-from sqlalchemy import Column, ForeignKey
-from sqlmodel import Field
+from sqlmodel import Field, SQLModel
 
 from app.lib.persistence import FilterFieldConfig, FilterOperator, FilterSpec, OrganizationEntityModel
 
 
+class ProductCreate(SQLModel):
+    name: str = Field(max_length=255)
+    category_id: UUID
+
+
 class Product(OrganizationEntityModel, table=True):
     name: str = Field(max_length=255)
-    category_id: UUID = Field(
-        sa_column=Column(
-            ForeignKey("category.id", ondelete="RESTRICT"),
-            nullable=False,
-            index=True,
-        ),
-    )
+    category_id: UUID = Field(foreign_key="category.id", index=True)
 
 
 PRODUCT_LIST_FILTER_SPEC = FilterSpec(

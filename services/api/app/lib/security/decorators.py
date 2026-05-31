@@ -48,7 +48,15 @@ def _wrap_with_dependency(
         kwargs.pop(internal, None)
         return await func(*args, **kwargs)
 
-    wrapper.__signature__ = sig.replace(parameters=new_params)  # type: ignore[attr-defined]
+    new_sig = sig.replace(parameters=new_params)
+    wrapper.__signature__ = new_sig  # type: ignore[attr-defined]
+    merged_ann = dict(getattr(func, "__annotations__", {}))
+    if has_inject:
+        p_inject = sig.parameters[inject_param]
+        merged_ann[inject_param] = Annotated[p_inject.annotation, Depends(resolver)]
+    else:
+        merged_ann[internal] = Annotated[Any, Depends(resolver)]
+    wrapper.__annotations__ = merged_ann
     return wrapper  # type: ignore[return-value]
 
 

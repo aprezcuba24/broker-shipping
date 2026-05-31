@@ -4,6 +4,7 @@ from app.modules.products.models.category import Category
 from app.modules.products.models.product import (
     PRODUCT_LIST_FILTER_SPEC,
     Product,
+    ProductCreate,
     ProductListFilters,
     product_list_filters,
 )
@@ -15,6 +16,7 @@ __all__ = [
     "PRODUCT_LIST_FILTER_SPEC",
     "Category",
     "Product",
+    "ProductCreate",
     "ProductListFilters",
     "product_list_filters",
 ]
