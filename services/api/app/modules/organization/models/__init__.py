@@ -4,18 +4,18 @@ from app.modules.organization.models.api_key import ApiKey, ApiKeyPublic
 from app.modules.organization.models.enums import (
     InvitationKind,
     InvitationStatus,
-    OrgMemberRole,
+    OrganizationType,
 )
 from app.modules.organization.models.organization import Organization
 from app.modules.organization.models.organization_invitation import (
     AcceptByTokenBody,
-    CreateInviteBody,
     InvitationCreatedResponse,
     InvitationPublic,
     MemberIsActivePatch,
     MemberPublic,
     OrganizationInvitation,
 )
+from app.modules.organization.models.provider_seller_link import ProviderSellerLink
 from app.modules.organization.models.user_organization import UserOrganization
 
 MODULE_MODELS: tuple[type[SQLModel], ...] = (
@@ -23,6 +23,7 @@ MODULE_MODELS: tuple[type[SQLModel], ...] = (
     UserOrganization,
     ApiKey,
     OrganizationInvitation,
+    ProviderSellerLink,
 )
 
 __all__ = [
@@ -30,15 +31,15 @@ __all__ = [
     "AcceptByTokenBody",
     "ApiKey",
     "ApiKeyPublic",
-    "CreateInviteBody",
     "InvitationCreatedResponse",
     "InvitationKind",
     "InvitationPublic",
     "InvitationStatus",
     "MemberIsActivePatch",
     "MemberPublic",
-    "OrgMemberRole",
     "Organization",
     "OrganizationInvitation",
+    "OrganizationType",
+    "ProviderSellerLink",
     "UserOrganization",
 ]

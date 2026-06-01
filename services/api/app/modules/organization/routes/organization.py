@@ -6,9 +6,9 @@ from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Body, Response
 
 from app.lib.security import require_user
-from app.modules.organization.models import OrgMemberRole, Organization
-from app.modules.user.models import User
+from app.modules.organization.models import Organization, OrganizationType
 from app.modules.organization.services import OrganizationService
+from app.modules.user.models import User
 
 router = APIRouter(route_class=DishkaRoute)
 
@@ -35,7 +35,7 @@ async def list_organizations(
 
 
 @router.patch("/{organization_id}", response_model=Organization)
-@require_user(OrgMemberRole.provider)
+@require_user(OrganizationType.provider)
 async def patch_organization(
     organization_id: UUID,
     payload: Annotated[dict[str, Any], Body(...)],
@@ -46,7 +46,7 @@ async def patch_organization(
 
 
 @router.delete("/{organization_id}", status_code=204)
-@require_user(OrgMemberRole.provider)
+@require_user(OrganizationType.provider)
 async def delete_organization(
     organization_id: UUID,
     service: FromDishka[OrganizationService],

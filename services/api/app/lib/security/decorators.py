@@ -9,10 +9,10 @@ from fastapi import Depends
 
 from app.lib.security.dependencies import (
     _resolve_api_key,
-    _resolve_user_or_api_key,
     make_resolve_user,
+    make_resolve_user_or_api_key,
 )
-from app.modules.organization.models import OrgMemberRole
+from app.modules.organization.models import OrganizationType
 
 F = TypeVar("F", bound=Callable[..., Awaitable[Any]])
 
@@ -61,18 +61,22 @@ def _wrap_with_dependency(
 
 
 def require_user(
-    func: F | OrgMemberRole | None = None,
+    func: F | OrganizationType | None = None,
     /,
     *,
-    role: OrgMemberRole | None = None,
+    org_type: OrganizationType | None = None,
+    check_path_membership: bool = True,
 ) -> F | Callable[[F], F]:
-    if isinstance(func, OrgMemberRole):
-        role = func
+    if isinstance(func, OrganizationType):
+        org_type = func
         func = None
 
     def decorator(f: F) -> F:
         return _wrap_with_dependency(
-            make_resolve_user(required_role=role),
+            make_resolve_user(
+                required_org_type=org_type,
+                check_path_membership=check_path_membership,
+            ),
             f,
             inject_param="user",
         )
@@ -86,9 +90,23 @@ def require_api_key(func: F) -> F:
     return _wrap_with_dependency(_resolve_api_key, func, inject_param="organization")
 
 
-def require_user_or_api_key(func: F) -> F:
-    return _wrap_with_dependency(
-        _resolve_user_or_api_key,
-        func,
-        inject_param="organization",
-    )
+def require_user_or_api_key(
+    func: F | OrganizationType | None = None,
+    /,
+    *,
+    org_type: OrganizationType | None = None,
+) -> F | Callable[[F], F]:
+    if isinstance(func, OrganizationType):
+        org_type = func
+        func = None
+
+    def decorator(f: F) -> F:
+        return _wrap_with_dependency(
+            make_resolve_user_or_api_key(required_org_type=org_type),
+            f,
+            inject_param="organization",
+        )
+
+    if func is not None:
+        return decorator(func)
+    return decorator

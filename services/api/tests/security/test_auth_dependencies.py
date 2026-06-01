@@ -162,34 +162,58 @@ async def test_list_api_keys_provider_with_organization_header_ok(
     assert len(r.json()) == 1
 
 
-async def test_list_api_keys_seller_with_organization_header_returns_403(
+async def test_list_api_keys_non_member_returns_403(
     client: AsyncClient,
     user_factory: UserFactory,
     organization_factory: OrganizationFactory,
 ) -> None:
     provider = await user_factory.build(username="prov_list_role")
-    seller = await user_factory.build(username="sell_list_role")
+    outsider = await user_factory.build(username="outsider_list")
     org = await organization_factory.build(user_id=provider["id"])
     org_id = org["id"]
 
-    r_inv = await client.post(
-        f"/organizations/{org_id}/invitations",
-        json={"role": "seller"},
-        headers=bearer_headers(user_id=provider["id"]),
-    )
-    token = r_inv.json()["token"]
-    await client.post(
-        "/organizations/invitations/accept-by-token",
-        json={"token": token},
-        headers=bearer_headers(user_id=seller["id"]),
-    )
-
     r = await client.get(
         f"/organizations/{org_id}/api-keys",
-        headers=tenant_headers(user_id=seller["id"], organization_id=org_id),
+        headers=tenant_headers(user_id=outsider["id"], organization_id=org_id),
     )
     assert r.status_code == 403
     assert r.json()["detail"] == "Forbidden"
+
+
+async def test_seller_jwt_cannot_create_product(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+) -> None:
+    seller = await user_factory.build(username="sell_write")
+    seller_org = await organization_factory.build_seller(user_id=seller["id"])
+    headers = tenant_headers(user_id=seller["id"], organization_id=seller_org["id"])
+
+    r = await client.post(
+        "/products/",
+        json={"name": "X", "category_id": None},
+        headers=headers,
+    )
+    assert r.status_code == 403
+
+
+async def test_provider_jwt_can_create_product(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    category_factory,
+) -> None:
+    u = await user_factory.build(username="prov_write")
+    org = await organization_factory.build(user_id=u["id"])
+    cat = await category_factory.build(organization_id=org["id"])
+    headers = tenant_headers(user_id=u["id"], organization_id=org["id"])
+
+    r = await client.post(
+        "/products/",
+        json={"name": "Widget", "category_id": cat["id"]},
+        headers=headers,
+    )
+    assert r.status_code == 201
 
 
 async def test_list_api_keys_without_organization_header_ok_with_path_org(

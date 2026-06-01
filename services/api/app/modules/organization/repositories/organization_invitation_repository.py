@@ -17,7 +17,7 @@ class OrganizationInvitationRepository(Resource[OrganizationInvitation]):
         )
         return result.scalar_one_or_none()
 
-    async def get_pending_seller_request(
+    async def get_pending_seller_join_request(
         self,
         organization_id: UUID,
         user_id: UUID,
@@ -26,7 +26,7 @@ class OrganizationInvitationRepository(Resource[OrganizationInvitation]):
             select(OrganizationInvitation).where(
                 OrganizationInvitation.organization_id == organization_id,
                 OrganizationInvitation.user_id == user_id,
-                OrganizationInvitation.kind == InvitationKind.seller_request,
+                OrganizationInvitation.kind == InvitationKind.seller_join_request,
                 OrganizationInvitation.status == InvitationStatus.pending,
             ),
         )
@@ -44,14 +44,14 @@ class OrganizationInvitationRepository(Resource[OrganizationInvitation]):
         )
         return list(result.scalars().all())
 
-    async def list_pending_seller_requests_for_user(
+    async def list_pending_seller_join_requests_for_user(
         self,
         user_id: UUID,
     ) -> list[OrganizationInvitation]:
         result = await self._session.execute(
             select(OrganizationInvitation).where(
                 OrganizationInvitation.user_id == user_id,
-                OrganizationInvitation.kind == InvitationKind.seller_request,
+                OrganizationInvitation.kind == InvitationKind.seller_join_request,
                 OrganizationInvitation.status == InvitationStatus.pending,
             ),
         )

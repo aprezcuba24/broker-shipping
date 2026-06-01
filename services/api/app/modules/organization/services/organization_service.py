@@ -10,11 +10,12 @@ from app.lib.event_dispatcher import EventDispatcher
 from app.lib.persistence import BaseService
 from app.lib.post_commit import PostCommitQueue
 from app.lib.utils import utc_now
-from app.modules.organization.models import OrgMemberRole, Organization
+from app.modules.organization.models import Organization, OrganizationType
 from app.modules.organization.repositories import (
     OrganizationRepository,
     UserOrganizationRepository,
 )
+from app.modules.user.models import User
 
 
 class OrganizationService(BaseService[Organization]):
@@ -37,11 +38,30 @@ class OrganizationService(BaseService[Organization]):
         return frozenset(Organization.model_fields.keys()) - Organization.IMMUTABLE_FIELDS
 
     async def create_for_user(self, entity: Organization, user_id: UUID) -> Organization:
-        org = await self._repo.create(entity)
+        org = Organization(
+            name=entity.name,
+            type=OrganizationType.provider,
+        )
+        org = await self._repo.create(org)
         await self._user_org_repo.add_membership(
             user_id,
             org.id,
-            role=OrgMemberRole.provider,
+            is_active=True,
+        )
+        return org
+
+    async def ensure_seller_org_for_user(self, user: User) -> Organization:
+        existing = await self._user_org_repo.get_seller_org_for_user(user.id)
+        if existing is not None:
+            return existing
+        org = Organization(
+            name=f"{user.username}'s store",
+            type=OrganizationType.seller,
+        )
+        org = await self._repo.create(org)
+        await self._user_org_repo.add_membership(
+            user.id,
+            org.id,
             is_active=True,
         )
         return org
