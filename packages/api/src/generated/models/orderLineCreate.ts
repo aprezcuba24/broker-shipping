@@ -10,4 +10,9 @@ export interface OrderLineCreate {
   product_id: string;
   /** */
   quantity: number;
+  /**
+   * Unit price in cents
+   * @minimum 0
+   */
+  price: number;
 }

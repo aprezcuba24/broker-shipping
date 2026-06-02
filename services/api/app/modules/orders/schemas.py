@@ -7,11 +7,13 @@ from app.modules.orders.models.enums import OrderStatus
 from app.modules.orders.models.order import Order
 from app.modules.orders.models.order_line import OrderLine
 from app.modules.orders.order_status import compute_order_status
+from app.modules.orders.order_totals import compute_order_price, compute_order_product_price
 
 
 class OrderLineCreate(SQLModel):
     product_id: UUID
     quantity: int = Field(gt=0)
+    price: int = Field(ge=0, description="Unit price in cents")
 
 
 class OrderCreate(SQLModel):
@@ -28,6 +30,8 @@ class OrderDetail(SQLModel):
     created_at: datetime
     updated_at: datetime | None
     status: OrderStatus
+    product_price: int
+    price: int
     lines: list[OrderLine]
 
 
@@ -40,5 +44,7 @@ def build_order_detail(order: Order, lines: list[OrderLine]) -> OrderDetail:
         created_at=order.created_at,
         updated_at=order.updated_at,
         status=compute_order_status(lines),
+        product_price=compute_order_product_price(lines),
+        price=compute_order_price(lines),
         lines=list(lines),
     )

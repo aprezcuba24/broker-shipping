@@ -17,5 +17,7 @@ export interface OrderDetail {
   created_at: string;
   updated_at: OrderDetailUpdatedAt;
   status: OrderStatus;
+  product_price: number;
+  price: number;
   lines: OrderLine[];
 }

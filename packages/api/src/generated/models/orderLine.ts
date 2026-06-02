@@ -19,6 +19,16 @@ export interface OrderLine {
   organization_id: string;
   /** */
   quantity: number;
+  /**
+   * Unit catalog price in cents at line creation
+   * @minimum 0
+   */
+  product_price: number;
+  /**
+   * Unit charged price in cents (client-provided)
+   * @minimum 0
+   */
+  price: number;
   status?: OrderLineStatus;
   /** Product data at purchase time, e.g. name, category_id, organization_id, price. */
   product_snapshot: OrderLineProductSnapshot;

@@ -2713,6 +2713,14 @@
           "status": {
             "$ref": "#/components/schemas/OrderStatus"
           },
+          "product_price": {
+            "type": "integer",
+            "title": "Product Price"
+          },
+          "price": {
+            "type": "integer",
+            "title": "Price"
+          },
           "lines": {
             "items": {
               "$ref": "#/components/schemas/OrderLine"
@@ -2730,6 +2738,8 @@
           "created_at",
           "updated_at",
           "status",
+          "product_price",
+          "price",
           "lines"
         ],
         "title": "OrderDetail"
@@ -2785,6 +2795,18 @@
             "exclusiveMinimum": 0.0,
             "title": "Quantity"
           },
+          "product_price": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Product Price",
+            "description": "Unit catalog price in cents at line creation"
+          },
+          "price": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Price",
+            "description": "Unit charged price in cents (client-provided)"
+          },
           "status": {
             "$ref": "#/components/schemas/OrderLineStatus",
             "default": "created"
@@ -2801,6 +2823,8 @@
           "order_id",
           "organization_id",
           "quantity",
+          "product_price",
+          "price",
           "product_snapshot"
         ],
         "title": "OrderLine"
@@ -2816,12 +2840,19 @@
             "type": "integer",
             "exclusiveMinimum": 0.0,
             "title": "Quantity"
+          },
+          "price": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Price",
+            "description": "Unit price in cents"
           }
         },
         "type": "object",
         "required": [
           "product_id",
-          "quantity"
+          "quantity",
+          "price"
         ],
         "title": "OrderLineCreate"
       },

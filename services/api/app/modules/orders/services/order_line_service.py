@@ -61,11 +61,18 @@ class OrderLineService(BaseService[OrderLine]):
         await self._repo.cancel_all_for_order(order_id, OrderLineStatus.canceled)
 
     @staticmethod
-    def build_from_product(product: Product, quantity: int) -> OrderLine:
+    def build_from_product(product: Product, quantity: int, price: int) -> OrderLine:
+        if price < product.price:
+            raise HTTPException(
+                status_code=422,
+                detail="Line price must be greater than or equal to product price",
+            )
         return OrderLine(
             product_id=product.id,
             organization_id=product.organization_id,
             quantity=quantity,
+            product_price=product.price,
+            price=price,
             product_snapshot={
                 "product_id": str(product.id),
                 "name": product.name,

@@ -35,6 +35,8 @@ class OrderLine(EntityModel, table=True):
         ),
     )
     quantity: int = Field(gt=0)
+    product_price: int = Field(ge=0, description="Unit catalog price in cents at line creation")
+    price: int = Field(ge=0, description="Unit charged price in cents (client-provided)")
     status: OrderLineStatus = Field(
         default=OrderLineStatus.created,
         sa_column=Column(

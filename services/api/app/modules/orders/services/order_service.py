@@ -111,7 +111,7 @@ class OrderService(BaseService[Order]):
                 detail="Product not found",
             )
             line_entities.append(
-                self._line_service.build_from_product(product, item.quantity),
+                self._line_service.build_from_product(product, item.quantity, item.price),
             )
 
         order = Order(
