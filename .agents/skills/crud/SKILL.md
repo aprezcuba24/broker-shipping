@@ -155,7 +155,7 @@ When entities must be tied to the active organization (e.g. categories), inject 
 Canonical reference: `apps/backoffice/src/pages/category/categories-context.tsx`.
 
 ```tsx
-import { useActiveOrganization } from '@/contexts/active-organization-context'
+import { useActiveOrganization } from '@broker/ui'
 // ...
 export const categoryFormSchema = z.object({
   name: z

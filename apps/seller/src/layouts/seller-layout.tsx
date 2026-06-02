@@ -2,12 +2,12 @@ import { useAuth } from '@broker/api'
 import { AppLayout, initialsFromUsername, OrganizationSelect } from '@broker/ui'
 import { useNavigate } from 'react-router-dom'
 import {
-  backofficeBottomItems,
-  backofficeBrand,
-  backofficeNavItems,
+  sellerBottomItems,
+  sellerBrand,
+  sellerNavItems,
 } from '../config/navigation'
 
-export function BackofficeLayout() {
+export function SellerLayout() {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
 
@@ -18,16 +18,16 @@ export function BackofficeLayout() {
 
   return (
     <AppLayout
-      headerTitle="Portal proveedores"
+      headerTitle="Portal vendedores"
       headerExtra={<OrganizationSelect />}
-      navItems={backofficeNavItems}
-      bottomItems={backofficeBottomItems}
-      brand={backofficeBrand}
+      navItems={sellerNavItems}
+      bottomItems={sellerBottomItems}
+      brand={sellerBrand}
       user={
         user
           ? {
               name: user.username,
-              role: 'Portal B2B',
+              role: 'Portal vendedores',
               initials: initialsFromUsername(user.username),
             }
           : undefined

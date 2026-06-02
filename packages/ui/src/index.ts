@@ -145,6 +145,17 @@ export {
   SelectValue,
 } from './components/ui/select'
 
+export {
+  ActiveOrganizationProvider,
+  useActiveOrganization,
+} from './organization/active-organization-context'
+export type {
+  ActiveOrganizationContextValue,
+  ActiveOrganizationProviderProps,
+} from './organization/active-organization-context'
+export { OrganizationScopedApiProvider } from './organization/organization-scoped-api-provider'
+export { OrganizationSelect } from './organization/organization-select'
+
 export { AppLayout } from './components/layout/app-layout'
 export { Sidebar } from './components/layout/sidebar'
 export { TopHeader } from './components/layout/top-header'

@@ -7,9 +7,15 @@ import {
 } from 'react'
 import { useActiveOrganization } from './active-organization-context'
 
-const AuthContext = createContext<null>(null)
+const OrganizationScopedApiContext = createContext<null>(null)
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function OrganizationScopedApiProvider({
+  children,
+  baseUrl,
+}: {
+  children: ReactNode
+  baseUrl?: string
+}) {
   const { token } = useAuth()
   const { activeOrganization } = useActiveOrganization()
   const activeOrganizationId = activeOrganization?.id ?? null
@@ -22,11 +28,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     configureApi({
-      baseUrl: import.meta.env.VITE_API_URL,
+      ...(baseUrl !== undefined ? { baseUrl } : {}),
       getToken: () => tokenRef.current,
       getOrganizationId: () => activeOrganizationIdRef.current,
     })
-  }, [token, activeOrganizationId])
+  }, [baseUrl, token, activeOrganizationId])
 
-  return <AuthContext value={null}>{children}</AuthContext>
+  return (
+    <OrganizationScopedApiContext value={null}>{children}</OrganizationScopedApiContext>
+  )
 }

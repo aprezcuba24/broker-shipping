@@ -1,7 +1,5 @@
-import {
-  EntitySelect,
-} from '@broker/ui'
-import { useActiveOrganization } from '../contexts/active-organization-context'
+import { EntitySelect } from '../components/entity-select'
+import { useActiveOrganization } from './active-organization-context'
 
 export function OrganizationSelect() {
   const { organizations, activeOrganization, setActiveOrganization } =

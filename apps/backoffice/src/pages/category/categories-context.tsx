@@ -1,4 +1,4 @@
-import { useActiveOrganization } from '@/contexts/active-organization-context'
+import { useActiveOrganization } from '@broker/ui'
 import {
   getListCategoriesProductsCategoriesGetQueryKey,
   useCreateCategoryProductsCategoriesPost,
