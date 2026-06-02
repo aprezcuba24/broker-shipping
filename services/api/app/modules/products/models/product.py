@@ -8,11 +8,13 @@ from app.lib.persistence import FilterFieldConfig, FilterOperator, FilterSpec, O
 class ProductCreate(SQLModel):
     name: str = Field(max_length=255)
     category_id: UUID
+    price: int = Field(ge=0, description="Price in cents")
 
 
 class Product(OrganizationEntityModel, table=True):
     name: str = Field(max_length=255)
     category_id: UUID = Field(foreign_key="category.id", index=True)
+    price: int = Field(ge=0, description="Price in cents")
 
 
 PRODUCT_LIST_FILTER_SPEC = FilterSpec(

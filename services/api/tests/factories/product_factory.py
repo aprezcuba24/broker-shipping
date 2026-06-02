@@ -13,6 +13,7 @@ async def create_product(
     organization_id: UUID | str,
     category_id: UUID | str,
     name: str | None = None,
+    price: int = 1000,
 ) -> dict:
     """Insert a Product row and commit so other connections (e.g. HTTP client) see it."""
     oid = organization_id if isinstance(organization_id, UUID) else UUID(str(organization_id))
@@ -21,6 +22,7 @@ async def create_product(
         name=name if name is not None else "Factory product",
         organization_id=oid,
         category_id=cid,
+        price=price,
     )
     session.add(entity)
     await session.flush()
@@ -41,6 +43,7 @@ class ProductFactory:
         organization_id: UUID | str,
         category_id: UUID | str,
         name: str | None = None,
+        price: int = 1000,
     ) -> dict:
         self._n += 1
         final_name = name or f"SKU-{self._n:04d}"
@@ -49,4 +52,5 @@ class ProductFactory:
             organization_id=organization_id,
             category_id=category_id,
             name=final_name,
+            price=price,
         )

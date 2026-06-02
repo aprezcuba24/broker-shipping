@@ -43,12 +43,13 @@ async def test_create_product_returns_201_with_organization(
     category = await category_factory.build(organization_id=tenant_context["organization_id"])
     r = await client.post(
         "/products/",
-        json={"name": "Ejemplo", "category_id": category["id"]},
+        json={"name": "Ejemplo", "category_id": category["id"], "price": 2500},
         headers=tenant_context["headers"],
     )
     assert r.status_code == 201
     body = r.json()
     assert body["name"] == "Ejemplo"
+    assert body["price"] == 2500
     assert body["id"]
     assert body["organization_id"] == tenant_context["organization_id"]
 
@@ -76,6 +77,27 @@ async def test_get_product_unknown_returns_404(
 ) -> None:
     r = await client.get(f"/products/{uuid4()}", headers=tenant_context["headers"])
     assert r.status_code == 404
+
+
+async def test_patch_product_changes_price(
+    client: AsyncClient,
+    category_factory: CategoryFactory,
+    product_factory: ProductFactory,
+    tenant_context: dict,
+) -> None:
+    category = await category_factory.build(organization_id=tenant_context["organization_id"])
+    p = await product_factory.build(
+        organization_id=tenant_context["organization_id"],
+        category_id=category["id"],
+        price=1000,
+    )
+    r = await client.patch(
+        f"/products/{p['id']}",
+        json={"price": 4999},
+        headers=tenant_context["headers"],
+    )
+    assert r.status_code == 200
+    assert r.json()["price"] == 4999
 
 
 async def test_patch_product_changes_name(

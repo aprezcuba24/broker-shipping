@@ -29,7 +29,8 @@ import type {
   HTTPValidationError,
   PatchCategoryProductsCategoriesCategoryIdPatchBody,
   PatchProductProductsProductIdPatchBody,
-  Product
+  Product,
+  ProductCreate
 } from '.././models';
 
 import { brokerFetch } from '../../client';
@@ -135,7 +136,7 @@ export function useListProductsProductsGet<TData = Awaited<ReturnType<typeof lis
  * @summary Create Product
  */
 export const createProductProductsPost = (
-    product: Product,
+    productCreate: ProductCreate,
  options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
 ) => {
       
@@ -143,7 +144,7 @@ export const createProductProductsPost = (
       return brokerFetch<Product>(
       {url: `/products/`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: product, signal
+      data: productCreate, signal
     },
       options);
     }
@@ -151,8 +152,8 @@ export const createProductProductsPost = (
 
 
 export const getCreateProductProductsPostMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProductProductsPost>>, TError,{data: Product}, TContext>, request?: SecondParameter<typeof brokerFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createProductProductsPost>>, TError,{data: Product}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProductProductsPost>>, TError,{data: ProductCreate}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createProductProductsPost>>, TError,{data: ProductCreate}, TContext> => {
 
 const mutationKey = ['createProductProductsPost'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -164,7 +165,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createProductProductsPost>>, {data: Product}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createProductProductsPost>>, {data: ProductCreate}> = (props) => {
           const {data} = props ?? {};
 
           return  createProductProductsPost(data,requestOptions)
@@ -176,18 +177,18 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type CreateProductProductsPostMutationResult = NonNullable<Awaited<ReturnType<typeof createProductProductsPost>>>
-    export type CreateProductProductsPostMutationBody = Product
+    export type CreateProductProductsPostMutationBody = ProductCreate
     export type CreateProductProductsPostMutationError = HTTPValidationError
 
     /**
  * @summary Create Product
  */
 export const useCreateProductProductsPost = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProductProductsPost>>, TError,{data: Product}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProductProductsPost>>, TError,{data: ProductCreate}, TContext>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createProductProductsPost>>,
         TError,
-        {data: Product},
+        {data: ProductCreate},
         TContext
       > => {
 

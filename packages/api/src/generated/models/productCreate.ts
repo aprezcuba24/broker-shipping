@@ -5,13 +5,8 @@
  * API-first B2B broker (scaffold).
  * OpenAPI spec version: 0.1.0
  */
-import type { ProductUpdatedAt } from './productUpdatedAt';
 
-export interface Product {
-  id?: string;
-  created_at?: string;
-  updated_at?: ProductUpdatedAt;
-  organization_id?: string;
+export interface ProductCreate {
   /** @maxLength 255 */
   name: string;
   category_id: string;

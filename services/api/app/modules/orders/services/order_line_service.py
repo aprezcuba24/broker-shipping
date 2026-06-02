@@ -71,5 +71,6 @@ class OrderLineService(BaseService[OrderLine]):
                 "name": product.name,
                 "category_id": str(product.category_id),
                 "organization_id": str(product.organization_id),
+                "price": product.price,
             },
         )

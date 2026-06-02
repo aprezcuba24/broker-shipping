@@ -3,7 +3,7 @@ import {
   useListCategoriesProductsCategoriesGet,
   type Product,
 } from '@broker/api'
-import { BtnConfirm, BtnList, type ColumnDef } from '@broker/ui'
+import { BtnConfirm, BtnList, formatPriceCents, type ColumnDef } from '@broker/ui'
 import { Pencil, Trash2 } from 'lucide-react'
 import { DialogForm } from './DialogForm'
 import { useProducts } from './products-context'
@@ -38,7 +38,11 @@ function RowActions({ product }: { product: Product }) {
         aria-label={`Editar ${product.name}`}
         title="Editar producto"
         acceptLabel="Guardar"
-        defaultValues={{ name: product.name, category_id: product.category_id }}
+        defaultValues={{
+          name: product.name,
+          category_id: product.category_id,
+          price: product.price / 100,
+        }}
         formKey={product.id}
         onSubmit={(values) => submitEdit(product, values)}
         isSubmitting={isSubmitting}
@@ -67,6 +71,11 @@ function RowActions({ product }: { product: Product }) {
 
 export const columns: ColumnDef<Product>[] = [
   { id: 'name', header: 'Nombre', accessor: 'name' },
+  {
+    id: 'price',
+    header: 'Precio',
+    cell: (row) => formatPriceCents(row.price),
+  },
   {
     id: 'category_id',
     header: 'Categoría',

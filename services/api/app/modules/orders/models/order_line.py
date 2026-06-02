@@ -45,6 +45,6 @@ class OrderLine(EntityModel, table=True):
     product_snapshot: dict[str, Any] = Field(
         sa_column=Column(JSONB, nullable=False),
         description=(
-            "Product data at purchase time, e.g. name, category_id, organization_id."
+            "Product data at purchase time, e.g. name, category_id, organization_id, price."
         ),
     )

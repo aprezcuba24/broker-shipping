@@ -1,4 +1,4 @@
-export { cn } from './lib/utils'
+export { cn, formatPriceCents, toPriceCents } from './lib/utils'
 export { initialsFromUsername } from './lib/initials'
 
 export { LoginForm } from './components/auth/login-form'

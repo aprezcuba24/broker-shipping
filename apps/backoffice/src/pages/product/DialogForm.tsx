@@ -24,7 +24,7 @@ export type DialogFormProps = Omit<
 
 export function DialogForm({
   onSubmit,
-  defaultValues = { name: '', category_id: '' },
+  defaultValues = { name: '', category_id: '', price: 0 },
   isSubmitting = false,
   error = null,
   formKey,
@@ -74,6 +74,26 @@ export function DialogForm({
                   autoFocus
                   disabled={isSubmitting}
                   aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
+          <Controller
+            name="price"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="product-price">Precio</FieldLabel>
+                <Input
+                  {...field}
+                  id="product-price"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  disabled={isSubmitting}
+                  aria-invalid={fieldState.invalid}
+                  onChange={(event) => field.onChange(event.target.valueAsNumber)}
                 />
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>

@@ -47,6 +47,7 @@ async def create_product(
     entity = Product(
         name=body.name,
         category_id=body.category_id,
+        price=body.price,
         organization_id=organization.id,
     )
     return await service.create(entity)
