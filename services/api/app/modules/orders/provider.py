@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.orders.repositories import OrderLineRepository, OrderRepository
 from app.modules.orders.services import OrderLineService, OrderService
+from app.modules.organization.repositories import OrganizationRepository
 from app.modules.products.services import ProductService
 from app.modules.user.services import UserService
 
@@ -29,10 +30,12 @@ class OrdersProvider(Provider):
         line_service: OrderLineService,
         product_service: ProductService,
         user_service: UserService,
+        org_repository: OrganizationRepository,
     ) -> OrderService:
         return OrderService(
             repository=repo,
             line_service=line_service,
             product_service=product_service,
             user_service=user_service,
+            org_repository=org_repository,
         )

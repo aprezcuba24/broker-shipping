@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Sequence
 from uuid import UUID
 
 from fastapi import HTTPException
@@ -12,6 +13,7 @@ from app.modules.orders.repositories import OrderRepository
 from app.modules.orders.schemas import OrderCreate, OrderDetail, build_order_detail
 from app.modules.orders.services.order_line_service import OrderLineService
 from app.modules.organization.models import Organization, OrganizationType
+from app.modules.organization.repositories import OrganizationRepository
 from app.modules.products.services import ProductService
 from app.modules.user.services import UserService
 
@@ -23,11 +25,13 @@ class OrderService(BaseService[Order]):
         line_service: OrderLineService,
         product_service: ProductService,
         user_service: UserService,
+        org_repository: OrganizationRepository,
     ) -> None:
         super().__init__(repository)
         self._line_service = line_service
         self._product_service = product_service
         self._user_service = user_service
+        self._org_repo = org_repository
 
     @classmethod
     def creation_exclude(cls) -> frozenset[str]:
@@ -56,14 +60,25 @@ class OrderService(BaseService[Order]):
             raise HTTPException(status_code=404, detail="Order not found")
         return visible
 
+    async def _orgs_by_id_for_lines(
+        self,
+        lines: Sequence[OrderLine],
+    ) -> dict[UUID, Organization]:
+        org_ids = {line.organization_id for line in lines}
+        if not org_ids:
+            return {}
+        orgs = await self._org_repo.list_by_ids(org_ids)
+        return {org.id: org for org in orgs}
+
     def _to_detail(
         self,
         order: Order,
         all_lines: list[OrderLine],
         organization: Organization,
+        orgs_by_id: dict[UUID, Organization],
     ) -> OrderDetail:
         visible = self._visible_lines(order, all_lines, organization)
-        return build_order_detail(order, visible)
+        return build_order_detail(order, visible, orgs_by_id)
 
     async def list_for_organization(
         self,
@@ -83,8 +98,9 @@ class OrderService(BaseService[Order]):
         for line in all_lines:
             lines_by_order[line.order_id].append(line)
 
+        orgs_by_id = await self._orgs_by_id_for_lines(all_lines)
         return [
-            self._to_detail(order, lines_by_order[order.id], organization)
+            self._to_detail(order, lines_by_order[order.id], organization, orgs_by_id)
             for order in orders
         ]
 
@@ -121,7 +137,8 @@ class OrderService(BaseService[Order]):
         )
         order = await self.create(order)
         lines = await self._line_service.create_for_order(order.id, line_entities)
-        return build_order_detail(order, lines)
+        orgs_by_id = await self._orgs_by_id_for_lines(lines)
+        return build_order_detail(order, lines, orgs_by_id)
 
     async def get_or_404_detail(
         self,
@@ -132,7 +149,8 @@ class OrderService(BaseService[Order]):
         if order is None:
             raise HTTPException(status_code=404, detail="Order not found")
         lines = await self._line_service.list_for_order(order_id)
-        return self._to_detail(order, lines, organization)
+        orgs_by_id = await self._orgs_by_id_for_lines(lines)
+        return self._to_detail(order, lines, organization, orgs_by_id)
 
     async def cancel_order(
         self,
@@ -151,7 +169,8 @@ class OrderService(BaseService[Order]):
 
         await self._line_service.cancel_all_if_created(order_id)
         lines = await self._line_service.list_for_order(order_id)
-        return build_order_detail(order, lines)
+        orgs_by_id = await self._orgs_by_id_for_lines(lines)
+        return build_order_detail(order, lines, orgs_by_id)
 
     async def cancel_line(
         self,
@@ -175,4 +194,5 @@ class OrderService(BaseService[Order]):
 
         await self._line_service.cancel_one(line)
         lines = await self._line_service.list_for_order(order_id)
-        return self._to_detail(order, lines, organization)
+        orgs_by_id = await self._orgs_by_id_for_lines(lines)
+        return self._to_detail(order, lines, organization, orgs_by_id)

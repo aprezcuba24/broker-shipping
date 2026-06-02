@@ -5,11 +5,11 @@ from sqlalchemy import Column, Enum as SAEnum, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field
 
-from app.lib.persistence import EntityModel
+from app.lib.persistence import OrganizationEntityModel
 from app.modules.orders.models.enums import OrderLineStatus
 
 
-class OrderLine(EntityModel, table=True):
+class OrderLine(OrganizationEntityModel, table=True):
     __tablename__ = "order_line"
 
     order_id: UUID = Field(

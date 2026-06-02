@@ -2723,7 +2723,7 @@
           },
           "lines": {
             "items": {
-              "$ref": "#/components/schemas/OrderLine"
+              "$ref": "#/components/schemas/OrderLineDetail"
             },
             "type": "array",
             "title": "Lines"
@@ -2744,7 +2744,34 @@
         ],
         "title": "OrderDetail"
       },
-      "OrderLine": {
+      "OrderLineCreate": {
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
+          },
+          "quantity": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Quantity"
+          },
+          "price": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Price",
+            "description": "Unit price in cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "quantity",
+          "price"
+        ],
+        "title": "OrderLineCreate"
+      },
+      "OrderLineDetail": {
         "properties": {
           "id": {
             "type": "string",
@@ -2790,71 +2817,46 @@
             "format": "uuid",
             "title": "Organization Id"
           },
+          "organization": {
+            "$ref": "#/components/schemas/OrganizationRef"
+          },
           "quantity": {
             "type": "integer",
-            "exclusiveMinimum": 0.0,
             "title": "Quantity"
           },
           "product_price": {
             "type": "integer",
-            "minimum": 0.0,
-            "title": "Product Price",
-            "description": "Unit catalog price in cents at line creation"
+            "title": "Product Price"
           },
           "price": {
             "type": "integer",
-            "minimum": 0.0,
-            "title": "Price",
-            "description": "Unit charged price in cents (client-provided)"
+            "title": "Price"
           },
           "status": {
-            "$ref": "#/components/schemas/OrderLineStatus",
-            "default": "created"
+            "$ref": "#/components/schemas/OrderLineStatus"
           },
           "product_snapshot": {
             "additionalProperties": true,
             "type": "object",
-            "title": "Product Snapshot",
-            "description": "Product data at purchase time, e.g. name, category_id, organization_id, price."
+            "title": "Product Snapshot"
           }
         },
         "type": "object",
         "required": [
+          "id",
+          "created_at",
+          "updated_at",
           "order_id",
+          "product_id",
           "organization_id",
+          "organization",
           "quantity",
           "product_price",
           "price",
+          "status",
           "product_snapshot"
         ],
-        "title": "OrderLine"
-      },
-      "OrderLineCreate": {
-        "properties": {
-          "product_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Product Id"
-          },
-          "quantity": {
-            "type": "integer",
-            "exclusiveMinimum": 0.0,
-            "title": "Quantity"
-          },
-          "price": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Price",
-            "description": "Unit price in cents"
-          }
-        },
-        "type": "object",
-        "required": [
-          "product_id",
-          "quantity",
-          "price"
-        ],
-        "title": "OrderLineCreate"
+        "title": "OrderLineDetail"
       },
       "OrderLineStatus": {
         "type": "string",
@@ -2929,6 +2931,25 @@
           "name"
         ],
         "title": "Organization"
+      },
+      "OrganizationRef": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "OrganizationRef"
       },
       "OrganizationType": {
         "type": "string",

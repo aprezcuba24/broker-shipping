@@ -7,7 +7,7 @@
  */
 import type { OrderDetailUpdatedAt } from './orderDetailUpdatedAt';
 import type { OrderStatus } from './orderStatus';
-import type { OrderLine } from './orderLine';
+import type { OrderLineDetail } from './orderLineDetail';
 
 export interface OrderDetail {
   id: string;
@@ -19,5 +19,5 @@ export interface OrderDetail {
   status: OrderStatus;
   product_price: number;
   price: number;
-  lines: OrderLine[];
+  lines: OrderLineDetail[];
 }

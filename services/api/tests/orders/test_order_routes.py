@@ -61,6 +61,7 @@ async def seller_with_provider_product(
         "seller_user_id": seller_user["id"],
         "seller_org_id": seller_org_id,
         "provider_org_id": provider_org["id"],
+        "provider_org_name": provider_org["name"],
         "provider_user_id": provider_user["id"],
         "product_id": product["id"],
         "product_price": product["price"],
@@ -106,6 +107,9 @@ async def test_create_order_persists_line_prices_and_order_totals(
     line = body["lines"][0]
     assert line["product_price"] == ctx["product_price"]
     assert line["price"] == line_price
+    assert line["organization_id"] == ctx["provider_org_id"]
+    assert line["organization"]["id"] == ctx["provider_org_id"]
+    assert line["organization"]["name"] == ctx["provider_org_name"]
     assert body["product_price"] == ctx["product_price"] * quantity
     assert body["price"] == line_price * quantity
 
@@ -185,6 +189,10 @@ async def test_provider_order_totals_only_include_visible_lines(
     assert r_provider_a.status_code == 200
     body_a = r_provider_a.json()
     assert len(body_a["lines"]) == 1
+    line_a = body_a["lines"][0]
+    assert line_a["organization_id"] == ctx["provider_org_id"]
+    assert line_a["organization"]["id"] == ctx["provider_org_id"]
+    assert line_a["organization"]["name"] == ctx["provider_org_name"]
     assert body_a["product_price"] == ctx["product_price"] * 2
     assert body_a["price"] == ctx["product_price"] * 2
 
@@ -199,5 +207,9 @@ async def test_provider_order_totals_only_include_visible_lines(
     assert r_provider_b.status_code == 200
     body_b = r_provider_b.json()
     assert len(body_b["lines"]) == 1
+    line_b = body_b["lines"][0]
+    assert line_b["organization_id"] == provider_b_org["id"]
+    assert line_b["organization"]["id"] == provider_b_org["id"]
+    assert line_b["organization"]["name"] == provider_b_org["name"]
     assert body_b["product_price"] == 1000 * 3
     assert body_b["price"] == 1500 * 3
