@@ -1,11 +1,12 @@
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import Column, ForeignKey
+from sqlalchemy import Column, Enum as SAEnum, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field
 
 from app.lib.persistence import EntityModel
+from app.modules.orders.models.enums import OrderLineStatus
 
 
 class OrderLine(EntityModel, table=True):
@@ -31,6 +32,14 @@ class OrderLine(EntityModel, table=True):
             ForeignKey("organization.id", ondelete="RESTRICT"),
             nullable=False,
             index=True,
+        ),
+    )
+    quantity: int = Field(gt=0)
+    status: OrderLineStatus = Field(
+        default=OrderLineStatus.created,
+        sa_column=Column(
+            SAEnum(OrderLineStatus, values_callable=lambda x: [e.value for e in x]),
+            nullable=False,
         ),
     )
     product_snapshot: dict[str, Any] = Field(
