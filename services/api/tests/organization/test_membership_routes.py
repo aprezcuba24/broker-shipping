@@ -50,7 +50,7 @@ async def test_seller_invite_accept_by_token(
     )
 
     r_prod = await client.get(
-        "/products/",
+        "/products/seller/",
         headers=tenant_headers(user_id=seller["id"], organization_id=seller_org_id),
     )
     assert r_prod.status_code == 200
@@ -170,7 +170,7 @@ async def test_deactivated_seller_link_cannot_access_products(
     assert r_patch.status_code == 204
 
     r_prod = await client.get(
-        "/products/",
+        "/products/seller/",
         headers=tenant_headers(user_id=seller["id"], organization_id=seller_org_id),
     )
     assert r_prod.status_code == 200

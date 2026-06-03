@@ -30,7 +30,7 @@ async def test_list_products_empty_when_no_rows(
     client: AsyncClient,
     tenant_context: dict,
 ) -> None:
-    r = await client.get("/products/", headers=tenant_context["headers"])
+    r = await client.get("/products/provider/", headers=tenant_context["headers"])
     assert r.status_code == 200
     assert r.json() == []
 
@@ -42,7 +42,7 @@ async def test_create_product_returns_201_with_organization(
 ) -> None:
     category = await category_factory.build(organization_id=tenant_context["organization_id"])
     r = await client.post(
-        "/products/",
+        "/products/provider/",
         json={"name": "Ejemplo", "category_id": category["id"], "price": 2500},
         headers=tenant_context["headers"],
     )
@@ -66,7 +66,7 @@ async def test_get_product_returns_200(
         category_id=category["id"],
         name="One",
     )
-    r = await client.get(f"/products/{created['id']}", headers=tenant_context["headers"])
+    r = await client.get(f"/products/provider/{created['id']}", headers=tenant_context["headers"])
     assert r.status_code == 200
     assert r.json()["name"] == "One"
 
@@ -75,7 +75,7 @@ async def test_get_product_unknown_returns_404(
     client: AsyncClient,
     tenant_context: dict,
 ) -> None:
-    r = await client.get(f"/products/{uuid4()}", headers=tenant_context["headers"])
+    r = await client.get(f"/products/provider/{uuid4()}", headers=tenant_context["headers"])
     assert r.status_code == 404
 
 
@@ -92,7 +92,7 @@ async def test_patch_product_changes_price(
         price=1000,
     )
     r = await client.patch(
-        f"/products/{p['id']}",
+        f"/products/provider/{p['id']}",
         json={"price": 4999},
         headers=tenant_context["headers"],
     )
@@ -113,7 +113,7 @@ async def test_patch_product_changes_name(
         name="Old",
     )
     r = await client.patch(
-        f"/products/{p['id']}",
+        f"/products/provider/{p['id']}",
         json={"name": "New"},
         headers=tenant_context["headers"],
     )
@@ -133,7 +133,7 @@ async def test_delete_product_returns_204(
         category_id=category["id"],
         name="To delete",
     )
-    r = await client.delete(f"/products/{p['id']}", headers=tenant_context["headers"])
+    r = await client.delete(f"/products/provider/{p['id']}", headers=tenant_context["headers"])
     assert r.status_code == 204
 
 
@@ -149,8 +149,8 @@ async def test_get_deleted_product_returns_404(
         category_id=category["id"],
     )
     rid = p["id"]
-    await client.delete(f"/products/{rid}", headers=tenant_context["headers"])
-    r = await client.get(f"/products/{rid}", headers=tenant_context["headers"])
+    await client.delete(f"/products/provider/{rid}", headers=tenant_context["headers"])
+    r = await client.get(f"/products/provider/{rid}", headers=tenant_context["headers"])
     assert r.status_code == 404
 
 
@@ -173,11 +173,11 @@ async def test_product_from_other_organization_not_visible(
     )
 
     headers_a = tenant_headers(user_id=owner["id"], organization_id=org_a["id"])
-    r_list = await client.get("/products/", headers=headers_a)
+    r_list = await client.get("/products/provider/", headers=headers_a)
     assert r_list.status_code == 200
     assert r_list.json() == []
 
-    r_get = await client.get(f"/products/{product['id']}", headers=headers_a)
+    r_get = await client.get(f"/products/provider/{product['id']}", headers=headers_a)
     assert r_get.status_code == 404
 
 
@@ -201,7 +201,7 @@ async def test_list_products_filter_by_category_id(
     )
 
     r = await client.get(
-        "/products/",
+        "/products/provider/",
         params={"category_id": category_a["id"]},
         headers=tenant_context["headers"],
     )
@@ -229,7 +229,7 @@ async def test_list_products_filter_by_name_partial(
     )
 
     r = await client.get(
-        "/products/",
+        "/products/provider/",
         params={"name": "lap"},
         headers=tenant_context["headers"],
     )
@@ -258,7 +258,7 @@ async def test_list_products_filter_combined(
     )
 
     r = await client.get(
-        "/products/",
+        "/products/provider/",
         params={"category_id": category_a["id"], "name": "lap"},
         headers=tenant_context["headers"],
     )
@@ -272,7 +272,7 @@ async def test_list_products_unknown_filter_param_returns_422(
     tenant_context: dict,
 ) -> None:
     r = await client.get(
-        "/products/",
+        "/products/provider/",
         params={"foo": "bar"},
         headers=tenant_context["headers"],
     )
@@ -299,7 +299,7 @@ async def test_list_products_filter_respects_org_isolation(
 
     headers_a = tenant_headers(user_id=owner["id"], organization_id=org_a["id"])
     r = await client.get(
-        "/products/",
+        "/products/provider/",
         params={"name": "lap", "category_id": category_b["id"]},
         headers=headers_a,
     )
@@ -332,7 +332,7 @@ async def test_api_key_only_sees_own_organization_products(
     )
     raw, _meta = await api_key_factory.build(organization_id=org_a["id"])
 
-    r = await client.get("/products/", headers=api_key_headers(raw_key=raw))
+    r = await client.get("/products/provider/", headers=api_key_headers(raw_key=raw))
     assert r.status_code == 200
     names = [p["name"] for p in r.json()]
     assert names == ["Visible"]

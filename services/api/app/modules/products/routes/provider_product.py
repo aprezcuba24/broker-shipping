@@ -8,31 +8,31 @@ from fastapi import APIRouter, Body, Depends, Response
 from app.lib.security import require_user_or_api_key
 from app.modules.organization.models import Organization, OrganizationType
 from app.modules.products.models import Product, ProductCreate, ProductListFilters, product_list_filters
-from app.modules.products.services import ProductService
+from app.modules.products.services import ProviderProductService
 
 router = APIRouter(route_class=DishkaRoute)
 
 
 @router.get("/", response_model=list[Product])
-@require_user_or_api_key
+@require_user_or_api_key(OrganizationType.provider)
 async def list_products(
-    service: FromDishka[ProductService],
+    service: FromDishka[ProviderProductService],
     organization: Organization,
     filters: Annotated[ProductListFilters, Depends(product_list_filters)],
 ):
-    return await service.list_accessible(organization, filters=filters)
+    return await service.list_for_organization(organization.id, filters=filters)
 
 
 @router.get("/{product_id}", response_model=Product)
-@require_user_or_api_key
+@require_user_or_api_key(OrganizationType.provider)
 async def get_product(
     product_id: UUID,
-    service: FromDishka[ProductService],
+    service: FromDishka[ProviderProductService],
     organization: Organization,
 ):
-    return await service.get_accessible(
+    return await service.get_or_404_for_organization(
         product_id,
-        organization,
+        organization.id,
         detail="Product not found",
     )
 
@@ -41,7 +41,7 @@ async def get_product(
 @require_user_or_api_key(OrganizationType.provider)
 async def create_product(
     body: ProductCreate,
-    service: FromDishka[ProductService],
+    service: FromDishka[ProviderProductService],
     organization: Organization,
 ):
     entity = Product(
@@ -58,7 +58,7 @@ async def create_product(
 async def patch_product(
     product_id: UUID,
     payload: Annotated[dict[str, Any], Body(...)],
-    service: FromDishka[ProductService],
+    service: FromDishka[ProviderProductService],
     organization: Organization,
 ):
     await service.get_or_404_for_organization(
@@ -70,7 +70,7 @@ async def patch_product(
         entity=await service.patch(
             product_id,
             payload,
-            allowed_keys=ProductService.patch_allowed_keys(),
+            allowed_keys=ProviderProductService.patch_allowed_keys(),
         ),
         detail="Product not found",
     )
@@ -80,7 +80,7 @@ async def patch_product(
 @require_user_or_api_key(OrganizationType.provider)
 async def delete_product(
     product_id: UUID,
-    service: FromDishka[ProductService],
+    service: FromDishka[ProviderProductService],
     organization: Organization,
 ):
     await service.get_or_404_for_organization(

@@ -34,7 +34,7 @@ async def test_openapi_components_and_hybrid_products_security(client: AsyncClie
     assert schemes["BrokerOrganization"].get("name") == "X-Organization-Id"
     assert schemes["BrokerOrganization"].get("in") == "header"
 
-    prod_get = schema["paths"]["/products/"]["get"]
+    prod_get = schema["paths"]["/products/provider/"]["get"]
     assert prod_get["security"] == OPENAPI_OR_SECURITY
 
     health_get = schema["paths"]["/health"]["get"]
@@ -50,5 +50,6 @@ def test_exported_openapi_includes_domain_paths():
     paths = schema.get("paths", {})
     assert "/users/login" in paths
     assert "/organizations/" in paths
-    assert "/products/" in paths
+    assert "/products/provider/" in paths
+    assert "/products/seller/" in paths
     assert "/products/categories/" in paths

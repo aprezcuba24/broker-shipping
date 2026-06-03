@@ -50,13 +50,13 @@
         }
       }
     },
-    "/products/": {
+    "/products/provider/": {
       "get": {
         "tags": [
           "products"
         ],
         "summary": "List Products",
-        "operationId": "list_products_products__get",
+        "operationId": "list_products_products_provider__get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -67,7 +67,7 @@
                     "$ref": "#/components/schemas/Product"
                   },
                   "type": "array",
-                  "title": "Response List Products Products  Get"
+                  "title": "Response List Products Products Provider  Get"
                 }
               }
             }
@@ -87,7 +87,7 @@
           "products"
         ],
         "summary": "Create Product",
-        "operationId": "create_product_products__post",
+        "operationId": "create_product_products_provider__post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -130,13 +130,13 @@
         ]
       }
     },
-    "/products/{product_id}": {
+    "/products/provider/{product_id}": {
       "get": {
         "tags": [
           "products"
         ],
         "summary": "Get Product",
-        "operationId": "get_product_products__product_id__get",
+        "operationId": "get_product_products_provider__product_id__get",
         "security": [
           {
             "BrokerBearer": []
@@ -185,7 +185,7 @@
           "products"
         ],
         "summary": "Patch Product",
-        "operationId": "patch_product_products__product_id__patch",
+        "operationId": "patch_product_products_provider__product_id__patch",
         "security": [
           {
             "BrokerBearer": []
@@ -246,7 +246,7 @@
           "products"
         ],
         "summary": "Delete Product",
-        "operationId": "delete_product_products__product_id__delete",
+        "operationId": "delete_product_products_provider__product_id__delete",
         "security": [
           {
             "BrokerBearer": []
@@ -270,6 +270,136 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/seller/": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "List Products",
+        "operationId": "list_products_products_seller__get",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  },
+                  "title": "Response List Products Products Seller  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/seller/{product_id}": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Get Product",
+        "operationId": "get_product_products_seller__product_id__get",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Product Id"
+            }
+          },
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",

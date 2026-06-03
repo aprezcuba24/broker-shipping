@@ -80,10 +80,45 @@ async def _load_organization(
     return organization
 
 
+@inject
+async def seller_organization_filter(
+    org_id: Annotated[str | None, Depends(broker_organization)],
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(broker_bearer)],
+    user_repo: FromDishka[UserRepository],
+    user_org_repo: FromDishka[UserOrganizationRepository],
+    org_repo: FromDishka[OrganizationRepository],
+) -> UUID | None:
+    """Optional seller org scope from ``X-Organization-Id`` (validated when present)."""
+    organization_id = _parse_organization_id(org_id)
+    if organization_id is None:
+        return None
+    token = credentials.credentials.strip() if credentials else None
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    try:
+        uid = decode_access_token_from_string(token)
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Not authenticated") from None
+    user = await user_repo.get_by_id(uid)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    await _ensure_organization_access(
+        user,
+        user_org_repo,
+        org_repo,
+        path_organization_id=None,
+        header_org_raw=org_id,
+        required=True,
+        required_org_type=OrganizationType.seller,
+    )
+    return organization_id
+
+
 def make_resolve_user(
     *,
     required_org_type: OrganizationType | None = None,
     check_path_membership: bool = True,
+    organization_required: bool = True,
 ):
     @inject
     async def _resolve(
@@ -107,7 +142,9 @@ def make_resolve_user(
 
         path_org = organization_id if check_path_membership else None
         needs_org_context = (
-            path_org is not None or org_id is not None or required_org_type is not None
+            path_org is not None
+            or org_id is not None
+            or (required_org_type is not None and organization_required)
         )
         await _ensure_organization_access(
             user,

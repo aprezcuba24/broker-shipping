@@ -14,7 +14,7 @@ from app.modules.orders.schemas import OrderCreate, OrderDetail, build_order_det
 from app.modules.orders.services.order_line_service import OrderLineService
 from app.modules.organization.models import Organization, OrganizationType
 from app.modules.organization.repositories import OrganizationRepository
-from app.modules.products.services import ProductService
+from app.modules.products.services import SellerProductService
 from app.modules.user.services import UserService
 
 
@@ -23,7 +23,7 @@ class OrderService(BaseService[Order]):
         self,
         repository: OrderRepository,
         line_service: OrderLineService,
-        product_service: ProductService,
+        product_service: SellerProductService,
         user_service: UserService,
         org_repository: OrganizationRepository,
     ) -> None:
@@ -121,9 +121,9 @@ class OrderService(BaseService[Order]):
 
         line_entities: list[OrderLine] = []
         for item in body.lines:
-            product = await self._product_service.get_accessible(
+            product = await self._product_service.get_for_seller_organization(
                 item.product_id,
-                organization,
+                organization.id,
                 detail="Product not found",
             )
             line_entities.append(

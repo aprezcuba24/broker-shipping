@@ -4,8 +4,7 @@ from uuid import UUID
 from fastapi import HTTPException
 from pydantic import BaseModel
 
-from app.lib.persistence import BaseService, FilterSpec, OrgScopedServiceMixin
-from app.modules.organization.models import Organization, OrganizationType
+from app.lib.persistence import BaseService, FilterSpec
 from app.modules.organization.services.provider_seller_link_service import (
     ProviderSellerLinkService,
 )
@@ -13,7 +12,7 @@ from app.modules.products.events import ProductCreated
 from app.modules.products.models import PRODUCT_LIST_FILTER_SPEC, Product
 
 
-class ProductService(OrgScopedServiceMixin[Product], BaseService[Product]):
+class ProductServiceBase(BaseService[Product]):
     def __init__(
         self,
         repository,
@@ -36,31 +35,27 @@ class ProductService(OrgScopedServiceMixin[Product], BaseService[Product]):
     def list_filter_spec(cls) -> FilterSpec[Product]:
         return PRODUCT_LIST_FILTER_SPEC
 
-    async def list_accessible(
+    async def _list_for_provider_ids(
         self,
-        org: Organization,
+        provider_ids: Sequence[UUID],
         *,
         filters: BaseModel | None = None,
     ) -> Sequence[Product]:
-        if org.type == OrganizationType.provider:
-            return await self.list_for_organization(org.id, filters=filters)
-        provider_ids = await self._link_service.list_active_provider_ids(org.id)
-        return await self._repo.list_by_organization_ids(  # type: ignore[attr-defined]
+        entities = await self._repo.list_by_organization_ids(  # type: ignore[attr-defined]
             provider_ids,
             filters=filters,
             filter_spec=type(self).list_filter_spec(),
         )
+        await self.on_list(entities)
+        return entities
 
-    async def get_accessible(
+    async def _get_for_provider_ids(
         self,
         product_id: UUID,
-        org: Organization,
+        provider_ids: Sequence[UUID],
         *,
         detail: str = "Product not found",
     ) -> Product:
-        if org.type == OrganizationType.provider:
-            return await self.get_or_404_for_organization(product_id, org.id, detail=detail)
-        provider_ids = await self._link_service.list_active_provider_ids(org.id)
         entity = await self._repo.get_by_id_for_organization_ids(  # type: ignore[attr-defined]
             product_id,
             provider_ids,

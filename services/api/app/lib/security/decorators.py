@@ -66,6 +66,7 @@ def require_user(
     *,
     org_type: OrganizationType | None = None,
     check_path_membership: bool = True,
+    organization_required: bool = True,
 ) -> F | Callable[[F], F]:
     if isinstance(func, OrganizationType):
         org_type = func
@@ -76,6 +77,7 @@ def require_user(
             make_resolve_user(
                 required_org_type=org_type,
                 check_path_membership=check_path_membership,
+                organization_required=organization_required,
             ),
             f,
             inject_param="user",
