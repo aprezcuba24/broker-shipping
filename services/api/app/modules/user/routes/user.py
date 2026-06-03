@@ -1,6 +1,6 @@
 from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Request
 
 from app.lib.security import require_user
 from app.lib.security.passwords import hash_password
@@ -18,11 +18,13 @@ async def signup(body: UserSignup, service: FromDishka[UserService]):
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(body: UserLogin, service: FromDishka[UserService]):
-    user = await service.authenticate(body.username, body.password)
+async def login(
+    request: Request,
+    body: UserLogin,
+    service: FromDishka[UserService],
+):
+    user = await service.authenticate(body.username, body.password, request)
     if user is None:
-        from fastapi import HTTPException
-
         raise HTTPException(status_code=401, detail="Invalid credentials")
     token = service.issue_access_token(user)
     return TokenResponse(access_token=token)

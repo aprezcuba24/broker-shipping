@@ -14,6 +14,7 @@ createRoot(document.getElementById('root')!).render(
       <AuthProvider
         storage={sellerAuthStorage}
         baseUrl={import.meta.env.VITE_API_URL}
+        appType="seller_app"
       >
         <App />
       </AuthProvider>

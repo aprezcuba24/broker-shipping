@@ -210,7 +210,7 @@ async def test_provider_jwt_can_create_product(
 
     r = await client.post(
         "/products/",
-        json={"name": "Widget", "category_id": cat["id"]},
+        json={"name": "Widget", "category_id": cat["id"], "price": 1000},
         headers=headers,
     )
     assert r.status_code == 201

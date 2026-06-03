@@ -14,9 +14,12 @@ export type AuthContextValue = {
   logout: () => void
 }
 
+export type AppType = 'provider_app' | 'seller_app'
+
 export type AuthProviderProps = {
   storage: AuthStorage
   baseUrl?: string
+  appType: AppType
   children: ReactNode
 }
 

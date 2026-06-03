@@ -24,3 +24,7 @@ def tenant_headers(*, user_id: UUID | str, organization_id: UUID | str) -> dict[
 
 def api_key_headers(*, raw_key: str) -> dict[str, str]:
     return {"X-API-Key": raw_key}
+
+
+def login_headers(*, app_type: str) -> dict[str, str]:
+    return {"app_type": app_type}

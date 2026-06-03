@@ -53,8 +53,13 @@ class UserOrganizationRepository(Resource[UserOrganization]):
         )
         return list(result.scalars().all())
 
-    async def get_seller_org_for_user(self, user_id: UUID) -> Organization | None:
-        result = await self._session.execute(
+    async def list_organizations_for_user(
+        self,
+        user_id: UUID,
+        *,
+        org_type: OrganizationType | None = None,
+    ) -> list[Organization]:
+        stmt = (
             select(Organization)
             .join(
                 UserOrganization,
@@ -62,11 +67,21 @@ class UserOrganizationRepository(Resource[UserOrganization]):
             )
             .where(
                 UserOrganization.user_id == user_id,
-                Organization.type == OrganizationType.seller,
+                UserOrganization.is_active.is_(True),
                 Organization.deleted_at.is_(None),
-            ),
+            )
         )
-        return result.scalar_one_or_none()
+        if org_type is not None:
+            stmt = stmt.where(Organization.type == org_type)
+        result = await self._session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def get_seller_org_for_user(self, user_id: UUID) -> Organization | None:
+        orgs = await self.list_organizations_for_user(
+            user_id,
+            org_type=OrganizationType.seller,
+        )
+        return orgs[0] if orgs else None
 
     async def is_active_member(
         self,

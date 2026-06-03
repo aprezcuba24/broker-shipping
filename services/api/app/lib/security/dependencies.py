@@ -8,6 +8,7 @@ from dishka.integrations.fastapi import inject
 from fastapi import Depends, HTTPException
 from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
 
+from app.lib.headers import optional_stripped_str
 from app.lib.security.api_keys import split_raw
 from app.lib.security.tokens import decode_access_token_from_string
 from app.modules.organization.models import Organization, OrganizationType
@@ -34,10 +35,11 @@ broker_organization = APIKeyHeader(
 
 
 def _parse_organization_id(raw: str | None) -> UUID | None:
-    if raw is None or not raw.strip():
+    normalized = optional_stripped_str(raw)
+    if normalized is None:
         return None
     try:
-        return UUID(raw.strip())
+        return UUID(normalized)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid organization id") from None
 
