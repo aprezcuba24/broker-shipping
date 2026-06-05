@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from sqlalchemy import select
+from sqlalchemy.orm import InstrumentedAttribute
 
 from app.lib.persistence import Resource
 from app.modules.organization.models import ProviderSellerLink
@@ -53,23 +54,34 @@ class ProviderSellerLinkRepository(Resource[ProviderSellerLink]):
         link = await self.get_link(provider_organization_id, seller_organization_id)
         return link is not None and link.is_active
 
-    async def list_active_provider_ids(self, seller_organization_id: UUID) -> list[UUID]:
+    async def _list_active_linked_organization_ids(
+        self,
+        *,
+        filter_on: InstrumentedAttribute[UUID],
+        select_column: InstrumentedAttribute[UUID],
+        organization_id: UUID,
+    ) -> list[UUID]:
         result = await self._session.execute(
-            select(ProviderSellerLink.provider_organization_id).where(
-                ProviderSellerLink.seller_organization_id == seller_organization_id,
+            select(select_column).where(
+                filter_on == organization_id,
                 ProviderSellerLink.is_active.is_(True),
             ),
         )
         return list(result.scalars().all())
 
-    async def list_active_seller_org_ids(self, provider_organization_id: UUID) -> list[UUID]:
-        result = await self._session.execute(
-            select(ProviderSellerLink.seller_organization_id).where(
-                ProviderSellerLink.provider_organization_id == provider_organization_id,
-                ProviderSellerLink.is_active.is_(True),
-            ),
+    async def list_active_provider_ids(self, seller_organization_id: UUID) -> list[UUID]:
+        return await self._list_active_linked_organization_ids(
+            filter_on=ProviderSellerLink.seller_organization_id,
+            select_column=ProviderSellerLink.provider_organization_id,
+            organization_id=seller_organization_id,
         )
-        return list(result.scalars().all())
+
+    async def list_active_seller_org_ids(self, provider_organization_id: UUID) -> list[UUID]:
+        return await self._list_active_linked_organization_ids(
+            filter_on=ProviderSellerLink.provider_organization_id,
+            select_column=ProviderSellerLink.seller_organization_id,
+            organization_id=provider_organization_id,
+        )
 
     async def set_link_active(
         self,

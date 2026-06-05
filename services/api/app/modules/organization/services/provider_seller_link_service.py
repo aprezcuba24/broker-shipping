@@ -1,3 +1,4 @@
+from collections.abc import Awaitable, Callable
 from uuid import UUID
 
 from fastapi import HTTPException
@@ -71,9 +72,28 @@ class ProviderSellerLinkService:
     async def list_active_provider_ids(self, seller_organization_id: UUID) -> list[UUID]:
         return await self._link_repo.list_active_provider_ids(seller_organization_id)
 
+    async def _list_linked_organizations(
+        self,
+        organization_id: UUID,
+        list_linked_ids: Callable[[UUID], Awaitable[list[UUID]]],
+    ) -> list[Organization]:
+        linked_ids = await list_linked_ids(organization_id)
+        return list(await self._org_repo.list_by_ids(linked_ids))
+
     async def list_linked_seller_organizations(
         self,
         provider_organization_id: UUID,
     ) -> list[Organization]:
-        seller_ids = await self._link_repo.list_active_seller_org_ids(provider_organization_id)
-        return list(await self._org_repo.list_by_ids(seller_ids))
+        return await self._list_linked_organizations(
+            provider_organization_id,
+            self._link_repo.list_active_seller_org_ids,
+        )
+
+    async def list_linked_provider_organizations(
+        self,
+        seller_organization_id: UUID,
+    ) -> list[Organization]:
+        return await self._list_linked_organizations(
+            seller_organization_id,
+            self._link_repo.list_active_provider_ids,
+        )
