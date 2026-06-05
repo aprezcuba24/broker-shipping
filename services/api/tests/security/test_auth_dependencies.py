@@ -77,6 +77,20 @@ async def test_users_me_without_organization_header_ok(
     assert r.json()["id"] == u["id"]
 
 
+async def test_users_me_with_api_key_returns_500(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    api_key_factory,
+) -> None:
+    u = await user_factory.build()
+    org = await organization_factory.build(user_id=u["id"])
+    raw, _meta = await api_key_factory.build(organization_id=org["id"])
+    r = await client.get("/users/me", headers=api_key_headers(raw_key=raw))
+    assert r.status_code == 500
+    assert "JWT user required" in r.json()["detail"]
+
+
 async def test_users_me_with_valid_organization_header_ok(
     client: AsyncClient,
     user_factory: UserFactory,

@@ -1,8 +1,10 @@
+from typing import Annotated
+
 from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 
-from app.lib.security import require_user
+from app.lib.security.deps import get_user
 from app.lib.security.passwords import hash_password
 from app.modules.user.models import TokenResponse, User, UserLogin, UserPublic, UserSignup
 from app.modules.user.services import UserService
@@ -31,6 +33,5 @@ async def login(
 
 
 @router.get("/me", response_model=UserPublic)
-@require_user
-async def me(user: User):
+async def me(user: Annotated[User, Depends(get_user)]):
     return UserPublic.model_validate(user)

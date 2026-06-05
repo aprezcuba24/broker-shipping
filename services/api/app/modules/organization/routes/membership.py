@@ -1,10 +1,11 @@
+from typing import Annotated
 from uuid import UUID
 
 from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Depends, Response
 
-from app.lib.security import require_user
+from app.lib.security.deps import get_user, require_organization
 from app.modules.organization.models import (
     AcceptByTokenBody,
     InvitationCreatedResponse,
@@ -21,20 +22,18 @@ router = APIRouter(route_class=DishkaRoute)
 
 
 @router.get("/invitations/mine", response_model=list[InvitationPublic])
-@require_user
 async def list_my_invitations(
     invitations: FromDishka[InvitationService],
-    user: User,
+    user: Annotated[User, Depends(get_user)],
 ):
     return await invitations.list_my_pending_requests(user.id)
 
 
 @router.post("/invitations/accept-by-token", response_model=MemberPublic)
-@require_user
 async def accept_invitation_by_token(
     body: AcceptByTokenBody,
     invitations: FromDishka[InvitationService],
-    user: User,
+    user: Annotated[User, Depends(get_user)],
 ):
     return await invitations.accept_by_token(user, body.token)
 
@@ -42,8 +41,8 @@ async def accept_invitation_by_token(
 @router.post(
     "/{organization_id}/invitations/{invitation_id}/accept",
     response_model=MemberPublic,
+    dependencies=[Depends(require_organization(OrganizationType.provider))],
 )
-@require_user(OrganizationType.provider)
 async def accept_invitation(
     organization_id: UUID,
     invitation_id: UUID,
@@ -55,8 +54,8 @@ async def accept_invitation(
 @router.post(
     "/{organization_id}/invitations/{invitation_id}/reject",
     response_model=InvitationPublic,
+    dependencies=[Depends(require_organization(OrganizationType.provider))],
 )
-@require_user(OrganizationType.provider)
 async def reject_invitation(
     organization_id: UUID,
     invitation_id: UUID,
@@ -65,8 +64,11 @@ async def reject_invitation(
     return await invitations.reject_seller_join_request(invitation_id, organization_id)
 
 
-@router.delete("/{organization_id}/invitations/{invitation_id}", status_code=204)
-@require_user
+@router.delete(
+    "/{organization_id}/invitations/{invitation_id}",
+    status_code=204,
+    dependencies=[Depends(require_organization())],
+)
 async def cancel_invitation(
     organization_id: UUID,
     invitation_id: UUID,
@@ -76,8 +78,11 @@ async def cancel_invitation(
     return Response(status_code=204)
 
 
-@router.get("/{organization_id}/members", response_model=list[MemberPublic])
-@require_user
+@router.get(
+    "/{organization_id}/members",
+    response_model=list[MemberPublic],
+    dependencies=[Depends(require_organization())],
+)
 async def list_members(
     organization_id: UUID,
     membership: FromDishka[MembershipService],
@@ -85,8 +90,11 @@ async def list_members(
     return await membership.list_members(organization_id)
 
 
-@router.patch("/{organization_id}/members/{user_id}", response_model=MemberPublic)
-@require_user
+@router.patch(
+    "/{organization_id}/members/{user_id}",
+    response_model=MemberPublic,
+    dependencies=[Depends(require_organization())],
+)
 async def patch_member(
     organization_id: UUID,
     user_id: UUID,
@@ -104,12 +112,12 @@ async def patch_member(
     "/{organization_id}/member-invitations",
     response_model=InvitationCreatedResponse,
     status_code=201,
+    dependencies=[Depends(require_organization())],
 )
-@require_user
 async def create_member_invitation(
     organization_id: UUID,
     invitations: FromDishka[InvitationService],
-    user: User,
+    user: Annotated[User, Depends(get_user)],
 ):
     return await invitations.create_member_invite(organization_id, user.id)
 
@@ -118,12 +126,12 @@ async def create_member_invitation(
     "/{organization_id}/seller-invitations",
     response_model=InvitationCreatedResponse,
     status_code=201,
+    dependencies=[Depends(require_organization(OrganizationType.provider))],
 )
-@require_user(OrganizationType.provider)
 async def create_seller_invitation(
     organization_id: UUID,
     invitations: FromDishka[InvitationService],
-    user: User,
+    user: Annotated[User, Depends(get_user)],
 ):
     return await invitations.create_seller_invite(organization_id, user.id)
 
@@ -133,17 +141,19 @@ async def create_seller_invitation(
     response_model=InvitationPublic,
     status_code=201,
 )
-@require_user(check_path_membership=False)
 async def create_join_request(
     organization_id: UUID,
     invitations: FromDishka[InvitationService],
-    user: User,
+    user: Annotated[User, Depends(get_user)],
 ):
     return await invitations.create_seller_join_request(organization_id, user.id)
 
 
-@router.get("/{organization_id}/invitations", response_model=list[InvitationPublic])
-@require_user(OrganizationType.provider)
+@router.get(
+    "/{organization_id}/invitations",
+    response_model=list[InvitationPublic],
+    dependencies=[Depends(require_organization(OrganizationType.provider))],
+)
 async def list_organization_invitations(
     organization_id: UUID,
     invitations: FromDishka[InvitationService],
@@ -151,8 +161,11 @@ async def list_organization_invitations(
     return await invitations.list_pending_for_organization(organization_id)
 
 
-@router.get("/{organization_id}/linked-sellers", response_model=list[Organization])
-@require_user(OrganizationType.provider)
+@router.get(
+    "/{organization_id}/linked-sellers",
+    response_model=list[Organization],
+    dependencies=[Depends(require_organization(OrganizationType.provider))],
+)
 async def list_linked_sellers(
     organization_id: UUID,
     membership: FromDishka[MembershipService],
@@ -163,8 +176,8 @@ async def list_linked_sellers(
 @router.patch(
     "/{organization_id}/linked-sellers/{seller_organization_id}",
     status_code=204,
+    dependencies=[Depends(require_organization(OrganizationType.provider))],
 )
-@require_user(OrganizationType.provider)
 async def patch_seller_link(
     organization_id: UUID,
     seller_organization_id: UUID,

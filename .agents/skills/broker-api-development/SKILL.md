@@ -10,7 +10,7 @@ description: >-
 
 **Canonical reference:** `services/api/app/modules/products/` (global + tenant CRUD, events, tests).
 
-**Flow:** `@require_*` → route (`DishkaRoute`) → `BaseService` → `Resource` → `AsyncSession`. Events via `post_commit_emit` → drained after commit in `app/lib/providers.py`. Listeners run in a fresh REQUEST scope.
+**Flow:** `Depends(get_user | get_tenant | …)` → route (`DishkaRoute`) → `BaseService` → `Resource` → `AsyncSession`. Events via `post_commit_emit` → drained after commit in `app/lib/providers.py`. Listeners run in a fresh REQUEST scope.
 
 ---
 
@@ -52,18 +52,27 @@ Rules:
 
 Reference: `app/modules/products/routes/category.py`, `CategoryService`, `CategoryRepository`.
 
-**Tenant resolution** — decorators inject entities directly (`app/lib/security`):
+**Tenant resolution** — `app/lib/security` (`schemes.py`, `access.py`, `deps.py`):
 
-| Decorator | Auth | Injected param |
-|-----------|------|----------------|
-| `@require_user` | JWT | `user: User` |
-| `@require_api_key` | API key | `organization: Organization` |
-| `@require_user_or_api_key` | JWT or API key | `organization: Organization` (user validated internally for JWT, not injected) |
+| Dependency | Auth | Returns / use |
+|------------|------|----------------|
+| `get_user` | JWT only | `User` (500 if `X-API-Key` sent — wrong dep for the route) |
+| `get_api_key` | API key only | `ApiKey` |
+| `get_organization` / `require_organization` | JWT + org context | Same factory; `require_organization` is an alias for route-level validation |
+| `get_tenant(org_type?)` | JWT or API key | `Organization` (header or API key — no `{organization_id}` in path) |
 
 - JWT on tenant routes: header `X-Organization-Id` required; membership validated via `UserOrganizationRepository` (403 if not active member). Super admins bypass membership/role checks.
-- API key: org from key row (header `X-API-Key` only).
+- API key: org from key row (`X-API-Key` only).
 
-**Never set `organization_id` from request body on create** — always from injected `organization.id`.
+**Never set `organization_id` from request body on create** — use `organization.id` from `get_tenant`, or `organization_id` from the path when auth is route-level.
+
+**Where to declare auth**
+
+| Situation | Pattern |
+|-----------|---------|
+| Path has `{organization_id}`; handler only needs access check | `dependencies=[Depends(require_organization(...))]` on `@router.*`; use `organization_id` in the handler |
+| Org from header/API key (`get_tenant`) or optional seller scope | `Annotated[Organization, Depends(get_tenant(...))]` or `get_organization(..., required=False)` in the handler |
+| Need `User` in the handler | `Annotated[User, Depends(get_user)]` (can combine with route-level `require_organization`) |
 
 | Operation | Service method |
 |-----------|----------------|
@@ -74,7 +83,21 @@ Reference: `app/modules/products/routes/category.py`, `CategoryService`, `Catego
 
 Repo filters (`list_by_organization` → `list_filtered`, `get_by_id_for_organization`) live in `OrgScopedRepositoryMixin` / `Resource` — not in routes/services.
 
-Route pattern: `@require_user_or_api_key`, `organization: Organization`, use `organization.id` for service calls.
+Route patterns:
+
+```python
+# Tenant CRUD — org from JWT header or API key
+organization: Annotated[Organization, Depends(get_tenant(OrganizationType.provider))]
+
+# Admin routes with {organization_id} in path — validate only, do not inject Organization
+@router.delete(
+    "/{organization_id}/api-keys/{key_id}",
+    status_code=204,
+    dependencies=[Depends(require_organization(OrganizationType.provider))],
+)
+async def revoke_api_key(organization_id: UUID, ...):
+    ...
+```
 
 **Tests:** `tenant_headers(user_id, organization_id)` or `api_key_headers(raw_key)`. Factory must accept `organization_id`. Add cross-org isolation + API-key scope tests (see `tests/products/test_category_routes.py`).
 
@@ -131,10 +154,11 @@ product_list_filters = PRODUCT_LIST_FILTER_SPEC.as_dependency()
 - PATCH body: `dict[str, Any]` + `allowed_keys=Service.patch_allowed_keys()`.
 - POST: `Model(**body.model_dump(exclude=Service.creation_exclude()))`.
 
-**Auth** (`app.lib.security`):
+**Auth** (`app.lib.security.deps`):
 - JWT: `Authorization: Bearer …` (AuthX; login under `/users/`).
 - API key: `X-API-Key: bk_<prefix>_<secret>` — store hash + prefix only; never log raw keys.
-- Decorators **below** `@router.*`, **above** handler. Params without defaults before `principal`.
+- Handler injection: `Annotated[User, Depends(get_user)]`, `Annotated[Organization, Depends(get_tenant())]`, etc.
+- Route-level validation (no injected principal): `dependencies=[Depends(require_organization(OrganizationType.provider))]` when `{organization_id}` is already in the path.
 
 ---
 
@@ -204,7 +228,7 @@ Do not hardcode URLs.
 - [ ] Tree under `app/modules/foo/` + `FooModule()` in `get_app_modules()`
 - [ ] Model: `EntityModel` or `OrganizationEntityModel`; export `MODULE_MODELS`
 - [ ] Repository + service (global or org mixins); `creation_exclude` / `patch_allowed_keys`
-- [ ] Routes with auth; org-scoped → `organization: Organization` via `@require_user_or_api_key`
+- [ ] Routes with auth; org-scoped → `organization: Organization` via `Depends(get_tenant(...))`
 - [ ] Events/listener/provider (skip dispatcher if no events)
 - [ ] Alembic revision + `upgrade head`
 - [ ] Factory, TRUNCATE entry, fixtures, route tests (+ tenant isolation if org-scoped)
