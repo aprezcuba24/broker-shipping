@@ -19,8 +19,14 @@ class FilterOperator(StrEnum):
 
 
 class FilterFieldConfig:
-    def __init__(self, *, operator: FilterOperator) -> None:
+    def __init__(
+        self,
+        *,
+        operator: FilterOperator,
+        column: str | None = None,
+    ) -> None:
         self.operator = operator
+        self.column = column
 
 
 def _escape_ilike(value: str) -> str:
@@ -44,18 +50,24 @@ class FilterSpec(Generic[M]):
     ) -> None:
         self._model = model
         self._fields = dict(fields)
-        for name in self._fields:
-            if name not in model.model_fields:
-                msg = f"Filter field {name!r} is not on {model.__name__}"
+        for param_name, config in self._fields.items():
+            column_name = config.column or param_name
+            if column_name not in model.model_fields:
+                msg = f"Filter column {column_name!r} is not on {model.__name__}"
                 raise ValueError(msg)
 
-    def as_params_model(self) -> type[BaseModel]:
+    def _column_name(self, param_name: str) -> str:
+        return self._fields[param_name].column or param_name
+
+    def as_params_model(self, *, model_name: str | None = None) -> type[BaseModel]:
         field_definitions: dict[str, tuple[Any, None]] = {}
-        for name in self._fields:
-            model_field = self._model.model_fields[name]
-            field_definitions[name] = (_optional_annotation(model_field.annotation), None)
+        for param_name in self._fields:
+            column_name = self._column_name(param_name)
+            model_field = self._model.model_fields[column_name]
+            field_definitions[param_name] = (_optional_annotation(model_field.annotation), None)
+        name = model_name or f"{self._model.__name__}ListFilters"
         return create_model(
-            f"{self._model.__name__}ListFilters",
+            name,
             __config__=ConfigDict(extra="forbid"),
             **field_definitions,
         )
@@ -91,7 +103,8 @@ class FilterSpec(Generic[M]):
                 continue
             if isinstance(value, str) and not value:
                 continue
-            column = getattr(self._model, name)
+            column_name = self._column_name(name)
+            column = getattr(self._model, column_name)
             if config.operator is FilterOperator.eq:
                 stmt = stmt.where(column == value)
             elif config.operator is FilterOperator.ilike:

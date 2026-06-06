@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends
 
 from app.lib.security.deps import get_organization, get_user
 from app.modules.organization.models import Organization, OrganizationType
-from app.modules.products.models import Product, ProductListFilters, product_list_filters
+from app.modules.products.models import Product, SellerProductListFilters, seller_product_list_filters
 from app.modules.products.services import SellerProductService
 from app.modules.user.models import User
 
@@ -22,7 +22,7 @@ async def list_products(
         Organization | None,
         Depends(get_organization(OrganizationType.seller, required=False)),
     ],
-    filters: Annotated[ProductListFilters, Depends(product_list_filters)],
+    filters: Annotated[SellerProductListFilters, Depends(seller_product_list_filters)],
 ):
     organization_id = organization.id if organization is not None else None
     return await service.list_accessible(

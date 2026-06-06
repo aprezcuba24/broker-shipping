@@ -27,3 +27,20 @@ PRODUCT_LIST_FILTER_SPEC = FilterSpec(
 
 ProductListFilters = PRODUCT_LIST_FILTER_SPEC.as_params_model()
 product_list_filters = PRODUCT_LIST_FILTER_SPEC.as_dependency()
+
+SELLER_PRODUCT_LIST_FILTER_SPEC = FilterSpec(
+    model=Product,
+    fields={
+        "name": FilterFieldConfig(operator=FilterOperator.ilike),
+        "category_id": FilterFieldConfig(operator=FilterOperator.eq),
+        "provider_id": FilterFieldConfig(
+            operator=FilterOperator.eq,
+            column="organization_id",
+        ),
+    },
+)
+
+SellerProductListFilters = SELLER_PRODUCT_LIST_FILTER_SPEC.as_params_model(
+    model_name="SellerProductListFilters",
+)
+seller_product_list_filters = SELLER_PRODUCT_LIST_FILTER_SPEC.as_dependency()

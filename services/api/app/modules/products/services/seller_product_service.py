@@ -1,13 +1,15 @@
 from collections.abc import Sequence
 from uuid import UUID
 
+from fastapi import HTTPException
 from pydantic import BaseModel
 
+from app.lib.persistence import FilterSpec
 from app.modules.organization.models import OrganizationType
 from app.modules.organization.repositories.user_organization_repository import (
     UserOrganizationRepository,
 )
-from app.modules.products.models import Product
+from app.modules.products.models import SELLER_PRODUCT_LIST_FILTER_SPEC, Product
 from app.modules.products.services.product_service_base import ProductServiceBase
 
 
@@ -22,6 +24,23 @@ class SellerProductService(ProductServiceBase):
     ) -> None:
         super().__init__(repository, dispatcher, post_commit, link_service)
         self._user_org_repo = user_org_repo
+
+    @classmethod
+    def list_filter_spec(cls) -> FilterSpec[Product]:
+        return SELLER_PRODUCT_LIST_FILTER_SPEC
+
+    @staticmethod
+    def _ensure_provider_filter_allowed(
+        filters: BaseModel | None,
+        allowed_provider_ids: Sequence[UUID],
+    ) -> None:
+        if filters is None:
+            return
+        provider_id = getattr(filters, "provider_id", None)
+        if provider_id is None:
+            return
+        if provider_id not in allowed_provider_ids:
+            raise HTTPException(status_code=403, detail="Forbidden")
 
     async def _seller_organization_ids(
         self,
@@ -54,6 +73,7 @@ class SellerProductService(ProductServiceBase):
         filters: BaseModel | None = None,
     ) -> Sequence[Product]:
         provider_ids = await self._link_service.list_active_provider_ids(seller_organization_id)
+        self._ensure_provider_filter_allowed(filters, provider_ids)
         return await self._list_for_provider_ids(provider_ids, filters=filters)
 
     async def get_for_seller_organization(
@@ -83,6 +103,7 @@ class SellerProductService(ProductServiceBase):
             organization_id=None,
         )
         provider_ids = await self._provider_ids_for_seller_orgs(seller_org_ids)
+        self._ensure_provider_filter_allowed(filters, provider_ids)
         return await self._list_for_provider_ids(provider_ids, filters=filters)
 
     async def get_accessible(
