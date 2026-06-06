@@ -33,6 +33,8 @@ export {
   pickQueryParams,
   useUrlSearchFilters,
 } from './hooks/use-url-search-filters'
+export { useSellerProviderCategories } from './hooks/use-seller-provider-categories'
+export { useSellerLinkedProviders } from './hooks/use-seller-linked-providers'
 export { DebouncedInput } from './components/debounced-input'
 export type { DebouncedInputProps } from './components/debounced-input'
 export { ListFilterBar } from './components/list-filter-bar'

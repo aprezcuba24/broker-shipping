@@ -26,16 +26,12 @@ import type {
 
 import type {
   AcceptByTokenBody,
-  AcceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPostParams,
   ApiKey,
   ApiKeyCreatedResponse,
   ApiKeyPublic,
-  CreateOrganizationOrganizationsPostParams,
   HTTPValidationError,
   InvitationCreatedResponse,
   InvitationPublic,
-  ListMyInvitationsOrganizationsInvitationsMineGetParams,
-  ListOrganizationsOrganizationsGetParams,
   MemberIsActivePatch,
   MemberPublic,
   Organization,
@@ -53,14 +49,13 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * @summary List My Invitations
  */
 export const listMyInvitationsOrganizationsInvitationsMineGet = (
-    params?: ListMyInvitationsOrganizationsInvitationsMineGetParams,
+    
  options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
 ) => {
       
       
       return brokerFetch<InvitationPublic[]>(
-      {url: `/organizations/invitations/mine`, method: 'GET',
-        params, signal
+      {url: `/organizations/invitations/mine`, method: 'GET', signal
     },
       options);
     }
@@ -68,23 +63,23 @@ export const listMyInvitationsOrganizationsInvitationsMineGet = (
 
 
 
-export const getListMyInvitationsOrganizationsInvitationsMineGetQueryKey = (params?: ListMyInvitationsOrganizationsInvitationsMineGetParams,) => {
+export const getListMyInvitationsOrganizationsInvitationsMineGetQueryKey = () => {
     return [
-    `/organizations/invitations/mine`, ...(params ? [params]: [])
+    `/organizations/invitations/mine`
     ] as const;
     }
 
     
-export const getListMyInvitationsOrganizationsInvitationsMineGetQueryOptions = <TData = Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>, TError = HTTPValidationError>(params?: ListMyInvitationsOrganizationsInvitationsMineGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export const getListMyInvitationsOrganizationsInvitationsMineGetQueryOptions = <TData = Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListMyInvitationsOrganizationsInvitationsMineGetQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListMyInvitationsOrganizationsInvitationsMineGetQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>> = ({ signal }) => listMyInvitationsOrganizationsInvitationsMineGet(params, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>> = ({ signal }) => listMyInvitationsOrganizationsInvitationsMineGet(requestOptions, signal);
 
       
 
@@ -94,11 +89,11 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type ListMyInvitationsOrganizationsInvitationsMineGetQueryResult = NonNullable<Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>>
-export type ListMyInvitationsOrganizationsInvitationsMineGetQueryError = HTTPValidationError
+export type ListMyInvitationsOrganizationsInvitationsMineGetQueryError = unknown
 
 
-export function useListMyInvitationsOrganizationsInvitationsMineGet<TData = Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>, TError = HTTPValidationError>(
- params: undefined |  ListMyInvitationsOrganizationsInvitationsMineGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>, TError, TData>> & Pick<
+export function useListMyInvitationsOrganizationsInvitationsMineGet<TData = Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>,
           TError,
@@ -107,8 +102,8 @@ export function useListMyInvitationsOrganizationsInvitationsMineGet<TData = Awai
       >, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListMyInvitationsOrganizationsInvitationsMineGet<TData = Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>, TError = HTTPValidationError>(
- params?: ListMyInvitationsOrganizationsInvitationsMineGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>, TError, TData>> & Pick<
+export function useListMyInvitationsOrganizationsInvitationsMineGet<TData = Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>,
           TError,
@@ -117,20 +112,20 @@ export function useListMyInvitationsOrganizationsInvitationsMineGet<TData = Awai
       >, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListMyInvitationsOrganizationsInvitationsMineGet<TData = Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>, TError = HTTPValidationError>(
- params?: ListMyInvitationsOrganizationsInvitationsMineGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export function useListMyInvitationsOrganizationsInvitationsMineGet<TData = Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List My Invitations
  */
 
-export function useListMyInvitationsOrganizationsInvitationsMineGet<TData = Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>, TError = HTTPValidationError>(
- params?: ListMyInvitationsOrganizationsInvitationsMineGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export function useListMyInvitationsOrganizationsInvitationsMineGet<TData = Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyInvitationsOrganizationsInvitationsMineGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getListMyInvitationsOrganizationsInvitationsMineGetQueryOptions(params,options)
+  const queryOptions = getListMyInvitationsOrganizationsInvitationsMineGetQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -147,7 +142,6 @@ export function useListMyInvitationsOrganizationsInvitationsMineGet<TData = Awai
  */
 export const acceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost = (
     acceptByTokenBody: AcceptByTokenBody,
-    params?: AcceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPostParams,
  options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
 ) => {
       
@@ -155,8 +149,7 @@ export const acceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost = 
       return brokerFetch<MemberPublic>(
       {url: `/organizations/invitations/accept-by-token`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: acceptByTokenBody,
-        params, signal
+      data: acceptByTokenBody, signal
     },
       options);
     }
@@ -164,8 +157,8 @@ export const acceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost = 
 
 
 export const getAcceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPostMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof acceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost>>, TError,{data: AcceptByTokenBody;params?: AcceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPostParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof acceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost>>, TError,{data: AcceptByTokenBody;params?: AcceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPostParams}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof acceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost>>, TError,{data: AcceptByTokenBody}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof acceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost>>, TError,{data: AcceptByTokenBody}, TContext> => {
 
 const mutationKey = ['acceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -177,10 +170,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof acceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost>>, {data: AcceptByTokenBody;params?: AcceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPostParams}> = (props) => {
-          const {data,params} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof acceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost>>, {data: AcceptByTokenBody}> = (props) => {
+          const {data} = props ?? {};
 
-          return  acceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost(data,params,requestOptions)
+          return  acceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost(data,requestOptions)
         }
 
         
@@ -196,11 +189,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  * @summary Accept Invitation By Token
  */
 export const useAcceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof acceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost>>, TError,{data: AcceptByTokenBody;params?: AcceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPostParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof acceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost>>, TError,{data: AcceptByTokenBody}, TContext>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof acceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost>>,
         TError,
-        {data: AcceptByTokenBody;params?: AcceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPostParams},
+        {data: AcceptByTokenBody},
         TContext
       > => {
 
@@ -681,7 +674,7 @@ export const useCreateSellerInvitationOrganizationsOrganizationIdSellerInvitatio
  * @summary Create Join Request
  */
 export const createJoinRequestOrganizationsOrganizationIdJoinRequestsPost = (
-    organizationId: string | null,
+    organizationId: string,
  options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
 ) => {
       
@@ -695,8 +688,8 @@ export const createJoinRequestOrganizationsOrganizationIdJoinRequestsPost = (
 
 
 export const getCreateJoinRequestOrganizationsOrganizationIdJoinRequestsPostMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createJoinRequestOrganizationsOrganizationIdJoinRequestsPost>>, TError,{organizationId: string | null}, TContext>, request?: SecondParameter<typeof brokerFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createJoinRequestOrganizationsOrganizationIdJoinRequestsPost>>, TError,{organizationId: string | null}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createJoinRequestOrganizationsOrganizationIdJoinRequestsPost>>, TError,{organizationId: string}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createJoinRequestOrganizationsOrganizationIdJoinRequestsPost>>, TError,{organizationId: string}, TContext> => {
 
 const mutationKey = ['createJoinRequestOrganizationsOrganizationIdJoinRequestsPost'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -708,7 +701,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createJoinRequestOrganizationsOrganizationIdJoinRequestsPost>>, {organizationId: string | null}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createJoinRequestOrganizationsOrganizationIdJoinRequestsPost>>, {organizationId: string}> = (props) => {
           const {organizationId} = props ?? {};
 
           return  createJoinRequestOrganizationsOrganizationIdJoinRequestsPost(organizationId,requestOptions)
@@ -727,11 +720,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  * @summary Create Join Request
  */
 export const useCreateJoinRequestOrganizationsOrganizationIdJoinRequestsPost = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createJoinRequestOrganizationsOrganizationIdJoinRequestsPost>>, TError,{organizationId: string | null}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createJoinRequestOrganizationsOrganizationIdJoinRequestsPost>>, TError,{organizationId: string}, TContext>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createJoinRequestOrganizationsOrganizationIdJoinRequestsPost>>,
         TError,
-        {organizationId: string | null},
+        {organizationId: string},
         TContext
       > => {
 
@@ -989,11 +982,102 @@ export const usePatchSellerLinkOrganizationsOrganizationIdLinkedSellersSellerOrg
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * @summary List Organizations
+ */
+export const listOrganizationsOrganizationsGet = (
+    
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<Organization[]>(
+      {url: `/organizations/`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getListOrganizationsOrganizationsGetQueryKey = () => {
+    return [
+    `/organizations/`
+    ] as const;
+    }
+
+    
+export const getListOrganizationsOrganizationsGetQueryOptions = <TData = Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListOrganizationsOrganizationsGetQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>> = ({ signal }) => listOrganizationsOrganizationsGet(requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListOrganizationsOrganizationsGetQueryResult = NonNullable<Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>>
+export type ListOrganizationsOrganizationsGetQueryError = unknown
+
+
+export function useListOrganizationsOrganizationsGet<TData = Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>,
+          TError,
+          Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListOrganizationsOrganizationsGet<TData = Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>,
+          TError,
+          Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListOrganizationsOrganizationsGet<TData = Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Organizations
+ */
+
+export function useListOrganizationsOrganizationsGet<TData = Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListOrganizationsOrganizationsGetQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
  * @summary Create Organization
  */
 export const createOrganizationOrganizationsPost = (
     organization: Organization,
-    params?: CreateOrganizationOrganizationsPostParams,
  options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
 ) => {
       
@@ -1001,8 +1085,7 @@ export const createOrganizationOrganizationsPost = (
       return brokerFetch<Organization>(
       {url: `/organizations/`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: organization,
-        params, signal
+      data: organization, signal
     },
       options);
     }
@@ -1010,8 +1093,8 @@ export const createOrganizationOrganizationsPost = (
 
 
 export const getCreateOrganizationOrganizationsPostMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrganizationOrganizationsPost>>, TError,{data: Organization;params?: CreateOrganizationOrganizationsPostParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createOrganizationOrganizationsPost>>, TError,{data: Organization;params?: CreateOrganizationOrganizationsPostParams}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrganizationOrganizationsPost>>, TError,{data: Organization}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createOrganizationOrganizationsPost>>, TError,{data: Organization}, TContext> => {
 
 const mutationKey = ['createOrganizationOrganizationsPost'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -1023,10 +1106,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOrganizationOrganizationsPost>>, {data: Organization;params?: CreateOrganizationOrganizationsPostParams}> = (props) => {
-          const {data,params} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOrganizationOrganizationsPost>>, {data: Organization}> = (props) => {
+          const {data} = props ?? {};
 
-          return  createOrganizationOrganizationsPost(data,params,requestOptions)
+          return  createOrganizationOrganizationsPost(data,requestOptions)
         }
 
         
@@ -1042,11 +1125,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  * @summary Create Organization
  */
 export const useCreateOrganizationOrganizationsPost = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrganizationOrganizationsPost>>, TError,{data: Organization;params?: CreateOrganizationOrganizationsPostParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrganizationOrganizationsPost>>, TError,{data: Organization}, TContext>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createOrganizationOrganizationsPost>>,
         TError,
-        {data: Organization;params?: CreateOrganizationOrganizationsPostParams},
+        {data: Organization},
         TContext
       > => {
 
@@ -1055,99 +1138,6 @@ export const useCreateOrganizationOrganizationsPost = <TError = HTTPValidationEr
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * @summary List Organizations
- */
-export const listOrganizationsOrganizationsGet = (
-    params?: ListOrganizationsOrganizationsGetParams,
- options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
-) => {
-      
-      
-      return brokerFetch<Organization[]>(
-      {url: `/organizations/`, method: 'GET',
-        params, signal
-    },
-      options);
-    }
-  
-
-
-
-export const getListOrganizationsOrganizationsGetQueryKey = (params?: ListOrganizationsOrganizationsGetParams,) => {
-    return [
-    `/organizations/`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getListOrganizationsOrganizationsGetQueryOptions = <TData = Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError = HTTPValidationError>(params?: ListOrganizationsOrganizationsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListOrganizationsOrganizationsGetQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>> = ({ signal }) => listOrganizationsOrganizationsGet(params, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ListOrganizationsOrganizationsGetQueryResult = NonNullable<Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>>
-export type ListOrganizationsOrganizationsGetQueryError = HTTPValidationError
-
-
-export function useListOrganizationsOrganizationsGet<TData = Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError = HTTPValidationError>(
- params: undefined |  ListOrganizationsOrganizationsGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>,
-          TError,
-          Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof brokerFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListOrganizationsOrganizationsGet<TData = Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError = HTTPValidationError>(
- params?: ListOrganizationsOrganizationsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>,
-          TError,
-          Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof brokerFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListOrganizationsOrganizationsGet<TData = Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError = HTTPValidationError>(
- params?: ListOrganizationsOrganizationsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary List Organizations
- */
-
-export function useListOrganizationsOrganizationsGet<TData = Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError = HTTPValidationError>(
- params?: ListOrganizationsOrganizationsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrganizationsOrganizationsGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getListOrganizationsOrganizationsGetQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-
-/**
  * @summary Patch Organization
  */
 export const patchOrganizationOrganizationsOrganizationIdPatch = (
@@ -1491,4 +1481,95 @@ export const useRevokeApiKeyOrganizationsOrganizationIdApiKeysKeyIdDelete = <TEr
 
       return useMutation(mutationOptions, queryClient);
     }
+    /**
+ * @summary List Providers
+ */
+export const listProvidersOrganizationsSellerProvidersGet = (
     
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<Organization[]>(
+      {url: `/organizations/seller/providers`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getListProvidersOrganizationsSellerProvidersGetQueryKey = () => {
+    return [
+    `/organizations/seller/providers`
+    ] as const;
+    }
+
+    
+export const getListProvidersOrganizationsSellerProvidersGetQueryOptions = <TData = Awaited<ReturnType<typeof listProvidersOrganizationsSellerProvidersGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProvidersOrganizationsSellerProvidersGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListProvidersOrganizationsSellerProvidersGetQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listProvidersOrganizationsSellerProvidersGet>>> = ({ signal }) => listProvidersOrganizationsSellerProvidersGet(requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProvidersOrganizationsSellerProvidersGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListProvidersOrganizationsSellerProvidersGetQueryResult = NonNullable<Awaited<ReturnType<typeof listProvidersOrganizationsSellerProvidersGet>>>
+export type ListProvidersOrganizationsSellerProvidersGetQueryError = unknown
+
+
+export function useListProvidersOrganizationsSellerProvidersGet<TData = Awaited<ReturnType<typeof listProvidersOrganizationsSellerProvidersGet>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProvidersOrganizationsSellerProvidersGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProvidersOrganizationsSellerProvidersGet>>,
+          TError,
+          Awaited<ReturnType<typeof listProvidersOrganizationsSellerProvidersGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListProvidersOrganizationsSellerProvidersGet<TData = Awaited<ReturnType<typeof listProvidersOrganizationsSellerProvidersGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProvidersOrganizationsSellerProvidersGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProvidersOrganizationsSellerProvidersGet>>,
+          TError,
+          Awaited<ReturnType<typeof listProvidersOrganizationsSellerProvidersGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListProvidersOrganizationsSellerProvidersGet<TData = Awaited<ReturnType<typeof listProvidersOrganizationsSellerProvidersGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProvidersOrganizationsSellerProvidersGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Providers
+ */
+
+export function useListProvidersOrganizationsSellerProvidersGet<TData = Awaited<ReturnType<typeof listProvidersOrganizationsSellerProvidersGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProvidersOrganizationsSellerProvidersGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListProvidersOrganizationsSellerProvidersGetQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+

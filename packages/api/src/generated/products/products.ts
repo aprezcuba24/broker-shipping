@@ -26,9 +26,11 @@ import type {
 
 import type {
   Category,
+  GetProductProductsSellerProductIdGetParams,
   HTTPValidationError,
+  ListProductsProductsSellerGetParams,
   PatchCategoryProductsCategoriesCategoryIdPatchBody,
-  PatchProductProductsProductIdPatchBody,
+  PatchProductProductsProviderProductIdPatchBody,
   Product,
   ProductCreate
 } from '.././models';
@@ -43,14 +45,14 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 /**
  * @summary List Products
  */
-export const listProductsProductsGet = (
+export const listProductsProductsProviderGet = (
     
  options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
 ) => {
       
       
       return brokerFetch<Product[]>(
-      {url: `/products/`, method: 'GET', signal
+      {url: `/products/provider/`, method: 'GET', signal
     },
       options);
     }
@@ -58,69 +60,69 @@ export const listProductsProductsGet = (
 
 
 
-export const getListProductsProductsGetQueryKey = () => {
+export const getListProductsProductsProviderGetQueryKey = () => {
     return [
-    `/products/`
+    `/products/provider/`
     ] as const;
     }
 
     
-export const getListProductsProductsGetQueryOptions = <TData = Awaited<ReturnType<typeof listProductsProductsGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsProductsGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export const getListProductsProductsProviderGetQueryOptions = <TData = Awaited<ReturnType<typeof listProductsProductsProviderGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsProductsProviderGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListProductsProductsGetQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListProductsProductsProviderGetQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listProductsProductsGet>>> = ({ signal }) => listProductsProductsGet(requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listProductsProductsProviderGet>>> = ({ signal }) => listProductsProductsProviderGet(requestOptions, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProductsProductsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProductsProductsProviderGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type ListProductsProductsGetQueryResult = NonNullable<Awaited<ReturnType<typeof listProductsProductsGet>>>
-export type ListProductsProductsGetQueryError = unknown
+export type ListProductsProductsProviderGetQueryResult = NonNullable<Awaited<ReturnType<typeof listProductsProductsProviderGet>>>
+export type ListProductsProductsProviderGetQueryError = unknown
 
 
-export function useListProductsProductsGet<TData = Awaited<ReturnType<typeof listProductsProductsGet>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsProductsGet>>, TError, TData>> & Pick<
+export function useListProductsProductsProviderGet<TData = Awaited<ReturnType<typeof listProductsProductsProviderGet>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsProductsProviderGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listProductsProductsGet>>,
+          Awaited<ReturnType<typeof listProductsProductsProviderGet>>,
           TError,
-          Awaited<ReturnType<typeof listProductsProductsGet>>
+          Awaited<ReturnType<typeof listProductsProductsProviderGet>>
         > , 'initialData'
       >, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListProductsProductsGet<TData = Awaited<ReturnType<typeof listProductsProductsGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsProductsGet>>, TError, TData>> & Pick<
+export function useListProductsProductsProviderGet<TData = Awaited<ReturnType<typeof listProductsProductsProviderGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsProductsProviderGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listProductsProductsGet>>,
+          Awaited<ReturnType<typeof listProductsProductsProviderGet>>,
           TError,
-          Awaited<ReturnType<typeof listProductsProductsGet>>
+          Awaited<ReturnType<typeof listProductsProductsProviderGet>>
         > , 'initialData'
       >, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListProductsProductsGet<TData = Awaited<ReturnType<typeof listProductsProductsGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsProductsGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export function useListProductsProductsProviderGet<TData = Awaited<ReturnType<typeof listProductsProductsProviderGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsProductsProviderGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List Products
  */
 
-export function useListProductsProductsGet<TData = Awaited<ReturnType<typeof listProductsProductsGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsProductsGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export function useListProductsProductsProviderGet<TData = Awaited<ReturnType<typeof listProductsProductsProviderGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsProductsProviderGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getListProductsProductsGetQueryOptions(options)
+  const queryOptions = getListProductsProductsProviderGetQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -135,14 +137,14 @@ export function useListProductsProductsGet<TData = Awaited<ReturnType<typeof lis
 /**
  * @summary Create Product
  */
-export const createProductProductsPost = (
+export const createProductProductsProviderPost = (
     productCreate: ProductCreate,
  options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
 ) => {
       
       
       return brokerFetch<Product>(
-      {url: `/products/`, method: 'POST',
+      {url: `/products/provider/`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: productCreate, signal
     },
@@ -151,11 +153,11 @@ export const createProductProductsPost = (
   
 
 
-export const getCreateProductProductsPostMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProductProductsPost>>, TError,{data: ProductCreate}, TContext>, request?: SecondParameter<typeof brokerFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createProductProductsPost>>, TError,{data: ProductCreate}, TContext> => {
+export const getCreateProductProductsProviderPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProductProductsProviderPost>>, TError,{data: ProductCreate}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createProductProductsProviderPost>>, TError,{data: ProductCreate}, TContext> => {
 
-const mutationKey = ['createProductProductsPost'];
+const mutationKey = ['createProductProductsProviderPost'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -165,10 +167,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createProductProductsPost>>, {data: ProductCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createProductProductsProviderPost>>, {data: ProductCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createProductProductsPost(data,requestOptions)
+          return  createProductProductsProviderPost(data,requestOptions)
         }
 
         
@@ -176,37 +178,37 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateProductProductsPostMutationResult = NonNullable<Awaited<ReturnType<typeof createProductProductsPost>>>
-    export type CreateProductProductsPostMutationBody = ProductCreate
-    export type CreateProductProductsPostMutationError = HTTPValidationError
+    export type CreateProductProductsProviderPostMutationResult = NonNullable<Awaited<ReturnType<typeof createProductProductsProviderPost>>>
+    export type CreateProductProductsProviderPostMutationBody = ProductCreate
+    export type CreateProductProductsProviderPostMutationError = HTTPValidationError
 
     /**
  * @summary Create Product
  */
-export const useCreateProductProductsPost = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProductProductsPost>>, TError,{data: ProductCreate}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+export const useCreateProductProductsProviderPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProductProductsProviderPost>>, TError,{data: ProductCreate}, TContext>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createProductProductsPost>>,
+        Awaited<ReturnType<typeof createProductProductsProviderPost>>,
         TError,
         {data: ProductCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateProductProductsPostMutationOptions(options);
+      const mutationOptions = getCreateProductProductsProviderPostMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
  * @summary Get Product
  */
-export const getProductProductsProductIdGet = (
+export const getProductProductsProviderProductIdGet = (
     productId: string,
  options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
 ) => {
       
       
       return brokerFetch<Product>(
-      {url: `/products/${productId}`, method: 'GET', signal
+      {url: `/products/provider/${productId}`, method: 'GET', signal
     },
       options);
     }
@@ -214,69 +216,69 @@ export const getProductProductsProductIdGet = (
 
 
 
-export const getGetProductProductsProductIdGetQueryKey = (productId?: string,) => {
+export const getGetProductProductsProviderProductIdGetQueryKey = (productId?: string,) => {
     return [
-    `/products/${productId}`
+    `/products/provider/${productId}`
     ] as const;
     }
 
     
-export const getGetProductProductsProductIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getProductProductsProductIdGet>>, TError = HTTPValidationError>(productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductProductsProductIdGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export const getGetProductProductsProviderProductIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getProductProductsProviderProductIdGet>>, TError = HTTPValidationError>(productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductProductsProviderProductIdGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetProductProductsProductIdGetQueryKey(productId);
+  const queryKey =  queryOptions?.queryKey ?? getGetProductProductsProviderProductIdGetQueryKey(productId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductProductsProductIdGet>>> = ({ signal }) => getProductProductsProductIdGet(productId, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductProductsProviderProductIdGet>>> = ({ signal }) => getProductProductsProviderProductIdGet(productId, requestOptions, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(productId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProductProductsProductIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(productId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProductProductsProviderProductIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetProductProductsProductIdGetQueryResult = NonNullable<Awaited<ReturnType<typeof getProductProductsProductIdGet>>>
-export type GetProductProductsProductIdGetQueryError = HTTPValidationError
+export type GetProductProductsProviderProductIdGetQueryResult = NonNullable<Awaited<ReturnType<typeof getProductProductsProviderProductIdGet>>>
+export type GetProductProductsProviderProductIdGetQueryError = HTTPValidationError
 
 
-export function useGetProductProductsProductIdGet<TData = Awaited<ReturnType<typeof getProductProductsProductIdGet>>, TError = HTTPValidationError>(
- productId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductProductsProductIdGet>>, TError, TData>> & Pick<
+export function useGetProductProductsProviderProductIdGet<TData = Awaited<ReturnType<typeof getProductProductsProviderProductIdGet>>, TError = HTTPValidationError>(
+ productId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductProductsProviderProductIdGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductProductsProductIdGet>>,
+          Awaited<ReturnType<typeof getProductProductsProviderProductIdGet>>,
           TError,
-          Awaited<ReturnType<typeof getProductProductsProductIdGet>>
+          Awaited<ReturnType<typeof getProductProductsProviderProductIdGet>>
         > , 'initialData'
       >, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductProductsProductIdGet<TData = Awaited<ReturnType<typeof getProductProductsProductIdGet>>, TError = HTTPValidationError>(
- productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductProductsProductIdGet>>, TError, TData>> & Pick<
+export function useGetProductProductsProviderProductIdGet<TData = Awaited<ReturnType<typeof getProductProductsProviderProductIdGet>>, TError = HTTPValidationError>(
+ productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductProductsProviderProductIdGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductProductsProductIdGet>>,
+          Awaited<ReturnType<typeof getProductProductsProviderProductIdGet>>,
           TError,
-          Awaited<ReturnType<typeof getProductProductsProductIdGet>>
+          Awaited<ReturnType<typeof getProductProductsProviderProductIdGet>>
         > , 'initialData'
       >, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductProductsProductIdGet<TData = Awaited<ReturnType<typeof getProductProductsProductIdGet>>, TError = HTTPValidationError>(
- productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductProductsProductIdGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export function useGetProductProductsProviderProductIdGet<TData = Awaited<ReturnType<typeof getProductProductsProviderProductIdGet>>, TError = HTTPValidationError>(
+ productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductProductsProviderProductIdGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get Product
  */
 
-export function useGetProductProductsProductIdGet<TData = Awaited<ReturnType<typeof getProductProductsProductIdGet>>, TError = HTTPValidationError>(
- productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductProductsProductIdGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export function useGetProductProductsProviderProductIdGet<TData = Awaited<ReturnType<typeof getProductProductsProviderProductIdGet>>, TError = HTTPValidationError>(
+ productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductProductsProviderProductIdGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetProductProductsProductIdGetQueryOptions(productId,options)
+  const queryOptions = getGetProductProductsProviderProductIdGetQueryOptions(productId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -291,27 +293,27 @@ export function useGetProductProductsProductIdGet<TData = Awaited<ReturnType<typ
 /**
  * @summary Patch Product
  */
-export const patchProductProductsProductIdPatch = (
+export const patchProductProductsProviderProductIdPatch = (
     productId: string,
-    patchProductProductsProductIdPatchBody: PatchProductProductsProductIdPatchBody,
+    patchProductProductsProviderProductIdPatchBody: PatchProductProductsProviderProductIdPatchBody,
  options?: SecondParameter<typeof brokerFetch>,) => {
       
       
       return brokerFetch<Product>(
-      {url: `/products/${productId}`, method: 'PATCH',
+      {url: `/products/provider/${productId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
-      data: patchProductProductsProductIdPatchBody
+      data: patchProductProductsProviderProductIdPatchBody
     },
       options);
     }
   
 
 
-export const getPatchProductProductsProductIdPatchMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchProductProductsProductIdPatch>>, TError,{productId: string;data: PatchProductProductsProductIdPatchBody}, TContext>, request?: SecondParameter<typeof brokerFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof patchProductProductsProductIdPatch>>, TError,{productId: string;data: PatchProductProductsProductIdPatchBody}, TContext> => {
+export const getPatchProductProductsProviderProductIdPatchMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchProductProductsProviderProductIdPatch>>, TError,{productId: string;data: PatchProductProductsProviderProductIdPatchBody}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof patchProductProductsProviderProductIdPatch>>, TError,{productId: string;data: PatchProductProductsProviderProductIdPatchBody}, TContext> => {
 
-const mutationKey = ['patchProductProductsProductIdPatch'];
+const mutationKey = ['patchProductProductsProviderProductIdPatch'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -321,10 +323,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchProductProductsProductIdPatch>>, {productId: string;data: PatchProductProductsProductIdPatchBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchProductProductsProviderProductIdPatch>>, {productId: string;data: PatchProductProductsProviderProductIdPatchBody}> = (props) => {
           const {productId,data} = props ?? {};
 
-          return  patchProductProductsProductIdPatch(productId,data,requestOptions)
+          return  patchProductProductsProviderProductIdPatch(productId,data,requestOptions)
         }
 
         
@@ -332,47 +334,47 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PatchProductProductsProductIdPatchMutationResult = NonNullable<Awaited<ReturnType<typeof patchProductProductsProductIdPatch>>>
-    export type PatchProductProductsProductIdPatchMutationBody = PatchProductProductsProductIdPatchBody
-    export type PatchProductProductsProductIdPatchMutationError = HTTPValidationError
+    export type PatchProductProductsProviderProductIdPatchMutationResult = NonNullable<Awaited<ReturnType<typeof patchProductProductsProviderProductIdPatch>>>
+    export type PatchProductProductsProviderProductIdPatchMutationBody = PatchProductProductsProviderProductIdPatchBody
+    export type PatchProductProductsProviderProductIdPatchMutationError = HTTPValidationError
 
     /**
  * @summary Patch Product
  */
-export const usePatchProductProductsProductIdPatch = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchProductProductsProductIdPatch>>, TError,{productId: string;data: PatchProductProductsProductIdPatchBody}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+export const usePatchProductProductsProviderProductIdPatch = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchProductProductsProviderProductIdPatch>>, TError,{productId: string;data: PatchProductProductsProviderProductIdPatchBody}, TContext>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof patchProductProductsProductIdPatch>>,
+        Awaited<ReturnType<typeof patchProductProductsProviderProductIdPatch>>,
         TError,
-        {productId: string;data: PatchProductProductsProductIdPatchBody},
+        {productId: string;data: PatchProductProductsProviderProductIdPatchBody},
         TContext
       > => {
 
-      const mutationOptions = getPatchProductProductsProductIdPatchMutationOptions(options);
+      const mutationOptions = getPatchProductProductsProviderProductIdPatchMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
  * @summary Delete Product
  */
-export const deleteProductProductsProductIdDelete = (
+export const deleteProductProductsProviderProductIdDelete = (
     productId: string,
  options?: SecondParameter<typeof brokerFetch>,) => {
       
       
       return brokerFetch<void>(
-      {url: `/products/${productId}`, method: 'DELETE'
+      {url: `/products/provider/${productId}`, method: 'DELETE'
     },
       options);
     }
   
 
 
-export const getDeleteProductProductsProductIdDeleteMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductProductsProductIdDelete>>, TError,{productId: string}, TContext>, request?: SecondParameter<typeof brokerFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteProductProductsProductIdDelete>>, TError,{productId: string}, TContext> => {
+export const getDeleteProductProductsProviderProductIdDeleteMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductProductsProviderProductIdDelete>>, TError,{productId: string}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteProductProductsProviderProductIdDelete>>, TError,{productId: string}, TContext> => {
 
-const mutationKey = ['deleteProductProductsProductIdDelete'];
+const mutationKey = ['deleteProductProductsProviderProductIdDelete'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -382,10 +384,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteProductProductsProductIdDelete>>, {productId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteProductProductsProviderProductIdDelete>>, {productId: string}> = (props) => {
           const {productId} = props ?? {};
 
-          return  deleteProductProductsProductIdDelete(productId,requestOptions)
+          return  deleteProductProductsProviderProductIdDelete(productId,requestOptions)
         }
 
         
@@ -393,27 +395,312 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteProductProductsProductIdDeleteMutationResult = NonNullable<Awaited<ReturnType<typeof deleteProductProductsProductIdDelete>>>
+    export type DeleteProductProductsProviderProductIdDeleteMutationResult = NonNullable<Awaited<ReturnType<typeof deleteProductProductsProviderProductIdDelete>>>
     
-    export type DeleteProductProductsProductIdDeleteMutationError = HTTPValidationError
+    export type DeleteProductProductsProviderProductIdDeleteMutationError = HTTPValidationError
 
     /**
  * @summary Delete Product
  */
-export const useDeleteProductProductsProductIdDelete = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductProductsProductIdDelete>>, TError,{productId: string}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+export const useDeleteProductProductsProviderProductIdDelete = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductProductsProviderProductIdDelete>>, TError,{productId: string}, TContext>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteProductProductsProductIdDelete>>,
+        Awaited<ReturnType<typeof deleteProductProductsProviderProductIdDelete>>,
         TError,
         {productId: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteProductProductsProductIdDeleteMutationOptions(options);
+      const mutationOptions = getDeleteProductProductsProviderProductIdDeleteMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * @summary List Products
+ */
+export const listProductsProductsSellerGet = (
+    params?: ListProductsProductsSellerGetParams,
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<Product[]>(
+      {url: `/products/seller/`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+  
+
+
+
+export const getListProductsProductsSellerGetQueryKey = (params?: ListProductsProductsSellerGetParams,) => {
+    return [
+    `/products/seller/`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getListProductsProductsSellerGetQueryOptions = <TData = Awaited<ReturnType<typeof listProductsProductsSellerGet>>, TError = HTTPValidationError>(params?: ListProductsProductsSellerGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsProductsSellerGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListProductsProductsSellerGetQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listProductsProductsSellerGet>>> = ({ signal }) => listProductsProductsSellerGet(params, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProductsProductsSellerGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListProductsProductsSellerGetQueryResult = NonNullable<Awaited<ReturnType<typeof listProductsProductsSellerGet>>>
+export type ListProductsProductsSellerGetQueryError = HTTPValidationError
+
+
+export function useListProductsProductsSellerGet<TData = Awaited<ReturnType<typeof listProductsProductsSellerGet>>, TError = HTTPValidationError>(
+ params: undefined |  ListProductsProductsSellerGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsProductsSellerGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProductsProductsSellerGet>>,
+          TError,
+          Awaited<ReturnType<typeof listProductsProductsSellerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListProductsProductsSellerGet<TData = Awaited<ReturnType<typeof listProductsProductsSellerGet>>, TError = HTTPValidationError>(
+ params?: ListProductsProductsSellerGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsProductsSellerGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProductsProductsSellerGet>>,
+          TError,
+          Awaited<ReturnType<typeof listProductsProductsSellerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListProductsProductsSellerGet<TData = Awaited<ReturnType<typeof listProductsProductsSellerGet>>, TError = HTTPValidationError>(
+ params?: ListProductsProductsSellerGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsProductsSellerGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Products
+ */
+
+export function useListProductsProductsSellerGet<TData = Awaited<ReturnType<typeof listProductsProductsSellerGet>>, TError = HTTPValidationError>(
+ params?: ListProductsProductsSellerGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProductsProductsSellerGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListProductsProductsSellerGetQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary Get Product
+ */
+export const getProductProductsSellerProductIdGet = (
+    productId: string,
+    params?: GetProductProductsSellerProductIdGetParams,
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<Product>(
+      {url: `/products/seller/${productId}`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+  
+
+
+
+export const getGetProductProductsSellerProductIdGetQueryKey = (productId?: string,
+    params?: GetProductProductsSellerProductIdGetParams,) => {
+    return [
+    `/products/seller/${productId}`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetProductProductsSellerProductIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getProductProductsSellerProductIdGet>>, TError = HTTPValidationError>(productId: string,
+    params?: GetProductProductsSellerProductIdGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductProductsSellerProductIdGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetProductProductsSellerProductIdGetQueryKey(productId,params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductProductsSellerProductIdGet>>> = ({ signal }) => getProductProductsSellerProductIdGet(productId,params, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(productId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProductProductsSellerProductIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetProductProductsSellerProductIdGetQueryResult = NonNullable<Awaited<ReturnType<typeof getProductProductsSellerProductIdGet>>>
+export type GetProductProductsSellerProductIdGetQueryError = HTTPValidationError
+
+
+export function useGetProductProductsSellerProductIdGet<TData = Awaited<ReturnType<typeof getProductProductsSellerProductIdGet>>, TError = HTTPValidationError>(
+ productId: string,
+    params: undefined |  GetProductProductsSellerProductIdGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductProductsSellerProductIdGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProductProductsSellerProductIdGet>>,
+          TError,
+          Awaited<ReturnType<typeof getProductProductsSellerProductIdGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProductProductsSellerProductIdGet<TData = Awaited<ReturnType<typeof getProductProductsSellerProductIdGet>>, TError = HTTPValidationError>(
+ productId: string,
+    params?: GetProductProductsSellerProductIdGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductProductsSellerProductIdGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProductProductsSellerProductIdGet>>,
+          TError,
+          Awaited<ReturnType<typeof getProductProductsSellerProductIdGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProductProductsSellerProductIdGet<TData = Awaited<ReturnType<typeof getProductProductsSellerProductIdGet>>, TError = HTTPValidationError>(
+ productId: string,
+    params?: GetProductProductsSellerProductIdGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductProductsSellerProductIdGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get Product
+ */
+
+export function useGetProductProductsSellerProductIdGet<TData = Awaited<ReturnType<typeof getProductProductsSellerProductIdGet>>, TError = HTTPValidationError>(
+ productId: string,
+    params?: GetProductProductsSellerProductIdGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductProductsSellerProductIdGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetProductProductsSellerProductIdGetQueryOptions(productId,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary List Categories
+ */
+export const listCategoriesProductsSellerCategoriesProviderIdGet = (
+    providerId: string,
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<Category[]>(
+      {url: `/products/seller/categories/${providerId}`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getListCategoriesProductsSellerCategoriesProviderIdGetQueryKey = (providerId?: string,) => {
+    return [
+    `/products/seller/categories/${providerId}`
+    ] as const;
+    }
+
+    
+export const getListCategoriesProductsSellerCategoriesProviderIdGetQueryOptions = <TData = Awaited<ReturnType<typeof listCategoriesProductsSellerCategoriesProviderIdGet>>, TError = HTTPValidationError>(providerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCategoriesProductsSellerCategoriesProviderIdGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListCategoriesProductsSellerCategoriesProviderIdGetQueryKey(providerId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCategoriesProductsSellerCategoriesProviderIdGet>>> = ({ signal }) => listCategoriesProductsSellerCategoriesProviderIdGet(providerId, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(providerId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCategoriesProductsSellerCategoriesProviderIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListCategoriesProductsSellerCategoriesProviderIdGetQueryResult = NonNullable<Awaited<ReturnType<typeof listCategoriesProductsSellerCategoriesProviderIdGet>>>
+export type ListCategoriesProductsSellerCategoriesProviderIdGetQueryError = HTTPValidationError
+
+
+export function useListCategoriesProductsSellerCategoriesProviderIdGet<TData = Awaited<ReturnType<typeof listCategoriesProductsSellerCategoriesProviderIdGet>>, TError = HTTPValidationError>(
+ providerId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCategoriesProductsSellerCategoriesProviderIdGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listCategoriesProductsSellerCategoriesProviderIdGet>>,
+          TError,
+          Awaited<ReturnType<typeof listCategoriesProductsSellerCategoriesProviderIdGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListCategoriesProductsSellerCategoriesProviderIdGet<TData = Awaited<ReturnType<typeof listCategoriesProductsSellerCategoriesProviderIdGet>>, TError = HTTPValidationError>(
+ providerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCategoriesProductsSellerCategoriesProviderIdGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listCategoriesProductsSellerCategoriesProviderIdGet>>,
+          TError,
+          Awaited<ReturnType<typeof listCategoriesProductsSellerCategoriesProviderIdGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListCategoriesProductsSellerCategoriesProviderIdGet<TData = Awaited<ReturnType<typeof listCategoriesProductsSellerCategoriesProviderIdGet>>, TError = HTTPValidationError>(
+ providerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCategoriesProductsSellerCategoriesProviderIdGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Categories
+ */
+
+export function useListCategoriesProductsSellerCategoriesProviderIdGet<TData = Awaited<ReturnType<typeof listCategoriesProductsSellerCategoriesProviderIdGet>>, TError = HTTPValidationError>(
+ providerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCategoriesProductsSellerCategoriesProviderIdGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListCategoriesProductsSellerCategoriesProviderIdGetQueryOptions(providerId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
  * @summary List Categories
  */
 export const listCategoriesProductsCategoriesGet = (

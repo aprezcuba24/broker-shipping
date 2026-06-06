@@ -26,7 +26,6 @@ import type {
 
 import type {
   HTTPValidationError,
-  MeUsersMeGetParams,
   TokenResponse,
   UserLogin,
   UserPublic,
@@ -172,14 +171,13 @@ export const useLoginUsersLoginPost = <TError = HTTPValidationError,
  * @summary Me
  */
 export const meUsersMeGet = (
-    params?: MeUsersMeGetParams,
+    
  options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
 ) => {
       
       
       return brokerFetch<UserPublic>(
-      {url: `/users/me`, method: 'GET',
-        params, signal
+      {url: `/users/me`, method: 'GET', signal
     },
       options);
     }
@@ -187,23 +185,23 @@ export const meUsersMeGet = (
 
 
 
-export const getMeUsersMeGetQueryKey = (params?: MeUsersMeGetParams,) => {
+export const getMeUsersMeGetQueryKey = () => {
     return [
-    `/users/me`, ...(params ? [params]: [])
+    `/users/me`
     ] as const;
     }
 
     
-export const getMeUsersMeGetQueryOptions = <TData = Awaited<ReturnType<typeof meUsersMeGet>>, TError = HTTPValidationError>(params?: MeUsersMeGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof meUsersMeGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export const getMeUsersMeGetQueryOptions = <TData = Awaited<ReturnType<typeof meUsersMeGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof meUsersMeGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getMeUsersMeGetQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getMeUsersMeGetQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof meUsersMeGet>>> = ({ signal }) => meUsersMeGet(params, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof meUsersMeGet>>> = ({ signal }) => meUsersMeGet(requestOptions, signal);
 
       
 
@@ -213,11 +211,11 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type MeUsersMeGetQueryResult = NonNullable<Awaited<ReturnType<typeof meUsersMeGet>>>
-export type MeUsersMeGetQueryError = HTTPValidationError
+export type MeUsersMeGetQueryError = unknown
 
 
-export function useMeUsersMeGet<TData = Awaited<ReturnType<typeof meUsersMeGet>>, TError = HTTPValidationError>(
- params: undefined |  MeUsersMeGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof meUsersMeGet>>, TError, TData>> & Pick<
+export function useMeUsersMeGet<TData = Awaited<ReturnType<typeof meUsersMeGet>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof meUsersMeGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof meUsersMeGet>>,
           TError,
@@ -226,8 +224,8 @@ export function useMeUsersMeGet<TData = Awaited<ReturnType<typeof meUsersMeGet>>
       >, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMeUsersMeGet<TData = Awaited<ReturnType<typeof meUsersMeGet>>, TError = HTTPValidationError>(
- params?: MeUsersMeGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof meUsersMeGet>>, TError, TData>> & Pick<
+export function useMeUsersMeGet<TData = Awaited<ReturnType<typeof meUsersMeGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof meUsersMeGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof meUsersMeGet>>,
           TError,
@@ -236,20 +234,20 @@ export function useMeUsersMeGet<TData = Awaited<ReturnType<typeof meUsersMeGet>>
       >, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMeUsersMeGet<TData = Awaited<ReturnType<typeof meUsersMeGet>>, TError = HTTPValidationError>(
- params?: MeUsersMeGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof meUsersMeGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export function useMeUsersMeGet<TData = Awaited<ReturnType<typeof meUsersMeGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof meUsersMeGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Me
  */
 
-export function useMeUsersMeGet<TData = Awaited<ReturnType<typeof meUsersMeGet>>, TError = HTTPValidationError>(
- params?: MeUsersMeGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof meUsersMeGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export function useMeUsersMeGet<TData = Awaited<ReturnType<typeof meUsersMeGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof meUsersMeGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getMeUsersMeGetQueryOptions(params,options)
+  const queryOptions = getMeUsersMeGetQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

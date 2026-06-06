@@ -414,6 +414,61 @@
         }
       }
     },
+    "/products/seller/categories/{provider_id}": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "List Categories",
+        "operationId": "list_categories_products_seller_categories__provider_id__get",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "provider_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Provider Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Category"
+                  },
+                  "title": "Response List Categories Products Seller Categories  Provider Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/products/categories/": {
       "get": {
         "tags": [
@@ -737,33 +792,6 @@
         ],
         "summary": "Me",
         "operationId": "me_users_me_get",
-        "security": [
-          {
-            "BrokerBearer": []
-          },
-          {
-            "BrokerOrganization": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "organization_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Organization Id"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -774,18 +802,19 @@
                 }
               }
             }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
           }
-        }
+        },
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ]
       }
     },
     "/organizations/invitations/mine": {
@@ -795,59 +824,33 @@
         ],
         "summary": "List My Invitations",
         "operationId": "list_my_invitations_organizations_invitations_mine_get",
-        "security": [
-          {
-            "BrokerBearer": []
-          },
-          {
-            "BrokerOrganization": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "organization_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Organization Id"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/InvitationPublic"
                   },
+                  "type": "array",
                   "title": "Response List My Invitations Organizations Invitations Mine Get"
                 }
               }
             }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
           }
-        }
+        },
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ]
       }
     },
     "/organizations/invitations/accept-by-token": {
@@ -857,42 +860,15 @@
         ],
         "summary": "Accept Invitation By Token",
         "operationId": "accept_invitation_by_token_organizations_invitations_accept_by_token_post",
-        "security": [
-          {
-            "BrokerBearer": []
-          },
-          {
-            "BrokerOrganization": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "organization_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Organization Id"
-            }
-          }
-        ],
         "requestBody": {
-          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/AcceptByTokenBody"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -915,7 +891,18 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ]
       }
     },
     "/organizations/{organization_id}/invitations/{invitation_id}/accept": {
@@ -928,6 +915,9 @@
         "security": [
           {
             "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
           },
           {
             "BrokerOrganization": []
@@ -998,6 +988,9 @@
             "BrokerBearer": []
           },
           {
+            "BrokerApiKey": []
+          },
+          {
             "BrokerOrganization": []
           }
         ],
@@ -1066,6 +1059,9 @@
             "BrokerBearer": []
           },
           {
+            "BrokerApiKey": []
+          },
+          {
             "BrokerOrganization": []
           }
         ],
@@ -1125,6 +1121,9 @@
         "security": [
           {
             "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
           },
           {
             "BrokerOrganization": []
@@ -1187,6 +1186,9 @@
         "security": [
           {
             "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
           },
           {
             "BrokerOrganization": []
@@ -1267,6 +1269,9 @@
             "BrokerBearer": []
           },
           {
+            "BrokerApiKey": []
+          },
+          {
             "BrokerOrganization": []
           }
         ],
@@ -1323,6 +1328,9 @@
         "security": [
           {
             "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
           },
           {
             "BrokerOrganization": []
@@ -1383,6 +1391,9 @@
             "BrokerBearer": []
           },
           {
+            "BrokerApiKey": []
+          },
+          {
             "BrokerOrganization": []
           }
         ],
@@ -1392,15 +1403,8 @@
             "in": "path",
             "required": true,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                {
-                  "type": "null"
-                }
-              ],
+              "type": "string",
+              "format": "uuid",
               "title": "Organization Id"
             }
           }
@@ -1439,6 +1443,9 @@
         "security": [
           {
             "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
           },
           {
             "BrokerOrganization": []
@@ -1503,6 +1510,9 @@
             "BrokerBearer": []
           },
           {
+            "BrokerApiKey": []
+          },
+          {
             "BrokerOrganization": []
           }
         ],
@@ -1565,6 +1575,9 @@
             "BrokerBearer": []
           },
           {
+            "BrokerApiKey": []
+          },
+          {
             "BrokerOrganization": []
           }
         ],
@@ -1625,48 +1638,55 @@
       }
     },
     "/organizations/": {
+      "get": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "List Organizations",
+        "operationId": "list_organizations_organizations__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Organization"
+                  },
+                  "type": "array",
+                  "title": "Response List Organizations Organizations  Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ]
+      },
       "post": {
         "tags": [
           "organizations"
         ],
         "summary": "Create Organization",
         "operationId": "create_organization_organizations__post",
-        "security": [
-          {
-            "BrokerBearer": []
-          },
-          {
-            "BrokerOrganization": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "organization_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Organization Id"
-            }
-          }
-        ],
         "requestBody": {
-          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/Organization"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "201": {
@@ -1689,67 +1709,18 @@
               }
             }
           }
-        }
-      },
-      "get": {
-        "tags": [
-          "organizations"
-        ],
-        "summary": "List Organizations",
-        "operationId": "list_organizations_organizations__get",
+        },
         "security": [
           {
             "BrokerBearer": []
           },
           {
+            "BrokerApiKey": []
+          },
+          {
             "BrokerOrganization": []
           }
-        ],
-        "parameters": [
-          {
-            "name": "organization_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Organization Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Organization"
-                  },
-                  "title": "Response List Organizations Organizations  Get"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
+        ]
       }
     },
     "/organizations/{organization_id}": {
@@ -1762,6 +1733,9 @@
         "security": [
           {
             "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
           },
           {
             "BrokerOrganization": []
@@ -1832,6 +1806,9 @@
             "BrokerBearer": []
           },
           {
+            "BrokerApiKey": []
+          },
+          {
             "BrokerOrganization": []
           }
         ],
@@ -1881,6 +1858,9 @@
         "security": [
           {
             "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
           },
           {
             "BrokerOrganization": []
@@ -1949,6 +1929,9 @@
             "BrokerBearer": []
           },
           {
+            "BrokerApiKey": []
+          },
+          {
             "BrokerOrganization": []
           }
         ],
@@ -2011,6 +1994,9 @@
             "BrokerBearer": []
           },
           {
+            "BrokerApiKey": []
+          },
+          {
             "BrokerOrganization": []
           }
         ],
@@ -2058,6 +2044,42 @@
             }
           }
         }
+      }
+    },
+    "/organizations/seller/providers": {
+      "get": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "List Providers",
+        "operationId": "list_providers_organizations_seller_providers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Organization"
+                  },
+                  "type": "array",
+                  "title": "Response List Providers Organizations Seller Providers Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ]
       }
     },
     "/orders/": {
@@ -3319,7 +3341,7 @@
     },
     {
       "name": "products",
-      "description": "Product catalog CRUD protected with JWT Bearer **or** organization `X-API-Key`. JWT requests must also send `X-Organization-Id` for a membership the user belongs to."
+      "description": "Product catalog: `/products/provider/` (CRUD, provider org + JWT or API key) and `/products/seller/` (read-only, seller JWT; optional `X-Organization-Id` filter)."
     },
     {
       "name": "organizations",
