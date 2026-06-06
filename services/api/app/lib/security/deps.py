@@ -173,4 +173,5 @@ def get_tenant(
 
 UserDep = Annotated[User, Depends(get_user)]
 
+require_user = get_user
 require_organization = get_organization

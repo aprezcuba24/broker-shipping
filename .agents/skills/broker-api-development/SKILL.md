@@ -56,7 +56,7 @@ Reference: `app/modules/products/routes/category.py`, `CategoryService`, `Catego
 
 | Dependency | Auth | Returns / use |
 |------------|------|----------------|
-| `get_user` | JWT only | `User` (500 if `X-API-Key` sent — wrong dep for the route) |
+| `get_user` / `require_user` | JWT only | `User`; `require_user` is an alias for route-level validation when the handler does not need the user |
 | `get_api_key` | API key only | `ApiKey` |
 | `get_organization` / `require_organization` | JWT + org context | Same factory; `require_organization` is an alias for route-level validation |
 | `get_tenant(org_type?)` | JWT or API key | `Organization` (header or API key — no `{organization_id}` in path) |
@@ -71,6 +71,7 @@ Reference: `app/modules/products/routes/category.py`, `CategoryService`, `Catego
 | Situation | Pattern |
 |-----------|---------|
 | Path has `{organization_id}`; handler only needs access check | `dependencies=[Depends(require_organization(...))]` on `@router.*`; use `organization_id` in the handler |
+| Handler only needs JWT, not the `User` object | `dependencies=[Depends(require_user)]` on `@router.*` |
 | Org from header/API key (`get_tenant`) or optional seller scope | `Annotated[Organization, Depends(get_tenant(...))]` or `get_organization(..., required=False)` in the handler |
 | Need `User` in the handler | `Annotated[User, Depends(get_user)]` (can combine with route-level `require_organization`) |
 
@@ -96,6 +97,14 @@ organization: Annotated[Organization, Depends(get_tenant(OrganizationType.provid
     dependencies=[Depends(require_organization(OrganizationType.provider))],
 )
 async def revoke_api_key(organization_id: UUID, ...):
+    ...
+
+# JWT required but User not used in handler
+@router.get(
+    "/seller/categories/{provider_id}",
+    dependencies=[Depends(require_user)],
+)
+async def list_seller_categories(provider_id: UUID, ...):
     ...
 ```
 
