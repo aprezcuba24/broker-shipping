@@ -1,9 +1,9 @@
 import {
-  getListProductsProductsGetQueryKey,
-  useCreateProductProductsPost,
-  useDeleteProductProductsProductIdDelete,
-  useListProductsProductsGet,
-  usePatchProductProductsProductIdPatch,
+  getListProductsProductsProviderGetQueryKey,
+  useCreateProductProductsProviderPost,
+  useDeleteProductProductsProviderProductIdDelete,
+  useListProductsProductsProviderGet,
+  usePatchProductProductsProviderProductIdPatch,
   type Product,
   type ProductCreate,
 } from '@broker/api'
@@ -58,12 +58,12 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     },
     { productId: string }
   >({
-    useList: useListProductsProductsGet,
-    getListQueryKey: getListProductsProductsGetQueryKey,
+    useList: useListProductsProductsProviderGet,
+    getListQueryKey: getListProductsProductsProviderGetQueryKey,
     filters,
-    useCreate: useCreateProductProductsPost,
-    usePatch: usePatchProductProductsProductIdPatch,
-    useDelete: useDeleteProductProductsProductIdDelete,
+    useCreate: useCreateProductProductsProviderPost,
+    usePatch: usePatchProductProductsProviderProductIdPatch,
+    useDelete: useDeleteProductProductsProviderProductIdDelete,
     toCreateVariables: (values) => ({
       data: {
         name: values.name,

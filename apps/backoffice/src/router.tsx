@@ -1,7 +1,7 @@
 import {
   RequireAuth,
   getListCategoriesProductsCategoriesGetQueryKey,
-  getListProductsProductsGetQueryKey,
+  getListProductsProductsProviderGetQueryKey,
 } from '@broker/api'
 import {
   ActiveOrganizationProvider,
@@ -16,7 +16,7 @@ import { ProductPage } from './pages/product'
 
 const tenantQueryKeys = [
   getListCategoriesProductsCategoriesGetQueryKey(),
-  getListProductsProductsGetQueryKey(),
+  getListProductsProductsProviderGetQueryKey(),
 ]
 
 export default function App() {
