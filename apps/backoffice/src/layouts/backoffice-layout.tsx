@@ -1,7 +1,6 @@
 import { useAuth } from '@broker/api'
-import { AppLayout, initialsFromUsername } from '@broker/ui'
+import { AppLayout, initialsFromUsername, OrganizationSelect } from '@broker/ui'
 import { useNavigate } from 'react-router-dom'
-import { OrganizationSelect } from '../components/organization-select'
 import {
   backofficeBottomItems,
   backofficeBrand,

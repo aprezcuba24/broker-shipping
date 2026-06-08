@@ -18,12 +18,18 @@ if str(_API_ROOT) not in sys.path:
 from app.config import settings  # noqa: E402
 from app.db.session import create_async_engine_and_session_maker  # noqa: E402
 from app.lib.security.passwords import hash_password  # noqa: E402
-from app.modules.organization.models import Organization, UserOrganization  # noqa: E402
-from app.modules.organization.models.enums import OrgMemberRole  # noqa: E402
+from app.modules.organization.models import (  # noqa: E402
+    Organization,
+    OrganizationType,
+    ProviderSellerLink,
+    UserOrganization,
+)
 from app.modules.user.models import User  # noqa: E402
 
 ORG_ALPHA = "Organización Alpha"
 ORG_BETA = "Organización Beta"
+SELLER_ALPHA = "Tienda Alpha"
+SELLER_BETA = "Tienda Beta"
 
 
 @dataclass(frozen=True)
@@ -31,40 +37,49 @@ class UserSeed:
     username: str
     password: str
     is_super_admin: bool
-    organization_names: tuple[str, ...] = ()
-    member_role: OrgMemberRole = OrgMemberRole.provider
+    provider_organization_names: tuple[str, ...] = ()
+    seller_organization_names: tuple[str, ...] = ()
 
 
 USERS: tuple[UserSeed, ...] = (
     UserSeed("superadmin", "SuperAdmin123!", is_super_admin=True),
-    UserSeed("org-both", "User123!", is_super_admin=False, organization_names=(ORG_ALPHA, ORG_BETA)),
-    UserSeed("org-one", "User123!", is_super_admin=False, organization_names=(ORG_ALPHA,)),
+    UserSeed(
+        "org-both",
+        "User123!",
+        is_super_admin=False,
+        provider_organization_names=(ORG_ALPHA, ORG_BETA),
+    ),
+    UserSeed(
+        "org-one",
+        "User123!",
+        is_super_admin=False,
+        provider_organization_names=(ORG_ALPHA,),
+    ),
     UserSeed(
         "seller-both",
         "User123!",
         is_super_admin=False,
-        organization_names=(ORG_ALPHA, ORG_BETA),
-        member_role=OrgMemberRole.seller,
+        seller_organization_names=(SELLER_ALPHA, SELLER_BETA),
     ),
     UserSeed(
         "seller-one",
         "User123!",
         is_super_admin=False,
-        organization_names=(ORG_ALPHA,),
-        member_role=OrgMemberRole.seller,
+        seller_organization_names=(SELLER_ALPHA,),
     ),
     UserSeed("standalone-one", "User123!", is_super_admin=False),
     UserSeed("standalone-two", "User123!", is_super_admin=False),
 )
 
-ORGANIZATION_NAMES: tuple[str, ...] = (ORG_ALPHA, ORG_BETA)
+PROVIDER_ORGANIZATION_NAMES: tuple[str, ...] = (ORG_ALPHA, ORG_BETA)
+SELLER_ORGANIZATION_NAMES: tuple[str, ...] = (SELLER_ALPHA, SELLER_BETA)
 
 
 async def _clean_database(session: AsyncSession) -> None:
     await session.execute(
         text(
-            "TRUNCATE TABLE api_key, organization_invitation, user_organization, "
-            '"user", category, product, organization '
+            "TRUNCATE TABLE api_key, organization_invitation, provider_seller_link, "
+            "user_organization, \"user\", category, product, organization "
             "RESTART IDENTITY CASCADE",
         ),
     )
@@ -72,12 +87,35 @@ async def _clean_database(session: AsyncSession) -> None:
 
 async def _create_organizations(session: AsyncSession) -> dict[str, UUID]:
     org_ids: dict[str, UUID] = {}
-    for name in ORGANIZATION_NAMES:
-        org = Organization(name=name)
+    for name in PROVIDER_ORGANIZATION_NAMES:
+        org = Organization(name=name, type=OrganizationType.provider)
         session.add(org)
         await session.flush()
         org_ids[name] = org.id
-        print(f"  organization created: {name}")
+        print(f"  provider organization created: {name}")
+
+    for name in SELLER_ORGANIZATION_NAMES:
+        org = Organization(name=name, type=OrganizationType.seller)
+        session.add(org)
+        await session.flush()
+        org_ids[name] = org.id
+        print(f"  seller organization created: {name}")
+
+    session.add(
+        ProviderSellerLink(
+            provider_organization_id=org_ids[ORG_ALPHA],
+            seller_organization_id=org_ids[SELLER_ALPHA],
+            is_active=True,
+        ),
+    )
+    session.add(
+        ProviderSellerLink(
+            provider_organization_id=org_ids[ORG_BETA],
+            seller_organization_id=org_ids[SELLER_BETA],
+            is_active=True,
+        ),
+    )
+    print("  provider-seller links: Alpha<->Tienda Alpha, Beta<->Tienda Beta")
     return org_ids
 
 
@@ -95,16 +133,25 @@ async def _create_user(
     await session.flush()
     print(f"  user created: {seed.username} (is_super_admin={seed.is_super_admin})")
 
-    for org_name in seed.organization_names:
+    for org_name in seed.provider_organization_names:
         session.add(
             UserOrganization(
                 user_id=user.id,
                 organization_id=org_ids[org_name],
-                role=seed.member_role,
                 is_active=True,
             ),
         )
-        print(f"    membership: {seed.username} -> {org_name} ({seed.member_role.value})")
+        print(f"    membership (provider): {seed.username} -> {org_name}")
+
+    for org_name in seed.seller_organization_names:
+        session.add(
+            UserOrganization(
+                user_id=user.id,
+                organization_id=org_ids[org_name],
+                is_active=True,
+            ),
+        )
+        print(f"    membership (seller): {seed.username} -> {org_name}")
 
 
 async def run_seed() -> None:

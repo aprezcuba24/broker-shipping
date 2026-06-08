@@ -2,8 +2,9 @@ from uuid import UUID
 
 from fastapi import HTTPException
 from sqlalchemy import select
+
 from app.lib.persistence import Resource
-from app.modules.organization.models import OrgMemberRole, UserOrganization
+from app.modules.organization.models import Organization, OrganizationType, UserOrganization
 
 
 class UserOrganizationRepository(Resource[UserOrganization]):
@@ -12,13 +13,11 @@ class UserOrganizationRepository(Resource[UserOrganization]):
         user_id: UUID,
         organization_id: UUID,
         *,
-        role: OrgMemberRole = OrgMemberRole.provider,
         is_active: bool = True,
     ) -> UserOrganization:
         link = UserOrganization(
             user_id=user_id,
             organization_id=organization_id,
-            role=role,
             is_active=is_active,
         )
         self._session.add(link)
@@ -54,6 +53,36 @@ class UserOrganizationRepository(Resource[UserOrganization]):
         )
         return list(result.scalars().all())
 
+    async def list_organizations_for_user(
+        self,
+        user_id: UUID,
+        *,
+        org_type: OrganizationType | None = None,
+    ) -> list[Organization]:
+        stmt = (
+            select(Organization)
+            .join(
+                UserOrganization,
+                UserOrganization.organization_id == Organization.id,
+            )
+            .where(
+                UserOrganization.user_id == user_id,
+                UserOrganization.is_active.is_(True),
+                Organization.deleted_at.is_(None),
+            )
+        )
+        if org_type is not None:
+            stmt = stmt.where(Organization.type == org_type)
+        result = await self._session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def get_seller_org_for_user(self, user_id: UUID) -> Organization | None:
+        orgs = await self.list_organizations_for_user(
+            user_id,
+            org_type=OrganizationType.seller,
+        )
+        return orgs[0] if orgs else None
+
     async def is_active_member(
         self,
         user_id: UUID,
@@ -67,30 +96,11 @@ class UserOrganizationRepository(Resource[UserOrganization]):
             raise HTTPException(status_code=403, detail="Forbidden")
         return active
 
-    async def has_role(
-        self,
-        user_id: UUID,
-        organization_id: UUID,
-        role: OrgMemberRole,
-        *,
-        throw_exception: bool = True,
-    ) -> bool:
-        membership = await self.get_membership(user_id, organization_id)
-        ok = (
-            membership is not None
-            and membership.is_active
-            and membership.role == role
-        )
-        if not ok and throw_exception:
-            raise HTTPException(status_code=403, detail="Forbidden")
-        return ok
-
     async def upsert_membership(
         self,
         user_id: UUID,
         organization_id: UUID,
         *,
-        role: OrgMemberRole,
         is_active: bool = True,
     ) -> UserOrganization:
         existing = await self.get_membership(user_id, organization_id)
@@ -98,10 +108,8 @@ class UserOrganizationRepository(Resource[UserOrganization]):
             return await self.add_membership(
                 user_id,
                 organization_id,
-                role=role,
                 is_active=is_active,
             )
-        existing.role = role
         existing.is_active = is_active
         self._session.add(existing)
         await self._session.flush()

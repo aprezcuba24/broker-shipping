@@ -32,7 +32,7 @@ export function ProductTable() {
           className="w-full sm:w-auto"
           title="Nuevo producto"
           acceptLabel="Crear"
-          defaultValues={{ name: '', category_id: '' }}
+          defaultValues={{ name: '', category_id: '', price: 0 }}
           formKey={String(createFormKey)}
           onSubmit={submitCreate}
           isSubmitting={isCreating}

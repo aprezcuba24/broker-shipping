@@ -7,6 +7,7 @@ from app.modules.organization.repositories import (
     ApiKeyRepository,
     OrganizationInvitationRepository,
     OrganizationRepository,
+    ProviderSellerLinkRepository,
     UserOrganizationRepository,
 )
 from app.modules.organization.services import (
@@ -14,7 +15,9 @@ from app.modules.organization.services import (
     InvitationService,
     MembershipService,
     OrganizationService,
+    ProviderSellerLinkService,
 )
+from app.modules.user.repositories.user_repository import UserRepository
 
 
 class OrganizationProvider(Provider):
@@ -36,23 +39,23 @@ class OrganizationProvider(Provider):
         return OrganizationInvitationRepository(session)
 
     @provide
+    def provider_seller_link_repository(
+        self,
+        session: AsyncSession,
+    ) -> ProviderSellerLinkRepository:
+        return ProviderSellerLinkRepository(session)
+
+    @provide
+    def provider_seller_link_service(
+        self,
+        link_repo: ProviderSellerLinkRepository,
+        org_repo: OrganizationRepository,
+    ) -> ProviderSellerLinkService:
+        return ProviderSellerLinkService(link_repo, org_repo)
+
+    @provide
     def api_key_repository(self, session: AsyncSession) -> ApiKeyRepository:
         return ApiKeyRepository(session)
-
-    @provide
-    def membership_service(
-        self,
-        user_org_repo: UserOrganizationRepository,
-    ) -> MembershipService:
-        return MembershipService(user_org_repo)
-
-    @provide
-    def invitation_service(
-        self,
-        invitation_repo: OrganizationInvitationRepository,
-        user_org_repo: UserOrganizationRepository,
-    ) -> InvitationService:
-        return InvitationService(invitation_repo, user_org_repo)
 
     @provide
     def organization_service(
@@ -67,6 +70,33 @@ class OrganizationProvider(Provider):
             user_organization_repository=user_org_repo,
             dispatcher=dispatcher,
             post_commit=post_commit,
+        )
+
+    @provide
+    def membership_service(
+        self,
+        user_org_repo: UserOrganizationRepository,
+        link_service: ProviderSellerLinkService,
+    ) -> MembershipService:
+        return MembershipService(user_org_repo, link_service)
+
+    @provide
+    def invitation_service(
+        self,
+        invitation_repo: OrganizationInvitationRepository,
+        user_org_repo: UserOrganizationRepository,
+        org_repo: OrganizationRepository,
+        link_service: ProviderSellerLinkService,
+        organization_service: OrganizationService,
+        user_repo: UserRepository,
+    ) -> InvitationService:
+        return InvitationService(
+            invitation_repo,
+            user_org_repo,
+            org_repo,
+            link_service,
+            organization_service,
+            user_repo,
         )
 
     @provide

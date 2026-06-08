@@ -1,4 +1,3 @@
-import { useActiveOrganization } from '@/contexts/active-organization-context'
 import {
   getListProductsProductsGetQueryKey,
   useCreateProductProductsPost,
@@ -6,8 +5,10 @@ import {
   useListProductsProductsGet,
   usePatchProductProductsProductIdPatch,
   type Product,
+  type ProductCreate,
 } from '@broker/api'
 import { useCRUD, useUrlSearchFilters, type CrudContextValue } from '@broker/ui'
+import { toPriceCents } from '@broker/ui'
 import { createContext, useContext, type ReactNode } from 'react'
 import { z } from 'zod'
 
@@ -18,6 +19,9 @@ export const productFormSchema = z.object({
     .min(1, 'El nombre es obligatorio')
     .max(255, 'Máximo 255 caracteres'),
   category_id: z.string().min(1, 'La categoría es obligatoria'),
+  price: z
+    .number({ message: 'El precio es obligatorio' })
+    .min(0, 'El precio no puede ser negativo'),
 })
 
 export type ProductFormValues = z.infer<typeof productFormSchema>
@@ -40,7 +44,6 @@ export type ProductsContextValue = CrudContextValue<
 const ProductsContext = createContext<ProductsContextValue | null>(null)
 
 export function ProductsProvider({ children }: { children: ReactNode }) {
-  const { activeOrganization } = useActiveOrganization()
   const { filters, setFilter } = useUrlSearchFilters({
     keys: productListFilterKeys,
   })
@@ -48,8 +51,11 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
   const crud = useCRUD<
     Product,
     ProductFormValues,
-    { data: { name: string; category_id: string } },
-    { productId: string; data: { name: string; category_id: string } },
+    { data: ProductCreate },
+    {
+      productId: string
+      data: { name: string; category_id: string; price: number }
+    },
     { productId: string }
   >({
     useList: useListProductsProductsGet,
@@ -59,13 +65,21 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     usePatch: usePatchProductProductsProductIdPatch,
     useDelete: useDeleteProductProductsProductIdDelete,
     toCreateVariables: (values) => ({
-      data: { ...values, organization_id: activeOrganization?.id ?? '' },
+      data: {
+        name: values.name,
+        category_id: values.category_id,
+        price: toPriceCents(values.price),
+      },
     }),
     toPatchVariables: (product, values) =>
       product.id
         ? {
             productId: product.id,
-            data: { name: values.name, category_id: values.category_id },
+            data: {
+              name: values.name,
+              category_id: values.category_id,
+              price: toPriceCents(values.price),
+            },
           }
         : null,
     toDeleteVariables: (product) =>

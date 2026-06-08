@@ -15,4 +15,9 @@ export interface Product {
   /** @maxLength 255 */
   name: string;
   category_id: string;
+  /**
+   * Price in cents
+   * @minimum 0
+   */
+  price: number;
 }

@@ -1,28 +1,13 @@
-"""Security primitives (JWT + API keys). Decorators load lazily via ``__getattr__``."""
+"""Security: JWT, API keys, and FastAPI auth dependencies.
 
-from __future__ import annotations
+Import callables from ``app.lib.security.deps`` to avoid import cycles with
+organization services (``ApiKeyService`` imports ``api_keys`` from this package).
+"""
 
-from typing import Any
+from app.lib.security.schemes import broker_api_key, broker_bearer, broker_organization
 
 __all__ = [
-    "require_api_key",
-    "require_user",
-    "require_user_or_api_key",
+    "broker_api_key",
+    "broker_bearer",
+    "broker_organization",
 ]
-
-
-def __getattr__(name: str) -> Any:
-    if name == "require_user":
-        from app.lib.security.decorators import require_user
-
-        return require_user
-    if name == "require_api_key":
-        from app.lib.security.decorators import require_api_key
-
-        return require_api_key
-    if name == "require_user_or_api_key":
-        from app.lib.security.decorators import require_user_or_api_key
-
-        return require_user_or_api_key
-    msg = f"module {__name__!r} has no attribute {name!r}"
-    raise AttributeError(msg)

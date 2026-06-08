@@ -3,11 +3,11 @@ from uuid import UUID
 
 from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
-from fastapi import APIRouter, Body, HTTPException, Response
+from fastapi import APIRouter, Body, Depends, HTTPException, Response
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.lib.security import require_user_or_api_key
+from app.lib.security.deps import get_tenant
 from app.modules.organization.models import Organization
 from app.modules.products.models import Category
 from app.modules.products.services import CategoryService
@@ -16,20 +16,18 @@ router = APIRouter(route_class=DishkaRoute)
 
 
 @router.get("/", response_model=list[Category])
-@require_user_or_api_key
 async def list_categories(
     service: FromDishka[CategoryService],
-    organization: Organization,
+    organization: Annotated[Organization, Depends(get_tenant())],
 ):
     return await service.list_for_organization(organization.id)
 
 
 @router.get("/{category_id}", response_model=Category)
-@require_user_or_api_key
 async def get_category(
     category_id: UUID,
     service: FromDishka[CategoryService],
-    organization: Organization,
+    organization: Annotated[Organization, Depends(get_tenant())],
 ):
     return await service.get_or_404_for_organization(
         category_id,
@@ -39,11 +37,10 @@ async def get_category(
 
 
 @router.post("/", response_model=Category, status_code=201)
-@require_user_or_api_key
 async def create_category(
     body: Category,
     service: FromDishka[CategoryService],
-    organization: Organization,
+    organization: Annotated[Organization, Depends(get_tenant())],
 ):
     entity = Category(
         **body.model_dump(exclude=CategoryService.creation_exclude()),
@@ -53,12 +50,11 @@ async def create_category(
 
 
 @router.patch("/{category_id}", response_model=Category)
-@require_user_or_api_key
 async def patch_category(
     category_id: UUID,
     payload: Annotated[dict[str, Any], Body(...)],
     service: FromDishka[CategoryService],
-    organization: Organization,
+    organization: Annotated[Organization, Depends(get_tenant())],
 ):
     await service.get_or_404_for_organization(
         category_id,
@@ -76,12 +72,11 @@ async def patch_category(
 
 
 @router.delete("/{category_id}", status_code=204)
-@require_user_or_api_key
 async def delete_category(
     category_id: UUID,
     service: FromDishka[CategoryService],
     session: FromDishka[AsyncSession],
-    organization: Organization,
+    organization: Annotated[Organization, Depends(get_tenant())],
 ):
     await service.get_or_404_for_organization(
         category_id,

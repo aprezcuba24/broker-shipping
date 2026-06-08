@@ -1,4 +1,4 @@
-export { cn } from './lib/utils'
+export { cn, formatPriceCents, toPriceCents } from './lib/utils'
 export { initialsFromUsername } from './lib/initials'
 
 export { LoginForm } from './components/auth/login-form'
@@ -33,6 +33,8 @@ export {
   pickQueryParams,
   useUrlSearchFilters,
 } from './hooks/use-url-search-filters'
+export { useSellerProviderCategories } from './hooks/use-seller-provider-categories'
+export { useSellerLinkedProviders } from './hooks/use-seller-linked-providers'
 export { DebouncedInput } from './components/debounced-input'
 export type { DebouncedInputProps } from './components/debounced-input'
 export { ListFilterBar } from './components/list-filter-bar'
@@ -144,6 +146,17 @@ export {
   SelectTrigger,
   SelectValue,
 } from './components/ui/select'
+
+export {
+  ActiveOrganizationProvider,
+  useActiveOrganization,
+} from './organization/active-organization-context'
+export type {
+  ActiveOrganizationContextValue,
+  ActiveOrganizationProviderProps,
+} from './organization/active-organization-context'
+export { OrganizationScopedApiProvider } from './organization/organization-scoped-api-provider'
+export { OrganizationSelect } from './organization/organization-select'
 
 export { AppLayout } from './components/layout/app-layout'
 export { Sidebar } from './components/layout/sidebar'

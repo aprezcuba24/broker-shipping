@@ -1,14 +1,15 @@
 from enum import StrEnum
 
 
-class OrgMemberRole(StrEnum):
+class OrganizationType(StrEnum):
     provider = "provider"
     seller = "seller"
 
 
 class InvitationKind(StrEnum):
-    provider_invite = "provider_invite"
-    seller_request = "seller_request"
+    member_invite = "member_invite"
+    seller_invite = "seller_invite"
+    seller_join_request = "seller_join_request"
 
 
 class InvitationStatus(StrEnum):

@@ -1,4 +1,5 @@
 from app.modules.products.services.category_service import CategoryService
-from app.modules.products.services.product_service import ProductService
+from app.modules.products.services.provider_product_service import ProviderProductService
+from app.modules.products.services.seller_product_service import SellerProductService
 
-__all__ = ["CategoryService", "ProductService"]
+__all__ = ["CategoryService", "ProviderProductService", "SellerProductService"]

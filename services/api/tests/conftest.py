@@ -65,9 +65,9 @@ async def _truncate_tables(test_engine: AsyncEngine) -> AsyncIterator[None]:
     async with test_engine.begin() as conn:
         await conn.execute(
             text(
-                "TRUNCATE TABLE api_key, organization_invitation, user_organization, "
-                "\"user\", category, product, organization "
-                "RESTART IDENTITY CASCADE",
+                "TRUNCATE TABLE api_key, organization_invitation, provider_seller_link, "
+                "order_line, \"order\", user_organization, \"user\", category, product, "
+                "organization RESTART IDENTITY CASCADE",
             )
         )
     yield

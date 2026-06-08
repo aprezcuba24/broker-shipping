@@ -50,13 +50,13 @@
         }
       }
     },
-    "/products/": {
+    "/products/provider/": {
       "get": {
         "tags": [
           "products"
         ],
         "summary": "List Products",
-        "operationId": "list_products_products__get",
+        "operationId": "list_products_products_provider__get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -67,7 +67,7 @@
                     "$ref": "#/components/schemas/Product"
                   },
                   "type": "array",
-                  "title": "Response List Products Products  Get"
+                  "title": "Response List Products Products Provider  Get"
                 }
               }
             }
@@ -87,12 +87,12 @@
           "products"
         ],
         "summary": "Create Product",
-        "operationId": "create_product_products__post",
+        "operationId": "create_product_products_provider__post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Product"
+                "$ref": "#/components/schemas/ProductCreate"
               }
             }
           },
@@ -130,13 +130,13 @@
         ]
       }
     },
-    "/products/{product_id}": {
+    "/products/provider/{product_id}": {
       "get": {
         "tags": [
           "products"
         ],
         "summary": "Get Product",
-        "operationId": "get_product_products__product_id__get",
+        "operationId": "get_product_products_provider__product_id__get",
         "security": [
           {
             "BrokerBearer": []
@@ -185,7 +185,7 @@
           "products"
         ],
         "summary": "Patch Product",
-        "operationId": "patch_product_products__product_id__patch",
+        "operationId": "patch_product_products_provider__product_id__patch",
         "security": [
           {
             "BrokerBearer": []
@@ -246,7 +246,7 @@
           "products"
         ],
         "summary": "Delete Product",
-        "operationId": "delete_product_products__product_id__delete",
+        "operationId": "delete_product_products_provider__product_id__delete",
         "security": [
           {
             "BrokerBearer": []
@@ -270,6 +270,191 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/seller/": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "List Products",
+        "operationId": "list_products_products_seller__get",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  },
+                  "title": "Response List Products Products Seller  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/seller/{product_id}": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Get Product",
+        "operationId": "get_product_products_seller__product_id__get",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Product Id"
+            }
+          },
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/seller/categories/{provider_id}": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "List Categories",
+        "operationId": "list_categories_products_seller_categories__provider_id__get",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "provider_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Provider Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Category"
+                  },
+                  "title": "Response List Categories Products Seller Categories  Provider Id  Get"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -624,9 +809,832 @@
             "BrokerBearer": []
           },
           {
+            "BrokerApiKey": []
+          },
+          {
             "BrokerOrganization": []
           }
         ]
+      }
+    },
+    "/organizations/invitations/mine": {
+      "get": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "List My Invitations",
+        "operationId": "list_my_invitations_organizations_invitations_mine_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InvitationPublic"
+                  },
+                  "type": "array",
+                  "title": "Response List My Invitations Organizations Invitations Mine Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ]
+      }
+    },
+    "/organizations/invitations/accept-by-token": {
+      "post": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "Accept Invitation By Token",
+        "operationId": "accept_invitation_by_token_organizations_invitations_accept_by_token_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptByTokenBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ]
+      }
+    },
+    "/organizations/{organization_id}/invitations/{invitation_id}/accept": {
+      "post": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "Accept Invitation",
+        "operationId": "accept_invitation_organizations__organization_id__invitations__invitation_id__accept_post",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Organization Id"
+            }
+          },
+          {
+            "name": "invitation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Invitation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organizations/{organization_id}/invitations/{invitation_id}/reject": {
+      "post": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "Reject Invitation",
+        "operationId": "reject_invitation_organizations__organization_id__invitations__invitation_id__reject_post",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Organization Id"
+            }
+          },
+          {
+            "name": "invitation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Invitation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organizations/{organization_id}/invitations/{invitation_id}": {
+      "delete": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "Cancel Invitation",
+        "operationId": "cancel_invitation_organizations__organization_id__invitations__invitation_id__delete",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Organization Id"
+            }
+          },
+          {
+            "name": "invitation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Invitation Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organizations/{organization_id}/members": {
+      "get": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "List Members",
+        "operationId": "list_members_organizations__organization_id__members_get",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MemberPublic"
+                  },
+                  "title": "Response List Members Organizations  Organization Id  Members Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organizations/{organization_id}/members/{user_id}": {
+      "patch": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "Patch Member",
+        "operationId": "patch_member_organizations__organization_id__members__user_id__patch",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Organization Id"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberIsActivePatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organizations/{organization_id}/member-invitations": {
+      "post": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "Create Member Invitation",
+        "operationId": "create_member_invitation_organizations__organization_id__member_invitations_post",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationCreatedResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organizations/{organization_id}/seller-invitations": {
+      "post": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "Create Seller Invitation",
+        "operationId": "create_seller_invitation_organizations__organization_id__seller_invitations_post",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationCreatedResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organizations/{organization_id}/join-requests": {
+      "post": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "Create Join Request",
+        "operationId": "create_join_request_organizations__organization_id__join_requests_post",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organizations/{organization_id}/invitations": {
+      "get": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "List Organization Invitations",
+        "operationId": "list_organization_invitations_organizations__organization_id__invitations_get",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InvitationPublic"
+                  },
+                  "title": "Response List Organization Invitations Organizations  Organization Id  Invitations Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organizations/{organization_id}/linked-sellers": {
+      "get": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "List Linked Sellers",
+        "operationId": "list_linked_sellers_organizations__organization_id__linked_sellers_get",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Organization"
+                  },
+                  "title": "Response List Linked Sellers Organizations  Organization Id  Linked Sellers Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organizations/{organization_id}/linked-sellers/{seller_organization_id}": {
+      "patch": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "Patch Seller Link",
+        "operationId": "patch_seller_link_organizations__organization_id__linked_sellers__seller_organization_id__patch",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Organization Id"
+            }
+          },
+          {
+            "name": "seller_organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Seller Organization Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberIsActivePatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/organizations/": {
@@ -655,6 +1663,9 @@
         "security": [
           {
             "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
           },
           {
             "BrokerOrganization": []
@@ -704,6 +1715,9 @@
             "BrokerBearer": []
           },
           {
+            "BrokerApiKey": []
+          },
+          {
             "BrokerOrganization": []
           }
         ]
@@ -721,6 +1735,9 @@
             "BrokerBearer": []
           },
           {
+            "BrokerApiKey": []
+          },
+          {
             "BrokerOrganization": []
           }
         ],
@@ -730,8 +1747,15 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "title": "Organization Id"
             }
           }
@@ -782,6 +1806,9 @@
             "BrokerBearer": []
           },
           {
+            "BrokerApiKey": []
+          },
+          {
             "BrokerOrganization": []
           }
         ],
@@ -791,8 +1818,15 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "title": "Organization Id"
             }
           }
@@ -826,6 +1860,9 @@
             "BrokerBearer": []
           },
           {
+            "BrokerApiKey": []
+          },
+          {
             "BrokerOrganization": []
           }
         ],
@@ -835,8 +1872,15 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "title": "Organization Id"
             }
           }
@@ -885,6 +1929,9 @@
             "BrokerBearer": []
           },
           {
+            "BrokerApiKey": []
+          },
+          {
             "BrokerOrganization": []
           }
         ],
@@ -894,8 +1941,15 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "title": "Organization Id"
             }
           }
@@ -940,6 +1994,9 @@
             "BrokerBearer": []
           },
           {
+            "BrokerApiKey": []
+          },
+          {
             "BrokerOrganization": []
           }
         ],
@@ -949,8 +2006,15 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "title": "Organization Id"
             }
           },
@@ -981,10 +2045,319 @@
           }
         }
       }
+    },
+    "/organizations/seller/providers": {
+      "get": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "List Providers",
+        "operationId": "list_providers_organizations_seller_providers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Organization"
+                  },
+                  "type": "array",
+                  "title": "Response List Providers Organizations Seller Providers Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ]
+      }
+    },
+    "/orders/": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "List Orders",
+        "operationId": "list_orders_orders__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/OrderDetail"
+                  },
+                  "type": "array",
+                  "title": "Response List Orders Orders  Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Create Order",
+        "operationId": "create_order_orders__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ]
+      }
+    },
+    "/orders/{order_id}": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Get Order",
+        "operationId": "get_order_orders__order_id__get",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{order_id}/cancel": {
+      "post": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Cancel Order",
+        "operationId": "cancel_order_orders__order_id__cancel_post",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{order_id}/lines/{line_id}/cancel": {
+      "post": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Cancel Order Line",
+        "operationId": "cancel_order_line_orders__order_id__lines__line_id__cancel_post",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Order Id"
+            }
+          },
+          {
+            "name": "line_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Line Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AcceptByTokenBody": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "AcceptByTokenBody"
+      },
       "ApiKey": {
         "properties": {
           "organization_id": {
@@ -1233,6 +2606,432 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "InvitationCreatedResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/InvitationKind"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InvitationStatus"
+          },
+          "token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "created_by_user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Created By User Id"
+          },
+          "created_at": {
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "organization_id",
+          "kind",
+          "status",
+          "token",
+          "user_id",
+          "created_by_user_id",
+          "created_at"
+        ],
+        "title": "InvitationCreatedResponse",
+        "description": "Token invite creation response; token is always set."
+      },
+      "InvitationKind": {
+        "type": "string",
+        "enum": [
+          "member_invite",
+          "seller_invite",
+          "seller_join_request"
+        ],
+        "title": "InvitationKind"
+      },
+      "InvitationPublic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/InvitationKind"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InvitationStatus"
+          },
+          "token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "created_by_user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Created By User Id"
+          },
+          "created_at": {
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "organization_id",
+          "kind",
+          "status",
+          "token",
+          "user_id",
+          "created_by_user_id",
+          "created_at"
+        ],
+        "title": "InvitationPublic"
+      },
+      "InvitationStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "accepted",
+          "rejected",
+          "cancelled"
+        ],
+        "title": "InvitationStatus"
+      },
+      "MemberIsActivePatch": {
+        "properties": {
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          }
+        },
+        "type": "object",
+        "required": [
+          "is_active"
+        ],
+        "title": "MemberIsActivePatch"
+      },
+      "MemberPublic": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "joined_at": {
+            "title": "Joined At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "organization_id",
+          "is_active",
+          "joined_at"
+        ],
+        "title": "MemberPublic"
+      },
+      "OrderCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Name"
+          },
+          "customer_phone": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Customer Phone"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/OrderLineCreate"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Lines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "customer_phone",
+          "lines"
+        ],
+        "title": "OrderCreate"
+      },
+      "OrderDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "seller_organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Seller Organization Id"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Customer Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus"
+          },
+          "product_price": {
+            "type": "integer",
+            "title": "Product Price"
+          },
+          "price": {
+            "type": "integer",
+            "title": "Price"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/OrderLineDetail"
+            },
+            "type": "array",
+            "title": "Lines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "seller_organization_id",
+          "customer_id",
+          "created_at",
+          "updated_at",
+          "status",
+          "product_price",
+          "price",
+          "lines"
+        ],
+        "title": "OrderDetail"
+      },
+      "OrderLineCreate": {
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
+          },
+          "quantity": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Quantity"
+          },
+          "price": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Price",
+            "description": "Unit price in cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "quantity",
+          "price"
+        ],
+        "title": "OrderLineCreate"
+      },
+      "OrderLineDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "order_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Order Id"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "organization": {
+            "$ref": "#/components/schemas/OrganizationRef"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity"
+          },
+          "product_price": {
+            "type": "integer",
+            "title": "Product Price"
+          },
+          "price": {
+            "type": "integer",
+            "title": "Price"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderLineStatus"
+          },
+          "product_snapshot": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Product Snapshot"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "order_id",
+          "product_id",
+          "organization_id",
+          "organization",
+          "quantity",
+          "product_price",
+          "price",
+          "status",
+          "product_snapshot"
+        ],
+        "title": "OrderLineDetail"
+      },
+      "OrderLineStatus": {
+        "type": "string",
+        "enum": [
+          "created",
+          "accepted",
+          "processed",
+          "shipped",
+          "delivered",
+          "canceled"
+        ],
+        "title": "OrderLineStatus"
+      },
+      "OrderStatus": {
+        "type": "string",
+        "enum": [
+          "created",
+          "processing",
+          "canceled",
+          "finished"
+        ],
+        "title": "OrderStatus"
+      },
       "Organization": {
         "properties": {
           "id": {
@@ -1262,6 +3061,10 @@
             "maxLength": 255,
             "title": "Name"
           },
+          "type": {
+            "$ref": "#/components/schemas/OrganizationType",
+            "default": "provider"
+          },
           "deleted_at": {
             "anyOf": [
               {
@@ -1280,6 +3083,33 @@
           "name"
         ],
         "title": "Organization"
+      },
+      "OrganizationRef": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "OrganizationRef"
+      },
+      "OrganizationType": {
+        "type": "string",
+        "enum": [
+          "provider",
+          "seller"
+        ],
+        "title": "OrganizationType"
       },
       "Product": {
         "properties": {
@@ -1319,14 +3149,48 @@
             "type": "string",
             "format": "uuid",
             "title": "Category Id"
+          },
+          "price": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Price",
+            "description": "Price in cents"
           }
         },
         "type": "object",
         "required": [
           "name",
-          "category_id"
+          "category_id",
+          "price"
         ],
         "title": "Product"
+      },
+      "ProductCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Name"
+          },
+          "category_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Category Id"
+          },
+          "price": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Price",
+            "description": "Price in cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "category_id",
+          "price"
+        ],
+        "title": "ProductCreate"
       },
       "TokenResponse": {
         "properties": {
@@ -1477,7 +3341,7 @@
     },
     {
       "name": "products",
-      "description": "Product catalog CRUD protected with JWT Bearer **or** organization `X-API-Key`. JWT requests must also send `X-Organization-Id` for a membership the user belongs to."
+      "description": "Product catalog: `/products/provider/` (CRUD, provider org + JWT or API key) and `/products/seller/` (read-only, seller JWT; optional `X-Organization-Id` filter)."
     },
     {
       "name": "organizations",
