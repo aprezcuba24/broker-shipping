@@ -1,8 +1,4 @@
-import {
-  RequireAuth,
-  getListProductsProductsSellerGetQueryKey,
-  getListProvidersOrganizationsSellerProvidersGetQueryKey,
-} from '@broker/api'
+import { RequireAuth } from '@broker/api'
 import {
   ActiveOrganizationProvider,
   OrganizationScopedApiProvider,
@@ -14,11 +10,6 @@ import { LoginPage } from './pages/login'
 import { ProductPage } from './pages/product'
 import { ProductDetailPage } from './pages/product/detail'
 
-const tenantQueryKeys = [
-  getListProductsProductsSellerGetQueryKey(),
-  getListProvidersOrganizationsSellerProvidersGetQueryKey(),
-]
-
 export default function App() {
   return (
     <BrowserRouter>
@@ -27,7 +18,7 @@ export default function App() {
         <Route
           element={
             <RequireAuth loginPath="/login">
-              <ActiveOrganizationProvider tenantQueryKeys={tenantQueryKeys}>
+              <ActiveOrganizationProvider>
                 <OrganizationScopedApiProvider
                   baseUrl={import.meta.env.VITE_API_URL}
                 >

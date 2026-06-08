@@ -29,6 +29,7 @@ export type {
   UseCrudOptions,
   UseCrudResult,
 } from './hooks/use-crud'
+export { useResetOnChange } from './hooks/use-reset-on-change'
 export {
   pickQueryParams,
   useUrlSearchFilters,

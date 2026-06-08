@@ -7,6 +7,7 @@ import {
   type UseQueryResult,
 } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useResetOnChange } from './use-reset-on-change'
 import { pickQueryParams } from './use-url-search-filters'
 
 type MutationCallbacks<TError> = {
@@ -40,8 +41,9 @@ export type UseCrudOptions<
   toCreateVariables: (values: TFormValues) => TCreateVariables
   toPatchVariables: (item: TItem, values: TFormValues) => TPatchVariables | null
   toDeleteVariables: (item: TItem) => TDeleteVariables | null
-  /** When set, list requests include non-empty values as query params (URL-synced filters). */
   filters?: Record<string, string>
+  resetOnChange?: readonly unknown[]
+  onReset?: () => void
 }
 
 export type CrudContextValue<TItem, TFormValues> = {
@@ -130,6 +132,8 @@ export function useCRUD<
     toPatchVariables,
     toDeleteVariables,
     filters,
+    resetOnChange,
+    onReset,
   } = options
 
   const queryClient = useQueryClient()
@@ -156,6 +160,13 @@ export function useCRUD<
       setPage(1)
     }
   }, [filters, listParamsKey])
+
+  useResetOnChange({
+    resetOnChange,
+    getQueryKey: getListQueryKey,
+    onReset,
+    setPage,
+  })
 
   const { data: items = [], isLoading } = useCrudListQuery(
     useList,

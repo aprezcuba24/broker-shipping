@@ -3,7 +3,12 @@ import {
   type Product,
 } from '@broker/api'
 import { brokerFetch } from '@broker/api'
-import { pickQueryParams, useUrlSearchFilters } from '@broker/ui'
+import {
+  pickQueryParams,
+  useActiveOrganization,
+  useResetOnChange,
+  useUrlSearchFilters,
+} from '@broker/ui'
 import { useQuery } from '@tanstack/react-query'
 import {
   createContext,
@@ -35,7 +40,8 @@ export type ProductsContextValue = {
 const ProductsContext = createContext<ProductsContextValue | null>(null)
 
 export function ProductsProvider({ children }: { children: ReactNode }) {
-  const { filters, setFilter, setFilters } = useUrlSearchFilters({
+  const { activeOrganization } = useActiveOrganization()
+  const { filters, setFilter, setFilters, resetFilters } = useUrlSearchFilters({
     keys: productListFilterKeys,
   })
 
@@ -56,6 +62,13 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       setPage(1)
     }
   }, [listParamsKey])
+
+  useResetOnChange({
+    resetOnChange: [activeOrganization?.id],
+    getQueryKey: getListProductsProductsSellerGetQueryKey,
+    onReset: resetFilters,
+    setPage,
+  })
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: [...getListProductsProductsSellerGetQueryKey(), requestParams ?? {}],

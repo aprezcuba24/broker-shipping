@@ -44,6 +44,7 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
   >({
     useList: useListCategoriesProductsCategoriesGet,
     getListQueryKey: getListCategoriesProductsCategoriesGetQueryKey,
+    resetOnChange: [activeOrganization?.id],
     useCreate: useCreateCategoryProductsCategoriesPost,
     usePatch: usePatchCategoryProductsCategoriesCategoryIdPatch,
     useDelete: useDeleteCategoryProductsCategoriesCategoryIdDelete,

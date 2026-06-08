@@ -2,11 +2,7 @@ import {
   useListOrganizationsOrganizationsGet,
   type Organization,
 } from '@broker/api'
-import {
-  useQueryClient,
-  type QueryKey,
-} from '@tanstack/react-query'
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useState, type ReactNode } from 'react'
 
 export type ActiveOrganizationContextValue = {
   organizations: Organization[]
@@ -19,14 +15,11 @@ const ActiveOrganizationContext =
 
 export type ActiveOrganizationProviderProps = {
   children: ReactNode
-  tenantQueryKeys?: QueryKey[]
 }
 
 export function ActiveOrganizationProvider({
   children,
-  tenantQueryKeys = [],
 }: ActiveOrganizationProviderProps) {
-  const queryClient = useQueryClient()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const { data: organizations = [], isPending } =
     useListOrganizationsOrganizationsGet()
@@ -39,12 +32,6 @@ export function ActiveOrganizationProvider({
     if (!organizations.some((org) => org.id === organizationId)) return
     setSelectedId(organizationId)
   }
-
-  useEffect(() => {
-    for (const queryKey of tenantQueryKeys) {
-      void queryClient.invalidateQueries({ queryKey })
-    }
-  }, [activeId])
 
   if (isPending) return null
 

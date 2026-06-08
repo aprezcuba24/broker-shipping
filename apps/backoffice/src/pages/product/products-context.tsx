@@ -7,7 +7,12 @@ import {
   type Product,
   type ProductCreate,
 } from '@broker/api'
-import { useCRUD, useUrlSearchFilters, type CrudContextValue } from '@broker/ui'
+import {
+  useActiveOrganization,
+  useCRUD,
+  useUrlSearchFilters,
+  type CrudContextValue,
+} from '@broker/ui'
 import { toPriceCents } from '@broker/ui'
 import { createContext, useContext, type ReactNode } from 'react'
 import { z } from 'zod'
@@ -44,7 +49,8 @@ export type ProductsContextValue = CrudContextValue<
 const ProductsContext = createContext<ProductsContextValue | null>(null)
 
 export function ProductsProvider({ children }: { children: ReactNode }) {
-  const { filters, setFilter } = useUrlSearchFilters({
+  const { activeOrganization } = useActiveOrganization()
+  const { filters, setFilter, resetFilters } = useUrlSearchFilters({
     keys: productListFilterKeys,
   })
 
@@ -61,6 +67,8 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     useList: useListProductsProductsProviderGet,
     getListQueryKey: getListProductsProductsProviderGetQueryKey,
     filters,
+    resetOnChange: [activeOrganization?.id],
+    onReset: resetFilters,
     useCreate: useCreateProductProductsProviderPost,
     usePatch: usePatchProductProductsProviderProductIdPatch,
     useDelete: useDeleteProductProductsProviderProductIdDelete,
