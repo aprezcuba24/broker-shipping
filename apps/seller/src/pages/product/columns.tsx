@@ -6,6 +6,7 @@ import {
   type ColumnDef,
 } from '@broker/ui'
 import { Link, useSearchParams } from 'react-router-dom'
+import { ProductCartAction } from '@/components/product-cart-action'
 
 function ProviderName({ providerId }: { providerId: string }) {
   const { getProviderName } = useSellerLinkedProviders()
@@ -73,5 +74,11 @@ export const columns: ColumnDef<Product>[] = [
     accessor: 'updated_at',
     type: 'datetime',
     hideOn: 'sm',
+  },
+  {
+    id: 'actions',
+    header: '',
+    align: 'right',
+    cell: (row) => <ProductCartAction product={row} />,
   },
 ]
