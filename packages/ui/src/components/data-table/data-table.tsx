@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, type ReactNode } from 'react'
 
 import { cn } from '../../lib/utils'
 import {
@@ -27,8 +27,18 @@ const hideOnClassName = {
   lg: 'hidden lg:table-cell',
 } as const
 
+const hideOnCardClassName = {
+  sm: 'hidden sm:flex',
+  md: 'hidden md:flex',
+  lg: 'hidden lg:flex',
+} as const
+
 function columnVisibilityClass<TData>(column: ColumnDef<TData>) {
   return column.hideOn ? hideOnClassName[column.hideOn] : undefined
+}
+
+function columnCardVisibilityClass<TData>(column: ColumnDef<TData>) {
+  return column.hideOn ? hideOnCardClassName[column.hideOn] : undefined
 }
 
 function getCellValue<TData>(row: TData, column: ColumnDef<TData>): unknown {
@@ -59,6 +69,60 @@ function renderCellContent<TData>(row: TData, column: ColumnDef<TData>) {
   return formatCellValue(value, type)
 }
 
+function DataField<TData>({
+  row,
+  column,
+}: {
+  row: TData
+  column: ColumnDef<TData>
+}) {
+  return (
+    <div
+      data-column={column.id}
+      className={cn(
+        'broker-data-table__card-field flex items-start justify-between gap-3',
+        columnCardVisibilityClass(column),
+        column.className,
+      )}
+    >
+      <span className="shrink-0 text-xs text-on-surface-variant">
+        {column.header}
+      </span>
+      <span className="min-w-0 text-right text-sm text-on-surface">
+        {renderCellContent(row, column)}
+      </span>
+    </div>
+  )
+}
+
+function MobileCardRow<TData>({
+  row,
+  columns,
+  actionsColumn,
+}: {
+  row: TData
+  columns: ColumnDef<TData>[]
+  actionsColumn?: ColumnDef<TData>
+}) {
+  return (
+    <article className="broker-data-table__card">
+      <div className="space-y-0.5">
+        {columns.map((column) => (
+          <DataField key={column.id} row={row} column={column} />
+        ))}
+      </div>
+      {actionsColumn ? (
+        <div
+          data-column="actions"
+          className="broker-data-table__card-actions flex justify-end"
+        >
+          {renderCellContent(row, actionsColumn)}
+        </div>
+      ) : null}
+    </article>
+  )
+}
+
 function LoadingRows<TData>({ columns }: { columns: ColumnDef<TData>[] }) {
   return (
     <>
@@ -76,6 +140,44 @@ function LoadingRows<TData>({ columns }: { columns: ColumnDef<TData>[] }) {
         </TableRow>
       ))}
     </>
+  )
+}
+
+function LoadingCards<TData>({ columns }: { columns: ColumnDef<TData>[] }) {
+  const dataColumns = columns.filter((column) => column.id !== 'actions')
+
+  return (
+    <>
+      {Array.from({ length: 3 }).map((_, cardIndex) => (
+        <article
+          key={`loading-card-${cardIndex}`}
+          className="broker-data-table__card"
+        >
+          <div className="space-y-2">
+            {dataColumns.map((column) => (
+              <div
+                key={`loading-card-${cardIndex}-${column.id}`}
+                className={cn(
+                  'broker-data-table__card-field flex items-center justify-between gap-3',
+                  columnCardVisibilityClass(column),
+                )}
+              >
+                <div className="h-3 w-16 animate-pulse rounded bg-muted" />
+                <div className="h-3.5 w-24 animate-pulse rounded bg-muted" />
+              </div>
+            ))}
+          </div>
+        </article>
+      ))}
+    </>
+  )
+}
+
+function EmptyCardState({ message }: { message: ReactNode }) {
+  return (
+    <div className="flex h-24 items-center justify-center px-3 text-center text-sm text-muted-foreground">
+      {message}
+    </div>
   )
 }
 
@@ -101,6 +203,11 @@ export function DataTable<TData>({
     const start = (safePage - 1) * pageSize
     return data.slice(start, start + pageSize)
   }, [data, isClientPagination, pageSize, safePage])
+  const { dataColumns, actionsColumn } = useMemo(() => {
+    const actions = columns.find((column) => column.id === 'actions')
+    const dataCols = columns.filter((column) => column.id !== 'actions')
+    return { dataColumns: dataCols, actionsColumn: actions }
+  }, [columns])
   const paginationBar = {
     ...pagination,
     page: safePage,
@@ -110,57 +217,81 @@ export function DataTable<TData>({
 
   return (
     <div className={cn('broker-data-table', className)}>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {columns.map((column) => (
-              <TableHead
-                key={column.id}
-                data-column={column.id}
-                className={cn(
-                  alignClassName[column.align ?? 'left'],
-                  columnVisibilityClass(column),
-                  column.className,
-                )}
-              >
-                {column.header}
-              </TableHead>
+      <div className="sm:hidden">
+        {isLoading ? (
+          <div className="divide-y divide-surface-container-high">
+            <LoadingCards columns={columns} />
+          </div>
+        ) : showEmptyState ? (
+          <EmptyCardState message={emptyMessage} />
+        ) : (
+          <div className="divide-y divide-surface-container-high">
+            {pageData.map((row, index) => (
+              <MobileCardRow
+                key={resolveRowId(row, index, getRowId)}
+                row={row}
+                columns={dataColumns}
+                actionsColumn={actionsColumn}
+              />
             ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {isLoading ? (
-            <LoadingRows columns={columns} />
-          ) : showEmptyState ? (
+          </div>
+        )}
+      </div>
+
+      <div className="hidden sm:block">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className="h-24 text-center text-muted-foreground"
-              >
-                {emptyMessage}
-              </TableCell>
+              {columns.map((column) => (
+                <TableHead
+                  key={column.id}
+                  data-column={column.id}
+                  className={cn(
+                    alignClassName[column.align ?? 'left'],
+                    columnVisibilityClass(column),
+                    column.className,
+                  )}
+                >
+                  {column.header}
+                </TableHead>
+              ))}
             </TableRow>
-          ) : (
-            pageData.map((row, index) => (
-              <TableRow key={resolveRowId(row, index, getRowId)}>
-                {columns.map((column) => (
-                  <TableCell
-                    key={column.id}
-                    data-column={column.id}
-                    className={cn(
-                      alignClassName[column.align ?? 'left'],
-                      columnVisibilityClass(column),
-                      column.className,
-                    )}
-                  >
-                    {renderCellContent(row, column)}
-                  </TableCell>
-                ))}
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <LoadingRows columns={columns} />
+            ) : showEmptyState ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center text-muted-foreground"
+                >
+                  {emptyMessage}
+                </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ) : (
+              pageData.map((row, index) => (
+                <TableRow key={resolveRowId(row, index, getRowId)}>
+                  {columns.map((column) => (
+                    <TableCell
+                      key={column.id}
+                      data-column={column.id}
+                      className={cn(
+                        alignClassName[column.align ?? 'left'],
+                        columnVisibilityClass(column),
+                        column.className,
+                      )}
+                    >
+                      {renderCellContent(row, column)}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
       <DataTablePaginationBar {...paginationBar} />
     </div>
   )
