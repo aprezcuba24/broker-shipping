@@ -60,10 +60,6 @@ export function inferColumnType(
     return ColumnType.DateTime
   }
 
-  if (toDate(value) !== null) {
-    return ColumnType.DateTime
-  }
-
   return ColumnType.Text
 }
 

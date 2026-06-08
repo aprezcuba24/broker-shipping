@@ -70,7 +70,7 @@ function RowActions({ product }: { product: Product }) {
 }
 
 export const columns: ColumnDef<Product>[] = [
-  { id: 'name', header: 'Nombre', accessor: 'name' },
+  { id: 'name', header: 'Nombre' },
   {
     id: 'price',
     header: 'Precio',
@@ -81,11 +81,10 @@ export const columns: ColumnDef<Product>[] = [
     header: 'Categoría',
     cell: (row) => <CategoryName categoryId={row.category_id} />,
   },
-  { id: 'created_at', header: 'Creado', accessor: 'created_at', type: 'datetime' },
+  { id: 'created_at', header: 'Creado', type: 'datetime' },
   {
     id: 'updated_at',
     header: 'Actualizado',
-    accessor: 'updated_at',
     type: 'datetime',
     hideOn: 'sm',
   },
