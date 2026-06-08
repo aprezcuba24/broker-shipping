@@ -6,7 +6,7 @@ import {
   useQueryClient,
   type QueryKey,
 } from '@tanstack/react-query'
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
 export type ActiveOrganizationContextValue = {
   organizations: Organization[]
@@ -38,10 +38,13 @@ export function ActiveOrganizationProvider({
   const setActiveOrganization = (organizationId: string) => {
     if (!organizations.some((org) => org.id === organizationId)) return
     setSelectedId(organizationId)
+  }
+
+  useEffect(() => {
     for (const queryKey of tenantQueryKeys) {
       void queryClient.invalidateQueries({ queryKey })
     }
-  }
+  }, [activeId])
 
   if (isPending) return null
 
