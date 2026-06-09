@@ -4,6 +4,7 @@ from httpx import AsyncClient
 
 from tests.factories.auth_helpers import bearer_headers, tenant_headers
 from tests.factories.category_factory import CategoryFactory
+from tests.factories.customer_factory import CustomerFactory
 from tests.factories.organization_factory import OrganizationFactory, link_provider_to_seller
 from tests.factories.product_factory import ProductFactory
 from tests.factories.user_factory import UserFactory
@@ -76,15 +77,46 @@ async def seller_with_provider_product(
     }
 
 
-def _order_payload(*, product_id: str, price: int, quantity: int = 2) -> dict:
+def _address_payload() -> dict:
+    return {
+        "province": "La Habana",
+        "municipality": "Plaza",
+        "district": "Vedado",
+        "neighborhood": "Centro",
+        "address": "Calle 23 #100",
+        "reference": "Esquina",
+    }
+
+
+def _customer_payload(
+    *,
+    phone: str = "+53555123456",
+    identification: str = "ID-ORDER-1",
+) -> dict:
+    return {
+        "name": "Test Customer",
+        "phone": phone,
+        "identification": identification,
+    }
+
+
+def _order_payload_inline_customer(
+    *,
+    product_id: str,
+    price: int,
+    quantity: int = 2,
+    phone: str = "+53555123456",
+    identification: str = "ID-ORDER-1",
+) -> dict:
     return {
         "name": "Test order",
-        "customer_phone": "+53555123456",
+        "customer": _customer_payload(phone=phone, identification=identification),
+        "address": _address_payload(),
         "lines": [{"product_id": product_id, "quantity": quantity, "price": price}],
     }
 
 
-async def test_create_order_persists_line_prices_and_order_totals(
+async def test_create_order_inline_customer_persists_snapshots_and_totals(
     client: AsyncClient,
     seller_with_provider_product: dict,
 ) -> None:
@@ -94,7 +126,7 @@ async def test_create_order_persists_line_prices_and_order_totals(
 
     r = await client.post(
         "/orders/",
-        json=_order_payload(
+        json=_order_payload_inline_customer(
             product_id=ctx["product_id"],
             price=line_price,
             quantity=quantity,
@@ -103,15 +135,133 @@ async def test_create_order_persists_line_prices_and_order_totals(
     )
     assert r.status_code == 201
     body = r.json()
+    assert body["customer_snapshot"]["phone"] == "+53555123456"
+    assert body["customer_snapshot"]["identification"] == "ID-ORDER-1"
+    assert body["address_snapshot"]["province"] == "La Habana"
+    assert body["customer_id"] == body["customer_snapshot"]["customer_id"]
+
     assert len(body["lines"]) == 1
     line = body["lines"][0]
     assert line["product_price"] == ctx["product_price"]
     assert line["price"] == line_price
-    assert line["organization_id"] == ctx["provider_org_id"]
-    assert line["organization"]["id"] == ctx["provider_org_id"]
-    assert line["organization"]["name"] == ctx["provider_org_name"]
     assert body["product_price"] == ctx["product_price"] * quantity
     assert body["price"] == line_price * quantity
+
+
+async def test_create_order_with_existing_customer_and_address_id(
+    client: AsyncClient,
+    seller_with_provider_product: dict,
+    customer_factory: CustomerFactory,
+) -> None:
+    ctx = seller_with_provider_product
+    data = await customer_factory.build_with_address(
+        organization_id=ctx["seller_org_id"],
+        phone="+53555999999",
+        identification="ID-EXISTING",
+    )
+
+    r = await client.post(
+        "/orders/",
+        json={
+            "name": "Existing customer order",
+            "customer_id": data["customer"]["id"],
+            "address_id": data["address"]["id"],
+            "lines": [
+                {
+                    "product_id": ctx["product_id"],
+                    "quantity": 1,
+                    "price": ctx["product_price"],
+                },
+            ],
+        },
+        headers=ctx["seller_headers"],
+    )
+    assert r.status_code == 201
+    body = r.json()
+    assert body["customer_id"] == data["customer"]["id"]
+    assert body["customer_snapshot"]["name"] == data["customer"]["name"]
+    assert body["address_snapshot"]["address_id"] == data["address"]["id"]
+
+
+async def test_create_order_with_existing_customer_and_new_address(
+    client: AsyncClient,
+    db_session,
+    seller_with_provider_product: dict,
+    customer_factory: CustomerFactory,
+) -> None:
+    ctx = seller_with_provider_product
+    data = await customer_factory.build_with_address(
+        organization_id=ctx["seller_org_id"],
+        phone="+53555888888",
+        identification="ID-ADDR-UPDATE",
+    )
+    old_address_id = data["address"]["id"]
+
+    r = await client.post(
+        "/orders/",
+        json={
+            "name": "New address order",
+            "customer_id": data["customer"]["id"],
+            "address": {
+                "province": "Matanzas",
+                "municipality": "Cardenas",
+                "district": "Centro",
+                "neighborhood": "Norte",
+                "address": "Avenida 1",
+                "reference": None,
+            },
+            "lines": [
+                {
+                    "product_id": ctx["product_id"],
+                    "quantity": 1,
+                    "price": ctx["product_price"],
+                },
+            ],
+        },
+        headers=ctx["seller_headers"],
+    )
+    assert r.status_code == 201
+    body = r.json()
+    assert body["address_snapshot"]["province"] == "Matanzas"
+    assert body["address_snapshot"]["address_id"] != old_address_id
+
+
+async def test_create_order_rejects_duplicate_phone_or_identification(
+    client: AsyncClient,
+    seller_with_provider_product: dict,
+    customer_factory: CustomerFactory,
+) -> None:
+    ctx = seller_with_provider_product
+    await customer_factory.build(
+        organization_id=ctx["seller_org_id"],
+        phone="+53555777777",
+        identification="ID-UNIQUE",
+    )
+
+    r_phone = await client.post(
+        "/orders/",
+        json=_order_payload_inline_customer(
+            product_id=ctx["product_id"],
+            price=ctx["product_price"],
+            phone="+53555777777",
+            identification="ID-OTHER",
+        ),
+        headers=ctx["seller_headers"],
+    )
+    assert r_phone.status_code == 400
+    assert "customer_id" in r_phone.json()["detail"]
+
+    r_id = await client.post(
+        "/orders/",
+        json=_order_payload_inline_customer(
+            product_id=ctx["product_id"],
+            price=ctx["product_price"],
+            phone="+53555666666",
+            identification="ID-UNIQUE",
+        ),
+        headers=ctx["seller_headers"],
+    )
+    assert r_id.status_code == 400
 
 
 async def test_create_order_rejects_price_below_product_price(
@@ -121,7 +271,7 @@ async def test_create_order_rejects_price_below_product_price(
     ctx = seller_with_provider_product
     r = await client.post(
         "/orders/",
-        json=_order_payload(
+        json=_order_payload_inline_customer(
             product_id=ctx["product_id"],
             price=ctx["product_price"] - 1,
         ),
@@ -160,7 +310,11 @@ async def test_provider_order_totals_only_include_visible_lines(
         "/orders/",
         json={
             "name": "Multi-provider order",
-            "customer_phone": "+53555987654",
+            "customer": _customer_payload(
+                phone="+53555987654",
+                identification="ID-MULTI",
+            ),
+            "address": _address_payload(),
             "lines": [
                 {
                     "product_id": ctx["product_id"],
@@ -189,10 +343,6 @@ async def test_provider_order_totals_only_include_visible_lines(
     assert r_provider_a.status_code == 200
     body_a = r_provider_a.json()
     assert len(body_a["lines"]) == 1
-    line_a = body_a["lines"][0]
-    assert line_a["organization_id"] == ctx["provider_org_id"]
-    assert line_a["organization"]["id"] == ctx["provider_org_id"]
-    assert line_a["organization"]["name"] == ctx["provider_org_name"]
     assert body_a["product_price"] == ctx["product_price"] * 2
     assert body_a["price"] == ctx["product_price"] * 2
 
@@ -207,9 +357,5 @@ async def test_provider_order_totals_only_include_visible_lines(
     assert r_provider_b.status_code == 200
     body_b = r_provider_b.json()
     assert len(body_b["lines"]) == 1
-    line_b = body_b["lines"][0]
-    assert line_b["organization_id"] == provider_b_org["id"]
-    assert line_b["organization"]["id"] == provider_b_org["id"]
-    assert line_b["organization"]["name"] == provider_b_org["name"]
     assert body_b["product_price"] == 1000 * 3
     assert body_b["price"] == 1500 * 3

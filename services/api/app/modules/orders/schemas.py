@@ -1,9 +1,14 @@
+from __future__ import annotations
+
 from datetime import datetime
-from typing import Any
+from typing import Any, Self
 from uuid import UUID
 
+from pydantic import model_validator
 from sqlmodel import Field, SQLModel
 
+from app.modules.orders.models.address import Address
+from app.modules.orders.models.customer import Customer
 from app.modules.orders.models.enums import OrderLineStatus, OrderStatus
 from app.modules.orders.models.order import Order
 from app.modules.orders.models.order_line import OrderLine
@@ -18,10 +23,74 @@ class OrderLineCreate(SQLModel):
     price: int = Field(ge=0, description="Unit price in cents")
 
 
+class CustomerInput(SQLModel):
+    name: str = Field(max_length=255)
+    phone: str = Field(min_length=1, max_length=32)
+    identification: str = Field(min_length=1, max_length=64)
+
+
+class AddressInput(SQLModel):
+    province: str = Field(max_length=255)
+    municipality: str = Field(max_length=255)
+    district: str = Field(max_length=255)
+    neighborhood: str = Field(max_length=255)
+    address: str = Field(max_length=255)
+    reference: str | None = Field(default=None, max_length=255)
+
+
 class OrderCreate(SQLModel):
     name: str = Field(max_length=255)
-    customer_phone: str = Field(min_length=1, max_length=32)
     lines: list[OrderLineCreate] = Field(min_length=1)
+    customer_id: UUID | None = None
+    customer: CustomerInput | None = None
+    address_id: UUID | None = None
+    address: AddressInput | None = None
+
+    @model_validator(mode="after")
+    def validate_customer_and_address_xor(self) -> Self:
+        has_customer_id = self.customer_id is not None
+        has_customer = self.customer is not None
+        if has_customer_id == has_customer:
+            raise ValueError("Exactly one of customer_id or customer must be provided")
+
+        has_address_id = self.address_id is not None
+        has_address = self.address is not None
+        if has_address_id == has_address:
+            raise ValueError("Exactly one of address_id or address must be provided")
+
+        return self
+
+
+class CustomerSummary(SQLModel):
+    id: UUID
+    name: str
+    phone: str
+    identification: str
+
+
+class AddressDetail(SQLModel):
+    id: UUID
+    province: str
+    municipality: str
+    district: str
+    neighborhood: str
+    address: str
+    reference: str | None
+    is_active: bool
+
+
+class CustomerDetail(CustomerSummary):
+    addresses: list[AddressDetail]
+
+    @classmethod
+    def from_entities(cls, customer: Customer, addresses: list[Address]) -> CustomerDetail:
+        return cls(
+            id=customer.id,
+            name=customer.name,
+            phone=customer.phone,
+            identification=customer.identification,
+            addresses=[AddressDetail.model_validate(a) for a in addresses],
+        )
 
 
 class OrganizationRef(SQLModel):
@@ -49,12 +118,35 @@ class OrderDetail(SQLModel):
     name: str
     seller_organization_id: UUID
     customer_id: UUID
+    customer_snapshot: dict[str, Any]
+    address_snapshot: dict[str, Any]
     created_at: datetime
     updated_at: datetime | None
     status: OrderStatus
     product_price: int
     price: int
     lines: list[OrderLineDetail]
+
+
+def build_customer_snapshot(customer: Customer) -> dict[str, Any]:
+    return {
+        "customer_id": str(customer.id),
+        "name": customer.name,
+        "phone": customer.phone,
+        "identification": customer.identification,
+    }
+
+
+def build_address_snapshot(address: Address) -> dict[str, Any]:
+    return {
+        "address_id": str(address.id),
+        "province": address.province,
+        "municipality": address.municipality,
+        "district": address.district,
+        "neighborhood": address.neighborhood,
+        "address": address.address,
+        "reference": address.reference,
+    }
 
 
 def build_order_line_detail(
@@ -90,6 +182,8 @@ def build_order_detail(
         name=order.name,
         seller_organization_id=order.seller_organization_id,
         customer_id=order.customer_id,
+        customer_snapshot=order.customer_snapshot,
+        address_snapshot=order.address_snapshot,
         created_at=order.created_at,
         updated_at=order.updated_at,
         status=compute_order_status(lines),

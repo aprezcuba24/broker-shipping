@@ -7,15 +7,24 @@ from uuid import UUID
 from fastapi import HTTPException
 
 from app.lib.persistence import BaseService
+from app.modules.orders.models.address import Address
+from app.modules.orders.models.customer import Customer
 from app.modules.orders.models.order import Order
 from app.modules.orders.models.order_line import OrderLine
 from app.modules.orders.repositories import OrderRepository
-from app.modules.orders.schemas import OrderCreate, OrderDetail, build_order_detail
+from app.modules.orders.schemas import (
+    OrderCreate,
+    OrderDetail,
+    build_address_snapshot,
+    build_customer_snapshot,
+    build_order_detail,
+)
+from app.modules.orders.services.address_service import AddressService
+from app.modules.orders.services.customer_service import CustomerService
 from app.modules.orders.services.order_line_service import OrderLineService
 from app.modules.organization.models import Organization, OrganizationType
 from app.modules.organization.repositories import OrganizationRepository
 from app.modules.products.services import SellerProductService
-from app.modules.user.services import UserService
 
 
 class OrderService(BaseService[Order]):
@@ -24,13 +33,15 @@ class OrderService(BaseService[Order]):
         repository: OrderRepository,
         line_service: OrderLineService,
         product_service: SellerProductService,
-        user_service: UserService,
+        customer_service: CustomerService,
+        address_service: AddressService,
         org_repository: OrganizationRepository,
     ) -> None:
         super().__init__(repository)
         self._line_service = line_service
         self._product_service = product_service
-        self._user_service = user_service
+        self._customer_service = customer_service
+        self._address_service = address_service
         self._org_repo = org_repository
 
     @classmethod
@@ -80,6 +91,48 @@ class OrderService(BaseService[Order]):
         visible = self._visible_lines(order, all_lines, organization)
         return build_order_detail(order, visible, orgs_by_id)
 
+    async def _resolve_customer_and_address(
+        self,
+        body: OrderCreate,
+        organization: Organization,
+    ) -> tuple[Customer, Address]:
+        if body.customer is not None:
+            await self._customer_service.ensure_no_conflict_or_400(
+                organization.id,
+                body.customer,
+            )
+            customer = await self._customer_service.create_for_organization(
+                organization.id,
+                body.customer,
+            )
+            assert body.address is not None
+            address = await self._address_service.create_and_activate(
+                customer.id,
+                body.address,
+            )
+            return customer, address
+
+        assert body.customer_id is not None
+        customer = await self._customer_service.get_or_404_for_organization(
+            body.customer_id,
+            organization.id,
+            detail="Customer not found",
+        )
+
+        if body.address is not None:
+            address = await self._address_service.create_and_activate(
+                customer.id,
+                body.address,
+            )
+            return customer, address
+
+        assert body.address_id is not None
+        address = await self._address_service.get_for_customer_or_404(
+            body.address_id,
+            customer.id,
+        )
+        return customer, address
+
     async def list_for_organization(
         self,
         organization: Organization,
@@ -115,9 +168,7 @@ class OrderService(BaseService[Order]):
                 detail="Only seller organizations can create orders",
             )
 
-        customer = await self._user_service.find_or_create_customer_by_phone(
-            body.customer_phone,
-        )
+        customer, address = await self._resolve_customer_and_address(body, organization)
 
         line_entities: list[OrderLine] = []
         for item in body.lines:
@@ -134,6 +185,8 @@ class OrderService(BaseService[Order]):
             name=body.name,
             seller_organization_id=organization.id,
             customer_id=customer.id,
+            customer_snapshot=build_customer_snapshot(customer),
+            address_snapshot=build_address_snapshot(address),
         )
         order = await self.create(order)
         lines = await self._line_service.create_for_order(order.id, line_entities)
