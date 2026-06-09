@@ -8,6 +8,7 @@ import { SellerLayout } from './layouts/seller-layout'
 import { CartPage } from './pages/cart'
 import { HomePage } from './pages/home'
 import { LoginPage } from './pages/login'
+import { OrderDetailPage } from './pages/order/detail'
 import { ProductPage } from './pages/product'
 import { ProductDetailPage } from './pages/product/detail'
 
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="/products" element={<ProductPage />} />
           <Route path="/products/:productId" element={<ProductDetailPage />} />
           <Route path="/cart" element={<CartPage />} />
+          <Route path="/orders/:orderId" element={<OrderDetailPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

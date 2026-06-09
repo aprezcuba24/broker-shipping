@@ -1,4 +1,8 @@
-import type { Product } from '@broker/api'
+import {
+  createOrderOrdersPost,
+  type OrderDetail,
+  type Product,
+} from '@broker/api'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
@@ -9,6 +13,8 @@ export interface CartLine {
   product: Product
   quantity: number
   price: number
+  line_total: number
+  provider_organization_id: string
 }
 
 export interface CartSummary {
@@ -26,15 +32,41 @@ interface CartActions {
   decreaseQuantity: (productId: string, quantity?: number) => void
   clearCart: () => void
   getSummary: () => CartSummary
+  createOrder: (input: {
+    name: string
+    customer_phone: string
+  }) => Promise<OrderDetail>
 }
 
 export type CartStore = CartState & CartActions
+
+function withLineTotal(line: Omit<CartLine, 'line_total'> & { line_total?: number }): CartLine {
+  return {
+    ...line,
+    line_total: line.line_total ?? line.price * line.quantity,
+    provider_organization_id: line.provider_organization_id ?? line.product.organization_id ?? '',
+  }
+}
+
+function buildCartLine(product: Product, quantity: number): CartLine {
+  return withLineTotal({
+    product_id: product.id!,
+    product,
+    quantity,
+    price: product.price,
+    provider_organization_id: product.organization_id ?? '',
+  })
+}
+
+function normalizeLine(line: CartLine): CartLine {
+  return withLineTotal(line)
+}
 
 function computeSummary(lines: CartLine[]): CartSummary {
   return lines.reduce<CartSummary>(
     (summary, line) => ({
       itemCount: summary.itemCount + line.quantity,
-      total: summary.total + line.price * line.quantity,
+      total: summary.total + line.line_total,
     }),
     { itemCount: 0, total: 0 },
   )
@@ -58,21 +90,16 @@ export const useCartStore = create<CartStore>()(
             return {
               lines: state.lines.map((line) =>
                 line.product_id === productId
-                  ? { ...line, quantity: line.quantity + quantity }
+                  ? withLineTotal({
+                      ...line,
+                      quantity: line.quantity + quantity,
+                    })
                   : line,
               ),
             }
           }
           return {
-            lines: [
-              ...state.lines,
-              {
-                product_id: productId,
-                product,
-                quantity,
-                price: product.price,
-              },
-            ],
+            lines: [...state.lines, buildCartLine(product, quantity)],
           }
         })
       },
@@ -89,7 +116,10 @@ export const useCartStore = create<CartStore>()(
           lines: state.lines
             .map((line) =>
               line.product_id === productId
-                ? { ...line, quantity: line.quantity - quantity }
+                ? withLineTotal({
+                    ...line,
+                    quantity: line.quantity - quantity,
+                  })
                 : line,
             )
             .filter((line) => line.quantity > 0),
@@ -99,10 +129,39 @@ export const useCartStore = create<CartStore>()(
       clearCart: () => set({ lines: [] }),
 
       getSummary: () => computeSummary(get().lines),
+
+      createOrder: async (input) => {
+        const { lines } = get()
+        if (lines.length === 0) {
+          throw new Error('El carrito está vacío')
+        }
+
+        const order = await createOrderOrdersPost({
+          name: input.name,
+          customer_phone: input.customer_phone,
+          lines: lines.map((line) => ({
+            product_id: line.product_id,
+            quantity: line.quantity,
+            price: line.price,
+          })),
+        })
+
+        set({ lines: [] })
+        return order
+      },
     }),
     {
       name: CART_STORAGE_KEY,
       partialize: (state) => ({ lines: state.lines }),
+      merge: (persisted, current) => {
+        const persistedState = persisted as CartState | undefined
+        if (!persistedState?.lines) return current
+
+        return {
+          ...current,
+          lines: persistedState.lines.map(normalizeLine),
+        }
+      },
     },
   ),
 )
