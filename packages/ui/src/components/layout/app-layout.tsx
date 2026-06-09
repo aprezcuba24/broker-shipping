@@ -13,6 +13,7 @@ export function AppLayout({
   onLogout,
   user,
   headerExtra,
+  headerActions,
 }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -53,6 +54,7 @@ export function AppLayout({
           onLogout={onLogout}
           user={user}
           headerExtra={headerExtra}
+          headerActions={headerActions}
         />
         <div className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 bg-background">
           <Outlet />

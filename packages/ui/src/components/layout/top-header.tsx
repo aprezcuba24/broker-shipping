@@ -13,6 +13,7 @@ export function TopHeader({
   onLogout,
   user = defaultUser,
   headerExtra,
+  headerActions,
 }: TopHeaderProps) {
   return (
     <header className="bg-surface-container-low/80 backdrop-blur-md sticky top-0 z-40 flex justify-between items-center w-full px-3 sm:px-6 py-3">
@@ -50,6 +51,7 @@ export function TopHeader({
       </div>
 
       <div className="flex items-center gap-1 sm:gap-4 shrink-0">
+        {headerActions}
         <button
           type="button"
           className="p-2 rounded-full hover:bg-surface-container-highest/50 transition-colors"

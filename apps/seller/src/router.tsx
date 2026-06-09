@@ -5,6 +5,7 @@ import {
 } from '@broker/ui'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { SellerLayout } from './layouts/seller-layout'
+import { CartPage } from './pages/cart'
 import { HomePage } from './pages/home'
 import { LoginPage } from './pages/login'
 import { ProductPage } from './pages/product'
@@ -31,6 +32,7 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="/products" element={<ProductPage />} />
           <Route path="/products/:productId" element={<ProductDetailPage />} />
+          <Route path="/cart" element={<CartPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

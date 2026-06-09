@@ -41,6 +41,7 @@ export type TopHeaderProps = {
   onLogout?: () => void
   user?: TopHeaderUser
   headerExtra?: ReactNode
+  headerActions?: ReactNode
 }
 
 export type AppLayoutProps = {
@@ -52,4 +53,5 @@ export type AppLayoutProps = {
   onLogout?: () => void
   user?: TopHeaderUser
   headerExtra?: ReactNode
+  headerActions?: ReactNode
 }
