@@ -1,6 +1,8 @@
 export { cn, formatPriceCents, toPriceCents } from './lib/utils'
 export { initialsFromUsername } from './lib/initials'
 
+export { AddressShow } from './components/address'
+
 export { LoginForm } from './components/auth/login-form'
 export type { LoginFields, LoginFormProps } from './components/auth/login-form'
 

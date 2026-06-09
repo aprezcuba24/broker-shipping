@@ -14,3 +14,5 @@ export * from './generated/organizations/organizations'
 export * from './generated/orders/orders'
 export * from './generated/products/products'
 export * from './generated/users/users'
+
+export { createOrder } from './services/order'

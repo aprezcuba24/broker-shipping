@@ -1,84 +1,42 @@
-import { createOrderOrdersPost, formatApiError } from '@broker/api'
+import {
+  formatApiError,
+  type CustomerSummary,
+  createOrder,
+  type OrderCreate,
+} from '@broker/api'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useCallback, useState, useTransition } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { useCartStore } from '@/stores/cart-store'
+import { checkoutOrderSchema } from '@/schemas/checkout'
 
-const customerSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, 'El nombre es obligatorio')
-    .max(255, 'Máximo 255 caracteres'),
-  phone: z
-    .string()
-    .trim()
-    .min(1, 'El teléfono es obligatorio')
-    .max(32, 'Máximo 32 caracteres'),
-  identification: z
-    .string()
-    .trim()
-    .min(1, 'La identificación es obligatoria')
-    .max(64, 'Máximo 64 caracteres'),
-})
-
-const addressSchema = z.object({
-  province: z
-    .string()
-    .trim()
-    .min(1, 'La provincia es obligatoria')
-    .max(255, 'Máximo 255 caracteres'),
-  municipality: z
-    .string()
-    .trim()
-    .min(1, 'El municipio es obligatorio')
-    .max(255, 'Máximo 255 caracteres'),
-  district: z
-    .string()
-    .trim()
-    .min(1, 'El distrito es obligatorio')
-    .max(255, 'Máximo 255 caracteres'),
-  neighborhood: z
-    .string()
-    .trim()
-    .min(1, 'El reparto es obligatorio')
-    .max(255, 'Máximo 255 caracteres'),
-  address: z
-    .string()
-    .trim()
-    .min(1, 'La dirección es obligatoria')
-    .max(255, 'Máximo 255 caracteres'),
-  reference: z
-    .string()
-    .trim()
-    .max(255, 'Máximo 255 caracteres')
-    .optional()
-    .or(z.literal('')),
-})
-
-export const checkoutOrderSchema = z.object({
-  customer: customerSchema,
-  address: addressSchema,
-})
+export type CheckoutMode = 'new' | 'existing'
+export type AddressSource = 'saved' | 'new'
 
 export type CheckoutOrderFormValues = z.infer<typeof checkoutOrderSchema>
 
+const emptyAddress: CheckoutOrderFormValues['address'] = {
+  province: '',
+  municipality: '',
+  district: '',
+  neighborhood: '',
+  address: '',
+  reference: '',
+}
+
 const defaultValues: CheckoutOrderFormValues = {
+  mode: 'new',
   customer: {
     name: '',
     phone: '',
     identification: '',
   },
-  address: {
-    province: '',
-    municipality: '',
-    district: '',
-    neighborhood: '',
-    address: '',
-    reference: '',
-  },
+  customerId: '',
+  addressSource: 'saved',
+  addressId: '',
+  address: emptyAddress,
 }
 
 export function useCheckoutOrder() {
@@ -86,6 +44,8 @@ export function useCheckoutOrder() {
   const [isPending, startTransition] = useTransition()
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const [selectedCustomer, setSelectedCustomer] =
+    useState<CustomerSummary | null>(null)
 
   const form = useForm<CheckoutOrderFormValues>({
     resolver: zodResolver(checkoutOrderSchema),
@@ -93,8 +53,48 @@ export function useCheckoutOrder() {
     mode: 'onTouched',
   })
 
+  const mode = form.watch('mode')
+
+  const setMode = useCallback(
+    (nextMode: CheckoutMode) => {
+      form.setValue('mode', nextMode, { shouldDirty: true })
+      form.clearErrors()
+
+      if (nextMode === 'new') {
+        setSelectedCustomer(null)
+        form.setValue('customerId', '')
+        form.setValue('addressId', '')
+        form.setValue('addressSource', 'saved')
+        return
+      }
+
+      form.setValue('customer', defaultValues.customer)
+      form.setValue('address', emptyAddress)
+    },
+    [form],
+  )
+
+  const handleCustomerSelect = useCallback(
+    (customer: CustomerSummary | null) => {
+      setSelectedCustomer(customer)
+      form.setValue('customerId', customer?.id ?? '', { shouldDirty: true })
+      form.setValue('addressId', '', { shouldDirty: true })
+      form.setValue('address', emptyAddress, { shouldDirty: true })
+      form.setValue('addressSource', 'saved', { shouldDirty: true })
+      form.clearErrors(['customerId', 'addressId', 'address'])
+    },
+    [form],
+  )
+
   const validate = useCallback(async () => {
-    return form.trigger()
+    const fields: (keyof CheckoutOrderFormValues)[] =
+      form.getValues('mode') === 'new'
+        ? ['customer', 'address']
+        : form.getValues('addressSource') === 'saved'
+          ? ['customerId', 'addressId']
+          : ['customerId', 'address']
+
+    return form.trigger(fields)
   }, [form])
 
   const submitOrder = useCallback(() => {
@@ -106,20 +106,7 @@ export function useCheckoutOrder() {
     return new Promise<void>((resolve, reject) => {
       startTransition(async () => {
         try {
-          const order = await createOrderOrdersPost({
-            name: values.customer.name,
-            customer: values.customer,
-            address: {
-              ...values.address,
-              reference: values.address.reference?.trim() || undefined,
-            },
-            lines: lines.map((line) => ({
-              product_id: line.product_id,
-              quantity: line.quantity,
-              price: line.price,
-            })),
-          })
-
+          const order = await createOrder(values as unknown as OrderCreate, lines)
           useCartStore.getState().clearCart()
           void navigate(`/orders/${order.id}`)
           resolve()
@@ -130,7 +117,7 @@ export function useCheckoutOrder() {
         }
       })
     })
-  }, [form, navigate, startTransition])
+  }, [form, navigate, selectedCustomer?.name, startTransition])
 
   const handleConfirmOpenChange = useCallback((open: boolean) => {
     if (!open) setSubmitError(null)
@@ -139,6 +126,10 @@ export function useCheckoutOrder() {
 
   return {
     form,
+    mode,
+    setMode,
+    selectedCustomer,
+    handleCustomerSelect,
     isSubmitting: isPending,
     submitError,
     isConfirmOpen,

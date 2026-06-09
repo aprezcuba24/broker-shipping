@@ -11,9 +11,13 @@ import type { CheckoutOrderFormValues } from '@/hooks/use-checkout-order'
 
 type AddressFormProps = {
   control: Control<CheckoutOrderFormValues>
+  idPrefix?: string
 }
 
-export function AddressForm({ control }: AddressFormProps) {
+export function AddressForm({
+  control,
+  idPrefix = 'checkout',
+}: AddressFormProps) {
   return (
     <FieldGroup>
       <Controller
@@ -21,10 +25,12 @@ export function AddressForm({ control }: AddressFormProps) {
         control={control}
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor="checkout-address-province">Provincia</FieldLabel>
+            <FieldLabel htmlFor={`${idPrefix}-address-province`}>
+              Provincia
+            </FieldLabel>
             <Input
               {...field}
-              id="checkout-address-province"
+              id={`${idPrefix}-address-province`}
               maxLength={255}
               aria-invalid={fieldState.invalid}
             />
@@ -39,12 +45,12 @@ export function AddressForm({ control }: AddressFormProps) {
         control={control}
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor="checkout-address-municipality">
+            <FieldLabel htmlFor={`${idPrefix}-address-municipality`}>
               Municipio
             </FieldLabel>
             <Input
               {...field}
-              id="checkout-address-municipality"
+              id={`${idPrefix}-address-municipality`}
               maxLength={255}
               aria-invalid={fieldState.invalid}
             />
@@ -59,10 +65,12 @@ export function AddressForm({ control }: AddressFormProps) {
         control={control}
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor="checkout-address-district">Distrito</FieldLabel>
+            <FieldLabel htmlFor={`${idPrefix}-address-district`}>
+              Distrito
+            </FieldLabel>
             <Input
               {...field}
-              id="checkout-address-district"
+              id={`${idPrefix}-address-district`}
               maxLength={255}
               aria-invalid={fieldState.invalid}
             />
@@ -77,12 +85,12 @@ export function AddressForm({ control }: AddressFormProps) {
         control={control}
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor="checkout-address-neighborhood">
+            <FieldLabel htmlFor={`${idPrefix}-address-neighborhood`}>
               Reparto / barrio
             </FieldLabel>
             <Input
               {...field}
-              id="checkout-address-neighborhood"
+              id={`${idPrefix}-address-neighborhood`}
               maxLength={255}
               aria-invalid={fieldState.invalid}
             />
@@ -97,10 +105,12 @@ export function AddressForm({ control }: AddressFormProps) {
         control={control}
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor="checkout-address-street">Dirección</FieldLabel>
+            <FieldLabel htmlFor={`${idPrefix}-address-street`}>
+              Dirección
+            </FieldLabel>
             <Input
               {...field}
-              id="checkout-address-street"
+              id={`${idPrefix}-address-street`}
               maxLength={255}
               aria-invalid={fieldState.invalid}
             />
@@ -115,12 +125,12 @@ export function AddressForm({ control }: AddressFormProps) {
         control={control}
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor="checkout-address-reference">
+            <FieldLabel htmlFor={`${idPrefix}-address-reference`}>
               Referencia (opcional)
             </FieldLabel>
             <Textarea
               {...field}
-              id="checkout-address-reference"
+              id={`${idPrefix}-address-reference`}
               maxLength={255}
               rows={2}
               value={field.value ?? ''}
