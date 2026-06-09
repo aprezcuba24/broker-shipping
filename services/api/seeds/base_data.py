@@ -74,6 +74,7 @@ SELLER_ORGANIZATION_NAMES: tuple[str, ...] = (SELLER_ALPHA, SELLER_BETA)
 
 PROVIDER_SELLER_LINKS: tuple[ProviderSellerLinkSeed, ...] = (
     ProviderSellerLinkSeed(provider_name=ORG_ALPHA, seller_name=SELLER_ALPHA),
+    ProviderSellerLinkSeed(provider_name=ORG_BETA, seller_name=SELLER_ALPHA),
     ProviderSellerLinkSeed(provider_name=ORG_BETA, seller_name=SELLER_BETA),
 )
 
