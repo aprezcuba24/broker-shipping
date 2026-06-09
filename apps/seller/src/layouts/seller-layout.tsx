@@ -2,6 +2,7 @@ import { useAuth } from '@broker/api'
 import { AppLayout, initialsFromUsername, OrganizationSelect } from '@broker/ui'
 import { useNavigate } from 'react-router-dom'
 import { CartHeaderButton } from '../components/cart-header-button'
+import { CartOrganizationSync } from '../components/cart-organization-sync'
 import {
   sellerBottomItems,
   sellerBrand,
@@ -18,23 +19,25 @@ export function SellerLayout() {
   }
 
   return (
-    <AppLayout
-      headerTitle="Portal vendedores"
-      headerExtra={<OrganizationSelect />}
-      headerActions={<CartHeaderButton />}
-      navItems={sellerNavItems}
-      bottomItems={sellerBottomItems}
-      brand={sellerBrand}
-      user={
-        user
-          ? {
-              name: user.username,
-              role: 'Portal vendedores',
-              initials: initialsFromUsername(user.username),
-            }
-          : undefined
-      }
-      onLogout={handleLogout}
-    />
+    <CartOrganizationSync>
+      <AppLayout
+        headerTitle="Portal vendedores"
+        headerExtra={<OrganizationSelect />}
+        headerActions={<CartHeaderButton />}
+        navItems={sellerNavItems}
+        bottomItems={sellerBottomItems}
+        brand={sellerBrand}
+        user={
+          user
+            ? {
+                name: user.username,
+                role: 'Portal vendedores',
+                initials: initialsFromUsername(user.username),
+              }
+            : undefined
+        }
+        onLogout={handleLogout}
+      />
+    </CartOrganizationSync>
   )
 }

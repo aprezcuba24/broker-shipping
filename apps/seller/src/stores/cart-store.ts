@@ -6,7 +6,7 @@ import {
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-export const CART_STORAGE_KEY = 'broker:seller:cart'
+export const CART_STORAGE_KEY = 'broker:seller:carts'
 
 export interface CartLine {
   product_id: string
@@ -22,11 +22,16 @@ export interface CartSummary {
   total: number
 }
 
+type CartsByOrganizationId = Record<string, CartLine[]>
+
 interface CartState {
+  activeOrganizationId: string | null
+  cartsByOrganizationId: CartsByOrganizationId
   lines: CartLine[]
 }
 
 interface CartActions {
+  setActiveOrganizationId: (organizationId: string | null) => void
   addProduct: (product: Product, quantity?: number) => void
   removeProduct: (productId: string) => void
   decreaseQuantity: (productId: string, quantity?: number) => void
@@ -39,6 +44,8 @@ interface CartActions {
 }
 
 export type CartStore = CartState & CartActions
+
+type PersistedCartState = Pick<CartState, 'cartsByOrganizationId'>
 
 function withLineTotal(line: Omit<CartLine, 'line_total'> & { line_total?: number }): CartLine {
   return {
@@ -62,6 +69,17 @@ function normalizeLine(line: CartLine): CartLine {
   return withLineTotal(line)
 }
 
+function getOrgLines(carts: CartsByOrganizationId, orgId: string | null): CartLine[] {
+  if (!orgId) return []
+  return carts[orgId] ?? []
+}
+
+function normalizeCarts(carts: CartsByOrganizationId): CartsByOrganizationId {
+  return Object.fromEntries(
+    Object.entries(carts).map(([orgId, lines]) => [orgId, lines.map(normalizeLine)]),
+  )
+}
+
 function computeSummary(lines: CartLine[]): CartSummary {
   return lines.reduce<CartSummary>(
     (summary, line) => ({
@@ -79,41 +97,74 @@ export function selectCartSummary(state: CartStore): CartSummary {
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
+      activeOrganizationId: null,
+      cartsByOrganizationId: {},
       lines: [],
 
+      setActiveOrganizationId: (organizationId) => {
+        set((state) => ({
+          activeOrganizationId: organizationId,
+          lines: getOrgLines(state.cartsByOrganizationId, organizationId),
+        }))
+      },
+
       addProduct: (product, quantity = 1) => {
+        const orgId = get().activeOrganizationId
         const productId = product.id
-        if (!productId || quantity <= 0) return
+        if (!orgId || !productId || quantity <= 0) return
+
         set((state) => {
-          const existing = state.lines.find((line) => line.product_id === productId)
-          if (existing) {
-            return {
-              lines: state.lines.map((line) =>
+          const currentLines = state.cartsByOrganizationId[orgId] ?? []
+          const existing = currentLines.find((line) => line.product_id === productId)
+          const nextLines = existing
+            ? currentLines.map((line) =>
                 line.product_id === productId
                   ? withLineTotal({
                       ...line,
                       quantity: line.quantity + quantity,
                     })
                   : line,
-              ),
-            }
+              )
+            : [...currentLines, buildCartLine(product, quantity)]
+
+          const cartsByOrganizationId = {
+            ...state.cartsByOrganizationId,
+            [orgId]: nextLines,
           }
+
           return {
-            lines: [...state.lines, buildCartLine(product, quantity)],
+            cartsByOrganizationId,
+            lines: nextLines,
           }
         })
       },
 
       removeProduct: (productId) => {
-        set((state) => ({
-          lines: state.lines.filter((line) => line.product_id !== productId),
-        }))
+        const orgId = get().activeOrganizationId
+        if (!orgId) return
+
+        set((state) => {
+          const nextLines = (state.cartsByOrganizationId[orgId] ?? []).filter(
+            (line) => line.product_id !== productId,
+          )
+          const cartsByOrganizationId = {
+            ...state.cartsByOrganizationId,
+            [orgId]: nextLines,
+          }
+
+          return {
+            cartsByOrganizationId,
+            lines: nextLines,
+          }
+        })
       },
 
       decreaseQuantity: (productId, quantity = 1) => {
-        if (quantity <= 0) return
-        set((state) => ({
-          lines: state.lines
+        const orgId = get().activeOrganizationId
+        if (!orgId || quantity <= 0) return
+
+        set((state) => {
+          const nextLines = (state.cartsByOrganizationId[orgId] ?? [])
             .map((line) =>
               line.product_id === productId
                 ? withLineTotal({
@@ -122,16 +173,40 @@ export const useCartStore = create<CartStore>()(
                   })
                 : line,
             )
-            .filter((line) => line.quantity > 0),
-        }))
+            .filter((line) => line.quantity > 0)
+
+          const cartsByOrganizationId = {
+            ...state.cartsByOrganizationId,
+            [orgId]: nextLines,
+          }
+
+          return {
+            cartsByOrganizationId,
+            lines: nextLines,
+          }
+        })
       },
 
-      clearCart: () => set({ lines: [] }),
+      clearCart: () => {
+        const orgId = get().activeOrganizationId
+        if (!orgId) return
+
+        set((state) => ({
+          cartsByOrganizationId: {
+            ...state.cartsByOrganizationId,
+            [orgId]: [],
+          },
+          lines: [],
+        }))
+      },
 
       getSummary: () => computeSummary(get().lines),
 
       createOrder: async (input) => {
-        const { lines } = get()
+        const { activeOrganizationId, lines } = get()
+        if (!activeOrganizationId) {
+          throw new Error('No hay organización activa')
+        }
         if (lines.length === 0) {
           throw new Error('El carrito está vacío')
         }
@@ -146,20 +221,29 @@ export const useCartStore = create<CartStore>()(
           })),
         })
 
-        set({ lines: [] })
+        set((state) => ({
+          cartsByOrganizationId: {
+            ...state.cartsByOrganizationId,
+            [activeOrganizationId]: [],
+          },
+          lines: [],
+        }))
+
         return order
       },
     }),
     {
       name: CART_STORAGE_KEY,
-      partialize: (state) => ({ lines: state.lines }),
+      partialize: (state): PersistedCartState => ({
+        cartsByOrganizationId: state.cartsByOrganizationId,
+      }),
       merge: (persisted, current) => {
-        const persistedState = persisted as CartState | undefined
-        if (!persistedState?.lines) return current
+        const persistedState = persisted as PersistedCartState | undefined
+        if (!persistedState?.cartsByOrganizationId) return current
 
         return {
           ...current,
-          lines: persistedState.lines.map(normalizeLine),
+          cartsByOrganizationId: normalizeCarts(persistedState.cartsByOrganizationId),
         }
       },
     },
