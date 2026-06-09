@@ -3,7 +3,6 @@ import { ShoppingCart } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useCartStore } from '@/stores/cart-store'
 import { CartLines } from './cart-lines'
-import { CheckoutModal } from './checkout-modal'
 
 export function CartPage() {
   const lines = useCartStore((state) => state.lines)
@@ -37,7 +36,9 @@ export function CartPage() {
             </div>
           </section>
 
-          <CheckoutModal disabled={lines.length === 0} />
+          <Button asChild className="w-full sm:w-auto">
+            <Link to="/cart/checkout">Crear orden al cliente</Link>
+          </Button>
         </div>
       )}
     </PageWrapper>

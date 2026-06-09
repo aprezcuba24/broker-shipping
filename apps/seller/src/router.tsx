@@ -6,6 +6,7 @@ import {
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { SellerLayout } from './layouts/seller-layout'
 import { CartPage } from './pages/cart'
+import { CartCheckoutPage } from './pages/cart/checkout'
 import { HomePage } from './pages/home'
 import { LoginPage } from './pages/login'
 import { OrderDetailPage } from './pages/order/detail'
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="/products" element={<ProductPage />} />
           <Route path="/products/:productId" element={<ProductDetailPage />} />
           <Route path="/cart" element={<CartPage />} />
+          <Route path="/cart/checkout" element={<CartCheckoutPage />} />
           <Route path="/orders/:orderId" element={<OrderDetailPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

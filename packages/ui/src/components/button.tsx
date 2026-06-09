@@ -32,6 +32,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       className,
       isLoading = false,
       disabled,
+      asChild,
       ...props
     },
     ref,
@@ -46,6 +47,21 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const loadingIcon = isLoading ? (
       <Loader2 aria-hidden className="animate-spin" />
     ) : null
+
+    if (asChild) {
+      return (
+        <ButtonPrimitive
+          ref={ref}
+          size={primitiveSize}
+          className={mergedClassName}
+          disabled={isDisabled}
+          asChild
+          {...props}
+        >
+          {children}
+        </ButtonPrimitive>
+      )
+    }
 
     if (label !== undefined) {
       return (

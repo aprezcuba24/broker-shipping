@@ -1,8 +1,4 @@
-import {
-  createOrderOrdersPost,
-  type OrderDetail,
-  type Product,
-} from '@broker/api'
+import type { Product } from '@broker/api'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
@@ -37,10 +33,6 @@ interface CartActions {
   decreaseQuantity: (productId: string, quantity?: number) => void
   clearCart: () => void
   getSummary: () => CartSummary
-  createOrder: (input: {
-    name: string
-    customer_phone: string
-  }) => Promise<OrderDetail>
 }
 
 export type CartStore = CartState & CartActions
@@ -201,36 +193,6 @@ export const useCartStore = create<CartStore>()(
       },
 
       getSummary: () => computeSummary(get().lines),
-
-      createOrder: async (input) => {
-        const { activeOrganizationId, lines } = get()
-        if (!activeOrganizationId) {
-          throw new Error('No hay organización activa')
-        }
-        if (lines.length === 0) {
-          throw new Error('El carrito está vacío')
-        }
-
-        const order = await createOrderOrdersPost({
-          name: input.name,
-          customer_phone: input.customer_phone,
-          lines: lines.map((line) => ({
-            product_id: line.product_id,
-            quantity: line.quantity,
-            price: line.price,
-          })),
-        })
-
-        set((state) => ({
-          cartsByOrganizationId: {
-            ...state.cartsByOrganizationId,
-            [activeOrganizationId]: [],
-          },
-          lines: [],
-        }))
-
-        return order
-      },
     }),
     {
       name: CART_STORAGE_KEY,
