@@ -97,48 +97,6 @@ class OrderService(BaseService[Order]):
         visible = self._visible_lines(order, all_lines, organization)
         return build_order_detail(order, visible, orgs_by_id)
 
-    async def _resolve_customer_and_address(
-        self,
-        body: OrderCreate,
-        organization: Organization,
-    ) -> tuple[Customer, Address]:
-        if body.customer is not None:
-            await self._customer_service.ensure_no_conflict_or_400(
-                organization.id,
-                body.customer,
-            )
-            customer = await self._customer_service.create_for_organization(
-                organization.id,
-                body.customer,
-            )
-            assert body.address is not None
-            address = await self._address_service.create_and_activate(
-                customer.id,
-                body.address,
-            )
-            return customer, address
-
-        assert body.customer_id is not None
-        customer = await self._customer_service.get_or_404_for_organization(
-            body.customer_id,
-            organization.id,
-            detail="Customer not found",
-        )
-
-        if body.address is not None:
-            address = await self._address_service.create_and_activate(
-                customer.id,
-                body.address,
-            )
-            return customer, address
-
-        assert body.address_id is not None
-        address = await self._address_service.get_for_customer_or_404(
-            body.address_id,
-            customer.id,
-        )
-        return customer, address
-
     async def list_for_organization(
         self,
         organization: Organization,
@@ -173,13 +131,13 @@ class OrderService(BaseService[Order]):
         body: OrderCreate,
         organization: Organization,
     ) -> OrderDetail:
-        if organization.type != OrganizationType.seller:
-            raise HTTPException(
-                status_code=403,
-                detail="Only seller organizations can create orders",
-            )
-
-        customer, address = await self._resolve_customer_and_address(body, organization)
+        customer, address = await self._customer_service.resolve_customer_and_address(
+            customer_id=body.customer_id,
+            customer=body.customer,
+            address_id=body.address_id,
+            address=body.address,
+            organization=organization,
+        )
 
         line_entities: list[OrderLine] = []
         for item in body.lines:
@@ -222,12 +180,6 @@ class OrderService(BaseService[Order]):
         order_id: UUID,
         organization: Organization,
     ) -> OrderDetail:
-        if organization.type != OrganizationType.seller:
-            raise HTTPException(
-                status_code=403,
-                detail="Only seller organizations can cancel orders",
-            )
-
         order = await self.get(order_id)
         if order is None or order.seller_organization_id != organization.id:
             raise HTTPException(status_code=404, detail="Order not found")

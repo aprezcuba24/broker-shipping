@@ -48,10 +48,12 @@ class OrdersProvider(Provider):
         self,
         customer_repo: CustomerRepository,
         address_repo: AddressRepository,
+        address_service: AddressService,
     ) -> CustomerService:
         return CustomerService(
             repository=customer_repo,
             address_repository=address_repo,
+            address_service=address_service,
         )
 
     @provide

@@ -6,7 +6,10 @@ from app.lib.persistence import BaseService, FilterSpec, OrgScopedServiceMixin
 from app.modules.orders.models.customer import CUSTOMER_LIST_FILTER_SPEC, Customer
 from app.modules.orders.repositories.address_repository import AddressRepository
 from app.modules.orders.repositories.customer_repository import CustomerRepository
-from app.modules.orders.schemas import CustomerDetail, CustomerInput
+from app.modules.orders.schemas import AddressInput, CustomerDetail, CustomerInput
+from app.modules.orders.models.address import Address
+from app.modules.orders.services.address_service import AddressService
+from app.modules.organization.models import Organization
 
 
 class CustomerService(OrgScopedServiceMixin[Customer], BaseService[Customer]):
@@ -14,9 +17,11 @@ class CustomerService(OrgScopedServiceMixin[Customer], BaseService[Customer]):
         self,
         repository: CustomerRepository,
         address_repository: AddressRepository,
+        address_service: AddressService,
     ) -> None:
         super().__init__(repository)
         self._address_repo = address_repository
+        self._address_service = address_service
 
     @classmethod
     def creation_exclude(cls) -> frozenset[str]:
@@ -89,3 +94,39 @@ class CustomerService(OrgScopedServiceMixin[Customer], BaseService[Customer]):
                     "use customer_id"
                 ),
             )
+
+    async def resolve_customer_and_address(
+        self,
+        customer_id: UUID | None,
+        customer: CustomerInput | None,
+        address_id: UUID | None,
+        address: AddressInput | None,
+        organization: Organization,
+    ) -> tuple[Customer, Address]:
+        customer_entity = None
+        if customer is not None:
+            await self.ensure_no_conflict_or_400(
+                organization.id,
+                customer,
+            )
+            customer_entity = await self.create_for_organization(
+                organization.id,
+                customer,
+            )
+        else:
+            customer_entity = await self.get_or_404_for_organization(
+                customer_id,
+                organization.id,
+            )
+        address_entity = None
+        if address is not None:
+            address_entity = await self._address_service.create_and_activate(
+                customer_entity.id,
+                address,
+            )
+        else:
+            address_entity = await self._address_service.get_for_customer_or_404(
+                address_id,
+                customer_entity.id,
+            )
+        return customer_entity, address_entity
