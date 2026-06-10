@@ -1,23 +1,23 @@
 import {
   Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
   ConfirmDialog,
   formatPriceCents,
   PageWrapper,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
 } from '@broker/ui'
 import { ClipboardCheck } from 'lucide-react'
 import { FormProvider } from 'react-hook-form'
 import { Navigate } from 'react-router-dom'
-import { useCheckoutOrder } from '@/hooks/use-checkout-order'
+import {
+  type CheckoutMode,
+  useCheckoutOrder,
+} from '@/hooks/use-checkout-order'
 import { useCartStore } from '@/stores/cart-store'
-import { AddressForm } from './address-form'
-import { AddressPicker } from './address-picker'
-import { CustomerForm } from './customer-form'
-import { CustomerModeToggle } from './customer-mode-toggle'
-import { ExistingCustomerPicker } from './existing-customer-picker'
+import { ExistingCustomerCheckout } from './existing-customer-checkout'
+import { NewCustomerCheckout } from './new-customer-checkout'
 
 export function CartCheckoutPage() {
   const lines = useCartStore((state) => state.lines)
@@ -39,8 +39,6 @@ export function CartCheckoutPage() {
     validate,
     submitOrder,
   } = useCheckoutOrder()
-
-  const customerId = form.watch('customerId')
 
   if (lines.length === 0) {
     return <Navigate to="/cart" replace />
@@ -71,47 +69,30 @@ export function CartCheckoutPage() {
             </div>
           </section>
 
-          <Card>
-            <CardHeader className="space-y-3">
-              <CardTitle className="text-base">Datos del cliente</CardTitle>
-              <CustomerModeToggle
-                mode={mode}
-                onModeChange={setMode}
-                disabled={isSubmitting}
-              />
-            </CardHeader>
-            <CardContent>
-              {mode === 'new' ? (
-                <CustomerForm control={form.control} />
-              ) : (
-                <ExistingCustomerPicker
-                  control={form.control}
-                  selectedCustomer={selectedCustomer}
-                  onCustomerSelect={handleCustomerSelect}
-                />
-              )}
-            </CardContent>
-          </Card>
+          <Tabs
+            value={mode}
+            onValueChange={(value) => setMode(value as CheckoutMode)}
+          >
+            <TabsList className="grid w-full grid-cols-2 sm:w-auto sm:inline-grid">
+              <TabsTrigger value="new" disabled={isSubmitting}>
+                Nuevo cliente
+              </TabsTrigger>
+              <TabsTrigger value="existing" disabled={isSubmitting}>
+                Cliente existente
+              </TabsTrigger>
+            </TabsList>
 
-          {mode === 'new' ? (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Dirección de entrega</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AddressForm control={form.control} />
-              </CardContent>
-            </Card>
-          ) : customerId ? (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Dirección de entrega</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AddressPicker control={form.control} customerId={customerId} />
-              </CardContent>
-            </Card>
-          ) : null}
+            <TabsContent value="new">
+              <NewCustomerCheckout control={form.control} />
+            </TabsContent>
+            <TabsContent value="existing">
+              <ExistingCustomerCheckout
+                control={form.control}
+                selectedCustomer={selectedCustomer}
+                onCustomerSelect={handleCustomerSelect}
+              />
+            </TabsContent>
+          </Tabs>
 
           {submitError ? (
             <p className="text-sm text-destructive">{submitError}</p>
