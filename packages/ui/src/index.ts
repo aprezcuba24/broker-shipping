@@ -151,6 +151,12 @@ export {
   SelectTrigger,
   SelectValue,
 } from './components/ui/select'
+export {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from './components/ui/tabs'
 
 export {
   ActiveOrganizationProvider,

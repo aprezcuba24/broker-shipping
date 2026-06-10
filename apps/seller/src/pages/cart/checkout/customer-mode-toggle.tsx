@@ -1,4 +1,4 @@
-import { Button, cn } from '@broker/ui'
+import { Tabs, TabsList, TabsTrigger } from '@broker/ui'
 import type { CheckoutMode } from '@/hooks/use-checkout-order'
 
 type CustomerModeToggleProps = {
@@ -13,27 +13,18 @@ export function CustomerModeToggle({
   disabled,
 }: CustomerModeToggleProps) {
   return (
-    <div className="flex flex-wrap gap-2">
-      <Button
-        type="button"
-        variant={mode === 'new' ? 'default' : 'outline'}
-        size="sm"
-        disabled={disabled}
-        className={cn(mode === 'new' && 'pointer-events-none')}
-        onClick={() => onModeChange('new')}
-      >
-        Nuevo cliente
-      </Button>
-      <Button
-        type="button"
-        variant={mode === 'existing' ? 'default' : 'outline'}
-        size="sm"
-        disabled={disabled}
-        className={cn(mode === 'existing' && 'pointer-events-none')}
-        onClick={() => onModeChange('existing')}
-      >
-        Cliente existente
-      </Button>
-    </div>
+    <Tabs
+      value={mode}
+      onValueChange={(value) => onModeChange(value as CheckoutMode)}
+    >
+      <TabsList className="grid w-full grid-cols-2 sm:w-auto sm:inline-grid">
+        <TabsTrigger value="new" disabled={disabled}>
+          Nuevo cliente
+        </TabsTrigger>
+        <TabsTrigger value="existing" disabled={disabled}>
+          Cliente existente
+        </TabsTrigger>
+      </TabsList>
+    </Tabs>
   )
 }
