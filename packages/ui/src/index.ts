@@ -53,6 +53,8 @@ export type {
   EntitySelectAllOption,
   EntitySelectProps,
 } from './components/entity-select'
+export { EntityAutocomplete } from './components/entity-autocomplete'
+export type { EntityAutocompleteProps } from './components/entity-autocomplete'
 export {
   DropdownMenu,
   DropdownMenuTrigger,
