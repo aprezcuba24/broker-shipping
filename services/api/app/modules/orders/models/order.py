@@ -13,6 +13,7 @@ class Order(EntityModel, table=True):
 
     IMMUTABLE_FIELDS: ClassVar[frozenset[str]] = EntityModel.IMMUTABLE_FIELDS | frozenset(
         {
+            "name",
             "seller_organization_id",
             "customer_id",
             "customer_snapshot",

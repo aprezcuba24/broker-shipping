@@ -13,7 +13,10 @@ from app.modules.orders.services import (
     OrderLineService,
     OrderService,
 )
-from app.modules.organization.repositories import OrganizationRepository
+from app.modules.organization.repositories import (
+    OrganizationRepository,
+    SellerOrganizationDataRepository,
+)
 from app.modules.products.services import SellerProductService
 
 
@@ -64,6 +67,7 @@ class OrdersProvider(Provider):
         customer_service: CustomerService,
         address_service: AddressService,
         org_repository: OrganizationRepository,
+        seller_data_repository: SellerOrganizationDataRepository,
     ) -> OrderService:
         return OrderService(
             repository=repo,
@@ -72,4 +76,5 @@ class OrdersProvider(Provider):
             customer_service=customer_service,
             address_service=address_service,
             org_repository=org_repository,
+            seller_data_repository=seller_data_repository,
         )

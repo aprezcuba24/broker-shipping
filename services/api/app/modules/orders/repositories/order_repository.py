@@ -1,7 +1,6 @@
 from uuid import UUID
 
 from sqlalchemy import select
-
 from app.lib.persistence import Resource
 from app.modules.orders.models.order import Order
 from app.modules.orders.models.order_line import OrderLine

@@ -8,6 +8,7 @@ from app.modules.organization.repositories import (
     OrganizationInvitationRepository,
     OrganizationRepository,
     ProviderSellerLinkRepository,
+    SellerOrganizationDataRepository,
     UserOrganizationRepository,
 )
 from app.modules.organization.services import (
@@ -52,6 +53,13 @@ class OrganizationProvider(Provider):
         org_repo: OrganizationRepository,
     ) -> ProviderSellerLinkService:
         return ProviderSellerLinkService(link_repo, org_repo)
+
+    @provide
+    def seller_organization_data_repository(
+        self,
+        session: AsyncSession,
+    ) -> SellerOrganizationDataRepository:
+        return SellerOrganizationDataRepository(session)
 
     @provide
     def api_key_repository(self, session: AsyncSession) -> ApiKeyRepository:

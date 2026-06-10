@@ -11,6 +11,7 @@ from app.modules.orders.models.address import Address
 from app.modules.orders.models.customer import Customer
 from app.modules.orders.models.order import Order
 from app.modules.orders.models.order_line import OrderLine
+from app.modules.orders.invoice_code import format_invoice_code
 from app.modules.orders.repositories import OrderRepository
 from app.modules.orders.schemas import (
     OrderCreate,
@@ -23,7 +24,10 @@ from app.modules.orders.services.address_service import AddressService
 from app.modules.orders.services.customer_service import CustomerService
 from app.modules.orders.services.order_line_service import OrderLineService
 from app.modules.organization.models import Organization, OrganizationType
-from app.modules.organization.repositories import OrganizationRepository
+from app.modules.organization.repositories import (
+    OrganizationRepository,
+    SellerOrganizationDataRepository,
+)
 from app.modules.products.services import SellerProductService
 
 
@@ -36,6 +40,7 @@ class OrderService(BaseService[Order]):
         customer_service: CustomerService,
         address_service: AddressService,
         org_repository: OrganizationRepository,
+        seller_data_repository: SellerOrganizationDataRepository,
     ) -> None:
         super().__init__(repository)
         self._line_service = line_service
@@ -43,6 +48,7 @@ class OrderService(BaseService[Order]):
         self._customer_service = customer_service
         self._address_service = address_service
         self._org_repo = org_repository
+        self._seller_data_repo = seller_data_repository
 
     @classmethod
     def creation_exclude(cls) -> frozenset[str]:
@@ -71,13 +77,13 @@ class OrderService(BaseService[Order]):
             raise HTTPException(status_code=404, detail="Order not found")
         return visible
 
-    async def _orgs_by_id_for_lines(
+    async def _orgs_by_id_for_order(
         self,
+        order: Order,
         lines: Sequence[OrderLine],
     ) -> dict[UUID, Organization]:
         org_ids = {line.organization_id for line in lines}
-        if not org_ids:
-            return {}
+        org_ids.add(order.seller_organization_id)
         orgs = await self._org_repo.list_by_ids(org_ids)
         return {org.id: org for org in orgs}
 
@@ -151,7 +157,12 @@ class OrderService(BaseService[Order]):
         for line in all_lines:
             lines_by_order[line.order_id].append(line)
 
-        orgs_by_id = await self._orgs_by_id_for_lines(all_lines)
+        seller_ids = {order.seller_organization_id for order in orders}
+        line_org_ids = {line.organization_id for line in all_lines}
+        orgs_by_id = {
+            org.id: org
+            for org in await self._org_repo.list_by_ids(seller_ids | line_org_ids)
+        }
         return [
             self._to_detail(order, lines_by_order[order.id], organization, orgs_by_id)
             for order in orders
@@ -181,8 +192,9 @@ class OrderService(BaseService[Order]):
                 self._line_service.build_from_product(product, item.quantity, item.price),
             )
 
+        invoice_number = await self._seller_data_repo.allocate_invoice_number(organization.id)
         order = Order(
-            name=body.name,
+            name=format_invoice_code(invoice_number),
             seller_organization_id=organization.id,
             customer_id=customer.id,
             customer_snapshot=build_customer_snapshot(customer),
@@ -190,7 +202,7 @@ class OrderService(BaseService[Order]):
         )
         order = await self.create(order)
         lines = await self._line_service.create_for_order(order.id, line_entities)
-        orgs_by_id = await self._orgs_by_id_for_lines(lines)
+        orgs_by_id = await self._orgs_by_id_for_order(order, lines)
         return build_order_detail(order, lines, orgs_by_id)
 
     async def get_or_404_detail(
@@ -202,7 +214,7 @@ class OrderService(BaseService[Order]):
         if order is None:
             raise HTTPException(status_code=404, detail="Order not found")
         lines = await self._line_service.list_for_order(order_id)
-        orgs_by_id = await self._orgs_by_id_for_lines(lines)
+        orgs_by_id = await self._orgs_by_id_for_order(order, lines)
         return self._to_detail(order, lines, organization, orgs_by_id)
 
     async def cancel_order(
@@ -222,7 +234,7 @@ class OrderService(BaseService[Order]):
 
         await self._line_service.cancel_all_if_created(order_id)
         lines = await self._line_service.list_for_order(order_id)
-        orgs_by_id = await self._orgs_by_id_for_lines(lines)
+        orgs_by_id = await self._orgs_by_id_for_order(order, lines)
         return build_order_detail(order, lines, orgs_by_id)
 
     async def cancel_line(
@@ -247,5 +259,5 @@ class OrderService(BaseService[Order]):
 
         await self._line_service.cancel_one(line)
         lines = await self._line_service.list_for_order(order_id)
-        orgs_by_id = await self._orgs_by_id_for_lines(lines)
+        orgs_by_id = await self._orgs_by_id_for_order(order, lines)
         return self._to_detail(order, lines, organization, orgs_by_id)

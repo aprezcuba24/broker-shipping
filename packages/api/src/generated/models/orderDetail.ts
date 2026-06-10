@@ -5,6 +5,7 @@
  * API-first B2B broker (scaffold).
  * OpenAPI spec version: 0.1.0
  */
+import type { OrganizationRef } from './organizationRef';
 import type { OrderDetailCustomerSnapshot } from './orderDetailCustomerSnapshot';
 import type { OrderDetailAddressSnapshot } from './orderDetailAddressSnapshot';
 import type { OrderDetailUpdatedAt } from './orderDetailUpdatedAt';
@@ -15,6 +16,7 @@ export interface OrderDetail {
   id: string;
   name: string;
   seller_organization_id: string;
+  seller: OrganizationRef;
   customer_id: string;
   customer_snapshot: OrderDetailCustomerSnapshot;
   address_snapshot: OrderDetailAddressSnapshot;

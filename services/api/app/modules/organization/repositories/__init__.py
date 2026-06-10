@@ -6,6 +6,9 @@ from app.modules.organization.repositories.organization_repository import Organi
 from app.modules.organization.repositories.provider_seller_link_repository import (
     ProviderSellerLinkRepository,
 )
+from app.modules.organization.repositories.seller_organization_data_repository import (
+    SellerOrganizationDataRepository,
+)
 from app.modules.organization.repositories.user_organization_repository import (
     UserOrganizationRepository,
 )
@@ -15,5 +18,6 @@ __all__ = [
     "OrganizationInvitationRepository",
     "OrganizationRepository",
     "ProviderSellerLinkRepository",
+    "SellerOrganizationDataRepository",
     "UserOrganizationRepository",
 ]

@@ -6,7 +6,12 @@ from app.modules.orders.models.customer import Customer
 from app.modules.orders.models.order import Order
 from app.modules.orders.models.order_line import OrderLine
 
-MODULE_MODELS: tuple[type[SQLModel], ...] = (Customer, Address, Order, OrderLine)
+MODULE_MODELS: tuple[type[SQLModel], ...] = (
+    Customer,
+    Address,
+    Order,
+    OrderLine,
+)
 
 __all__ = [
     "MODULE_MODELS",

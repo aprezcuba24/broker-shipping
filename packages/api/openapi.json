@@ -3086,11 +3086,6 @@
       },
       "OrderCreate": {
         "properties": {
-          "name": {
-            "type": "string",
-            "maxLength": 255,
-            "title": "Name"
-          },
           "lines": {
             "items": {
               "$ref": "#/components/schemas/OrderLineCreate"
@@ -3146,7 +3141,6 @@
         },
         "type": "object",
         "required": [
-          "name",
           "lines"
         ],
         "title": "OrderCreate"
@@ -3166,6 +3160,9 @@
             "type": "string",
             "format": "uuid",
             "title": "Seller Organization Id"
+          },
+          "seller": {
+            "$ref": "#/components/schemas/OrganizationRef"
           },
           "customer_id": {
             "type": "string",
@@ -3223,6 +3220,7 @@
           "id",
           "name",
           "seller_organization_id",
+          "seller",
           "customer_id",
           "customer_snapshot",
           "address_snapshot",

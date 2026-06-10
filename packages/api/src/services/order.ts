@@ -8,7 +8,6 @@ export function createOrder(values: OrderCreate, lines: OrderLineCreate[]): Prom
     price: line.price,
   }))
   const data: OrderCreate = {
-    name: values.name ?? 'Pedido',
     lines: mappedLines,
   }
   if ((values as any).customerId) {
@@ -21,9 +20,6 @@ export function createOrder(values: OrderCreate, lines: OrderLineCreate[]): Prom
   } else {
     data.address = values.address
   }
-
-
-  console.log(data);
 
   return createOrderOrdersPost(data)
 }

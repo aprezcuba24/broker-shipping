@@ -39,7 +39,6 @@ class AddressInput(SQLModel):
 
 
 class OrderCreate(SQLModel):
-    name: str = Field(max_length=255)
     lines: list[OrderLineCreate] = Field(min_length=1)
     customer_id: UUID | None = None
     customer: CustomerInput | None = None
@@ -117,6 +116,7 @@ class OrderDetail(SQLModel):
     id: UUID
     name: str
     seller_organization_id: UUID
+    seller: OrganizationRef
     customer_id: UUID
     customer_snapshot: dict[str, Any]
     address_snapshot: dict[str, Any]
@@ -177,10 +177,15 @@ def build_order_detail(
     lines: list[OrderLine],
     orgs_by_id: dict[UUID, Organization],
 ) -> OrderDetail:
+    seller = orgs_by_id.get(order.seller_organization_id)
     return OrderDetail(
         id=order.id,
         name=order.name,
         seller_organization_id=order.seller_organization_id,
+        seller=OrganizationRef(
+            id=order.seller_organization_id,
+            name=seller.name if seller is not None else "",
+        ),
         customer_id=order.customer_id,
         customer_snapshot=order.customer_snapshot,
         address_snapshot=order.address_snapshot,

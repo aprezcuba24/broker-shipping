@@ -12,8 +12,6 @@ import type { OrderCreateAddressId } from './orderCreateAddressId';
 import type { OrderCreateAddress } from './orderCreateAddress';
 
 export interface OrderCreate {
-  /** @maxLength 255 */
-  name: string;
   /** @minItems 1 */
   lines: OrderLineCreate[];
   customer_id?: OrderCreateCustomerId;
