@@ -2,7 +2,12 @@ from uuid import UUID
 
 from sqlmodel import Field, SQLModel
 
-from app.lib.persistence import FilterFieldConfig, FilterOperator, FilterSpec, OrganizationEntityModel
+from app.lib.persistence import (
+    FilterFieldConfig,
+    FilterOperator,
+    FilterSpec,
+    OrganizationEntityModel,
+)
 
 
 class ProductCreate(SQLModel):

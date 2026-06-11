@@ -196,11 +196,7 @@
 }
 
 .broker-data-table table tbody tr:hover {
-  background-color: color-mix(
-    in oklab,
-    var(--color-surface-container-low) 60%,
-    transparent
-  );
+  background-color: color-mix(in oklab, var(--color-surface-container-low) 60%, transparent);
 }
 
 .broker-data-table table td[data-column='actions'],
@@ -224,11 +220,7 @@
 }
 
 .broker-data-table__card:hover {
-  background-color: color-mix(
-    in oklab,
-    var(--color-surface-container-low) 60%,
-    transparent
-  );
+  background-color: color-mix(in oklab, var(--color-surface-container-low) 60%, transparent);
 }
 
 .broker-data-table__card-field {

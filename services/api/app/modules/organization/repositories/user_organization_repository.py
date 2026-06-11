@@ -4,7 +4,11 @@ from fastapi import HTTPException
 from sqlalchemy import select
 
 from app.lib.persistence import Resource
-from app.modules.organization.models import Organization, OrganizationType, UserOrganization
+from app.modules.organization.models import (
+    Organization,
+    OrganizationType,
+    UserOrganization,
+)
 
 
 class UserOrganizationRepository(Resource[UserOrganization]):
@@ -37,7 +41,9 @@ class UserOrganizationRepository(Resource[UserOrganization]):
         )
         return result.scalar_one_or_none()
 
-    async def list_by_organization(self, organization_id: UUID) -> list[UserOrganization]:
+    async def list_by_organization(
+        self, organization_id: UUID
+    ) -> list[UserOrganization]:
         result = await self._session.execute(
             select(UserOrganization).where(
                 UserOrganization.organization_id == organization_id,

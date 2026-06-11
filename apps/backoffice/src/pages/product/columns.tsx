@@ -1,8 +1,5 @@
 import { useMemo } from 'react'
-import {
-  useListCategoriesProductsCategoriesGet,
-  type Product,
-} from '@broker/api'
+import { useListCategoriesProductsCategoriesGet, type Product } from '@broker/api'
 import { BtnConfirm, BtnList, formatPriceCents, type ColumnDef } from '@broker/ui'
 import { Pencil, Trash2 } from 'lucide-react'
 import { DialogForm } from './DialogForm'
@@ -19,14 +16,8 @@ function CategoryName({ categoryId }: { categoryId: string }) {
 }
 
 function RowActions({ product }: { product: Product }) {
-  const {
-    submitEdit,
-    clearFormError,
-    isSubmitting,
-    formError,
-    deleteItem,
-    isDeleting,
-  } = useProducts()
+  const { submitEdit, clearFormError, isSubmitting, formError, deleteItem, isDeleting } =
+    useProducts()
 
   return (
     <BtnList>

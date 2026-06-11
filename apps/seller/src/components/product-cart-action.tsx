@@ -7,8 +7,7 @@ import { QuantitySelector } from './quantity-selector'
 export function ProductCartAction({ product }: { product: Product }) {
   const productId = product.id!
   const quantity = useCartStore(
-    (state) =>
-      state.lines.find((line) => line.product_id === productId)?.quantity ?? 0,
+    (state) => state.lines.find((line) => line.product_id === productId)?.quantity ?? 0,
   )
   const addProduct = useCartStore((state) => state.addProduct)
   const decreaseQuantity = useCartStore((state) => state.decreaseQuantity)

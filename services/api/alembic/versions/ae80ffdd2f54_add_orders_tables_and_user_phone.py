@@ -31,7 +31,9 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["seller_id"], ["user.id"], ondelete="RESTRICT"),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_order_customer_id"), "order", ["customer_id"], unique=False)
+    op.create_index(
+        op.f("ix_order_customer_id"), "order", ["customer_id"], unique=False
+    )
     op.create_index(op.f("ix_order_seller_id"), "order", ["seller_id"], unique=False)
     op.create_table(
         "order_line",
@@ -41,20 +43,28 @@ def upgrade() -> None:
         sa.Column("order_id", sa.Uuid(), nullable=False),
         sa.Column("product_id", sa.Uuid(), nullable=True),
         sa.Column("organization_id", sa.Uuid(), nullable=False),
-        sa.Column("product_snapshot", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
+        sa.Column(
+            "product_snapshot", postgresql.JSONB(astext_type=sa.Text()), nullable=False
+        ),
         sa.ForeignKeyConstraint(["order_id"], ["order.id"], ondelete="CASCADE"),
-        sa.ForeignKeyConstraint(["organization_id"], ["organization.id"], ondelete="RESTRICT"),
+        sa.ForeignKeyConstraint(
+            ["organization_id"], ["organization.id"], ondelete="RESTRICT"
+        ),
         sa.ForeignKeyConstraint(["product_id"], ["product.id"], ondelete="SET NULL"),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_order_line_order_id"), "order_line", ["order_id"], unique=False)
+    op.create_index(
+        op.f("ix_order_line_order_id"), "order_line", ["order_id"], unique=False
+    )
     op.create_index(
         op.f("ix_order_line_organization_id"),
         "order_line",
         ["organization_id"],
         unique=False,
     )
-    op.create_index(op.f("ix_order_line_product_id"), "order_line", ["product_id"], unique=False)
+    op.create_index(
+        op.f("ix_order_line_product_id"), "order_line", ["product_id"], unique=False
+    )
     op.add_column("user", sa.Column("phone", sa.String(length=32), nullable=True))
     op.create_index(op.f("ix_user_phone"), "user", ["phone"], unique=True)
 

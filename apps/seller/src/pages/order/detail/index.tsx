@@ -16,9 +16,7 @@ export function OrderDetailPage() {
         </Button>,
       ]}
     >
-      <p className="text-sm text-muted-foreground">
-        Detalle de orden — próximamente.
-      </p>
+      <p className="text-sm text-muted-foreground">Detalle de orden — próximamente.</p>
     </PageWrapper>
   )
 }

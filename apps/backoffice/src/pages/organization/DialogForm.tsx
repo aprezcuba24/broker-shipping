@@ -12,15 +12,9 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useRef } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import {
-  organizationFormSchema,
-  type OrganizationFormValues,
-} from './organizations-context'
+import { organizationFormSchema, type OrganizationFormValues } from './organizations-context'
 
-export type DialogFormProps = Omit<
-  FormModalProps<OrganizationFormValues>,
-  'Form'
->
+export type DialogFormProps = Omit<FormModalProps<OrganizationFormValues>, 'Form'>
 
 export function DialogForm({
   onSubmit,
@@ -58,10 +52,7 @@ export function DialogForm({
       hideTrigger={open !== undefined}
       {...buttonProps}
     >
-      <form
-        className="space-y-3"
-        onSubmit={(event) => event.preventDefault()}
-      >
+      <form className="space-y-3" onSubmit={(event) => event.preventDefault()}>
         <FieldGroup>
           <Controller
             name="name"

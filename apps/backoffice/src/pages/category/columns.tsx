@@ -5,14 +5,8 @@ import { DialogForm } from './DialogForm'
 import { useCategories } from './categories-context'
 
 function RowActions({ category }: { category: Category }) {
-  const {
-    submitEdit,
-    clearFormError,
-    isSubmitting,
-    formError,
-    deleteItem,
-    isDeleting,
-  } = useCategories()
+  const { submitEdit, clearFormError, isSubmitting, formError, deleteItem, isDeleting } =
+    useCategories()
 
   return (
     <BtnList>

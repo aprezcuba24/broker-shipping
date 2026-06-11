@@ -1,10 +1,7 @@
 import { DataTable, HeaderPage, type ColumnDef } from '@broker/ui'
 import { useMemo, useState } from 'react'
 
-import {
-  mockOrganizations,
-  type Organization,
-} from '../../mocks/organizations'
+import { mockOrganizations, type Organization } from '../../mocks/organizations'
 
 export function OrganizationListPage() {
   const [page, setPage] = useState(1)
@@ -15,7 +12,7 @@ export function OrganizationListPage() {
       { id: 'created_at', header: 'Creado', accessor: 'created_at' },
       { id: 'updated_at', header: 'Actualizado', accessor: 'updated_at' },
     ],
-    []
+    [],
   )
 
   return (

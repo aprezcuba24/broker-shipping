@@ -19,7 +19,9 @@ async def create_organization(
     service: FromDishka[OrganizationService],
     user: Annotated[User, Depends(get_user)],
 ):
-    entity = Organization(**body.model_dump(exclude=OrganizationService.creation_exclude()))
+    entity = Organization(
+        **body.model_dump(exclude=OrganizationService.creation_exclude())
+    )
     return await service.create_for_user(entity, user.id)
 
 

@@ -1,10 +1,4 @@
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 
 type EntityValue = string | number | null | undefined
 
@@ -68,9 +62,7 @@ export function EntitySelect<T extends object>({
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent align="start" className={contentClassName}>
-        {allOption && (
-          <SelectItem value={allValue}>{allOption.label}</SelectItem>
-        )}
+        {allOption && <SelectItem value={allValue}>{allOption.label}</SelectItem>}
         {items.map((item, index) => {
           const itemValue = item[valueKey as keyof T] as EntityValue
           if (itemValue === null || itemValue === undefined || itemValue === '') {

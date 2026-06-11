@@ -28,7 +28,9 @@ def upgrade() -> None:
         sa.Column("name", sa.String(length=255), nullable=False),
         sa.Column("phone", sa.String(length=32), nullable=False),
         sa.Column("identification", sa.String(length=64), nullable=False),
-        sa.ForeignKeyConstraint(["organization_id"], ["organization.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["organization_id"], ["organization.id"], ondelete="CASCADE"
+        ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("organization_id", "phone", name="uq_customer_org_phone"),
         sa.UniqueConstraint(
@@ -67,7 +69,7 @@ def upgrade() -> None:
         unique=False,
     )
 
-    op.execute('DELETE FROM order_line')
+    op.execute("DELETE FROM order_line")
     op.execute('DELETE FROM "order"')
 
     op.drop_constraint("order_customer_id_fkey", "order", type_="foreignkey")
@@ -102,7 +104,7 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.execute('DELETE FROM order_line')
+    op.execute("DELETE FROM order_line")
     op.execute('DELETE FROM "order"')
 
     op.drop_constraint("order_customer_id_fkey", "order", type_="foreignkey")

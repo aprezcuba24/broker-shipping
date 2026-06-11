@@ -29,7 +29,9 @@ class OrganizationProvider(Provider):
         return OrganizationRepository(session)
 
     @provide
-    def user_organization_repository(self, session: AsyncSession) -> UserOrganizationRepository:
+    def user_organization_repository(
+        self, session: AsyncSession
+    ) -> UserOrganizationRepository:
         return UserOrganizationRepository(session)
 
     @provide

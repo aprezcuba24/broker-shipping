@@ -1,9 +1,4 @@
-import {
-  formatApiError,
-  type CustomerSummary,
-  createOrder,
-  type OrderCreate,
-} from '@broker/api'
+import { formatApiError, type CustomerSummary, createOrder, type OrderCreate } from '@broker/api'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useCallback, useState, useTransition } from 'react'
 import { useForm } from 'react-hook-form'
@@ -44,8 +39,7 @@ export function useCheckoutOrder() {
   const [isPending, startTransition] = useTransition()
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
-  const [selectedCustomer, setSelectedCustomer] =
-    useState<CustomerSummary | null>(null)
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerSummary | null>(null)
 
   const form = useForm<CheckoutOrderFormValues>({
     resolver: zodResolver(checkoutOrderSchema),

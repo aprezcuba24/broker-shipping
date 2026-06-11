@@ -3,11 +3,7 @@ import { AppLayout, initialsFromUsername, OrganizationSelect } from '@broker/ui'
 import { useNavigate } from 'react-router-dom'
 import { CartHeaderButton } from '../components/cart-header-button'
 import { CartOrganizationSync } from '../components/cart-organization-sync'
-import {
-  sellerBottomItems,
-  sellerBrand,
-  sellerNavItems,
-} from '../config/navigation'
+import { sellerBottomItems, sellerBrand, sellerNavItems } from '../config/navigation'
 
 export function SellerLayout() {
   const navigate = useNavigate()

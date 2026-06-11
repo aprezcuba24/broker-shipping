@@ -3,7 +3,11 @@ from uuid import UUID
 
 from fastapi import HTTPException
 
-from app.modules.organization.models import Organization, OrganizationType, ProviderSellerLink
+from app.modules.organization.models import (
+    Organization,
+    OrganizationType,
+    ProviderSellerLink,
+)
 from app.modules.organization.repositories import (
     OrganizationRepository,
     ProviderSellerLinkRepository,
@@ -31,7 +35,9 @@ class ProviderSellerLinkService:
         if provider is None or seller is None:
             raise HTTPException(status_code=404, detail="Organization not found")
         if provider.type != OrganizationType.provider:
-            raise HTTPException(status_code=400, detail="Expected provider organization")
+            raise HTTPException(
+                status_code=400, detail="Expected provider organization"
+            )
         if seller.type != OrganizationType.seller:
             raise HTTPException(status_code=400, detail="Expected seller organization")
 
@@ -41,7 +47,9 @@ class ProviderSellerLinkService:
         seller_organization_id: UUID,
     ) -> ProviderSellerLink:
         await self._assert_org_types(provider_organization_id, seller_organization_id)
-        return await self._link_repo.link(provider_organization_id, seller_organization_id)
+        return await self._link_repo.link(
+            provider_organization_id, seller_organization_id
+        )
 
     async def has_active_link(
         self,
@@ -66,10 +74,14 @@ class ProviderSellerLinkService:
             is_active=is_active,
         )
         if link is None:
-            raise HTTPException(status_code=404, detail="Provider-seller link not found")
+            raise HTTPException(
+                status_code=404, detail="Provider-seller link not found"
+            )
         return link
 
-    async def list_active_provider_ids(self, seller_organization_id: UUID) -> list[UUID]:
+    async def list_active_provider_ids(
+        self, seller_organization_id: UUID
+    ) -> list[UUID]:
         return await self._link_repo.list_active_provider_ids(seller_organization_id)
 
     async def _list_linked_organizations(

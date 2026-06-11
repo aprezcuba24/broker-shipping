@@ -13,8 +13,14 @@ async def create_category(
     organization_id: UUID | str,
     name: str | None = None,
 ) -> dict:
-    oid = organization_id if isinstance(organization_id, UUID) else UUID(str(organization_id))
-    entity = Category(name=name if name is not None else "Factory category", organization_id=oid)
+    oid = (
+        organization_id
+        if isinstance(organization_id, UUID)
+        else UUID(str(organization_id))
+    )
+    entity = Category(
+        name=name if name is not None else "Factory category", organization_id=oid
+    )
     session.add(entity)
     await session.flush()
     await session.commit()

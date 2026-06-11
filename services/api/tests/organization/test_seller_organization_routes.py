@@ -82,7 +82,9 @@ async def test_seller_without_links_returns_empty_list(
 ) -> None:
     seller_user = await user_factory.build(username="sell_no_links")
     seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
-    headers = tenant_headers(user_id=seller_user["id"], organization_id=seller_org["id"])
+    headers = tenant_headers(
+        user_id=seller_user["id"], organization_id=seller_org["id"]
+    )
 
     r = await client.get("/organizations/seller/providers", headers=headers)
     assert r.status_code == 200
@@ -125,7 +127,9 @@ async def test_provider_organization_in_header_returns_403(
 ) -> None:
     seller_user = await user_factory.build(username="sell_wrong_type")
     provider_org = await organization_factory.build(user_id=seller_user["id"])
-    headers = tenant_headers(user_id=seller_user["id"], organization_id=provider_org["id"])
+    headers = tenant_headers(
+        user_id=seller_user["id"], organization_id=provider_org["id"]
+    )
 
     r = await client.get("/organizations/seller/providers", headers=headers)
     assert r.status_code == 403

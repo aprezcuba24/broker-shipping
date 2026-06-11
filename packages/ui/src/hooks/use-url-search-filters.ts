@@ -17,9 +17,7 @@ type UseUrlSearchFiltersOptions<K extends string> = {
   keys: readonly K[]
 }
 
-export function useUrlSearchFilters<K extends string>({
-  keys,
-}: UseUrlSearchFiltersOptions<K>) {
+export function useUrlSearchFilters<K extends string>({ keys }: UseUrlSearchFiltersOptions<K>) {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const filters = useMemo(() => {

@@ -28,7 +28,12 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["organization_id"], ["organization.id"]),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_category_organization_id"), "category", ["organization_id"], unique=False)
+    op.create_index(
+        op.f("ix_category_organization_id"),
+        "category",
+        ["organization_id"],
+        unique=False,
+    )
 
 
 def downgrade() -> None:

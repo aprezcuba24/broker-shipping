@@ -107,20 +107,8 @@ function useCrudListQuery<TItem>(
   }
 }
 
-export function useCRUD<
-  TItem,
-  TFormValues,
-  TCreateVariables,
-  TPatchVariables,
-  TDeleteVariables,
->(
-  options: UseCrudOptions<
-    TItem,
-    TFormValues,
-    TCreateVariables,
-    TPatchVariables,
-    TDeleteVariables
-  >,
+export function useCRUD<TItem, TFormValues, TCreateVariables, TPatchVariables, TDeleteVariables>(
+  options: UseCrudOptions<TItem, TFormValues, TCreateVariables, TPatchVariables, TDeleteVariables>,
 ): CrudContextValue<TItem, TFormValues> {
   const {
     useList,
@@ -146,10 +134,7 @@ export function useCRUD<
     [filters],
   )
 
-  const listParamsKey = useMemo(
-    () => JSON.stringify(requestParams ?? {}),
-    [requestParams],
-  )
+  const listParamsKey = useMemo(() => JSON.stringify(requestParams ?? {}), [requestParams])
 
   const prevListParamsKeyRef = useRef(listParamsKey)
 
@@ -168,17 +153,12 @@ export function useCRUD<
     setPage,
   })
 
-  const { data: items = [], isLoading } = useCrudListQuery(
-    useList,
-    getListQueryKey,
-    filters,
-  )
+  const { data: items = [], isLoading } = useCrudListQuery(useList, getListQueryKey, filters)
 
   const invalidateList = useCallback(() => {
     const baseKey = getListQueryKey()
     void queryClient.invalidateQueries({
-      queryKey:
-        filters !== undefined ? [...baseKey, requestParams ?? {}] : baseKey,
+      queryKey: filters !== undefined ? [...baseKey, requestParams ?? {}] : baseKey,
     })
   }, [queryClient, getListQueryKey, filters, requestParams])
 

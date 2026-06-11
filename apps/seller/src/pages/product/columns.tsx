@@ -13,13 +13,7 @@ function ProviderName({ providerId }: { providerId: string }) {
   return getProviderName(providerId)
 }
 
-function CategoryName({
-  categoryId,
-  providerId,
-}: {
-  categoryId: string
-  providerId: string
-}) {
+function CategoryName({ categoryId, providerId }: { categoryId: string; providerId: string }) {
   const { getCategoryName } = useSellerProviderCategories(providerId)
   return getCategoryName(categoryId)
 }
@@ -55,12 +49,7 @@ export const columns: ColumnDef<Product>[] = [
   {
     id: 'category_id',
     header: 'Categoría',
-    cell: (row) => (
-      <CategoryName
-        categoryId={row.category_id}
-        providerId={row.organization_id}
-      />
-    ),
+    cell: (row) => <CategoryName categoryId={row.category_id} providerId={row.organization_id} />,
   },
   {
     id: 'created_at',

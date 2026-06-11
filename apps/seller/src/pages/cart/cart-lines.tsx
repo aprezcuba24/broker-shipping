@@ -4,11 +4,7 @@ import type { CartLine } from '@/stores/cart-store'
 
 function CartLineProviderName({ providerId }: { providerId: string }) {
   const { getProviderName } = useSellerLinkedProviders()
-  return (
-    <span className="text-xs text-muted-foreground">
-      {getProviderName(providerId)}
-    </span>
-  )
+  return <span className="text-xs text-muted-foreground">{getProviderName(providerId)}</span>
 }
 
 export function CartLines({ lines }: { lines: CartLine[] }) {
@@ -22,31 +18,21 @@ export function CartLines({ lines }: { lines: CartLine[] }) {
           >
             <div className="min-w-0 space-y-0.5">
               <p className="font-medium text-foreground">{line.product.name}</p>
-              <CartLineProviderName
-                providerId={line.provider_organization_id}
-              />
+              <CartLineProviderName providerId={line.provider_organization_id} />
             </div>
 
             <div className="flex items-center justify-between gap-2 md:justify-end">
-              <span className="text-xs text-muted-foreground md:hidden">
-                Precio unitario
-              </span>
-              <span className="text-sm tabular-nums">
-                {formatPriceCents(line.price)}
-              </span>
+              <span className="text-xs text-muted-foreground md:hidden">Precio unitario</span>
+              <span className="text-sm tabular-nums">{formatPriceCents(line.price)}</span>
             </div>
 
             <div className="flex items-center justify-between gap-2 md:justify-center">
-              <span className="text-xs text-muted-foreground md:hidden">
-                Cantidad
-              </span>
+              <span className="text-xs text-muted-foreground md:hidden">Cantidad</span>
               <ProductCartAction product={line.product} />
             </div>
 
             <div className="flex items-center justify-between gap-2 md:justify-end">
-              <span className="text-xs text-muted-foreground md:hidden">
-                Total línea
-              </span>
+              <span className="text-xs text-muted-foreground md:hidden">Total línea</span>
               <span className="text-sm font-medium tabular-nums">
                 {formatPriceCents(line.line_total)}
               </span>

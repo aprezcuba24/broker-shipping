@@ -1,14 +1,7 @@
 import { useMemo, type ReactNode } from 'react'
 
 import { cn } from '../../lib/utils'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { formatCellValue, inferColumnType } from './formatters'
 import { DataTablePaginationBar } from './pagination'
 import type { ColumnDef, DataTableProps } from './types'
@@ -46,11 +39,7 @@ function getCellValue<TData>(row: TData, column: ColumnDef<TData>): unknown {
   return (row as Record<string, unknown>)[key]
 }
 
-function resolveRowId<TData>(
-  row: TData,
-  index: number,
-  getRowId?: (row: TData) => string,
-): string {
+function resolveRowId<TData>(row: TData, index: number, getRowId?: (row: TData) => string): string {
   if (getRowId) {
     return getRowId(row)
   }
@@ -69,13 +58,7 @@ function renderCellContent<TData>(row: TData, column: ColumnDef<TData>) {
   return formatCellValue(value, type)
 }
 
-function DataField<TData>({
-  row,
-  column,
-}: {
-  row: TData
-  column: ColumnDef<TData>
-}) {
+function DataField<TData>({ row, column }: { row: TData; column: ColumnDef<TData> }) {
   return (
     <div
       data-column={column.id}
@@ -85,9 +68,7 @@ function DataField<TData>({
         column.className,
       )}
     >
-      <span className="shrink-0 text-xs text-on-surface-variant">
-        {column.header}
-      </span>
+      <span className="shrink-0 text-xs text-on-surface-variant">{column.header}</span>
       <span className="min-w-0 text-right text-sm text-on-surface">
         {renderCellContent(row, column)}
       </span>
@@ -112,10 +93,7 @@ function MobileCardRow<TData>({
         ))}
       </div>
       {actionsColumn ? (
-        <div
-          data-column="actions"
-          className="broker-data-table__card-actions flex justify-end"
-        >
+        <div data-column="actions" className="broker-data-table__card-actions flex justify-end">
           {renderCellContent(row, actionsColumn)}
         </div>
       ) : null}
@@ -149,10 +127,7 @@ function LoadingCards<TData>({ columns }: { columns: ColumnDef<TData>[] }) {
   return (
     <>
       {Array.from({ length: 3 }).map((_, cardIndex) => (
-        <article
-          key={`loading-card-${cardIndex}`}
-          className="broker-data-table__card"
-        >
+        <article key={`loading-card-${cardIndex}`} className="broker-data-table__card">
           <div className="space-y-2">
             {dataColumns.map((column) => (
               <div

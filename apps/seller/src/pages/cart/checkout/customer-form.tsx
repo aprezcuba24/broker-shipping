@@ -1,10 +1,4 @@
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  Input,
-} from '@broker/ui'
+import { Field, FieldError, FieldGroup, FieldLabel, Input } from '@broker/ui'
 import { Controller, type Control } from 'react-hook-form'
 import type { CheckoutOrderFormValues } from '@/hooks/use-checkout-order'
 
@@ -27,9 +21,7 @@ export function CustomerForm({ control }: CustomerFormProps) {
               maxLength={255}
               aria-invalid={fieldState.invalid}
             />
-            {fieldState.invalid ? (
-              <FieldError errors={[fieldState.error]} />
-            ) : null}
+            {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
           </Field>
         )}
       />
@@ -46,9 +38,7 @@ export function CustomerForm({ control }: CustomerFormProps) {
               maxLength={32}
               aria-invalid={fieldState.invalid}
             />
-            {fieldState.invalid ? (
-              <FieldError errors={[fieldState.error]} />
-            ) : null}
+            {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
           </Field>
         )}
       />
@@ -57,18 +47,14 @@ export function CustomerForm({ control }: CustomerFormProps) {
         control={control}
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor="checkout-customer-identification">
-              Identificación
-            </FieldLabel>
+            <FieldLabel htmlFor="checkout-customer-identification">Identificación</FieldLabel>
             <Input
               {...field}
               id="checkout-customer-identification"
               maxLength={64}
               aria-invalid={fieldState.invalid}
             />
-            {fieldState.invalid ? (
-              <FieldError errors={[fieldState.error]} />
-            ) : null}
+            {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
           </Field>
         )}
       />

@@ -1,7 +1,4 @@
-import {
-  useQueryClient,
-  type QueryKey,
-} from '@tanstack/react-query'
+import { useQueryClient, type QueryKey } from '@tanstack/react-query'
 import { useEffect, useMemo, useRef } from 'react'
 
 type UseResetOnChangeOptions = {
@@ -18,10 +15,7 @@ export function useResetOnChange({
   setPage,
 }: UseResetOnChangeOptions) {
   const queryClient = useQueryClient()
-  const resetKey = useMemo(
-    () => JSON.stringify(resetOnChange ?? []),
-    [resetOnChange],
-  )
+  const resetKey = useMemo(() => JSON.stringify(resetOnChange ?? []), [resetOnChange])
   const prevResetKeyRef = useRef<string | null>(null)
 
   useEffect(() => {

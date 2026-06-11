@@ -1,13 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { configureApi } from '../client'
 import {
   getMeUsersMeGetQueryKey,
@@ -84,10 +76,7 @@ export function AuthProvider({ storage, baseUrl, appType, children }: AuthProvid
   const isAuthenticated = Boolean(token && user && !meQuery.isError)
 
   const loginError = loginMutation.isError
-    ? formatApiError(
-        loginMutation.error,
-        'No se pudo iniciar sesión. Comprueba tus credenciales.',
-      )
+    ? formatApiError(loginMutation.error, 'No se pudo iniciar sesión. Comprueba tus credenciales.')
     : null
 
   const value = useMemo<AuthContextValue>(
@@ -101,16 +90,7 @@ export function AuthProvider({ storage, baseUrl, appType, children }: AuthProvid
       login,
       logout,
     }),
-    [
-      token,
-      user,
-      isAuthenticated,
-      isLoading,
-      loginMutation.isPending,
-      loginError,
-      login,
-      logout,
-    ],
+    [token, user, isAuthenticated, isLoading, loginMutation.isPending, loginError, login, logout],
   )
 
   return <AuthContext value={value}>{children}</AuthContext>

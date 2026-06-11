@@ -11,14 +11,17 @@ from app.lib.persistence import EntityModel
 class Order(EntityModel, table=True):
     __tablename__ = "order"
 
-    IMMUTABLE_FIELDS: ClassVar[frozenset[str]] = EntityModel.IMMUTABLE_FIELDS | frozenset(
-        {
-            "name",
-            "seller_organization_id",
-            "customer_id",
-            "customer_snapshot",
-            "address_snapshot",
-        },
+    IMMUTABLE_FIELDS: ClassVar[frozenset[str]] = (
+        EntityModel.IMMUTABLE_FIELDS
+        | frozenset(
+            {
+                "name",
+                "seller_organization_id",
+                "customer_id",
+                "customer_snapshot",
+                "address_snapshot",
+            },
+        )
     )
 
     name: str = Field(max_length=255)

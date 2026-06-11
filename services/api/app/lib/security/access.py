@@ -11,7 +11,9 @@ from app.lib.headers import optional_stripped_str
 from app.lib.security.tokens import decode_access_token_from_string
 from app.modules.organization.models.enums import OrganizationType
 from app.modules.organization.models.organization import Organization
-from app.modules.organization.repositories.organization_repository import OrganizationRepository
+from app.modules.organization.repositories.organization_repository import (
+    OrganizationRepository,
+)
 from app.modules.organization.repositories.user_organization_repository import (
     UserOrganizationRepository,
 )

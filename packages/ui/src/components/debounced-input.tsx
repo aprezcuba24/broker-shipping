@@ -47,11 +47,5 @@ export function DebouncedInput({
     }, debounceMs)
   }
 
-  return (
-    <Input
-      {...inputProps}
-      value={localValue}
-      onChange={handleChange}
-    />
-  )
+  return <Input {...inputProps} value={localValue} onChange={handleChange} />
 }

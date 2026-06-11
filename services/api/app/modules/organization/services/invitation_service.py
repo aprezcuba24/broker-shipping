@@ -95,7 +95,9 @@ class InvitationService:
         seller_org = await self._user_org_repo.get_seller_org_for_user(user_id)
         if seller_org is not None:
             if await self._link_service.has_active_link(seller_org.id, organization_id):
-                raise HTTPException(status_code=400, detail="Already linked to this provider")
+                raise HTTPException(
+                    status_code=400, detail="Already linked to this provider"
+                )
         existing = await self._invitation_repo.get_pending_seller_join_request(
             organization_id,
             user_id,
@@ -146,7 +148,9 @@ class InvitationService:
             invitation,
             {"status": InvitationStatus.accepted},
         )
-        updated = await self._user_org_repo.get_membership(user_id, invitation.organization_id)
+        updated = await self._user_org_repo.get_membership(
+            user_id, invitation.organization_id
+        )
         assert updated is not None
         return MemberPublic.model_validate(updated)
 
@@ -257,9 +261,13 @@ class InvitationService:
         self,
         organization_id: UUID,
     ) -> list[InvitationPublic]:
-        rows = await self._invitation_repo.list_pending_for_organization(organization_id)
+        rows = await self._invitation_repo.list_pending_for_organization(
+            organization_id
+        )
         return [InvitationPublic.model_validate(r) for r in rows]
 
     async def list_my_pending_requests(self, user_id: UUID) -> list[InvitationPublic]:
-        rows = await self._invitation_repo.list_pending_seller_join_requests_for_user(user_id)
+        rows = await self._invitation_repo.list_pending_seller_join_requests_for_user(
+            user_id
+        )
         return [InvitationPublic.model_validate(r) for r in rows]

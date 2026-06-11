@@ -6,17 +6,8 @@ import { Label } from './label'
 
 type FieldOrientation = 'vertical' | 'horizontal' | 'responsive'
 
-export function FieldGroup({
-  className,
-  ...props
-}: React.ComponentProps<'div'>) {
-  return (
-    <div
-      data-slot="field-group"
-      className={cn('flex flex-col gap-4', className)}
-      {...props}
-    />
-  )
+export function FieldGroup({ className, ...props }: React.ComponentProps<'div'>) {
+  return <div data-slot="field-group" className={cn('flex flex-col gap-4', className)} {...props} />
 }
 
 export function Field({
@@ -32,8 +23,7 @@ export function Field({
         'flex gap-2',
         orientation === 'vertical' && 'flex-col',
         orientation === 'horizontal' && 'flex-row items-start',
-        orientation === 'responsive' &&
-          'flex-col sm:flex-row sm:items-start sm:justify-between',
+        orientation === 'responsive' && 'flex-col sm:flex-row sm:items-start sm:justify-between',
         className,
       )}
       {...props}
@@ -41,10 +31,7 @@ export function Field({
   )
 }
 
-export function FieldContent({
-  className,
-  ...props
-}: React.ComponentProps<'div'>) {
+export function FieldContent({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="field-content"
@@ -54,10 +41,7 @@ export function FieldContent({
   )
 }
 
-export function FieldLabel({
-  className,
-  ...props
-}: React.ComponentProps<typeof Label>) {
+export function FieldLabel({ className, ...props }: React.ComponentProps<typeof Label>) {
   return (
     <Label
       data-slot="field-label"
@@ -67,10 +51,7 @@ export function FieldLabel({
   )
 }
 
-export function FieldDescription({
-  className,
-  ...props
-}: React.ComponentProps<'p'>) {
+export function FieldDescription({ className, ...props }: React.ComponentProps<'p'>) {
   return (
     <p
       data-slot="field-description"
@@ -119,49 +100,23 @@ export function FieldError({
   )
 }
 
-export function FieldSet({
-  className,
-  ...props
-}: React.ComponentProps<'fieldset'>) {
+export function FieldSet({ className, ...props }: React.ComponentProps<'fieldset'>) {
   return (
-    <fieldset
-      data-slot="field-set"
-      className={cn('flex flex-col gap-4', className)}
-      {...props}
-    />
+    <fieldset data-slot="field-set" className={cn('flex flex-col gap-4', className)} {...props} />
   )
 }
 
-export function FieldLegend({
-  className,
-  ...props
-}: React.ComponentProps<'legend'>) {
+export function FieldLegend({ className, ...props }: React.ComponentProps<'legend'>) {
   return (
-    <legend
-      data-slot="field-legend"
-      className={cn('text-sm font-medium', className)}
-      {...props}
-    />
+    <legend data-slot="field-legend" className={cn('text-sm font-medium', className)} {...props} />
   )
 }
 
-export function FieldTitle({
-  className,
-  ...props
-}: React.ComponentProps<'p'>) {
-  return (
-    <p
-      data-slot="field-title"
-      className={cn('text-sm font-medium', className)}
-      {...props}
-    />
-  )
+export function FieldTitle({ className, ...props }: React.ComponentProps<'p'>) {
+  return <p data-slot="field-title" className={cn('text-sm font-medium', className)} {...props} />
 }
 
-export function FieldSeparator({
-  className,
-  ...props
-}: React.ComponentProps<'div'>) {
+export function FieldSeparator({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="field-separator"

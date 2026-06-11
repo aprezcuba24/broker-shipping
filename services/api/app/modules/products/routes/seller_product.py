@@ -7,7 +7,11 @@ from fastapi import APIRouter, Depends
 
 from app.lib.security.deps import get_organization, get_user
 from app.modules.organization.models import Organization, OrganizationType
-from app.modules.products.models import Product, SellerProductListFilters, seller_product_list_filters
+from app.modules.products.models import (
+    Product,
+    SellerProductListFilters,
+    seller_product_list_filters,
+)
 from app.modules.products.services import SellerProductService
 from app.modules.user.models import User
 

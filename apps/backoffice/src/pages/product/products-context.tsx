@@ -18,11 +18,7 @@ import { createContext, useContext, type ReactNode } from 'react'
 import { z } from 'zod'
 
 export const productFormSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, 'El nombre es obligatorio')
-    .max(255, 'Máximo 255 caracteres'),
+  name: z.string().trim().min(1, 'El nombre es obligatorio').max(255, 'Máximo 255 caracteres'),
   category_id: z.string().min(1, 'La categoría es obligatoria'),
   price: z
     .number({ message: 'El precio es obligatorio' })
@@ -33,15 +29,9 @@ export type ProductFormValues = z.infer<typeof productFormSchema>
 
 export const productListFilterKeys = ['name', 'category_id'] as const
 
-export type ProductListFilters = Record<
-  (typeof productListFilterKeys)[number],
-  string
->
+export type ProductListFilters = Record<(typeof productListFilterKeys)[number], string>
 
-export type ProductsContextValue = CrudContextValue<
-  Product,
-  ProductFormValues
-> & {
+export type ProductsContextValue = CrudContextValue<Product, ProductFormValues> & {
   filters: ProductListFilters
   setFilter: (key: keyof ProductListFilters, value: string) => void
 }
@@ -90,15 +80,10 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
             },
           }
         : null,
-    toDeleteVariables: (product) =>
-      product.id ? { productId: product.id } : null,
+    toDeleteVariables: (product) => (product.id ? { productId: product.id } : null),
   })
 
-  return (
-    <ProductsContext value={{ ...crud, filters, setFilter }}>
-      {children}
-    </ProductsContext>
-  )
+  return <ProductsContext value={{ ...crud, filters, setFilter }}>{children}</ProductsContext>
 }
 
 export function useProducts(): ProductsContextValue {

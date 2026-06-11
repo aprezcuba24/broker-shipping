@@ -33,9 +33,7 @@ export function TopHeader({
         </div>
 
         {headerExtra ? (
-          <div className="w-full min-w-0 sm:w-auto sm:max-w-[14rem] sm:shrink-0">
-            {headerExtra}
-          </div>
+          <div className="w-full min-w-0 sm:w-auto sm:max-w-[14rem] sm:shrink-0">{headerExtra}</div>
         ) : null}
 
         <div className="hidden sm:block h-6 w-px bg-outline-variant/30 mx-2" />

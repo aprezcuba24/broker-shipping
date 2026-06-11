@@ -3,14 +3,21 @@ from uuid import UUID
 from sqlalchemy import Column, ForeignKey, UniqueConstraint
 from sqlmodel import Field
 
-from app.lib.persistence import FilterFieldConfig, FilterOperator, FilterSpec, OrganizationEntityModel
+from app.lib.persistence import (
+    FilterFieldConfig,
+    FilterOperator,
+    FilterSpec,
+    OrganizationEntityModel,
+)
 
 
 class Customer(OrganizationEntityModel, table=True):
     __tablename__ = "customer"
     __table_args__ = (
         UniqueConstraint("organization_id", "phone", name="uq_customer_org_phone"),
-        UniqueConstraint("organization_id", "identification", name="uq_customer_org_identification"),
+        UniqueConstraint(
+            "organization_id", "identification", name="uq_customer_org_identification"
+        ),
     )
 
     organization_id: UUID = Field(

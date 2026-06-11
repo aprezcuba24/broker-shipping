@@ -11,19 +11,14 @@ import {
 import { ClipboardCheck } from 'lucide-react'
 import { FormProvider } from 'react-hook-form'
 import { Navigate } from 'react-router-dom'
-import {
-  type CheckoutMode,
-  useCheckoutOrder,
-} from '@/hooks/use-checkout-order'
+import { type CheckoutMode, useCheckoutOrder } from '@/hooks/use-checkout-order'
 import { useCartStore } from '@/stores/cart-store'
 import { ExistingCustomerCheckout } from './existing-customer-checkout'
 import { NewCustomerCheckout } from './new-customer-checkout'
 
 export function CartCheckoutPage() {
   const lines = useCartStore((state) => state.lines)
-  const total = useCartStore((state) =>
-    state.lines.reduce((sum, line) => sum + line.line_total, 0),
-  )
+  const total = useCartStore((state) => state.lines.reduce((sum, line) => sum + line.line_total, 0))
 
   const {
     form,
@@ -60,19 +55,12 @@ export function CartCheckoutPage() {
         <div className="space-y-6">
           <section className="rounded-lg border border-border bg-muted/30 p-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground">
-                Total a pagar
-              </span>
-              <span className="text-lg font-semibold tabular-nums">
-                {formatPriceCents(total)}
-              </span>
+              <span className="text-sm font-medium text-foreground">Total a pagar</span>
+              <span className="text-lg font-semibold tabular-nums">{formatPriceCents(total)}</span>
             </div>
           </section>
 
-          <Tabs
-            value={mode}
-            onValueChange={(value) => setMode(value as CheckoutMode)}
-          >
+          <Tabs value={mode} onValueChange={(value) => setMode(value as CheckoutMode)}>
             <TabsList className="grid w-full grid-cols-2 sm:w-auto sm:inline-grid">
               <TabsTrigger value="new" disabled={isSubmitting}>
                 Nuevo cliente
@@ -94,9 +82,7 @@ export function CartCheckoutPage() {
             </TabsContent>
           </Tabs>
 
-          {submitError ? (
-            <p className="text-sm text-destructive">{submitError}</p>
-          ) : null}
+          {submitError ? <p className="text-sm text-destructive">{submitError}</p> : null}
 
           <Button
             type="button"

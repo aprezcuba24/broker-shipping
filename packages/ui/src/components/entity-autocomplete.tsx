@@ -1,11 +1,4 @@
-import {
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type FocusEventHandler,
-  type Ref,
-} from 'react'
+import { useEffect, useId, useRef, useState, type FocusEventHandler, type Ref } from 'react'
 import { cn } from '../lib/utils'
 import { Input } from './ui/input'
 
@@ -87,10 +80,7 @@ export function EntityAutocomplete<T extends object>({
 
   useEffect(() => {
     const handleMouseDown = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false)
       }
     }
@@ -165,34 +155,21 @@ export function EntityAutocomplete<T extends object>({
           )}
         >
           {!canSearch ? (
-            <li
-              role="presentation"
-              className="px-3 py-2 text-sm text-muted-foreground"
-            >
+            <li role="presentation" className="px-3 py-2 text-sm text-muted-foreground">
               {minQueryMessage}
             </li>
           ) : isLoading ? (
-            <li
-              role="presentation"
-              className="px-3 py-2 text-sm text-muted-foreground"
-            >
+            <li role="presentation" className="px-3 py-2 text-sm text-muted-foreground">
               {loadingMessage}
             </li>
           ) : items.length === 0 ? (
-            <li
-              role="presentation"
-              className="px-3 py-2 text-sm text-muted-foreground"
-            >
+            <li role="presentation" className="px-3 py-2 text-sm text-muted-foreground">
               {emptyMessage}
             </li>
           ) : (
             items.map((item, index) => {
               const itemValue = item[valueKey as keyof T] as EntityValue
-              if (
-                itemValue === null ||
-                itemValue === undefined ||
-                itemValue === ''
-              ) {
+              if (itemValue === null || itemValue === undefined || itemValue === '') {
                 return null
               }
 
@@ -209,9 +186,7 @@ export function EntityAutocomplete<T extends object>({
                     {renderItem ? (
                       renderItem(item)
                     ) : (
-                      <span className="font-medium text-foreground">
-                        {String(itemLabel ?? '')}
-                      </span>
+                      <span className="font-medium text-foreground">{String(itemLabel ?? '')}</span>
                     )}
                   </button>
                 </li>

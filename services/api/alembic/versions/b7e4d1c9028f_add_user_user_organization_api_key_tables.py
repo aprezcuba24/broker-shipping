@@ -53,7 +53,9 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("prefix"),
     )
-    op.create_index(op.f("ix_api_key_organization_id"), "api_key", ["organization_id"], unique=False)
+    op.create_index(
+        op.f("ix_api_key_organization_id"), "api_key", ["organization_id"], unique=False
+    )
     op.create_index(op.f("ix_api_key_prefix"), "api_key", ["prefix"], unique=False)
 
 

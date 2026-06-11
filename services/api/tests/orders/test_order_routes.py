@@ -9,7 +9,10 @@ INVOICE_CODE_PATTERN = re.compile(r"^F\d{5}$")
 from tests.factories.auth_helpers import bearer_headers, tenant_headers
 from tests.factories.category_factory import CategoryFactory
 from tests.factories.customer_factory import CustomerFactory
-from tests.factories.organization_factory import OrganizationFactory, link_provider_to_seller
+from tests.factories.organization_factory import (
+    OrganizationFactory,
+    link_provider_to_seller,
+)
 from tests.factories.product_factory import ProductFactory
 from tests.factories.user_factory import UserFactory
 

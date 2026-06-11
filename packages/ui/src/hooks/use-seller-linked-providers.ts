@@ -8,8 +8,11 @@ import { useResetOnChange } from './use-reset-on-change'
 
 export function useSellerLinkedProviders() {
   const { activeOrganization } = useActiveOrganization()
-  const { data: providers = [], isLoading, isError } =
-    useListProvidersOrganizationsSellerProvidersGet()
+  const {
+    data: providers = [],
+    isLoading,
+    isError,
+  } = useListProvidersOrganizationsSellerProvidersGet()
 
   useResetOnChange({
     resetOnChange: [activeOrganization?.id],
@@ -22,8 +25,7 @@ export function useSellerLinkedProviders() {
   )
 
   const getProviderName = useCallback(
-    (providerId: string, fallback = '—') =>
-      providerMap.get(providerId) ?? fallback,
+    (providerId: string, fallback = '—') => providerMap.get(providerId) ?? fallback,
     [providerMap],
   )
 

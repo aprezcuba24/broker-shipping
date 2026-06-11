@@ -147,10 +147,14 @@ class OrderService(BaseService[Order]):
                 detail="Product not found",
             )
             line_entities.append(
-                self._line_service.build_from_product(product, item.quantity, item.price),
+                self._line_service.build_from_product(
+                    product, item.quantity, item.price
+                ),
             )
 
-        invoice_number = await self._seller_data_repo.allocate_invoice_number(organization.id)
+        invoice_number = await self._seller_data_repo.allocate_invoice_number(
+            organization.id
+        )
         order = Order(
             name=format_invoice_code(invoice_number),
             seller_organization_id=organization.id,

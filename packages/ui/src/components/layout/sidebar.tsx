@@ -6,26 +6,15 @@ import type { SidebarProps } from './types'
 const linkClassName =
   'flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 text-on-surface-variant hover:bg-surface-container-highest/50 hover:translate-x-1'
 
-const activeLinkClassName =
-  'bg-surface-container-lowest text-on-surface shadow-sm font-semibold'
+const activeLinkClassName = 'bg-surface-container-lowest text-on-surface shadow-sm font-semibold'
 
-export function Sidebar({
-  isOpen,
-  onClose,
-  navItems,
-  bottomItems = [],
-  brand,
-  cta,
-}: SidebarProps) {
+export function Sidebar({ isOpen, onClose, navItems, bottomItems = [], brand, cta }: SidebarProps) {
   const BrandIcon = brand.icon
 
   return (
     <>
       {isOpen ? (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={onClose}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={onClose} />
       ) : null}
 
       <aside
@@ -42,9 +31,7 @@ export function Sidebar({
               <BrandIcon className="h-4 w-4" />
             </div>
             <div>
-              <div className="font-headline text-lg font-extrabold">
-                {brand.title}
-              </div>
+              <div className="font-headline text-lg font-extrabold">{brand.title}</div>
               <div className="text-[10px] uppercase tracking-widest text-on-surface-variant opacity-70">
                 {brand.subtitle}
               </div>
@@ -100,9 +87,7 @@ function SidebarNavLink({
       to={item.to}
       end={item.exact}
       onClick={() => onClose()}
-      className={({ isActive }) =>
-        [linkClassName, isActive ? activeLinkClassName : ''].join(' ')
-      }
+      className={({ isActive }) => [linkClassName, isActive ? activeLinkClassName : ''].join(' ')}
     >
       <Icon className="h-[18px] w-[18px]" />
       <span>{item.label}</span>

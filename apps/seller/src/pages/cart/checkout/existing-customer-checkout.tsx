@@ -66,15 +66,9 @@ export function ExistingCustomerCheckout({
               selectedCustomer ? (
                 <div className="space-y-3">
                   <div className="rounded-md border border-border bg-muted/30 p-3 text-sm">
-                    <p className="font-medium text-foreground">
-                      {selectedCustomer.name}
-                    </p>
-                    <p className="text-muted-foreground">
-                      {selectedCustomer.phone}
-                    </p>
-                    <p className="text-muted-foreground">
-                      {selectedCustomer.identification}
-                    </p>
+                    <p className="font-medium text-foreground">{selectedCustomer.name}</p>
+                    <p className="text-muted-foreground">{selectedCustomer.phone}</p>
+                    <p className="text-muted-foreground">{selectedCustomer.identification}</p>
                   </div>
                   <Button
                     type="button"
@@ -84,15 +78,11 @@ export function ExistingCustomerCheckout({
                   >
                     Cambiar cliente
                   </Button>
-                  {fieldState.invalid ? (
-                    <FieldError errors={[fieldState.error]} />
-                  ) : null}
+                  {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
                 </div>
               ) : (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="checkout-existing-customer">
-                    Cliente
-                  </FieldLabel>
+                  <FieldLabel htmlFor="checkout-existing-customer">Cliente</FieldLabel>
                   <EntityAutocomplete<CustomerSummary>
                     items={customers}
                     value={field.value}
@@ -109,18 +99,14 @@ export function ExistingCustomerCheckout({
                     emptyMessage="No se encontraron clientes."
                     renderItem={(customer) => (
                       <>
-                        <span className="font-medium text-foreground">
-                          {customer.name}
-                        </span>
+                        <span className="font-medium text-foreground">{customer.name}</span>
                         <span className="text-muted-foreground">
                           {customer.phone} · {customer.identification}
                         </span>
                       </>
                     )}
                   />
-                  {fieldState.invalid ? (
-                    <FieldError errors={[fieldState.error]} />
-                  ) : null}
+                  {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
                 </Field>
               )
             }

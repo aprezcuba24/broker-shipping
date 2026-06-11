@@ -8,12 +8,7 @@ interface QuantitySelectorProps {
   className?: string
 }
 
-export function QuantitySelector({
-  value,
-  onChange,
-  min = 1,
-  className,
-}: QuantitySelectorProps) {
+export function QuantitySelector({ value, onChange, min = 1, className }: QuantitySelectorProps) {
   return (
     <div
       className={cn(
@@ -29,9 +24,7 @@ export function QuantitySelector({
       >
         <Minus className="size-3" strokeWidth={2} />
       </button>
-      <span className="w-7 text-center text-[13px] font-semibold tabular-nums">
-        {value}
-      </span>
+      <span className="w-7 text-center text-[13px] font-semibold tabular-nums">{value}</span>
       <button
         type="button"
         onClick={() => onChange(value + 1)}

@@ -14,10 +14,7 @@ import { useEffect, useRef } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { categoryFormSchema, type CategoryFormValues } from './categories-context'
 
-export type DialogFormProps = Omit<
-  FormModalProps<CategoryFormValues>,
-  'Form'
->
+export type DialogFormProps = Omit<FormModalProps<CategoryFormValues>, 'Form'>
 
 export function DialogForm({
   onSubmit,
@@ -55,10 +52,7 @@ export function DialogForm({
       hideTrigger={open !== undefined}
       {...buttonProps}
     >
-      <form
-        className="space-y-3"
-        onSubmit={(event) => event.preventDefault()}
-      >
+      <form className="space-y-3" onSubmit={(event) => event.preventDefault()}>
         <FieldGroup>
           <Controller
             name="name"

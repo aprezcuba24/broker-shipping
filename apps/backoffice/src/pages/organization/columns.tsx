@@ -5,14 +5,8 @@ import { DialogForm } from './DialogForm'
 import { useOrganizations } from './organizations-context'
 
 function RowActions({ organization }: { organization: Organization }) {
-  const {
-    submitEdit,
-    clearFormError,
-    isSubmitting,
-    formError,
-    deleteItem,
-    isDeleting,
-  } = useOrganizations()
+  const { submitEdit, clearFormError, isSubmitting, formError, deleteItem, isDeleting } =
+    useOrganizations()
 
   return (
     <BtnList>

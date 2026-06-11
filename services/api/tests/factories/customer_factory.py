@@ -16,7 +16,11 @@ async def create_customer(
     phone: str | None = None,
     identification: str | None = None,
 ) -> dict:
-    oid = organization_id if isinstance(organization_id, UUID) else UUID(str(organization_id))
+    oid = (
+        organization_id
+        if isinstance(organization_id, UUID)
+        else UUID(str(organization_id))
+    )
     entity = Customer(
         organization_id=oid,
         name=name or "Factory Customer",

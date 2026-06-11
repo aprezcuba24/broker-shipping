@@ -6,7 +6,10 @@ from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Depends
 
 from app.lib.security.deps import get_tenant
-from app.modules.orders.models.customer import CustomerListFilters, customer_list_filters
+from app.modules.orders.models.customer import (
+    CustomerListFilters,
+    customer_list_filters,
+)
 from app.modules.orders.schemas import CustomerDetail, CustomerSummary
 from app.modules.orders.services.customer_service import CustomerService
 from app.modules.organization.models import Organization, OrganizationType

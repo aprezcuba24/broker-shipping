@@ -35,9 +35,13 @@ class OrganizationService(BaseService[Organization]):
 
     @classmethod
     def patch_allowed_keys(cls) -> frozenset[str]:
-        return frozenset(Organization.model_fields.keys()) - Organization.IMMUTABLE_FIELDS
+        return (
+            frozenset(Organization.model_fields.keys()) - Organization.IMMUTABLE_FIELDS
+        )
 
-    async def create_for_user(self, entity: Organization, user_id: UUID) -> Organization:
+    async def create_for_user(
+        self, entity: Organization, user_id: UUID
+    ) -> Organization:
         org = Organization(
             name=entity.name,
             type=OrganizationType.provider,

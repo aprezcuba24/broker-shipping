@@ -17,7 +17,13 @@
     "rpc:schema": "cd services/api && uv run python scripts/export_openapi.py",
     "rpc:client": "pnpm --filter @broker/api codegen",
     "rpc": "pnpm rpc:schema && pnpm rpc:client",
-    "build": "pnpm -r --filter './apps/*' run build"
+    "build": "pnpm -r --filter './apps/*' run build",
+    "format": "pnpm format:ts && pnpm format:py",
+    "format:check": "pnpm format:ts:check && pnpm format:py:check",
+    "format:ts": "prettier --write \"apps/**/*.{ts,tsx,js,jsx,json,css,md}\" \"packages/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "format:ts:check": "prettier --check \"apps/**/*.{ts,tsx,js,jsx,json,css,md}\" \"packages/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "format:py": "cd services/api && uv run ruff format .",
+    "format:py:check": "cd services/api && uv run ruff format --check ."
   },
   "engines": {
     "node": ">=20"
@@ -27,5 +33,8 @@
       "react": "$react",
       "react-dom": "$react-dom"
     }
+  },
+  "devDependencies": {
+    "prettier": "^3.8.4"
   }
 }

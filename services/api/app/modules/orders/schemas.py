@@ -13,7 +13,10 @@ from app.modules.orders.models.enums import OrderLineStatus, OrderStatus
 from app.modules.orders.models.order import Order
 from app.modules.orders.models.order_line import OrderLine
 from app.modules.orders.order_status import compute_order_status
-from app.modules.orders.order_totals import compute_order_price, compute_order_product_price
+from app.modules.orders.order_totals import (
+    compute_order_price,
+    compute_order_product_price,
+)
 from app.modules.organization.models import Organization
 
 
@@ -82,7 +85,9 @@ class CustomerDetail(CustomerSummary):
     addresses: list[AddressDetail]
 
     @classmethod
-    def from_entities(cls, customer: Customer, addresses: list[Address]) -> CustomerDetail:
+    def from_entities(
+        cls, customer: Customer, addresses: list[Address]
+    ) -> CustomerDetail:
         return cls(
             id=customer.id,
             name=customer.name,

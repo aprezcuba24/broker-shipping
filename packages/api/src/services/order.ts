@@ -1,5 +1,5 @@
-import type { OrderCreate, OrderDetail, OrderLineCreate } from "../generated/models";
-import { createOrderOrdersPost } from "../generated/orders/orders";
+import type { OrderCreate, OrderDetail, OrderLineCreate } from '../generated/models'
+import { createOrderOrdersPost } from '../generated/orders/orders'
 
 export function createOrder(values: OrderCreate, lines: OrderLineCreate[]): Promise<OrderDetail> {
   const mappedLines = lines.map((line) => ({

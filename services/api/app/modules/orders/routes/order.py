@@ -21,7 +21,12 @@ async def list_orders(
     return await service.list_for_organization(organization)
 
 
-@router.post("/", response_model=OrderDetail, status_code=201, dependencies=[Depends(get_tenant(OrganizationType.seller))])
+@router.post(
+    "/",
+    response_model=OrderDetail,
+    status_code=201,
+    dependencies=[Depends(get_tenant(OrganizationType.seller))],
+)
 async def create_order(
     body: OrderCreate,
     service: FromDishka[OrderService],

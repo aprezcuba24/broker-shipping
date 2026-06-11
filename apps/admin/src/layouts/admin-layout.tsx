@@ -1,11 +1,7 @@
 import { useAuth } from '@broker/api'
 import { AppLayout, initialsFromUsername } from '@broker/ui'
 import { useNavigate } from 'react-router-dom'
-import {
-  adminBottomItems,
-  adminBrand,
-  adminNavItems,
-} from '../config/navigation'
+import { adminBottomItems, adminBrand, adminNavItems } from '../config/navigation'
 
 export function AdminLayout() {
   const navigate = useNavigate()

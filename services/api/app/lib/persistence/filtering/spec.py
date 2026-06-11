@@ -60,7 +60,9 @@ class FilterSpec(Generic[M]):
                     raise ValueError(msg)
                 for column_name in config.columns:
                     if column_name not in model.model_fields:
-                        msg = f"Filter column {column_name!r} is not on {model.__name__}"
+                        msg = (
+                            f"Filter column {column_name!r} is not on {model.__name__}"
+                        )
                         raise ValueError(msg)
             else:
                 column_name = config.column or param_name
@@ -79,7 +81,10 @@ class FilterSpec(Generic[M]):
             else:
                 column_name = self._column_name(param_name)
                 model_field = self._model.model_fields[column_name]
-                field_definitions[param_name] = (_optional_annotation(model_field.annotation), None)
+                field_definitions[param_name] = (
+                    _optional_annotation(model_field.annotation),
+                    None,
+                )
         name = model_name or f"{self._model.__name__}ListFilters"
         return create_model(
             name,
@@ -106,7 +111,11 @@ class FilterSpec(Generic[M]):
                         for key in sorted(unknown)
                     ],
                 )
-            data = {key: request.query_params[key] for key in request.query_params if key in allowed}
+            data = {
+                key: request.query_params[key]
+                for key in request.query_params
+                if key in allowed
+            }
             return filters_model.model_validate(data)
 
         return parse_filters

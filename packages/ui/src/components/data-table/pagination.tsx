@@ -28,9 +28,7 @@ export function DataTablePaginationBar({
       )}
     >
       <p className="hidden text-xs text-on-surface-variant sm:block">
-        {total === 0
-          ? 'No hay resultados'
-          : `Mostrando ${start}–${end} de ${total}`}
+        {total === 0 ? 'No hay resultados' : `Mostrando ${start}–${end} de ${total}`}
       </p>
       <p className="text-xs text-on-surface-variant sm:hidden">
         {total === 0 ? '0' : `${start}–${end} / ${total}`}

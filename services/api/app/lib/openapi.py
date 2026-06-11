@@ -50,7 +50,8 @@ def _patch_or_security_for_hybrid_routes(schema: dict[str, Any]) -> None:
         if not isinstance(path_str, str) or not isinstance(path_item, dict):
             continue
         if not any(
-            path_str == p or path_str.startswith(f"{p}/") for p in OPENAPI_OR_SECURITY_PREFIXES
+            path_str == p or path_str.startswith(f"{p}/")
+            for p in OPENAPI_OR_SECURITY_PREFIXES
         ):
             continue
         for verb, operation in path_item.items():

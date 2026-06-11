@@ -1,7 +1,4 @@
-import {
-  getListProductsProductsSellerGetQueryKey,
-  type Product,
-} from '@broker/api'
+import { getListProductsProductsSellerGetQueryKey, type Product } from '@broker/api'
 import { brokerFetch } from '@broker/api'
 import {
   pickQueryParams,
@@ -22,10 +19,7 @@ import {
 
 export const productListFilterKeys = ['name', 'provider_id', 'category_id'] as const
 
-export type ProductListFilters = Record<
-  (typeof productListFilterKeys)[number],
-  string
->
+export type ProductListFilters = Record<(typeof productListFilterKeys)[number], string>
 
 export type ProductsContextValue = {
   items: Product[]
@@ -49,10 +43,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
 
   const requestParams = useMemo(() => pickQueryParams(filters), [filters])
 
-  const listParamsKey = useMemo(
-    () => JSON.stringify(requestParams ?? {}),
-    [requestParams],
-  )
+  const listParamsKey = useMemo(() => JSON.stringify(requestParams ?? {}), [requestParams])
 
   const prevListParamsKeyRef = useRef(listParamsKey)
 

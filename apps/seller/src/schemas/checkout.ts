@@ -1,16 +1,8 @@
 import { z } from 'zod'
 
 export const customerSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, 'El nombre es obligatorio')
-    .max(255, 'Máximo 255 caracteres'),
-  phone: z
-    .string()
-    .trim()
-    .min(1, 'El teléfono es obligatorio')
-    .max(32, 'Máximo 32 caracteres'),
+  name: z.string().trim().min(1, 'El nombre es obligatorio').max(255, 'Máximo 255 caracteres'),
+  phone: z.string().trim().min(1, 'El teléfono es obligatorio').max(32, 'Máximo 32 caracteres'),
   identification: z
     .string()
     .trim()
@@ -44,12 +36,7 @@ export const addressSchema = z.object({
     .trim()
     .min(1, 'La dirección es obligatoria')
     .max(255, 'Máximo 255 caracteres'),
-  reference: z
-    .string()
-    .trim()
-    .max(255, 'Máximo 255 caracteres')
-    .optional()
-    .or(z.literal('')),
+  reference: z.string().trim().max(255, 'Máximo 255 caracteres').optional().or(z.literal('')),
 })
 
 export const checkoutOrderSchema = z

@@ -1,13 +1,5 @@
 import { useGetCustomerOrdersCustomersCustomerIdGet } from '@broker/api'
-import {
-  AddressShow,
-  cn,
-  FieldError,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@broker/ui'
+import { AddressShow, cn, FieldError, Tabs, TabsContent, TabsList, TabsTrigger } from '@broker/ui'
 import { useEffect, useMemo } from 'react'
 import { Controller, type Control, useFormContext } from 'react-hook-form'
 import { type CheckoutOrderFormValues } from '@/hooks/use-checkout-order'
@@ -19,20 +11,18 @@ type AddressPickerProps = {
 }
 
 export function AddressPicker({ control, customerId }: AddressPickerProps) {
-  const { setValue, watch, clearErrors } =
-    useFormContext<CheckoutOrderFormValues>()
+  const { setValue, watch, clearErrors } = useFormContext<CheckoutOrderFormValues>()
   const addressSource = watch('addressSource')
   const addressId = watch('addressId')
 
-  const { data: customerDetail, isLoading } =
-    useGetCustomerOrdersCustomersCustomerIdGet(customerId, {
+  const { data: customerDetail, isLoading } = useGetCustomerOrdersCustomersCustomerIdGet(
+    customerId,
+    {
       query: { enabled: Boolean(customerId) },
-    })
-
-  const addresses = useMemo(
-    () => customerDetail?.addresses ?? [],
-    [customerDetail?.addresses],
+    },
   )
+
+  const addresses = useMemo(() => customerDetail?.addresses ?? [], [customerDetail?.addresses])
 
   useEffect(() => {
     if (!customerId || isLoading || addressSource === 'new') return
@@ -61,9 +51,7 @@ export function AddressPicker({ control, customerId }: AddressPickerProps) {
     <div className="space-y-4">
       <Tabs
         value={addressSource}
-        onValueChange={(value) =>
-          handleAddressSourceChange(value as 'saved' | 'new')
-        }
+        onValueChange={(value) => handleAddressSourceChange(value as 'saved' | 'new')}
       >
         <TabsList className="grid w-full grid-cols-2 sm:w-auto sm:inline-grid">
           <TabsTrigger value="saved">Dirección guardada</TabsTrigger>
@@ -95,9 +83,7 @@ export function AddressPicker({ control, customerId }: AddressPickerProps) {
                     )
                   })}
                 </div>
-                {fieldState.invalid ? (
-                  <FieldError errors={[fieldState.error]} />
-                ) : null}
+                {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
               </div>
             )}
           />

@@ -42,7 +42,7 @@ function toDate(value: unknown): Date | null {
 export function inferColumnType(
   fieldName: string,
   value: unknown,
-  explicitType?: ColumnType
+  explicitType?: ColumnType,
 ): ColumnType {
   if (explicitType) {
     return explicitType

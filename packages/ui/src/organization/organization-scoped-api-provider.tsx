@@ -1,10 +1,5 @@
 import { configureApi, useAuth } from '@broker/api'
-import {
-  createContext,
-  useEffect,
-  useRef,
-  type ReactNode,
-} from 'react'
+import { createContext, useEffect, useRef, type ReactNode } from 'react'
 import { useActiveOrganization } from './active-organization-context'
 
 const OrganizationScopedApiContext = createContext<null>(null)
@@ -34,7 +29,5 @@ export function OrganizationScopedApiProvider({
     })
   }, [baseUrl, token, activeOrganizationId])
 
-  return (
-    <OrganizationScopedApiContext value={null}>{children}</OrganizationScopedApiContext>
-  )
+  return <OrganizationScopedApiContext value={null}>{children}</OrganizationScopedApiContext>
 }

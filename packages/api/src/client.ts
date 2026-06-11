@@ -36,10 +36,7 @@ function buildUrl(path: string, params?: Record<string, string>): string {
   return url.toString()
 }
 
-export async function brokerFetch<T>(
-  config: BrokerFetchConfig,
-  options?: RequestInit,
-): Promise<T> {
+export async function brokerFetch<T>(config: BrokerFetchConfig, options?: RequestInit): Promise<T> {
   const headers = new Headers(config.headers)
 
   const token = authConfig.getToken?.()

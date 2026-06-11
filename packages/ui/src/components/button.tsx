@@ -1,10 +1,7 @@
 import * as React from 'react'
 import type { LucideIcon } from 'lucide-react'
 import { Loader2 } from 'lucide-react'
-import {
-  Button as ButtonPrimitive,
-  type ButtonProps as ButtonPrimitiveProps,
-} from './ui/button'
+import { Button as ButtonPrimitive, type ButtonProps as ButtonPrimitiveProps } from './ui/button'
 import { cn } from '../lib/utils'
 
 type ExtraSize = 'icon-sm' | 'icon-xs'
@@ -39,14 +36,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ) => {
     const isExtra = size === 'icon-sm' || size === 'icon-xs'
     const primitiveSize = isExtra ? 'icon' : size
-    const mergedClassName = cn(
-      isExtra && sizeOverride[size as ExtraSize],
-      className,
-    )
+    const mergedClassName = cn(isExtra && sizeOverride[size as ExtraSize], className)
     const isDisabled = disabled || isLoading
-    const loadingIcon = isLoading ? (
-      <Loader2 aria-hidden className="animate-spin" />
-    ) : null
+    const loadingIcon = isLoading ? <Loader2 aria-hidden className="animate-spin" /> : null
 
     if (asChild) {
       return (

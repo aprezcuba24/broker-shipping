@@ -62,7 +62,9 @@ async def test_login_provider_app_requires_provider_org(
     organization_factory: OrganizationFactory,
 ) -> None:
     u = await user_factory.build(username="provider_only", password="pw")
-    await organization_factory.build(user_id=u["id"], org_type=OrganizationType.provider)
+    await organization_factory.build(
+        user_id=u["id"], org_type=OrganizationType.provider
+    )
 
     r = await client.post(
         "/users/login",
@@ -108,7 +110,9 @@ async def test_login_seller_app_rejected_with_only_provider_org(
     organization_factory: OrganizationFactory,
 ) -> None:
     u = await user_factory.build(username="provider_not_seller", password="pw")
-    await organization_factory.build(user_id=u["id"], org_type=OrganizationType.provider)
+    await organization_factory.build(
+        user_id=u["id"], org_type=OrganizationType.provider
+    )
 
     r = await client.post(
         "/users/login",

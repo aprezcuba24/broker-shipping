@@ -12,13 +12,7 @@ export type PageWrapperProps = {
   children: ReactNode
 }
 
-export function PageWrapper({
-  title,
-  description,
-  icon,
-  buttons,
-  children,
-}: PageWrapperProps) {
+export function PageWrapper({ title, description, icon, buttons, children }: PageWrapperProps) {
   return (
     <div className="space-y-6">
       <HeaderPage title={title} description={description} icon={icon}>
