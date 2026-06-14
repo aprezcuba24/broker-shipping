@@ -6,6 +6,12 @@ from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Depends
 
 from app.lib.security.deps import get_tenant
+from app.modules.orders.models import (
+    ProviderOrderListFilters,
+    SellerOrderListFilters,
+    provider_order_list_filters,
+    seller_order_list_filters,
+)
 from app.modules.orders.schemas import OrderCreate, OrderDetail
 from app.modules.orders.services import OrderService
 from app.modules.organization.models import Organization, OrganizationType
@@ -13,12 +19,24 @@ from app.modules.organization.models import Organization, OrganizationType
 router = APIRouter(route_class=DishkaRoute)
 
 
-@router.get("/", response_model=list[OrderDetail])
-async def list_orders(
+@router.get("/seller/", response_model=list[OrderDetail])
+async def list_seller_orders(
     service: FromDishka[OrderService],
-    organization: Annotated[Organization, Depends(get_tenant())],
+    organization: Annotated[Organization, Depends(get_tenant(OrganizationType.seller))],
+    filters: Annotated[SellerOrderListFilters, Depends(seller_order_list_filters)],
 ):
-    return await service.list_for_organization(organization)
+    return await service.list_for_seller(organization, filters=filters)
+
+
+@router.get("/provider/", response_model=list[OrderDetail])
+async def list_provider_orders(
+    service: FromDishka[OrderService],
+    organization: Annotated[
+        Organization, Depends(get_tenant(OrganizationType.provider))
+    ],
+    filters: Annotated[ProviderOrderListFilters, Depends(provider_order_list_filters)],
+):
+    return await service.list_for_provider(organization, filters=filters)
 
 
 @router.post(

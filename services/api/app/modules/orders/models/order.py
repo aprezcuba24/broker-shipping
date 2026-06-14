@@ -5,7 +5,12 @@ from sqlalchemy import Column, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field
 
-from app.lib.persistence import EntityModel
+from app.lib.persistence import (
+    EntityModel,
+    FilterFieldConfig,
+    FilterOperator,
+    FilterSpec,
+)
 
 
 class Order(EntityModel, table=True):
@@ -50,3 +55,60 @@ class Order(EntityModel, table=True):
             "district, neighborhood, address, reference."
         ),
     )
+
+
+_SHARED_ORDER_LIST_FIELDS = {
+    "name": FilterFieldConfig(operator=FilterOperator.ilike),
+    "created_at_from": FilterFieldConfig(
+        operator=FilterOperator.gte,
+        column="created_at",
+    ),
+    "created_at_to": FilterFieldConfig(
+        operator=FilterOperator.lte,
+        column="created_at",
+    ),
+    "customer_name": FilterFieldConfig(
+        operator=FilterOperator.json_ilike,
+        column="customer_snapshot",
+        json_key="name",
+    ),
+    "customer_phone": FilterFieldConfig(
+        operator=FilterOperator.json_ilike,
+        column="customer_snapshot",
+        json_key="phone",
+    ),
+    "customer_identification": FilterFieldConfig(
+        operator=FilterOperator.json_ilike,
+        column="customer_snapshot",
+        json_key="identification",
+    ),
+}
+
+SELLER_ORDER_LIST_FILTER_SPEC = FilterSpec(
+    model=Order,
+    fields={
+        **_SHARED_ORDER_LIST_FIELDS,
+        "provider_organization_id": FilterFieldConfig(
+            operator=FilterOperator.eq,
+            virtual=True,
+            annotation=UUID,
+        ),
+    },
+)
+
+PROVIDER_ORDER_LIST_FILTER_SPEC = FilterSpec(
+    model=Order,
+    fields={
+        **_SHARED_ORDER_LIST_FIELDS,
+        "seller_organization_id": FilterFieldConfig(operator=FilterOperator.eq),
+    },
+)
+
+SellerOrderListFilters = SELLER_ORDER_LIST_FILTER_SPEC.as_params_model(
+    model_name="SellerOrderListFilters",
+)
+ProviderOrderListFilters = PROVIDER_ORDER_LIST_FILTER_SPEC.as_params_model(
+    model_name="ProviderOrderListFilters",
+)
+seller_order_list_filters = SELLER_ORDER_LIST_FILTER_SPEC.as_dependency()
+provider_order_list_filters = PROVIDER_ORDER_LIST_FILTER_SPEC.as_dependency()

@@ -5,11 +5,16 @@ from collections.abc import Sequence
 from uuid import UUID
 
 from fastapi import HTTPException
+from pydantic import BaseModel
 
-from app.lib.persistence import BaseService
+from app.lib.persistence import BaseService, FilterSpec
 from app.modules.orders.models.address import Address
 from app.modules.orders.models.customer import Customer
-from app.modules.orders.models.order import Order
+from app.modules.orders.models.order import (
+    PROVIDER_ORDER_LIST_FILTER_SPEC,
+    SELLER_ORDER_LIST_FILTER_SPEC,
+    Order,
+)
 from app.modules.orders.models.order_line import OrderLine
 from app.modules.orders.invoice_code import format_invoice_code
 from app.modules.orders.repositories import OrderRepository
@@ -28,6 +33,7 @@ from app.modules.organization.repositories import (
     OrganizationRepository,
     SellerOrganizationDataRepository,
 )
+from app.modules.organization.services import ProviderSellerLinkService
 from app.modules.products.services import SellerProductService
 
 
@@ -41,6 +47,7 @@ class OrderService(BaseService[Order]):
         address_service: AddressService,
         org_repository: OrganizationRepository,
         seller_data_repository: SellerOrganizationDataRepository,
+        link_service: ProviderSellerLinkService,
     ) -> None:
         super().__init__(repository)
         self._line_service = line_service
@@ -49,6 +56,7 @@ class OrderService(BaseService[Order]):
         self._address_service = address_service
         self._org_repo = org_repository
         self._seller_data_repo = seller_data_repository
+        self._link_service = link_service
 
     @classmethod
     def creation_exclude(cls) -> frozenset[str]:
@@ -57,6 +65,46 @@ class OrderService(BaseService[Order]):
     @classmethod
     def patch_allowed_keys(cls) -> frozenset[str]:
         return frozenset(Order.model_fields.keys()) - Order.IMMUTABLE_FIELDS
+
+    @classmethod
+    def seller_list_filter_spec(cls) -> FilterSpec[Order]:
+        return SELLER_ORDER_LIST_FILTER_SPEC
+
+    @classmethod
+    def provider_list_filter_spec(cls) -> FilterSpec[Order]:
+        return PROVIDER_ORDER_LIST_FILTER_SPEC
+
+    async def _ensure_provider_filter_allowed(
+        self,
+        seller_organization_id: UUID,
+        filters: BaseModel | None,
+    ) -> None:
+        if filters is None:
+            return
+        provider_id = getattr(filters, "provider_organization_id", None)
+        if provider_id is None:
+            return
+        allowed = await self._link_service.list_active_provider_ids(
+            seller_organization_id
+        )
+        if provider_id not in allowed:
+            raise HTTPException(status_code=403, detail="Forbidden")
+
+    async def _ensure_seller_filter_allowed(
+        self,
+        provider_organization_id: UUID,
+        filters: BaseModel | None,
+    ) -> None:
+        if filters is None:
+            return
+        seller_id = getattr(filters, "seller_organization_id", None)
+        if seller_id is None:
+            return
+        if not await self._link_service.has_active_link(
+            seller_id,
+            provider_organization_id,
+        ):
+            raise HTTPException(status_code=403, detail="Forbidden")
 
     def _visible_lines(
         self,
@@ -97,15 +145,11 @@ class OrderService(BaseService[Order]):
         visible = self._visible_lines(order, all_lines, organization)
         return build_order_detail(order, visible, orgs_by_id)
 
-    async def list_for_organization(
+    async def _orders_to_details(
         self,
+        orders: list[Order],
         organization: Organization,
     ) -> list[OrderDetail]:
-        if organization.type == OrganizationType.seller:
-            orders = await self._repo.list_by_seller_organization_id(organization.id)
-        else:
-            orders = await self._repo.list_by_provider_organization_id(organization.id)
-
         if not orders:
             return []
 
@@ -125,6 +169,34 @@ class OrderService(BaseService[Order]):
             self._to_detail(order, lines_by_order[order.id], organization, orgs_by_id)
             for order in orders
         ]
+
+    async def list_for_seller(
+        self,
+        organization: Organization,
+        *,
+        filters: BaseModel | None = None,
+    ) -> list[OrderDetail]:
+        await self._ensure_provider_filter_allowed(organization.id, filters)
+        orders = await self._repo.list_for_seller_filtered(
+            organization.id,
+            filters=filters,
+            filter_spec=type(self).seller_list_filter_spec(),
+        )
+        return await self._orders_to_details(orders, organization)
+
+    async def list_for_provider(
+        self,
+        organization: Organization,
+        *,
+        filters: BaseModel | None = None,
+    ) -> list[OrderDetail]:
+        await self._ensure_seller_filter_allowed(organization.id, filters)
+        orders = await self._repo.list_for_provider_filtered(
+            organization.id,
+            filters=filters,
+            filter_spec=type(self).provider_list_filter_spec(),
+        )
+        return await self._orders_to_details(orders, organization)
 
     async def create_with_lines(
         self,

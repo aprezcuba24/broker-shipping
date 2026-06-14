@@ -1,32 +1,57 @@
 from uuid import UUID
 
-from sqlalchemy import select
-from app.lib.persistence import Resource
+from pydantic import BaseModel
+from sqlalchemy import exists, select
+
+from app.lib.persistence import FilterSpec, Resource
 from app.modules.orders.models.order import Order
 from app.modules.orders.models.order_line import OrderLine
 
 
 class OrderRepository(Resource[Order]):
-    async def list_by_seller_organization_id(
+    async def list_for_seller_filtered(
         self,
-        organization_id: UUID,
+        seller_organization_id: UUID,
+        *,
+        filters: BaseModel | None = None,
+        filter_spec: FilterSpec[Order] | None = None,
     ) -> list[Order]:
-        result = await self._session.execute(
+        stmt = (
             select(Order)
-            .where(Order.seller_organization_id == organization_id)
-            .order_by(Order.created_at.desc()),
+            .where(Order.seller_organization_id == seller_organization_id)
+            .order_by(Order.created_at.desc())
         )
+        if filters is not None and filter_spec is not None:
+            stmt = filter_spec.apply(stmt, filters)
+            provider_id = getattr(filters, "provider_organization_id", None)
+            if provider_id is not None:
+                line_exists = (
+                    select(OrderLine.id)
+                    .where(
+                        OrderLine.order_id == Order.id,
+                        OrderLine.organization_id == provider_id,
+                    )
+                    .correlate(Order)
+                )
+                stmt = stmt.where(exists(line_exists))
+        result = await self._session.execute(stmt)
         return list(result.scalars().all())
 
-    async def list_by_provider_organization_id(
+    async def list_for_provider_filtered(
         self,
-        organization_id: UUID,
+        provider_organization_id: UUID,
+        *,
+        filters: BaseModel | None = None,
+        filter_spec: FilterSpec[Order] | None = None,
     ) -> list[Order]:
-        result = await self._session.execute(
+        stmt = (
             select(Order)
             .join(OrderLine, OrderLine.order_id == Order.id)
-            .where(OrderLine.organization_id == organization_id)
+            .where(OrderLine.organization_id == provider_organization_id)
             .distinct()
-            .order_by(Order.created_at.desc()),
+            .order_by(Order.created_at.desc())
         )
+        if filters is not None and filter_spec is not None:
+            stmt = filter_spec.apply(stmt, filters)
+        result = await self._session.execute(stmt)
         return list(result.scalars().all())

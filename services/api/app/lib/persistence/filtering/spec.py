@@ -7,7 +7,7 @@ from typing import Any, Generic, TypeVar, get_args, get_origin
 from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel, ConfigDict, create_model
-from sqlalchemy import Select, or_
+from sqlalchemy import Column, Select, or_
 from sqlmodel import SQLModel
 
 M = TypeVar("M", bound=SQLModel)
@@ -17,6 +17,9 @@ class FilterOperator(StrEnum):
     eq = "eq"
     ilike = "ilike"
     or_ilike = "or_ilike"
+    gte = "gte"
+    lte = "lte"
+    json_ilike = "json_ilike"
 
 
 class FilterFieldConfig:
@@ -26,10 +29,16 @@ class FilterFieldConfig:
         operator: FilterOperator,
         column: str | None = None,
         columns: Sequence[str] | None = None,
+        json_key: str | None = None,
+        virtual: bool = False,
+        annotation: Any | None = None,
     ) -> None:
         self.operator = operator
         self.column = column
         self.columns = tuple(columns) if columns is not None else None
+        self.json_key = json_key
+        self.virtual = virtual
+        self.annotation = annotation
 
 
 def _escape_ilike(value: str) -> str:
@@ -54,6 +63,11 @@ class FilterSpec(Generic[M]):
         self._model = model
         self._fields = dict(fields)
         for param_name, config in self._fields.items():
+            if config.virtual:
+                if config.annotation is None:
+                    msg = f"virtual filter {param_name!r} requires annotation"
+                    raise ValueError(msg)
+                continue
             if config.operator is FilterOperator.or_ilike:
                 if not config.columns:
                     msg = f"or_ilike filter {param_name!r} requires columns"
@@ -64,6 +78,14 @@ class FilterSpec(Generic[M]):
                             f"Filter column {column_name!r} is not on {model.__name__}"
                         )
                         raise ValueError(msg)
+            elif config.operator is FilterOperator.json_ilike:
+                if not config.json_key:
+                    msg = f"json_ilike filter {param_name!r} requires json_key"
+                    raise ValueError(msg)
+                column_name = config.column or param_name
+                if column_name not in model.model_fields:
+                    msg = f"Filter column {column_name!r} is not on {model.__name__}"
+                    raise ValueError(msg)
             else:
                 column_name = config.column or param_name
                 if column_name not in model.model_fields:
@@ -76,7 +98,14 @@ class FilterSpec(Generic[M]):
     def as_params_model(self, *, model_name: str | None = None) -> type[BaseModel]:
         field_definitions: dict[str, tuple[Any, None]] = {}
         for param_name, config in self._fields.items():
-            if config.operator is FilterOperator.or_ilike:
+            if config.virtual:
+                field_definitions[param_name] = (
+                    _optional_annotation(config.annotation),
+                    None,
+                )
+            elif config.operator is FilterOperator.or_ilike:
+                field_definitions[param_name] = (str | None, None)
+            elif config.operator is FilterOperator.json_ilike:
                 field_definitions[param_name] = (str | None, None)
             else:
                 column_name = self._column_name(param_name)
@@ -122,27 +151,61 @@ class FilterSpec(Generic[M]):
 
     def apply(self, stmt: Select[Any], filters: BaseModel) -> Select[Any]:
         for name, config in self._fields.items():
+            if config.virtual:
+                continue
             value = getattr(filters, name, None)
             if value is None:
                 continue
             if isinstance(value, str) and not value:
                 continue
-            if config.operator is FilterOperator.or_ilike:
-                pattern = f"%{_escape_ilike(value)}%"
-                conditions = [
-                    getattr(self._model, col).ilike(pattern, escape="\\")
-                    for col in config.columns or ()
-                ]
-                stmt = stmt.where(or_(*conditions))
-                continue
             column_name = self._column_name(name)
-            column = getattr(self._model, column_name)
-            if config.operator is FilterOperator.eq:
-                stmt = stmt.where(column == value)
-            elif config.operator is FilterOperator.ilike:
-                pattern = f"%{_escape_ilike(value)}%"
-                stmt = stmt.where(column.ilike(pattern, escape="\\"))
-            else:
-                msg = f"Unsupported filter operator: {config.operator}"
-                raise ValueError(msg)
+            method = f"apply_{config.operator}"
+            if hasattr(self, method):
+                stmt = getattr(self, method)(
+                    stmt, column_name=column_name, value=value, config=config
+                )
+                continue
+            msg = f"Unsupported filter operator: {config.operator}"
+            raise ValueError(msg)
         return stmt
+
+    def apply_or_ilike(self, stmt: Select[Any], value: str, **kwargs) -> Select[Any]:
+        pattern = f"%{_escape_ilike(value)}%"
+        conditions = [
+            getattr(self._model, col).ilike(pattern, escape="\\")
+            for col in kwargs["config"].columns or ()
+        ]
+        return stmt.where(or_(*conditions))
+
+    def apply_ilike(
+        self, stmt: Select[Any], column_name: str, value: str, **kwargs
+    ) -> Select[Any]:
+        column = getattr(self._model, column_name)
+        pattern = f"%{_escape_ilike(value)}%"
+        return stmt.where(column.ilike(pattern, escape="\\"))
+
+    def apply_eq(
+        self, stmt: Select[Any], column_name: str, value: Any, **kwargs
+    ) -> Select[Any]:
+        column = getattr(self._model, column_name)
+        return stmt.where(column == value)
+
+    def apply_gte(
+        self, stmt: Select[Any], column_name: str, value: Any, **kwargs
+    ) -> Select[Any]:
+        column = getattr(self._model, column_name)
+        return stmt.where(column >= value)
+
+    def apply_lte(
+        self, stmt: Select[Any], column_name: str, value: Any, **kwargs
+    ) -> Select[Any]:
+        column = getattr(self._model, column_name)
+        return stmt.where(column <= value)
+
+    def apply_json_ilike(
+        self, stmt: Select[Any], column_name: str, value: str, **kwargs
+    ) -> Select[Any]:
+        column = getattr(self._model, column_name)
+        pattern = f"%{_escape_ilike(value)}%"
+        json_column = column[kwargs["config"].json_key].astext
+        return stmt.where(json_column.ilike(pattern, escape="\\"))

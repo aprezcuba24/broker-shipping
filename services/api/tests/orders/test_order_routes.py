@@ -484,9 +484,342 @@ async def test_different_sellers_can_share_invoice_code_with_distinct_seller_ref
     assert first_body["seller"]["name"] == "Seller Alpha"
     assert second_body["seller"]["name"] == "Seller Beta"
 
-    r_provider = await client.get("/orders/", headers=provider_headers)
+    r_provider = await client.get("/orders/provider/", headers=provider_headers)
     assert r_provider.status_code == 200
     provider_orders = r_provider.json()
     matching = [order for order in provider_orders if order["name"] == "F00001"]
     seller_names = {order["seller"]["name"] for order in matching}
     assert seller_names == {"Seller Alpha", "Seller Beta"}
+
+
+async def _create_order(
+    client: AsyncClient,
+    *,
+    headers: dict,
+    product_id: str,
+    price: int,
+    phone: str,
+    identification: str,
+) -> dict:
+    r = await client.post(
+        "/orders/",
+        json=_order_payload_inline_customer(
+            product_id=product_id,
+            price=price,
+            phone=phone,
+            identification=identification,
+        ),
+        headers=headers,
+    )
+    assert r.status_code == 201
+    return r.json()
+
+
+async def test_seller_list_filter_by_name(
+    client: AsyncClient,
+    seller_with_provider_product: dict,
+) -> None:
+    ctx = seller_with_provider_product
+    await _create_order(
+        client,
+        headers=ctx["seller_headers"],
+        product_id=ctx["product_id"],
+        price=ctx["product_price"],
+        phone="+53555100001",
+        identification="ID-FILTER-NAME-1",
+    )
+
+    r = await client.get(
+        "/orders/seller/",
+        params={"name": "F000"},
+        headers=ctx["seller_headers"],
+    )
+    assert r.status_code == 200
+    assert len(r.json()) == 1
+
+
+async def test_seller_list_filter_by_customer_phone(
+    client: AsyncClient,
+    seller_with_provider_product: dict,
+) -> None:
+    ctx = seller_with_provider_product
+    await _create_order(
+        client,
+        headers=ctx["seller_headers"],
+        product_id=ctx["product_id"],
+        price=ctx["product_price"],
+        phone="+53555990001",
+        identification="ID-FILTER-PHONE-1",
+    )
+
+    r = await client.get(
+        "/orders/seller/",
+        params={"customer_phone": "990001"},
+        headers=ctx["seller_headers"],
+    )
+    assert r.status_code == 200
+    assert len(r.json()) == 1
+    assert r.json()[0]["customer_snapshot"]["phone"] == "+53555990001"
+
+
+async def test_seller_list_filter_by_customer_name(
+    client: AsyncClient,
+    seller_with_provider_product: dict,
+) -> None:
+    ctx = seller_with_provider_product
+    r_create = await client.post(
+        "/orders/",
+        json={
+            "customer": {
+                "name": "Unique Filter Customer",
+                "phone": "+53555990002",
+                "identification": "ID-FILTER-CUST-1",
+            },
+            "address": _address_payload(),
+            "lines": [
+                {
+                    "product_id": ctx["product_id"],
+                    "quantity": 1,
+                    "price": ctx["product_price"],
+                },
+            ],
+        },
+        headers=ctx["seller_headers"],
+    )
+    assert r_create.status_code == 201
+
+    r = await client.get(
+        "/orders/seller/",
+        params={"customer_name": "Unique Filter"},
+        headers=ctx["seller_headers"],
+    )
+    assert r.status_code == 200
+    assert len(r.json()) == 1
+
+
+async def test_seller_list_filter_by_customer_identification(
+    client: AsyncClient,
+    seller_with_provider_product: dict,
+) -> None:
+    ctx = seller_with_provider_product
+    await _create_order(
+        client,
+        headers=ctx["seller_headers"],
+        product_id=ctx["product_id"],
+        price=ctx["product_price"],
+        phone="+53555990003",
+        identification="ID-FILTER-ID-UNIQUE",
+    )
+
+    r = await client.get(
+        "/orders/seller/",
+        params={"customer_identification": "FILTER-ID-UNIQUE"},
+        headers=ctx["seller_headers"],
+    )
+    assert r.status_code == 200
+    assert len(r.json()) == 1
+
+
+async def test_seller_list_filter_by_created_at_range(
+    client: AsyncClient,
+    seller_with_provider_product: dict,
+) -> None:
+    ctx = seller_with_provider_product
+    order = await _create_order(
+        client,
+        headers=ctx["seller_headers"],
+        product_id=ctx["product_id"],
+        price=ctx["product_price"],
+        phone="+53555990004",
+        identification="ID-FILTER-DATE-1",
+    )
+    created_at = order["created_at"]
+
+    r = await client.get(
+        "/orders/seller/",
+        params={"created_at_from": created_at, "created_at_to": created_at},
+        headers=ctx["seller_headers"],
+    )
+    assert r.status_code == 200
+    assert len(r.json()) == 1
+    assert r.json()[0]["id"] == order["id"]
+
+
+async def test_seller_list_filter_by_provider_organization_id(
+    client: AsyncClient,
+    db_session,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    category_factory: CategoryFactory,
+    product_factory: ProductFactory,
+    seller_with_provider_product: dict,
+) -> None:
+    ctx = seller_with_provider_product
+
+    provider_b_user = await user_factory.build(username="order_filter_prov_b")
+    provider_b_org = await organization_factory.build(user_id=provider_b_user["id"])
+    await link_provider_to_seller(
+        db_session,
+        provider_organization_id=provider_b_org["id"],
+        seller_organization_id=ctx["seller_org_id"],
+    )
+    category_b = await category_factory.build(organization_id=provider_b_org["id"])
+    product_b = await product_factory.build(
+        organization_id=provider_b_org["id"],
+        category_id=category_b["id"],
+        price=1000,
+    )
+
+    await _create_order(
+        client,
+        headers=ctx["seller_headers"],
+        product_id=ctx["product_id"],
+        price=ctx["product_price"],
+        phone="+53555990005",
+        identification="ID-FILTER-PROV-A",
+    )
+    await client.post(
+        "/orders/",
+        json={
+            "customer": _customer_payload(
+                phone="+53555990006",
+                identification="ID-FILTER-PROV-B",
+            ),
+            "address": _address_payload(),
+            "lines": [
+                {
+                    "product_id": product_b["id"],
+                    "quantity": 1,
+                    "price": 1500,
+                },
+            ],
+        },
+        headers=ctx["seller_headers"],
+    )
+
+    r = await client.get(
+        "/orders/seller/",
+        params={"provider_organization_id": ctx["provider_org_id"]},
+        headers=ctx["seller_headers"],
+    )
+    assert r.status_code == 200
+    assert len(r.json()) == 1
+    assert len(r.json()[0]["lines"]) == 1
+    assert r.json()[0]["lines"][0]["organization_id"] == ctx["provider_org_id"]
+
+
+async def test_seller_list_filter_unlinked_provider_returns_403(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    seller_with_provider_product: dict,
+) -> None:
+    ctx = seller_with_provider_product
+    other_provider_user = await user_factory.build(username="order_filter_unlinked")
+    other_provider_org = await organization_factory.build(
+        user_id=other_provider_user["id"],
+    )
+
+    r = await client.get(
+        "/orders/seller/",
+        params={"provider_organization_id": other_provider_org["id"]},
+        headers=ctx["seller_headers"],
+    )
+    assert r.status_code == 403
+
+
+async def test_provider_list_filter_by_seller_organization_id(
+    client: AsyncClient,
+    db_session,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    category_factory: CategoryFactory,
+    product_factory: ProductFactory,
+    seller_with_provider_product: dict,
+) -> None:
+    ctx = seller_with_provider_product
+
+    seller_b_user = await user_factory.build(username="order_filter_sell_b")
+    seller_b_org = await organization_factory.build_seller(
+        user_id=seller_b_user["id"],
+        name="Seller Filter B",
+    )
+    await link_provider_to_seller(
+        db_session,
+        provider_organization_id=ctx["provider_org_id"],
+        seller_organization_id=seller_b_org["id"],
+    )
+    seller_b_headers = tenant_headers(
+        user_id=seller_b_user["id"],
+        organization_id=seller_b_org["id"],
+    )
+
+    await _create_order(
+        client,
+        headers=ctx["seller_headers"],
+        product_id=ctx["product_id"],
+        price=ctx["product_price"],
+        phone="+53555990007",
+        identification="ID-FILTER-SELL-A",
+    )
+    await _create_order(
+        client,
+        headers=seller_b_headers,
+        product_id=ctx["product_id"],
+        price=ctx["product_price"],
+        phone="+53555990008",
+        identification="ID-FILTER-SELL-B",
+    )
+
+    r = await client.get(
+        "/orders/provider/",
+        params={"seller_organization_id": ctx["seller_org_id"]},
+        headers=ctx["provider_headers"],
+    )
+    assert r.status_code == 200
+    assert len(r.json()) == 1
+    assert r.json()[0]["seller"]["id"] == ctx["seller_org_id"]
+
+
+async def test_provider_list_filter_unlinked_seller_returns_403(
+    client: AsyncClient,
+    organization_factory: OrganizationFactory,
+    user_factory: UserFactory,
+    seller_with_provider_product: dict,
+) -> None:
+    ctx = seller_with_provider_product
+    other_seller_user = await user_factory.build(username="order_filter_sell_unlinked")
+    other_seller_org = await organization_factory.build_seller(
+        user_id=other_seller_user["id"],
+    )
+
+    r = await client.get(
+        "/orders/provider/",
+        params={"seller_organization_id": other_seller_org["id"]},
+        headers=ctx["provider_headers"],
+    )
+    assert r.status_code == 403
+
+
+async def test_seller_list_unknown_filter_param_returns_422(
+    client: AsyncClient,
+    seller_with_provider_product: dict,
+) -> None:
+    r = await client.get(
+        "/orders/seller/",
+        params={"foo": "bar"},
+        headers=seller_with_provider_product["seller_headers"],
+    )
+    assert r.status_code == 422
+
+
+async def test_provider_list_unknown_filter_param_returns_422(
+    client: AsyncClient,
+    seller_with_provider_product: dict,
+) -> None:
+    r = await client.get(
+        "/orders/provider/",
+        params={"foo": "bar"},
+        headers=seller_with_provider_product["provider_headers"],
+    )
+    assert r.status_code == 422

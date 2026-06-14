@@ -17,6 +17,7 @@ from app.modules.organization.repositories import (
     OrganizationRepository,
     SellerOrganizationDataRepository,
 )
+from app.modules.organization.services import ProviderSellerLinkService
 from app.modules.products.services import SellerProductService
 
 
@@ -70,6 +71,7 @@ class OrdersProvider(Provider):
         address_service: AddressService,
         org_repository: OrganizationRepository,
         seller_data_repository: SellerOrganizationDataRepository,
+        link_service: ProviderSellerLinkService,
     ) -> OrderService:
         return OrderService(
             repository=repo,
@@ -79,4 +81,5 @@ class OrdersProvider(Provider):
             address_service=address_service,
             org_repository=org_repository,
             seller_data_repository=seller_data_repository,
+            link_service=link_service,
         )
