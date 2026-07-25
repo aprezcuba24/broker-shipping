@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     postgres_port: int = Field(default=6432)
     postgres_db: str = Field(default="broker")
 
+    jwt_secret: str = Field(default="change-me-in-production-use-32b+")
+    jwt_algorithm: str = Field(default="HS256")
+    jwt_expire_minutes: int = Field(default=60 * 24)
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def database_url(self) -> str:

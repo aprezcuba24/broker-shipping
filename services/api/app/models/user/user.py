@@ -6,7 +6,10 @@ from sqlmodel import Field, SQLModel
 from app.lib.utils import utc_now
 
 
-class EntityModel(SQLModel):
+class User(SQLModel, table=True):
+    __tablename__ = "user"
+
     id: UUID = Field(default_factory=uuid4, primary_key=True)
+    username: str = Field(max_length=255, unique=True, index=True)
+    password_hash: str = Field(max_length=255)
     created_at: datetime = Field(default_factory=utc_now)
-    updated_at: datetime | None = Field(default=None)
