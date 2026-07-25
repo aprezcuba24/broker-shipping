@@ -15,14 +15,14 @@ Un solo repositorio agrupa **tres aplicaciones de cliente** (Node/pnpm), **un se
 | Portal proveedores | `apps/backoffice` | SPA para empresas que publican catálogo (nombre de carpeta acordado en el proyecto; en el PRD es "portal para proveedores"). |
 | Administración | `apps/admin` | SPA para operación global (equivalente al "backoffice administrativo" del PRD). |
 | Vendedores | `apps/seller` | SPA para vendedores (misma arquitectura que backoffice: `@broker/api`, `@broker/ui`, React Router). |
-| API | `services/api` | **FastAPI**: punto único de verdad para datos y reglas cuando se implementen; hoy es scaffold con salud básica, demo y OpenAPI. |
+| API | `services/api` | **FastAPI** + **SQLModel** + **Alembic**: punto único de verdad para datos y reglas; scaffold con salud, demo, ORM y migraciones. |
 
 Todas las SPAs comparten enfoque: **Vite**, **React**, **TypeScript**, **TanStack Query**, **React Router**, **Zustand**, **Tailwind CSS v4**, y paquetes compartidos **`@broker/api`** (cliente Orval + auth) y **`@broker/ui`** (layout, CRUD, shadcn).
 
 ## Tecnologías clave
 
 - **Frontends:** pnpm workspaces, Vite, React 19, TanStack Query, React Router, Zustand, Tailwind, `@broker/api`, `@broker/ui`.
-- **Backend:** Python 3.12+, [uv](https://docs.astral.sh/uv/) (dependencias y entorno), FastAPI, Uvicorn.
+- **Backend:** Python 3.12+, [uv](https://docs.astral.sh/uv/) (dependencias y entorno), FastAPI, Uvicorn, **SQLModel** (ORM) y **Alembic** (migraciones). Entidades en `services/api/app/models/{dominio}/`.
 - **Datos y servicios locales (Docker):** PostgreSQL, Redis, MinIO (API compatible S3 para desarrollo; en producción puede sustituirse por **AWS S3** con la misma idea de cliente).
 
 ## Relaciones
