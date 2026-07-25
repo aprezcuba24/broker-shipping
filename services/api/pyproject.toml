@@ -1,0 +1,9 @@
+[project]
+name = "broker-api"
+version = "0.1.0"
+description = "Broker B2B API (FastAPI scaffold)"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.136.1",
+    "uvicorn>=0.46.0",
+]
