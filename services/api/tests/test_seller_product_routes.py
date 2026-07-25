@@ -54,7 +54,11 @@ async def test_seller_list_without_organization_id(
         headers=seller_linked_product["seller_bearer"],
     )
     assert r.status_code == 200
-    assert [p["name"] for p in r.json()] == ["Linked product"]
+    body = r.json()
+    assert body["total"] == 1
+    assert body["page"] == 1
+    assert body["page_size"] == 20
+    assert [p["name"] for p in body["items"]] == ["Linked product"]
 
 
 async def test_seller_list_with_organization_id(
@@ -67,7 +71,9 @@ async def test_seller_list_with_organization_id(
         headers=seller_linked_product["seller_bearer"],
     )
     assert r.status_code == 200
-    assert [p["name"] for p in r.json()] == ["Linked product"]
+    body = r.json()
+    assert body["total"] == 1
+    assert [p["name"] for p in body["items"]] == ["Linked product"]
 
 
 async def test_seller_get_product(
@@ -198,7 +204,9 @@ async def test_seller_list_filter_by_name(
         headers=seller_filter_context["seller_bearer"],
     )
     assert r.status_code == 200
-    names = sorted(p["name"] for p in r.json())
+    body = r.json()
+    assert body["total"] == 2
+    names = sorted(p["name"] for p in body["items"])
     assert names == ["Laptop Alpha", "Laptop Beta"]
 
 
@@ -215,7 +223,9 @@ async def test_seller_list_filter_by_provider_id(
         headers=seller_filter_context["seller_bearer"],
     )
     assert r.status_code == 200
-    names = sorted(p["name"] for p in r.json())
+    body = r.json()
+    assert body["total"] == 2
+    names = sorted(p["name"] for p in body["items"])
     assert names == ["Desktop Alpha", "Laptop Alpha"]
 
 
@@ -246,3 +256,64 @@ async def test_list_linked_providers(
     assert r.status_code == 200
     ids = [org["id"] for org in r.json()]
     assert ids == [seller_linked_product["provider_org_id"]]
+
+
+async def test_seller_list_pagination(
+    client: AsyncClient,
+    db_session,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    product_factory: ProductFactory,
+) -> None:
+    provider_user = await user_factory.build()
+    seller_user = await user_factory.build()
+    provider_org = await organization_factory.build(user_id=provider_user["id"])
+    seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
+    await link_provider_to_seller(
+        db_session,
+        provider_organization_id=provider_org["id"],
+        seller_organization_id=seller_org["id"],
+    )
+    for name in ("Alpha", "Bravo", "Charlie"):
+        await product_factory.build(organization_id=provider_org["id"], name=name)
+
+    headers = bearer_headers(user_id=seller_user["id"])
+    params = {"organization_id": seller_org["id"], "page_size": 2}
+
+    r1 = await client.get(
+        "/products/seller/",
+        params={**params, "page": 1},
+        headers=headers,
+    )
+    assert r1.status_code == 200
+    page1 = r1.json()
+    assert page1["total"] == 3
+    assert page1["pages"] == 2
+    assert [p["name"] for p in page1["items"]] == ["Alpha", "Bravo"]
+
+    r2 = await client.get(
+        "/products/seller/",
+        params={**params, "page": 2},
+        headers=headers,
+    )
+    assert r2.status_code == 200
+    assert [p["name"] for p in r2.json()["items"]] == ["Charlie"]
+
+
+async def test_seller_list_without_links_returns_empty_page(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+) -> None:
+    seller_user = await user_factory.build()
+    seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
+    r = await client.get(
+        "/products/seller/",
+        params={"organization_id": seller_org["id"]},
+        headers=bearer_headers(user_id=seller_user["id"]),
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["items"] == []
+    assert body["total"] == 0
+    assert body["pages"] == 0

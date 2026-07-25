@@ -7,7 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
 from app.lib.persistence.apply_update import apply_partial_update
+from app.lib.persistence.pagination import paginate
 from app.models.product.product import Product
+from app.schemas.pagination import PageResult, PaginationParams
 from app.schemas.product import ProductCreate, ProductUpdate
 
 
@@ -15,14 +17,14 @@ async def list_products_for_organization(
     session: AsyncSession,
     organization_id: UUID,
     *,
+    pagination: PaginationParams,
     name: str | None = None,
-) -> list[Product]:
+) -> PageResult[Product]:
     stmt = select(Product).where(Product.organization_id == organization_id)
     if name:
         stmt = stmt.where(col(Product.name).ilike(f"%{name}%"))
     stmt = stmt.order_by(Product.name)
-    result = await session.execute(stmt)
-    return list(result.scalars().all())
+    return await paginate(session, stmt, pagination)
 
 
 async def get_product_for_organization(

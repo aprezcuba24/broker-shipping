@@ -6,7 +6,9 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
+from app.lib.persistence.pagination import paginate
 from app.models.product.product import Product
+from app.schemas.pagination import PageResult, PaginationParams
 from app.services import provider_seller_link as link_service
 
 
@@ -14,10 +16,11 @@ async def list_accessible_products(
     session: AsyncSession,
     user_id: UUID,
     *,
+    pagination: PaginationParams,
     seller_organization_id: UUID | None = None,
     name: str | None = None,
     provider_id: UUID | None = None,
-) -> list[Product]:
+) -> PageResult[Product]:
     provider_ids = await link_service.resolve_provider_ids(
         session,
         user_id,
@@ -28,14 +31,13 @@ async def list_accessible_products(
             raise HTTPException(status_code=403, detail="Forbidden")
         provider_ids = [provider_id]
     if not provider_ids:
-        return []
+        return PageResult(items=[], total=0)
 
     stmt = select(Product).where(col(Product.organization_id).in_(provider_ids))
     if name:
         stmt = stmt.where(col(Product.name).ilike(f"%{name}%"))
     stmt = stmt.order_by(Product.name)
-    result = await session.execute(stmt)
-    return list(result.scalars().all())
+    return await paginate(session, stmt, pagination)
 
 
 async def get_accessible_product(

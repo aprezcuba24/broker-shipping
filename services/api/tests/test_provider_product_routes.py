@@ -52,7 +52,12 @@ async def test_create_list_get_patch_delete_product(
         headers=headers,
     )
     assert r_list.status_code == 200
-    assert [p["id"] for p in r_list.json()] == [product_id]
+    body_list = r_list.json()
+    assert body_list["total"] == 1
+    assert body_list["page"] == 1
+    assert body_list["page_size"] == 20
+    assert body_list["pages"] == 1
+    assert [p["id"] for p in body_list["items"]] == [product_id]
 
     r_get = await client.get(
         f"/products/provider/{product_id}",
@@ -162,3 +167,124 @@ async def test_get_unknown_product_returns_404(
         headers=provider_context["headers"],
     )
     assert r.status_code == 404
+
+
+async def test_list_products_pagination(
+    client: AsyncClient,
+    provider_context: dict,
+    product_factory: ProductFactory,
+) -> None:
+    headers = provider_context["headers"]
+    params = provider_context["params"]
+    org_id = provider_context["organization_id"]
+    for name in ("Alpha", "Bravo", "Charlie", "Delta", "Echo"):
+        await product_factory.build(organization_id=org_id, name=name)
+
+    r1 = await client.get(
+        "/products/provider/",
+        params={**params, "page": 1, "page_size": 2},
+        headers=headers,
+    )
+    assert r1.status_code == 200
+    page1 = r1.json()
+    assert page1["total"] == 5
+    assert page1["page"] == 1
+    assert page1["page_size"] == 2
+    assert page1["pages"] == 3
+    assert [p["name"] for p in page1["items"]] == ["Alpha", "Bravo"]
+
+    r2 = await client.get(
+        "/products/provider/",
+        params={**params, "page": 2, "page_size": 2},
+        headers=headers,
+    )
+    assert r2.status_code == 200
+    page2 = r2.json()
+    assert page2["total"] == 5
+    assert [p["name"] for p in page2["items"]] == ["Charlie", "Delta"]
+
+    r3 = await client.get(
+        "/products/provider/",
+        params={**params, "page": 3, "page_size": 2},
+        headers=headers,
+    )
+    assert r3.status_code == 200
+    assert [p["name"] for p in r3.json()["items"]] == ["Echo"]
+
+
+async def test_list_products_page_out_of_range(
+    client: AsyncClient,
+    provider_context: dict,
+    product_factory: ProductFactory,
+) -> None:
+    await product_factory.build(
+        organization_id=provider_context["organization_id"],
+        name="Only",
+    )
+    r = await client.get(
+        "/products/provider/",
+        params={**provider_context["params"], "page": 99, "page_size": 10},
+        headers=provider_context["headers"],
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["items"] == []
+    assert body["total"] == 1
+    assert body["pages"] == 1
+
+
+async def test_list_products_invalid_pagination_returns_422(
+    client: AsyncClient,
+    provider_context: dict,
+) -> None:
+    headers = provider_context["headers"]
+    params = provider_context["params"]
+
+    r_zero = await client.get(
+        "/products/provider/",
+        params={**params, "page": 0},
+        headers=headers,
+    )
+    assert r_zero.status_code == 422
+
+    r_size = await client.get(
+        "/products/provider/",
+        params={**params, "page_size": 0},
+        headers=headers,
+    )
+    assert r_size.status_code == 422
+
+    r_max = await client.get(
+        "/products/provider/",
+        params={**params, "page_size": 101},
+        headers=headers,
+    )
+    assert r_max.status_code == 422
+
+
+async def test_list_products_name_filter_with_pagination(
+    client: AsyncClient,
+    provider_context: dict,
+    product_factory: ProductFactory,
+) -> None:
+    org_id = provider_context["organization_id"]
+    await product_factory.build(organization_id=org_id, name="Arroz blanco")
+    await product_factory.build(organization_id=org_id, name="Arroz integral")
+    await product_factory.build(organization_id=org_id, name="Aceite")
+
+    r = await client.get(
+        "/products/provider/",
+        params={
+            **provider_context["params"],
+            "name": "arroz",
+            "page": 1,
+            "page_size": 1,
+        },
+        headers=provider_context["headers"],
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["total"] == 2
+    assert body["pages"] == 2
+    assert len(body["items"]) == 1
+    assert "Arroz" in body["items"][0]["name"]
