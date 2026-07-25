@@ -22,7 +22,9 @@ from app.lib.security.api_keys import split_raw
 from app.lib.security.schemes import broker_api_key, broker_bearer, broker_organization
 from app.lib.security.tokens import decode_access_token_from_string
 from app.modules.organization.models import ApiKey, Organization, OrganizationType
-from app.modules.organization.repositories.organization_repository import OrganizationRepository
+from app.modules.organization.repositories.organization_repository import (
+    OrganizationRepository,
+)
 from app.modules.organization.repositories.user_organization_repository import (
     UserOrganizationRepository,
 )
@@ -130,7 +132,9 @@ def get_tenant(
 ) -> Callable[..., Organization]:
     @inject
     async def _resolve(
-        credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(broker_bearer)],
+        credentials: Annotated[
+            HTTPAuthorizationCredentials | None, Depends(broker_bearer)
+        ],
         raw_key: Annotated[str | None, Depends(broker_api_key)],
         org_id: Annotated[str | None, Depends(broker_organization)],
         user_repo: FromDishka[UserRepository],

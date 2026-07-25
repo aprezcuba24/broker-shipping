@@ -150,7 +150,9 @@ async def test_revoked_api_key_rejected(
         headers=tenant_headers(user_id=u["id"], organization_id=org["id"]),
     )
     key_id = r_list.json()[0]["id"]
-    await client.delete(f"/organizations/{org['id']}/api-keys/{key_id}", headers=headers)
+    await client.delete(
+        f"/organizations/{org['id']}/api-keys/{key_id}", headers=headers
+    )
 
     r = await client.get("/products/provider/", headers=api_key_headers(raw_key=raw))
     assert r.status_code == 401
@@ -201,7 +203,9 @@ async def test_seller_can_list_products_without_organization_header(
 ) -> None:
     seller = await user_factory.build(username="sell_no_org_hdr")
     await organization_factory.build_seller(user_id=seller["id"])
-    r = await client.get("/products/seller/", headers=bearer_headers(user_id=seller["id"]))
+    r = await client.get(
+        "/products/seller/", headers=bearer_headers(user_id=seller["id"])
+    )
     assert r.status_code == 200
     assert r.json() == []
 

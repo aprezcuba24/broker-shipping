@@ -1,23 +1,15 @@
-import {
-  RequireAuth,
-  getListProductsProductsSellerGetQueryKey,
-  getListProvidersOrganizationsSellerProvidersGetQueryKey,
-} from '@broker/api'
-import {
-  ActiveOrganizationProvider,
-  OrganizationScopedApiProvider,
-} from '@broker/ui'
+import { RequireAuth } from '@broker/api'
+import { ActiveOrganizationProvider, OrganizationScopedApiProvider } from '@broker/ui'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { SellerLayout } from './layouts/seller-layout'
+import { CartPage } from './pages/cart'
+import { CartCheckoutPage } from './pages/cart/checkout'
 import { HomePage } from './pages/home'
 import { LoginPage } from './pages/login'
+import { OrderPage } from './pages/order'
+import { OrderDetailPage } from './pages/order/detail'
 import { ProductPage } from './pages/product'
 import { ProductDetailPage } from './pages/product/detail'
-
-const tenantQueryKeys = [
-  getListProductsProductsSellerGetQueryKey(),
-  getListProvidersOrganizationsSellerProvidersGetQueryKey(),
-]
 
 export default function App() {
   return (
@@ -27,10 +19,8 @@ export default function App() {
         <Route
           element={
             <RequireAuth loginPath="/login">
-              <ActiveOrganizationProvider tenantQueryKeys={tenantQueryKeys}>
-                <OrganizationScopedApiProvider
-                  baseUrl={import.meta.env.VITE_API_URL}
-                >
+              <ActiveOrganizationProvider>
+                <OrganizationScopedApiProvider baseUrl={import.meta.env.VITE_API_URL}>
                   <SellerLayout />
                 </OrganizationScopedApiProvider>
               </ActiveOrganizationProvider>
@@ -40,6 +30,10 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="/products" element={<ProductPage />} />
           <Route path="/products/:productId" element={<ProductDetailPage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/cart/checkout" element={<CartCheckoutPage />} />
+          <Route path="/orders" element={<OrderPage />} />
+          <Route path="/orders/:orderId" element={<OrderDetailPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

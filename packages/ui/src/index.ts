@@ -1,6 +1,8 @@
 export { cn, formatPriceCents, toPriceCents } from './lib/utils'
 export { initialsFromUsername } from './lib/initials'
 
+export { AddressShow } from './components/address'
+
 export { LoginForm } from './components/auth/login-form'
 export type { LoginFields, LoginFormProps } from './components/auth/login-form'
 
@@ -11,28 +13,24 @@ export { HeaderPage } from './components/header-page'
 export type { HeaderPageProps } from './components/header-page'
 export { PageWrapper } from './components/page-wrapper'
 export type { PageWrapperProps } from './components/page-wrapper'
+export { PageMessage } from './components/page-message'
+export type { PageMessageProps } from './components/page-message'
+export { PageLoading } from './components/page-loading'
+export type { PageLoadingProps } from './components/page-loading'
+export { DetailSection } from './components/detail-section'
+export type { DetailSectionField, DetailSectionProps } from './components/detail-section'
 
 export { Button } from './components/button'
 export type { ButtonProps } from './components/button'
 export { ButtonModal } from './components/button-modal'
 export type { ButtonModalProps } from './components/button-modal'
 export { FormModal } from './components/form-modal'
-export type {
-  FormModalFormProps,
-  FormModalHandle,
-  FormModalProps,
-} from './components/form-modal'
+export type { FormModalFormProps, FormModalHandle, FormModalProps } from './components/form-modal'
 export { useFormSubmitHandle } from './hooks/use-form-submit-handle'
 export { useCRUD } from './hooks/use-crud'
-export type {
-  CrudContextValue,
-  UseCrudOptions,
-  UseCrudResult,
-} from './hooks/use-crud'
-export {
-  pickQueryParams,
-  useUrlSearchFilters,
-} from './hooks/use-url-search-filters'
+export type { CrudContextValue, UseCrudOptions, UseCrudResult } from './hooks/use-crud'
+export { useResetOnChange } from './hooks/use-reset-on-change'
+export { pickQueryParams, useUrlSearchFilters } from './hooks/use-url-search-filters'
 export { useSellerProviderCategories } from './hooks/use-seller-provider-categories'
 export { useSellerLinkedProviders } from './hooks/use-seller-linked-providers'
 export { DebouncedInput } from './components/debounced-input'
@@ -46,10 +44,9 @@ export type { BtnListProps } from './components/btn-list'
 export { RowActions } from './components/row-actions'
 export type { RowActionsProps } from './components/row-actions'
 export { EntitySelect } from './components/entity-select'
-export type {
-  EntitySelectAllOption,
-  EntitySelectProps,
-} from './components/entity-select'
+export type { EntitySelectAllOption, EntitySelectProps } from './components/entity-select'
+export { EntityAutocomplete } from './components/entity-autocomplete'
+export type { EntityAutocompleteProps } from './components/entity-autocomplete'
 export {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -102,11 +99,7 @@ export {
 } from './components/ui/table'
 export { DataTable } from './components/data-table/data-table'
 export { ColumnType } from './components/data-table/types'
-export type {
-  ColumnDef,
-  DataTableProps,
-  DataTablePagination,
-} from './components/data-table/types'
+export type { ColumnDef, DataTableProps, DataTablePagination } from './components/data-table/types'
 export {
   Dialog,
   DialogPortal,
@@ -146,6 +139,7 @@ export {
   SelectTrigger,
   SelectValue,
 } from './components/ui/select'
+export { Tabs, TabsList, TabsTrigger, TabsContent } from './components/ui/tabs'
 
 export {
   ActiveOrganizationProvider,

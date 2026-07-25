@@ -69,14 +69,18 @@ class ProviderSellerLinkRepository(Resource[ProviderSellerLink]):
         )
         return list(result.scalars().all())
 
-    async def list_active_provider_ids(self, seller_organization_id: UUID) -> list[UUID]:
+    async def list_active_provider_ids(
+        self, seller_organization_id: UUID
+    ) -> list[UUID]:
         return await self._list_active_linked_organization_ids(
             filter_on=ProviderSellerLink.seller_organization_id,
             select_column=ProviderSellerLink.provider_organization_id,
             organization_id=seller_organization_id,
         )
 
-    async def list_active_seller_org_ids(self, provider_organization_id: UUID) -> list[UUID]:
+    async def list_active_seller_org_ids(
+        self, provider_organization_id: UUID
+    ) -> list[UUID]:
         return await self._list_active_linked_organization_ids(
             filter_on=ProviderSellerLink.provider_organization_id,
             select_column=ProviderSellerLink.seller_organization_id,

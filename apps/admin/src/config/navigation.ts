@@ -1,10 +1,4 @@
-import {
-  Building2,
-  HelpCircle,
-  LayoutDashboard,
-  Settings,
-  Users,
-} from 'lucide-react'
+import { Building2, HelpCircle, LayoutDashboard, Settings, Users } from 'lucide-react'
 import type { NavItem, SidebarBrand } from '@broker/ui'
 
 export const adminBrand: SidebarBrand = {

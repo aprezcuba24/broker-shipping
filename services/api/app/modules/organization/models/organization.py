@@ -9,8 +9,11 @@ from app.modules.organization.models.enums import OrganizationType
 
 
 class Organization(EntityModel, table=True):
-    IMMUTABLE_FIELDS: ClassVar[frozenset[str]] = EntityModel.IMMUTABLE_FIELDS | frozenset(
-        {"deleted_at", "type"},
+    IMMUTABLE_FIELDS: ClassVar[frozenset[str]] = (
+        EntityModel.IMMUTABLE_FIELDS
+        | frozenset(
+            {"deleted_at", "type"},
+        )
     )
 
     name: str = Field(max_length=255)

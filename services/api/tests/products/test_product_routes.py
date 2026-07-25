@@ -40,7 +40,9 @@ async def test_create_product_returns_201_with_organization(
     category_factory: CategoryFactory,
     tenant_context: dict,
 ) -> None:
-    category = await category_factory.build(organization_id=tenant_context["organization_id"])
+    category = await category_factory.build(
+        organization_id=tenant_context["organization_id"]
+    )
     r = await client.post(
         "/products/provider/",
         json={"name": "Ejemplo", "category_id": category["id"], "price": 2500},
@@ -60,13 +62,17 @@ async def test_get_product_returns_200(
     product_factory: ProductFactory,
     tenant_context: dict,
 ) -> None:
-    category = await category_factory.build(organization_id=tenant_context["organization_id"])
+    category = await category_factory.build(
+        organization_id=tenant_context["organization_id"]
+    )
     created = await product_factory.build(
         organization_id=tenant_context["organization_id"],
         category_id=category["id"],
         name="One",
     )
-    r = await client.get(f"/products/provider/{created['id']}", headers=tenant_context["headers"])
+    r = await client.get(
+        f"/products/provider/{created['id']}", headers=tenant_context["headers"]
+    )
     assert r.status_code == 200
     assert r.json()["name"] == "One"
 
@@ -75,7 +81,9 @@ async def test_get_product_unknown_returns_404(
     client: AsyncClient,
     tenant_context: dict,
 ) -> None:
-    r = await client.get(f"/products/provider/{uuid4()}", headers=tenant_context["headers"])
+    r = await client.get(
+        f"/products/provider/{uuid4()}", headers=tenant_context["headers"]
+    )
     assert r.status_code == 404
 
 
@@ -85,7 +93,9 @@ async def test_patch_product_changes_price(
     product_factory: ProductFactory,
     tenant_context: dict,
 ) -> None:
-    category = await category_factory.build(organization_id=tenant_context["organization_id"])
+    category = await category_factory.build(
+        organization_id=tenant_context["organization_id"]
+    )
     p = await product_factory.build(
         organization_id=tenant_context["organization_id"],
         category_id=category["id"],
@@ -106,7 +116,9 @@ async def test_patch_product_changes_name(
     product_factory: ProductFactory,
     tenant_context: dict,
 ) -> None:
-    category = await category_factory.build(organization_id=tenant_context["organization_id"])
+    category = await category_factory.build(
+        organization_id=tenant_context["organization_id"]
+    )
     p = await product_factory.build(
         organization_id=tenant_context["organization_id"],
         category_id=category["id"],
@@ -127,13 +139,17 @@ async def test_delete_product_returns_204(
     product_factory: ProductFactory,
     tenant_context: dict,
 ) -> None:
-    category = await category_factory.build(organization_id=tenant_context["organization_id"])
+    category = await category_factory.build(
+        organization_id=tenant_context["organization_id"]
+    )
     p = await product_factory.build(
         organization_id=tenant_context["organization_id"],
         category_id=category["id"],
         name="To delete",
     )
-    r = await client.delete(f"/products/provider/{p['id']}", headers=tenant_context["headers"])
+    r = await client.delete(
+        f"/products/provider/{p['id']}", headers=tenant_context["headers"]
+    )
     assert r.status_code == 204
 
 
@@ -143,7 +159,9 @@ async def test_get_deleted_product_returns_404(
     product_factory: ProductFactory,
     tenant_context: dict,
 ) -> None:
-    category = await category_factory.build(organization_id=tenant_context["organization_id"])
+    category = await category_factory.build(
+        organization_id=tenant_context["organization_id"]
+    )
     p = await product_factory.build(
         organization_id=tenant_context["organization_id"],
         category_id=category["id"],
@@ -187,8 +205,12 @@ async def test_list_products_filter_by_category_id(
     product_factory: ProductFactory,
     tenant_context: dict,
 ) -> None:
-    category_a = await category_factory.build(organization_id=tenant_context["organization_id"])
-    category_b = await category_factory.build(organization_id=tenant_context["organization_id"])
+    category_a = await category_factory.build(
+        organization_id=tenant_context["organization_id"]
+    )
+    category_b = await category_factory.build(
+        organization_id=tenant_context["organization_id"]
+    )
     await product_factory.build(
         organization_id=tenant_context["organization_id"],
         category_id=category_a["id"],
@@ -216,7 +238,9 @@ async def test_list_products_filter_by_name_partial(
     product_factory: ProductFactory,
     tenant_context: dict,
 ) -> None:
-    category = await category_factory.build(organization_id=tenant_context["organization_id"])
+    category = await category_factory.build(
+        organization_id=tenant_context["organization_id"]
+    )
     await product_factory.build(
         organization_id=tenant_context["organization_id"],
         category_id=category["id"],
@@ -244,8 +268,12 @@ async def test_list_products_filter_combined(
     product_factory: ProductFactory,
     tenant_context: dict,
 ) -> None:
-    category_a = await category_factory.build(organization_id=tenant_context["organization_id"])
-    category_b = await category_factory.build(organization_id=tenant_context["organization_id"])
+    category_a = await category_factory.build(
+        organization_id=tenant_context["organization_id"]
+    )
+    category_b = await category_factory.build(
+        organization_id=tenant_context["organization_id"]
+    )
     await product_factory.build(
         organization_id=tenant_context["organization_id"],
         category_id=category_a["id"],
@@ -289,7 +317,9 @@ async def test_list_products_filter_respects_org_isolation(
     owner = await user_factory.build(username="owner_prod_filter")
     outsider = await user_factory.build(username="outsider_prod_filter")
     org_a = await organization_factory.build(user_id=owner["id"], name="Org Filter A")
-    org_b = await organization_factory.build(user_id=outsider["id"], name="Org Filter B")
+    org_b = await organization_factory.build(
+        user_id=outsider["id"], name="Org Filter B"
+    )
     category_b = await category_factory.build(organization_id=org_b["id"])
     await product_factory.build(
         organization_id=org_b["id"],

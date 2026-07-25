@@ -25,6 +25,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  CustomerDetail,
+  CustomerSummary,
   HTTPValidationError,
   OrderCreate,
   OrderDetail
@@ -38,16 +40,16 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 /**
- * @summary List Orders
+ * @summary List Customers
  */
-export const listOrdersOrdersGet = (
+export const listCustomersOrdersCustomersGet = (
     
  options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
 ) => {
       
       
-      return brokerFetch<OrderDetail[]>(
-      {url: `/orders/`, method: 'GET', signal
+      return brokerFetch<CustomerSummary[]>(
+      {url: `/orders/customers/`, method: 'GET', signal
     },
       options);
     }
@@ -55,69 +57,345 @@ export const listOrdersOrdersGet = (
 
 
 
-export const getListOrdersOrdersGetQueryKey = () => {
+export const getListCustomersOrdersCustomersGetQueryKey = () => {
     return [
-    `/orders/`
+    `/orders/customers/`
     ] as const;
     }
 
     
-export const getListOrdersOrdersGetQueryOptions = <TData = Awaited<ReturnType<typeof listOrdersOrdersGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrdersOrdersGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export const getListCustomersOrdersCustomersGetQueryOptions = <TData = Awaited<ReturnType<typeof listCustomersOrdersCustomersGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCustomersOrdersCustomersGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListOrdersOrdersGetQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListCustomersOrdersCustomersGetQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listOrdersOrdersGet>>> = ({ signal }) => listOrdersOrdersGet(requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCustomersOrdersCustomersGet>>> = ({ signal }) => listCustomersOrdersCustomersGet(requestOptions, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listOrdersOrdersGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCustomersOrdersCustomersGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type ListOrdersOrdersGetQueryResult = NonNullable<Awaited<ReturnType<typeof listOrdersOrdersGet>>>
-export type ListOrdersOrdersGetQueryError = unknown
+export type ListCustomersOrdersCustomersGetQueryResult = NonNullable<Awaited<ReturnType<typeof listCustomersOrdersCustomersGet>>>
+export type ListCustomersOrdersCustomersGetQueryError = unknown
 
 
-export function useListOrdersOrdersGet<TData = Awaited<ReturnType<typeof listOrdersOrdersGet>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrdersOrdersGet>>, TError, TData>> & Pick<
+export function useListCustomersOrdersCustomersGet<TData = Awaited<ReturnType<typeof listCustomersOrdersCustomersGet>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCustomersOrdersCustomersGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listOrdersOrdersGet>>,
+          Awaited<ReturnType<typeof listCustomersOrdersCustomersGet>>,
           TError,
-          Awaited<ReturnType<typeof listOrdersOrdersGet>>
+          Awaited<ReturnType<typeof listCustomersOrdersCustomersGet>>
         > , 'initialData'
       >, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListOrdersOrdersGet<TData = Awaited<ReturnType<typeof listOrdersOrdersGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrdersOrdersGet>>, TError, TData>> & Pick<
+export function useListCustomersOrdersCustomersGet<TData = Awaited<ReturnType<typeof listCustomersOrdersCustomersGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCustomersOrdersCustomersGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listOrdersOrdersGet>>,
+          Awaited<ReturnType<typeof listCustomersOrdersCustomersGet>>,
           TError,
-          Awaited<ReturnType<typeof listOrdersOrdersGet>>
+          Awaited<ReturnType<typeof listCustomersOrdersCustomersGet>>
         > , 'initialData'
       >, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListOrdersOrdersGet<TData = Awaited<ReturnType<typeof listOrdersOrdersGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrdersOrdersGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export function useListCustomersOrdersCustomersGet<TData = Awaited<ReturnType<typeof listCustomersOrdersCustomersGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCustomersOrdersCustomersGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List Orders
+ * @summary List Customers
  */
 
-export function useListOrdersOrdersGet<TData = Awaited<ReturnType<typeof listOrdersOrdersGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrdersOrdersGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export function useListCustomersOrdersCustomersGet<TData = Awaited<ReturnType<typeof listCustomersOrdersCustomersGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCustomersOrdersCustomersGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getListOrdersOrdersGetQueryOptions(options)
+  const queryOptions = getListCustomersOrdersCustomersGetQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary Get Customer
+ */
+export const getCustomerOrdersCustomersCustomerIdGet = (
+    customerId: string,
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<CustomerDetail>(
+      {url: `/orders/customers/${customerId}`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getGetCustomerOrdersCustomersCustomerIdGetQueryKey = (customerId?: string,) => {
+    return [
+    `/orders/customers/${customerId}`
+    ] as const;
+    }
+
+    
+export const getGetCustomerOrdersCustomersCustomerIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getCustomerOrdersCustomersCustomerIdGet>>, TError = HTTPValidationError>(customerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerOrdersCustomersCustomerIdGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCustomerOrdersCustomersCustomerIdGetQueryKey(customerId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCustomerOrdersCustomersCustomerIdGet>>> = ({ signal }) => getCustomerOrdersCustomersCustomerIdGet(customerId, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(customerId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCustomerOrdersCustomersCustomerIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetCustomerOrdersCustomersCustomerIdGetQueryResult = NonNullable<Awaited<ReturnType<typeof getCustomerOrdersCustomersCustomerIdGet>>>
+export type GetCustomerOrdersCustomersCustomerIdGetQueryError = HTTPValidationError
+
+
+export function useGetCustomerOrdersCustomersCustomerIdGet<TData = Awaited<ReturnType<typeof getCustomerOrdersCustomersCustomerIdGet>>, TError = HTTPValidationError>(
+ customerId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerOrdersCustomersCustomerIdGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCustomerOrdersCustomersCustomerIdGet>>,
+          TError,
+          Awaited<ReturnType<typeof getCustomerOrdersCustomersCustomerIdGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCustomerOrdersCustomersCustomerIdGet<TData = Awaited<ReturnType<typeof getCustomerOrdersCustomersCustomerIdGet>>, TError = HTTPValidationError>(
+ customerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerOrdersCustomersCustomerIdGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCustomerOrdersCustomersCustomerIdGet>>,
+          TError,
+          Awaited<ReturnType<typeof getCustomerOrdersCustomersCustomerIdGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCustomerOrdersCustomersCustomerIdGet<TData = Awaited<ReturnType<typeof getCustomerOrdersCustomersCustomerIdGet>>, TError = HTTPValidationError>(
+ customerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerOrdersCustomersCustomerIdGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get Customer
+ */
+
+export function useGetCustomerOrdersCustomersCustomerIdGet<TData = Awaited<ReturnType<typeof getCustomerOrdersCustomersCustomerIdGet>>, TError = HTTPValidationError>(
+ customerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerOrdersCustomersCustomerIdGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetCustomerOrdersCustomersCustomerIdGetQueryOptions(customerId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary List Seller Orders
+ */
+export const listSellerOrdersOrdersSellerGet = (
+    
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<OrderDetail[]>(
+      {url: `/orders/seller/`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getListSellerOrdersOrdersSellerGetQueryKey = () => {
+    return [
+    `/orders/seller/`
+    ] as const;
+    }
+
+    
+export const getListSellerOrdersOrdersSellerGetQueryOptions = <TData = Awaited<ReturnType<typeof listSellerOrdersOrdersSellerGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSellerOrdersOrdersSellerGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSellerOrdersOrdersSellerGetQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSellerOrdersOrdersSellerGet>>> = ({ signal }) => listSellerOrdersOrdersSellerGet(requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSellerOrdersOrdersSellerGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListSellerOrdersOrdersSellerGetQueryResult = NonNullable<Awaited<ReturnType<typeof listSellerOrdersOrdersSellerGet>>>
+export type ListSellerOrdersOrdersSellerGetQueryError = unknown
+
+
+export function useListSellerOrdersOrdersSellerGet<TData = Awaited<ReturnType<typeof listSellerOrdersOrdersSellerGet>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSellerOrdersOrdersSellerGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listSellerOrdersOrdersSellerGet>>,
+          TError,
+          Awaited<ReturnType<typeof listSellerOrdersOrdersSellerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListSellerOrdersOrdersSellerGet<TData = Awaited<ReturnType<typeof listSellerOrdersOrdersSellerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSellerOrdersOrdersSellerGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listSellerOrdersOrdersSellerGet>>,
+          TError,
+          Awaited<ReturnType<typeof listSellerOrdersOrdersSellerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListSellerOrdersOrdersSellerGet<TData = Awaited<ReturnType<typeof listSellerOrdersOrdersSellerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSellerOrdersOrdersSellerGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Seller Orders
+ */
+
+export function useListSellerOrdersOrdersSellerGet<TData = Awaited<ReturnType<typeof listSellerOrdersOrdersSellerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSellerOrdersOrdersSellerGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListSellerOrdersOrdersSellerGetQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary List Provider Orders
+ */
+export const listProviderOrdersOrdersProviderGet = (
+    
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<OrderDetail[]>(
+      {url: `/orders/provider/`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getListProviderOrdersOrdersProviderGetQueryKey = () => {
+    return [
+    `/orders/provider/`
+    ] as const;
+    }
+
+    
+export const getListProviderOrdersOrdersProviderGetQueryOptions = <TData = Awaited<ReturnType<typeof listProviderOrdersOrdersProviderGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderOrdersOrdersProviderGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListProviderOrdersOrdersProviderGetQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listProviderOrdersOrdersProviderGet>>> = ({ signal }) => listProviderOrdersOrdersProviderGet(requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProviderOrdersOrdersProviderGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListProviderOrdersOrdersProviderGetQueryResult = NonNullable<Awaited<ReturnType<typeof listProviderOrdersOrdersProviderGet>>>
+export type ListProviderOrdersOrdersProviderGetQueryError = unknown
+
+
+export function useListProviderOrdersOrdersProviderGet<TData = Awaited<ReturnType<typeof listProviderOrdersOrdersProviderGet>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderOrdersOrdersProviderGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProviderOrdersOrdersProviderGet>>,
+          TError,
+          Awaited<ReturnType<typeof listProviderOrdersOrdersProviderGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListProviderOrdersOrdersProviderGet<TData = Awaited<ReturnType<typeof listProviderOrdersOrdersProviderGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderOrdersOrdersProviderGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProviderOrdersOrdersProviderGet>>,
+          TError,
+          Awaited<ReturnType<typeof listProviderOrdersOrdersProviderGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListProviderOrdersOrdersProviderGet<TData = Awaited<ReturnType<typeof listProviderOrdersOrdersProviderGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderOrdersOrdersProviderGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Provider Orders
+ */
+
+export function useListProviderOrdersOrdersProviderGet<TData = Awaited<ReturnType<typeof listProviderOrdersOrdersProviderGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviderOrdersOrdersProviderGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListProviderOrdersOrdersProviderGetQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

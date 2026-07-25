@@ -13,6 +13,7 @@ export function TopHeader({
   onLogout,
   user = defaultUser,
   headerExtra,
+  headerActions,
 }: TopHeaderProps) {
   return (
     <header className="bg-surface-container-low/80 backdrop-blur-md sticky top-0 z-40 flex justify-between items-center w-full px-3 sm:px-6 py-3">
@@ -32,9 +33,7 @@ export function TopHeader({
         </div>
 
         {headerExtra ? (
-          <div className="w-full min-w-0 sm:w-auto sm:max-w-[14rem] sm:shrink-0">
-            {headerExtra}
-          </div>
+          <div className="w-full min-w-0 sm:w-auto sm:max-w-[14rem] sm:shrink-0">{headerExtra}</div>
         ) : null}
 
         <div className="hidden sm:block h-6 w-px bg-outline-variant/30 mx-2" />
@@ -50,6 +49,7 @@ export function TopHeader({
       </div>
 
       <div className="flex items-center gap-1 sm:gap-4 shrink-0">
+        {headerActions}
         <button
           type="button"
           className="p-2 rounded-full hover:bg-surface-container-highest/50 transition-colors"

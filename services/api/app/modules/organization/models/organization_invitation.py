@@ -28,7 +28,9 @@ class OrganizationInvitation(EntityModel, table=True):
     )
 
     organization_id: UUID = Field(
-        sa_column=Column(ForeignKey("organization.id", ondelete="CASCADE"), nullable=False),
+        sa_column=Column(
+            ForeignKey("organization.id", ondelete="CASCADE"), nullable=False
+        ),
     )
     kind: InvitationKind = Field(
         sa_column=Column(

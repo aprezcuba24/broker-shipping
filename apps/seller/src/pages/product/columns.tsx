@@ -6,19 +6,14 @@ import {
   type ColumnDef,
 } from '@broker/ui'
 import { Link, useSearchParams } from 'react-router-dom'
+import { ProductCartAction } from '@/components/product-cart-action'
 
 function ProviderName({ providerId }: { providerId: string }) {
   const { getProviderName } = useSellerLinkedProviders()
   return getProviderName(providerId)
 }
 
-function CategoryName({
-  categoryId,
-  providerId,
-}: {
-  categoryId: string
-  providerId: string
-}) {
+function CategoryName({ categoryId, providerId }: { categoryId: string; providerId: string }) {
   const { getCategoryName } = useSellerProviderCategories(providerId)
   return getCategoryName(categoryId)
 }
@@ -54,12 +49,7 @@ export const columns: ColumnDef<Product>[] = [
   {
     id: 'category_id',
     header: 'Categoría',
-    cell: (row) => (
-      <CategoryName
-        categoryId={row.category_id}
-        providerId={row.organization_id}
-      />
-    ),
+    cell: (row) => <CategoryName categoryId={row.category_id} providerId={row.organization_id} />,
   },
   {
     id: 'created_at',
@@ -73,5 +63,11 @@ export const columns: ColumnDef<Product>[] = [
     accessor: 'updated_at',
     type: 'datetime',
     hideOn: 'sm',
+  },
+  {
+    id: 'actions',
+    header: '',
+    align: 'right',
+    cell: (row) => <ProductCartAction product={row} />,
   },
 ]

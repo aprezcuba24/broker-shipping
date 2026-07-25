@@ -7,6 +7,7 @@ import {
   type UseQueryResult,
 } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useResetOnChange } from './use-reset-on-change'
 import { pickQueryParams } from './use-url-search-filters'
 
 type MutationCallbacks<TError> = {
@@ -40,8 +41,9 @@ export type UseCrudOptions<
   toCreateVariables: (values: TFormValues) => TCreateVariables
   toPatchVariables: (item: TItem, values: TFormValues) => TPatchVariables | null
   toDeleteVariables: (item: TItem) => TDeleteVariables | null
-  /** When set, list requests include non-empty values as query params (URL-synced filters). */
   filters?: Record<string, string>
+  resetOnChange?: readonly unknown[]
+  onReset?: () => void
 }
 
 export type CrudContextValue<TItem, TFormValues> = {
@@ -105,20 +107,8 @@ function useCrudListQuery<TItem>(
   }
 }
 
-export function useCRUD<
-  TItem,
-  TFormValues,
-  TCreateVariables,
-  TPatchVariables,
-  TDeleteVariables,
->(
-  options: UseCrudOptions<
-    TItem,
-    TFormValues,
-    TCreateVariables,
-    TPatchVariables,
-    TDeleteVariables
-  >,
+export function useCRUD<TItem, TFormValues, TCreateVariables, TPatchVariables, TDeleteVariables>(
+  options: UseCrudOptions<TItem, TFormValues, TCreateVariables, TPatchVariables, TDeleteVariables>,
 ): CrudContextValue<TItem, TFormValues> {
   const {
     useList,
@@ -130,6 +120,8 @@ export function useCRUD<
     toPatchVariables,
     toDeleteVariables,
     filters,
+    resetOnChange,
+    onReset,
   } = options
 
   const queryClient = useQueryClient()
@@ -142,10 +134,7 @@ export function useCRUD<
     [filters],
   )
 
-  const listParamsKey = useMemo(
-    () => JSON.stringify(requestParams ?? {}),
-    [requestParams],
-  )
+  const listParamsKey = useMemo(() => JSON.stringify(requestParams ?? {}), [requestParams])
 
   const prevListParamsKeyRef = useRef(listParamsKey)
 
@@ -157,17 +146,19 @@ export function useCRUD<
     }
   }, [filters, listParamsKey])
 
-  const { data: items = [], isLoading } = useCrudListQuery(
-    useList,
-    getListQueryKey,
-    filters,
-  )
+  useResetOnChange({
+    resetOnChange,
+    getQueryKey: getListQueryKey,
+    onReset,
+    setPage,
+  })
+
+  const { data: items = [], isLoading } = useCrudListQuery(useList, getListQueryKey, filters)
 
   const invalidateList = useCallback(() => {
     const baseKey = getListQueryKey()
     void queryClient.invalidateQueries({
-      queryKey:
-        filters !== undefined ? [...baseKey, requestParams ?? {}] : baseKey,
+      queryKey: filters !== undefined ? [...baseKey, requestParams ?? {}] : baseKey,
     })
   }, [queryClient, getListQueryKey, filters, requestParams])
 

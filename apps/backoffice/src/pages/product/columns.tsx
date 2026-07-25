@@ -1,8 +1,5 @@
 import { useMemo } from 'react'
-import {
-  useListCategoriesProductsCategoriesGet,
-  type Product,
-} from '@broker/api'
+import { useListCategoriesProductsCategoriesGet, type Product } from '@broker/api'
 import { BtnConfirm, BtnList, formatPriceCents, type ColumnDef } from '@broker/ui'
 import { Pencil, Trash2 } from 'lucide-react'
 import { DialogForm } from './DialogForm'
@@ -19,14 +16,8 @@ function CategoryName({ categoryId }: { categoryId: string }) {
 }
 
 function RowActions({ product }: { product: Product }) {
-  const {
-    submitEdit,
-    clearFormError,
-    isSubmitting,
-    formError,
-    deleteItem,
-    isDeleting,
-  } = useProducts()
+  const { submitEdit, clearFormError, isSubmitting, formError, deleteItem, isDeleting } =
+    useProducts()
 
   return (
     <BtnList>
@@ -70,7 +61,7 @@ function RowActions({ product }: { product: Product }) {
 }
 
 export const columns: ColumnDef<Product>[] = [
-  { id: 'name', header: 'Nombre', accessor: 'name' },
+  { id: 'name', header: 'Nombre' },
   {
     id: 'price',
     header: 'Precio',
@@ -81,11 +72,10 @@ export const columns: ColumnDef<Product>[] = [
     header: 'Categoría',
     cell: (row) => <CategoryName categoryId={row.category_id} />,
   },
-  { id: 'created_at', header: 'Creado', accessor: 'created_at', type: 'datetime' },
+  { id: 'created_at', header: 'Creado', type: 'datetime' },
   {
     id: 'updated_at',
     header: 'Actualizado',
-    accessor: 'updated_at',
     type: 'datetime',
     hideOn: 'sm',
   },

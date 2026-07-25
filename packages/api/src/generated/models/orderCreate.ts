@@ -6,15 +6,16 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { OrderLineCreate } from './orderLineCreate';
+import type { OrderCreateCustomerId } from './orderCreateCustomerId';
+import type { OrderCreateCustomer } from './orderCreateCustomer';
+import type { OrderCreateAddressId } from './orderCreateAddressId';
+import type { OrderCreateAddress } from './orderCreateAddress';
 
 export interface OrderCreate {
-  /** @maxLength 255 */
-  name: string;
-  /**
-   * @minLength 1
-   * @maxLength 32
-   */
-  customer_phone: string;
   /** @minItems 1 */
   lines: OrderLineCreate[];
+  customer_id?: OrderCreateCustomerId;
+  customer?: OrderCreateCustomer;
+  address_id?: OrderCreateAddressId;
+  address?: OrderCreateAddress;
 }

@@ -56,11 +56,15 @@ class SellerProductService(ProductServiceBase):
         )
         return [org.id for org in orgs]
 
-    async def _provider_ids_for_seller_orgs(self, seller_org_ids: Sequence[UUID]) -> list[UUID]:
+    async def _provider_ids_for_seller_orgs(
+        self, seller_org_ids: Sequence[UUID]
+    ) -> list[UUID]:
         provider_ids: list[UUID] = []
         seen: set[UUID] = set()
         for seller_org_id in seller_org_ids:
-            for provider_id in await self._link_service.list_active_provider_ids(seller_org_id):
+            for provider_id in await self._link_service.list_active_provider_ids(
+                seller_org_id
+            ):
                 if provider_id not in seen:
                     seen.add(provider_id)
                     provider_ids.append(provider_id)
@@ -72,7 +76,9 @@ class SellerProductService(ProductServiceBase):
         *,
         filters: BaseModel | None = None,
     ) -> Sequence[Product]:
-        provider_ids = await self._link_service.list_active_provider_ids(seller_organization_id)
+        provider_ids = await self._link_service.list_active_provider_ids(
+            seller_organization_id
+        )
         self._ensure_provider_filter_allowed(filters, provider_ids)
         return await self._list_for_provider_ids(provider_ids, filters=filters)
 
@@ -83,7 +89,9 @@ class SellerProductService(ProductServiceBase):
         *,
         detail: str = "Product not found",
     ) -> Product:
-        provider_ids = await self._link_service.list_active_provider_ids(seller_organization_id)
+        provider_ids = await self._link_service.list_active_provider_ids(
+            seller_organization_id
+        )
         return await self._get_for_provider_ids(product_id, provider_ids, detail=detail)
 
     async def list_accessible(

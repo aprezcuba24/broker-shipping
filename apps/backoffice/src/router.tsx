@@ -1,23 +1,11 @@
-import {
-  RequireAuth,
-  getListCategoriesProductsCategoriesGetQueryKey,
-  getListProductsProductsGetQueryKey,
-} from '@broker/api'
-import {
-  ActiveOrganizationProvider,
-  OrganizationScopedApiProvider,
-} from '@broker/ui'
+import { RequireAuth } from '@broker/api'
+import { ActiveOrganizationProvider, OrganizationScopedApiProvider } from '@broker/ui'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { BackofficeLayout } from './layouts/backoffice-layout'
 import { LoginPage } from './pages/login'
 import { CategoryPage } from './pages/category'
 import { OrganizationPage } from './pages/organization'
 import { ProductPage } from './pages/product'
-
-const tenantQueryKeys = [
-  getListCategoriesProductsCategoriesGetQueryKey(),
-  getListProductsProductsGetQueryKey(),
-]
 
 export default function App() {
   return (
@@ -27,10 +15,8 @@ export default function App() {
         <Route
           element={
             <RequireAuth loginPath="/login">
-              <ActiveOrganizationProvider tenantQueryKeys={tenantQueryKeys}>
-                <OrganizationScopedApiProvider
-                  baseUrl={import.meta.env.VITE_API_URL}
-                >
+              <ActiveOrganizationProvider>
+                <OrganizationScopedApiProvider baseUrl={import.meta.env.VITE_API_URL}>
                   <BackofficeLayout />
                 </OrganizationScopedApiProvider>
               </ActiveOrganizationProvider>

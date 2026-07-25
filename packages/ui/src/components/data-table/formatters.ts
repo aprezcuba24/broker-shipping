@@ -42,7 +42,7 @@ function toDate(value: unknown): Date | null {
 export function inferColumnType(
   fieldName: string,
   value: unknown,
-  explicitType?: ColumnType
+  explicitType?: ColumnType,
 ): ColumnType {
   if (explicitType) {
     return explicitType
@@ -57,10 +57,6 @@ export function inferColumnType(
   }
 
   if (isDateFieldName(fieldName)) {
-    return ColumnType.DateTime
-  }
-
-  if (toDate(value) !== null) {
     return ColumnType.DateTime
   }
 

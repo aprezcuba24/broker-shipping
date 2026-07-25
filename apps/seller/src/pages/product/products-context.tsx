@@ -1,9 +1,11 @@
-import {
-  getListProductsProductsSellerGetQueryKey,
-  type Product,
-} from '@broker/api'
+import { getListProductsProductsSellerGetQueryKey, type Product } from '@broker/api'
 import { brokerFetch } from '@broker/api'
-import { pickQueryParams, useUrlSearchFilters } from '@broker/ui'
+import {
+  pickQueryParams,
+  useActiveOrganization,
+  useResetOnChange,
+  useUrlSearchFilters,
+} from '@broker/ui'
 import { useQuery } from '@tanstack/react-query'
 import {
   createContext,
@@ -17,10 +19,7 @@ import {
 
 export const productListFilterKeys = ['name', 'provider_id', 'category_id'] as const
 
-export type ProductListFilters = Record<
-  (typeof productListFilterKeys)[number],
-  string
->
+export type ProductListFilters = Record<(typeof productListFilterKeys)[number], string>
 
 export type ProductsContextValue = {
   items: Product[]
@@ -35,7 +34,8 @@ export type ProductsContextValue = {
 const ProductsContext = createContext<ProductsContextValue | null>(null)
 
 export function ProductsProvider({ children }: { children: ReactNode }) {
-  const { filters, setFilter, setFilters } = useUrlSearchFilters({
+  const { activeOrganization } = useActiveOrganization()
+  const { filters, setFilter, setFilters, resetFilters } = useUrlSearchFilters({
     keys: productListFilterKeys,
   })
 
@@ -43,10 +43,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
 
   const requestParams = useMemo(() => pickQueryParams(filters), [filters])
 
-  const listParamsKey = useMemo(
-    () => JSON.stringify(requestParams ?? {}),
-    [requestParams],
-  )
+  const listParamsKey = useMemo(() => JSON.stringify(requestParams ?? {}), [requestParams])
 
   const prevListParamsKeyRef = useRef(listParamsKey)
 
@@ -56,6 +53,13 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       setPage(1)
     }
   }, [listParamsKey])
+
+  useResetOnChange({
+    resetOnChange: [activeOrganization?.id],
+    getQueryKey: getListProductsProductsSellerGetQueryKey,
+    onReset: resetFilters,
+    setPage,
+  })
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: [...getListProductsProductsSellerGetQueryKey(), requestParams ?? {}],

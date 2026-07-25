@@ -17,10 +17,7 @@ import { useEffect, useRef } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { productFormSchema, type ProductFormValues } from './products-context'
 
-export type DialogFormProps = Omit<
-  FormModalProps<ProductFormValues>,
-  'Form'
->
+export type DialogFormProps = Omit<FormModalProps<ProductFormValues>, 'Form'>
 
 export function DialogForm({
   onSubmit,

@@ -5,6 +5,7 @@ Revises: 071a66174520
 Create Date: 2026-05-29
 
 """
+
 from typing import Sequence, Union
 
 import sqlalchemy as sa
@@ -16,7 +17,9 @@ down_revision: Union[str, Sequence[str], None] = "071a66174520"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
-orgmemberrole = postgresql.ENUM("provider", "seller", name="orgmemberrole", create_type=False)
+orgmemberrole = postgresql.ENUM(
+    "provider", "seller", name="orgmemberrole", create_type=False
+)
 invitationkind = postgresql.ENUM(
     "provider_invite",
     "seller_request",
@@ -35,7 +38,9 @@ invitationstatus = postgresql.ENUM(
 
 def upgrade() -> None:
     bind = op.get_bind()
-    postgresql.ENUM("provider", "seller", name="orgmemberrole").create(bind, checkfirst=True)
+    postgresql.ENUM("provider", "seller", name="orgmemberrole").create(
+        bind, checkfirst=True
+    )
     postgresql.ENUM("provider_invite", "seller_request", name="invitationkind").create(
         bind,
         checkfirst=True,
@@ -82,7 +87,9 @@ def upgrade() -> None:
         sa.Column("user_id", sa.Uuid(), nullable=True),
         sa.Column("created_by_user_id", sa.Uuid(), nullable=False),
         sa.ForeignKeyConstraint(["created_by_user_id"], ["user.id"]),
-        sa.ForeignKeyConstraint(["organization_id"], ["organization.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["organization_id"], ["organization.id"], ondelete="CASCADE"
+        ),
         sa.ForeignKeyConstraint(["user_id"], ["user.id"]),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("token"),
@@ -96,7 +103,9 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_index(op.f("ix_organization_invitation_token"), table_name="organization_invitation")
+    op.drop_index(
+        op.f("ix_organization_invitation_token"), table_name="organization_invitation"
+    )
     op.drop_table("organization_invitation")
     op.drop_column("user_organization", "is_active")
     op.drop_column("user_organization", "role")

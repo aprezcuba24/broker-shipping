@@ -26,10 +26,14 @@ def upgrade() -> None:
         ["organization_id"],
         ["id"],
     )
-    op.create_index(op.f("ix_product_organization_id"), "product", ["organization_id"], unique=False)
+    op.create_index(
+        op.f("ix_product_organization_id"), "product", ["organization_id"], unique=False
+    )
 
 
 def downgrade() -> None:
     op.drop_index(op.f("ix_product_organization_id"), table_name="product")
-    op.drop_constraint("fk_product_organization_id_organization", "product", type_="foreignkey")
+    op.drop_constraint(
+        "fk_product_organization_id_organization", "product", type_="foreignkey"
+    )
     op.drop_column("product", "organization_id")

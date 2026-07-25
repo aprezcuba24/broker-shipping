@@ -14,7 +14,11 @@ async def create_api_key_row(
     organization_id: UUID | str,
     name: str = "integration",
 ) -> tuple[str, dict]:
-    org_uuid = organization_id if isinstance(organization_id, UUID) else UUID(str(organization_id))
+    org_uuid = (
+        organization_id
+        if isinstance(organization_id, UUID)
+        else UUID(str(organization_id))
+    )
     raw, prefix, secret_hash = generate_api_key()
     entity = ApiKey(
         organization_id=org_uuid,
@@ -32,5 +36,9 @@ class ApiKeyFactory:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def build(self, *, organization_id: UUID | str, name: str = "default") -> tuple[str, dict]:
-        return await create_api_key_row(self._session, organization_id=organization_id, name=name)
+    async def build(
+        self, *, organization_id: UUID | str, name: str = "default"
+    ) -> tuple[str, dict]:
+        return await create_api_key_row(
+            self._session, organization_id=organization_id, name=name
+        )

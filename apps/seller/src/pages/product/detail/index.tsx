@@ -37,10 +37,13 @@ export function ProductDetailPage() {
   const { productId = '' } = useParams()
   const [searchParams] = useSearchParams()
 
-  const { data: product, isLoading, isError } =
-    useGetProductProductsSellerProductIdGet(productId, {
-      query: { enabled: !!productId },
-    })
+  const {
+    data: product,
+    isLoading,
+    isError,
+  } = useGetProductProductsSellerProductIdGet(productId, {
+    query: { enabled: !!productId },
+  })
 
   const { getProviderName } = useSellerLinkedProviders()
 

@@ -78,4 +78,6 @@ class OrganizationFactory:
         user_id: UUID | str,
         name: str | None = None,
     ) -> dict:
-        return await self.build(user_id=user_id, name=name, org_type=OrganizationType.seller)
+        return await self.build(
+            user_id=user_id, name=name, org_type=OrganizationType.seller
+        )

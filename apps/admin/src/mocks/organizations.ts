@@ -40,18 +40,14 @@ function daysAgo(days: number, hour = 10, minute = 0): string {
   return date.toISOString()
 }
 
-export const mockOrganizations: Organization[] = organizationNames.map(
-  (name, index) => {
-    const createdDaysAgo = 120 - index * 4
-    const hasUpdate = index % 3 !== 0
+export const mockOrganizations: Organization[] = organizationNames.map((name, index) => {
+  const createdDaysAgo = 120 - index * 4
+  const hasUpdate = index % 3 !== 0
 
-    return {
-      id: `org-${String(index + 1).padStart(3, '0')}`,
-      name,
-      created_at: daysAgo(createdDaysAgo, 9 + (index % 6), index % 60),
-      updated_at: hasUpdate
-        ? daysAgo(createdDaysAgo - 2, 14 + (index % 4), (index * 7) % 60)
-        : null,
-    }
+  return {
+    id: `org-${String(index + 1).padStart(3, '0')}`,
+    name,
+    created_at: daysAgo(createdDaysAgo, 9 + (index % 6), index % 60),
+    updated_at: hasUpdate ? daysAgo(createdDaysAgo - 2, 14 + (index % 4), (index * 7) % 60) : null,
   }
-)
+})

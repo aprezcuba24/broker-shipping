@@ -31,7 +31,9 @@ class MembershipService:
         *,
         is_active: bool,
     ) -> MemberPublic:
-        membership = await self._user_org_repo.get_membership(target_user_id, organization_id)
+        membership = await self._user_org_repo.get_membership(
+            target_user_id, organization_id
+        )
         if membership is None:
             raise HTTPException(status_code=404, detail="Member not found")
         updated = await self._user_org_repo.set_is_active(
@@ -42,8 +44,12 @@ class MembershipService:
         assert updated is not None
         return MemberPublic.model_validate(updated)
 
-    async def list_linked_sellers(self, provider_organization_id: UUID) -> list[Organization]:
-        return await self._link_service.list_linked_seller_organizations(provider_organization_id)
+    async def list_linked_sellers(
+        self, provider_organization_id: UUID
+    ) -> list[Organization]:
+        return await self._link_service.list_linked_seller_organizations(
+            provider_organization_id
+        )
 
     async def set_seller_link_active(
         self,

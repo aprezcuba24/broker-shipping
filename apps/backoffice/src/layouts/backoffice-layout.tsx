@@ -1,11 +1,7 @@
 import { useAuth } from '@broker/api'
 import { AppLayout, initialsFromUsername, OrganizationSelect } from '@broker/ui'
 import { useNavigate } from 'react-router-dom'
-import {
-  backofficeBottomItems,
-  backofficeBrand,
-  backofficeNavItems,
-} from '../config/navigation'
+import { backofficeBottomItems, backofficeBrand, backofficeNavItems } from '../config/navigation'
 
 export function BackofficeLayout() {
   const navigate = useNavigate()

@@ -143,10 +143,67 @@ export function useOrganizations(): OrganizationsContextValue {
 **Rules:**
 - `toPatchVariables` / `toDeleteVariables` return `null` when `item.id` is missing — mutation is skipped.
 - Patch/delete id param name comes from OpenAPI (e.g. `organizationId`, `categoryId`) — match generated types exactly.
-- Do not duplicate list invalidation or error formatting — `useCRUD` handles that via `formatApiError` and `getListQueryKey()`.
+- Do not duplicate list invalidation or error formatting — `useCRUD` handles that via `formatApiError` and `getListQueryKey()`. For org switches use `resetOnChange` / `onReset`, not manual `invalidateQueries` in the provider.
 - Keep Zod schema messages in Spanish and aligned with API constraints.
 
 **Org-scoped entities:** routes require `X-Organization-Id`. The API client adds it from `configureApi({ getOrganizationId })` — no extra header logic in the page. Ensure the active org is set in auth before hitting tenant endpoints.
+
+**Query invalidation on org change:** each context (or hook) owns its own reset — do **not** pass query keys to `ActiveOrganizationProvider` or invalidate globally from the router. Use `useActiveOrganization()` in the provider and wire `resetOnChange` into `useCRUD` (or `useResetOnChange` for non-CRUD lists).
+
+### Org-scoped list reset (`resetOnChange`)
+
+When the list depends on the active organization (tenant-scoped API), reset the list when the user switches org: invalidate the list query, reset pagination to page 1, and clear URL filters if present. **Does not run on initial mount** — URL filters on first load are preserved.
+
+**Reusable primitives in `@broker/ui`:**
+
+| Export | Use |
+|--------|-----|
+| `useActiveOrganization` | Read `activeOrganization` / `setActiveOrganization` |
+| `useCRUD({ resetOnChange, onReset })` | CRUD lists: invalidates base `getListQueryKey()`, resets page, optional callback |
+| `useResetOnChange` | Non-CRUD read-only lists (e.g. seller products) or auxiliary org-scoped hooks |
+| `resetFilters` from `useUrlSearchFilters` | Clears all filter keys in the URL — pass as `onReset` when the list has filters |
+
+**`useCRUD` options:**
+
+```typescript
+resetOnChange?: readonly unknown[]  // e.g. [activeOrganization?.id]
+onReset?: () => void                // e.g. resetFilters
+```
+
+**Org-scoped list without filters** — canonical reference: `apps/backoffice/src/pages/category/categories-context.tsx`:
+
+```tsx
+const { activeOrganization } = useActiveOrganization()
+
+const value = useCRUD({ /* … */ 
+  resetOnChange: [activeOrganization?.id],
+})
+```
+
+**Org-scoped list with URL filters** — canonical reference: `apps/backoffice/src/pages/product/products-context.tsx`:
+
+```tsx
+const { activeOrganization } = useActiveOrganization()
+const { filters, setFilter, resetFilters } = useUrlSearchFilters({
+  keys: productListFilterKeys,
+})
+
+const crud = useCRUD({
+  filters,
+  resetOnChange: [activeOrganization?.id],
+  onReset: resetFilters,
+  // …
+})
+```
+
+**Read-only list (no `useCRUD`)** — use `useResetOnChange` directly; see `apps/seller/src/pages/product/products-context.tsx` and `packages/ui/src/hooks/use-seller-linked-providers.ts`.
+
+**Rules for org-scoped reset:**
+- Always derive scope from `useActiveOrganization()` in the provider/hook that owns the data — not from the router.
+- Pass `resetOnChange: [activeOrganization?.id]` for tenant-scoped lists.
+- When the list has URL filters, pass `onReset: resetFilters` so stale filters from the previous org are cleared.
+- Mutations still invalidate only the active filtered query via `useCRUD` — unchanged.
+- Auxiliary org-scoped queries (e.g. linked providers for filter dropdowns) reset in their own hook with `useResetOnChange`.
 
 ### Org-scoped create pattern (reusable)
 
@@ -169,40 +226,35 @@ export const categoryFormSchema = z.object({
 export type CategoryFormValues = z.infer<typeof categoryFormSchema>
 
 export function CategoriesProvider({ children }: { children: ReactNode }) {
-  const { submitCreate, ...value } = useCRUD<
+  const { activeOrganization } = useActiveOrganization()
+  const value = useCRUD<
     Category,
     CategoryFormValues,
     { data: Category },
     { categoryId: string; data: { name: string } },
     { categoryId: string }
   >({
-    // ...
+    useList: useListCategoriesProductsCategoriesGet,
+    getListQueryKey: getListCategoriesProductsCategoriesGetQueryKey,
+    resetOnChange: [activeOrganization?.id],
+    // …useCreate, usePatch, useDelete
     toCreateVariables: (values) => ({
       data: {
         ...values,
-        organization_id: values.organization_id ?? '',
+        organization_id: values.organization_id ?? activeOrganization?.id ?? '',
       } as Category,
     }),
   })
-
-  const { activeOrganization } = useActiveOrganization()
-
-  const create = (values: CategoryFormValues) =>
-    submitCreate({ ...values, organization_id: activeOrganization?.id })
-
-  return (
-    <CategoriesContext value={{ ...value, submitCreate: create }}>
-      {children}
-    </CategoriesContext>
-  )
+  return <CategoriesContext value={value}>{children}</CategoriesContext>
 }
 ```
 
 **Rules for tenant-scoped create:**
 - Keep `organization_id` optional/nullish in `FormValues` if the field is not edited in the modal.
-- Inject active org id only in provider-level `submitCreate` wrapper, not in UI components.
+- Inject active org id in `toCreateVariables` (or a provider-level `submitCreate` wrapper), not in UI components.
 - Keep dialog form clean (`name` only, etc.); no hidden input for org id.
 - Ensure active organization is selected before create flows.
+- Also wire `resetOnChange: [activeOrganization?.id]` so the list refreshes when the user switches org (see [Org-scoped list reset](#org-scoped-list-reset-resetonchange)).
 
 ### List filters pattern (URL-synced)
 
@@ -212,13 +264,14 @@ When the list API supports query filters (backend `FilterSpec`), sync filter sta
 
 | Export | Use |
 |--------|-----|
-| `useUrlSearchFilters` | Read/write filter keys in the route query string |
+| `useUrlSearchFilters` | Read/write filter keys in the route query string; exposes `resetFilters` |
 | `pickQueryParams` | Omit empty strings before API request |
+| `useActiveOrganization` | Active org for tenant scope and `resetOnChange` |
 | `DebouncedInput` | Text filters with debounced URL updates (default 300ms) |
 | `ListFilterBar` | Single-row flex layout above the table |
 | `EntitySelect` + `allOption` | Relation filters with a “show all” option |
 
-**Flow:** `filter.tsx` calls `setFilter` → URL updates → context passes `filters` to `useCRUD` → backend filters the result. Pagination resets to page 1 when filters change (handled inside `useCRUD`).
+**Flow:** `filter.tsx` calls `setFilter` → URL updates → context passes `filters` to `useCRUD` → backend filters the result. Pagination resets to page 1 when filters change (handled inside `useCRUD`). When the active organization changes, `resetOnChange` invalidates the list, resets page, and `onReset` clears URL filters.
 
 Canonical reference: `apps/backoffice/src/pages/product/products-context.tsx` and `filter.tsx`.
 
@@ -226,12 +279,17 @@ Canonical reference: `apps/backoffice/src/pages/product/products-context.tsx` an
 
 ```tsx
 import {
-  getListProductsProductsGetQueryKey,
-  useListProductsProductsGet,
+  getListProductsProductsProviderGetQueryKey,
+  useListProductsProductsProviderGet,
   // …mutations
   type Product,
 } from '@broker/api'
-import { useCRUD, useUrlSearchFilters, type CrudContextValue } from '@broker/ui'
+import {
+  useActiveOrganization,
+  useCRUD,
+  useUrlSearchFilters,
+  type CrudContextValue,
+} from '@broker/ui'
 
 export const productListFilterKeys = ['name', 'category_id'] as const
 export type ProductListFilters = Record<
@@ -248,7 +306,8 @@ export type ProductsContextValue = CrudContextValue<
 }
 
 export function ProductsProvider({ children }: { children: ReactNode }) {
-  const { filters, setFilter } = useUrlSearchFilters({
+  const { activeOrganization } = useActiveOrganization()
+  const { filters, setFilter, resetFilters } = useUrlSearchFilters({
     keys: productListFilterKeys,
   })
   const crud = useCRUD<
@@ -256,9 +315,11 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     ProductFormValues,
     /* create / patch / delete variable types */
   >({
-    useList: useListProductsProductsGet,
-    getListQueryKey: getListProductsProductsGetQueryKey,
+    useList: useListProductsProductsProviderGet,
+    getListQueryKey: getListProductsProductsProviderGetQueryKey,
     filters,
+    resetOnChange: [activeOrganization?.id],
+    onReset: resetFilters,
     // …useCreate, usePatch, useDelete, mappers
   })
 
@@ -276,6 +337,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
 - Text search uses `DebouncedInput`; selects and toggles update the URL immediately.
 - Expose `filters` and `setFilter` from the provider — `filter.tsx` must not call `useUrlSearchFilters` directly (single source of truth in context).
 - Pass the Orval list hook as `useList` and optional `filters` — `useCRUD` adds query params via `brokerFetch` (no manual wrapper in the page).
+- For tenant-scoped filtered lists, add `resetOnChange: [activeOrganization?.id]` and `onReset: resetFilters`.
 - Use `EntitySelect` with `allOption={{ label: 'Todas las categorías' }}` (or equivalent) for optional relation filters — not required in create/edit `DialogForm`.
 - Backend list filters require `FilterSpec` on the API route; see [broker-api-development](../broker-api-development/SKILL.md).
 
@@ -608,6 +670,8 @@ import { {Entity}Page } from './pages/{entity}'
 <Route path="/{entities}" element={<{Entity}Page />} />
 ```
 
+Wrap authenticated routes with `<ActiveOrganizationProvider>` (no props) and `<OrganizationScopedApiProvider>` — tenant query reset lives in each entity context, not in the router.
+
 **Sidebar** — `apps/backoffice/src/config/navigation.ts`:
 
 ```tsx
@@ -631,6 +695,14 @@ Consumers get this from `use{Entities}()`:
 | `submitEdit`, `isSubmitting`, `formError`, `clearFormError` | Edit modal |
 | `deleteItem`, `isDeleting` | Delete confirm (`BtnConfirm`) |
 
+**Provider-only `useCRUD` options** (not exposed on context):
+
+| Option | Use |
+|--------|-----|
+| `resetOnChange` | Deps that trigger list reset (e.g. `[activeOrganization?.id]`) |
+| `onReset` | Side effect on scope change (e.g. `resetFilters`) |
+| `filters` | URL-synced filter record passed to list fetch |
+
 ---
 
 ## Checklist
@@ -644,7 +716,8 @@ Consumers get this from `use{Entities}()`:
 - [ ] Create button uses `size="sm"` and `className="w-full sm:w-auto"`
 - [ ] Route in `router.tsx` and nav item in `navigation.ts`
 - [ ] Spanish UI strings; field validation aligned with API model
-- [ ] Tenant-scoped entities inject `organization_id` from active organization in provider `submitCreate` wrapper
+- [ ] Tenant-scoped entities inject `organization_id` from active organization in `toCreateVariables` (or provider `submitCreate` wrapper)
+- [ ] Tenant-scoped lists: `resetOnChange: [activeOrganization?.id]` in `useCRUD`; with URL filters also pass `onReset: resetFilters`
 - [ ] Filtered lists: `useUrlSearchFilters` in context; `useCRUD({ filters, useList, getListQueryKey })`; `filter.tsx` uses `DebouncedInput` for text; URL params match backend `FilterSpec`
 
 ### Mobile-first conventions (inherited from `@broker/ui`)
@@ -664,6 +737,7 @@ Consumers get this from `use{Entities}()`:
 - **Do not** use `@broker/ui` `RowActions` dropdown in new CRUD pages unless explicitly migrating away from the `BtnList` + icon pattern used in organization.
 - **Do not** duplicate inline `register` validation rules when schema already exists in context.
 - **Do not** pass `organization_id` from table/dialog components for tenant-scoped entities; resolve it in provider with active org context.
+- **Do not** invalidate tenant queries globally from `router.tsx` or `ActiveOrganizationProvider` — each context/hook owns `resetOnChange` / `useResetOnChange`.
 - **Do not** call `useUrlSearchFilters` in both context and `filter.tsx` — context owns URL state; filter UI reads `filters` / `setFilter` from `use{Entities}()`.
 - **Do not** use plain `Input` with `onChange` for text list filters — use `DebouncedInput` to avoid excessive API calls.
 - **Do not** store filter state in local `useState` when the URL should be shareable/bookmarkable — sync via `useUrlSearchFilters`.

@@ -196,11 +196,7 @@
 }
 
 .broker-data-table table tbody tr:hover {
-  background-color: color-mix(
-    in oklab,
-    var(--color-surface-container-low) 60%,
-    transparent
-  );
+  background-color: color-mix(in oklab, var(--color-surface-container-low) 60%, transparent);
 }
 
 .broker-data-table table td[data-column='actions'],
@@ -216,6 +212,25 @@
   .broker-data-table table th[data-column='actions'] {
     padding-right: 0.75rem;
   }
+}
+
+.broker-data-table__card {
+  padding: 0.75rem;
+  transition: background-color 150ms ease;
+}
+
+.broker-data-table__card:hover {
+  background-color: color-mix(in oklab, var(--color-surface-container-low) 60%, transparent);
+}
+
+.broker-data-table__card-field {
+  padding-block: 0.125rem;
+}
+
+.broker-data-table__card-actions {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--color-surface-container-high);
 }
 
 /* ── Dialog: top-anchored on mobile, centered on desktop ────── */

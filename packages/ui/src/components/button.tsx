@@ -1,9 +1,7 @@
 import * as React from 'react'
 import type { LucideIcon } from 'lucide-react'
-import {
-  Button as ButtonPrimitive,
-  type ButtonProps as ButtonPrimitiveProps,
-} from './ui/button'
+import { Loader2 } from 'lucide-react'
+import { Button as ButtonPrimitive, type ButtonProps as ButtonPrimitiveProps } from './ui/button'
 import { cn } from '../lib/utils'
 
 type ExtraSize = 'icon-sm' | 'icon-xs'
@@ -18,16 +16,44 @@ export type ButtonProps = Omit<ButtonPrimitiveProps, 'size'> & {
   label?: string
   icon?: LucideIcon
   size?: ButtonSize
+  isLoading?: boolean
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ label, icon: Icon, children, size, className, ...props }, ref) => {
+  (
+    {
+      label,
+      icon: Icon,
+      children,
+      size,
+      className,
+      isLoading = false,
+      disabled,
+      asChild,
+      ...props
+    },
+    ref,
+  ) => {
     const isExtra = size === 'icon-sm' || size === 'icon-xs'
     const primitiveSize = isExtra ? 'icon' : size
-    const mergedClassName = cn(
-      isExtra && sizeOverride[size as ExtraSize],
-      className,
-    )
+    const mergedClassName = cn(isExtra && sizeOverride[size as ExtraSize], className)
+    const isDisabled = disabled || isLoading
+    const loadingIcon = isLoading ? <Loader2 aria-hidden className="animate-spin" /> : null
+
+    if (asChild) {
+      return (
+        <ButtonPrimitive
+          ref={ref}
+          size={primitiveSize}
+          className={mergedClassName}
+          disabled={isDisabled}
+          asChild
+          {...props}
+        >
+          {children}
+        </ButtonPrimitive>
+      )
+    }
 
     if (label !== undefined) {
       return (
@@ -35,9 +61,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           ref={ref}
           size={primitiveSize}
           className={mergedClassName}
+          disabled={isDisabled}
           {...props}
         >
-          {Icon ? <Icon aria-hidden /> : null}
+          {loadingIcon ?? (Icon ? <Icon aria-hidden /> : null)}
           {label}
         </ButtonPrimitive>
       )
@@ -48,8 +75,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         size={primitiveSize}
         className={mergedClassName}
+        disabled={isDisabled}
         {...props}
       >
+        {loadingIcon}
         {children}
       </ButtonPrimitive>
     )

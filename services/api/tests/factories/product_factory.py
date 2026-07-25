@@ -16,7 +16,11 @@ async def create_product(
     price: int = 1000,
 ) -> dict:
     """Insert a Product row and commit so other connections (e.g. HTTP client) see it."""
-    oid = organization_id if isinstance(organization_id, UUID) else UUID(str(organization_id))
+    oid = (
+        organization_id
+        if isinstance(organization_id, UUID)
+        else UUID(str(organization_id))
+    )
     cid = category_id if isinstance(category_id, UUID) else UUID(str(category_id))
     entity = Product(
         name=name if name is not None else "Factory product",

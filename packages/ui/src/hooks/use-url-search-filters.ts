@@ -17,9 +17,7 @@ type UseUrlSearchFiltersOptions<K extends string> = {
   keys: readonly K[]
 }
 
-export function useUrlSearchFilters<K extends string>({
-  keys,
-}: UseUrlSearchFiltersOptions<K>) {
+export function useUrlSearchFilters<K extends string>({ keys }: UseUrlSearchFiltersOptions<K>) {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const filters = useMemo(() => {
@@ -70,5 +68,9 @@ export function useUrlSearchFilters<K extends string>({
     [keys, setSearchParams],
   )
 
-  return { filters, setFilter, setFilters }
+  const resetFilters = useCallback(() => {
+    setFilters(Object.fromEntries(keys.map((key) => [key, ''])) as Partial<Record<K, string>>)
+  }, [keys, setFilters])
+
+  return { filters, setFilter, setFilters, resetFilters }
 }

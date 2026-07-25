@@ -104,7 +104,9 @@ async def test_delete_category_with_products_returns_400(
     product_factory: ProductFactory,
     tenant_context: dict,
 ) -> None:
-    category = await category_factory.build(organization_id=tenant_context["organization_id"])
+    category = await category_factory.build(
+        organization_id=tenant_context["organization_id"]
+    )
     await product_factory.build(
         organization_id=tenant_context["organization_id"],
         category_id=category["id"],
@@ -126,7 +128,9 @@ async def test_category_from_other_organization_not_visible(
     outsider = await user_factory.build(username="outsider_cat_iso")
     org_a = await organization_factory.build(user_id=owner["id"], name="Cat Org A")
     org_b = await organization_factory.build(user_id=outsider["id"], name="Cat Org B")
-    category = await category_factory.build(organization_id=org_b["id"], name="Secret Cat")
+    category = await category_factory.build(
+        organization_id=org_b["id"], name="Secret Cat"
+    )
 
     headers_a = tenant_headers(user_id=owner["id"], organization_id=org_a["id"])
     r_list = await client.get("/products/categories/", headers=headers_a)

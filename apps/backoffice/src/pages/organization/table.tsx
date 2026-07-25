@@ -1,8 +1,8 @@
-import { DataTable, PageWrapper } from "@broker/ui"
-import { Building2, Plus } from "lucide-react"
-import { DialogForm } from "./DialogForm"
-import { columns } from "./columns"
-import { useOrganizations } from "./organizations-context"
+import { DataTable, PageWrapper } from '@broker/ui'
+import { Building2, Plus } from 'lucide-react'
+import { DialogForm } from './DialogForm'
+import { columns } from './columns'
+import { useOrganizations } from './organizations-context'
 
 export function OrganizationTable() {
   const {

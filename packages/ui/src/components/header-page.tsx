@@ -8,12 +8,7 @@ export type HeaderPageProps = {
   children?: ReactNode
 }
 
-export function HeaderPage({
-  title,
-  description,
-  icon: Icon,
-  children,
-}: HeaderPageProps) {
+export function HeaderPage({ title, description, icon: Icon, children }: HeaderPageProps) {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="space-y-1">
@@ -23,13 +18,9 @@ export function HeaderPage({
             {title}
           </h1>
         </div>
-        {description ? (
-          <p className="text-sm text-muted-foreground">{description}</p>
-        ) : null}
+        {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
       </div>
-      {children ? (
-        <div className="w-full shrink-0 sm:w-auto">{children}</div>
-      ) : null}
+      {children ? <div className="w-full shrink-0 sm:w-auto">{children}</div> : null}
     </div>
   )
 }

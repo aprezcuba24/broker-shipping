@@ -7,7 +7,10 @@ from tests.factories.auth_helpers import bearer_headers, tenant_headers
 from tests.factories.category_factory import CategoryFactory
 from tests.factories.product_factory import ProductFactory
 from tests.factories.user_factory import UserFactory
-from tests.factories.organization_factory import OrganizationFactory, link_provider_to_seller
+from tests.factories.organization_factory import (
+    OrganizationFactory,
+    link_provider_to_seller,
+)
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")
 
@@ -266,7 +269,9 @@ async def test_seller_list_unlinked_provider_id_returns_403(
     organization_factory: OrganizationFactory,
 ) -> None:
     unlinked_provider_user = await user_factory.build(username="sell_filt_unlinked")
-    unlinked_provider_org = await organization_factory.build(user_id=unlinked_provider_user["id"])
+    unlinked_provider_org = await organization_factory.build(
+        user_id=unlinked_provider_user["id"]
+    )
     r = await client.get(
         "/products/seller/",
         params={"provider_id": unlinked_provider_org["id"]},

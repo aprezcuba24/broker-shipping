@@ -25,13 +25,7 @@ export type FormModalProps<TValues> = {
   onOpenChange?: (open: boolean) => void
 } & Omit<
   ButtonModalProps,
-  | 'onAccept'
-  | 'onCancel'
-  | 'onSubmit'
-  | 'isLoading'
-  | 'open'
-  | 'onOpenChange'
-  | 'children'
+  'onAccept' | 'onCancel' | 'onSubmit' | 'isLoading' | 'open' | 'onOpenChange' | 'children'
 >
 
 export function FormModal<TValues>({

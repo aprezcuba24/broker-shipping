@@ -2,3 +2,17 @@
 @import 'tailwindcss';
 @source "../../../packages/ui/src";
 @import '@broker/ui/styles.css';
+
+@keyframes cart-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+@theme {
+  --animate-cart-pulse: cart-pulse 0.4s ease-out;
+}

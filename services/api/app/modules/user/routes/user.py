@@ -6,7 +6,13 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.lib.security.deps import get_user
 from app.lib.security.passwords import hash_password
-from app.modules.user.models import TokenResponse, User, UserLogin, UserPublic, UserSignup
+from app.modules.user.models import (
+    TokenResponse,
+    User,
+    UserLogin,
+    UserPublic,
+    UserSignup,
+)
 from app.modules.user.services import UserService
 
 router = APIRouter(route_class=DishkaRoute)

@@ -1,4 +1,10 @@
-import { DebouncedInput, EntitySelect, ListFilterBar, useSellerLinkedProviders, useSellerProviderCategories } from '@broker/ui'
+import {
+  DebouncedInput,
+  EntitySelect,
+  ListFilterBar,
+  useSellerLinkedProviders,
+  useSellerProviderCategories,
+} from '@broker/ui'
 import { useProducts } from './products-context'
 
 export function ProductFilters() {
@@ -18,9 +24,7 @@ export function ProductFilters() {
       <EntitySelect
         items={providers}
         value={filters.provider_id}
-        onValueChange={(value) =>
-          setFilters({ provider_id: value, category_id: '' })
-        }
+        onValueChange={(value) => setFilters({ provider_id: value, category_id: '' })}
         allOption={{ label: 'Todos los proveedores' }}
         placeholder="Proveedor"
         aria-label="Filtrar por proveedor"

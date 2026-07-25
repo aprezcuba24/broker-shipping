@@ -2082,13 +2082,13 @@
         ]
       }
     },
-    "/orders/": {
+    "/orders/customers/": {
       "get": {
         "tags": [
           "orders"
         ],
-        "summary": "List Orders",
-        "operationId": "list_orders_orders__get",
+        "summary": "List Customers",
+        "operationId": "list_customers_orders_customers__get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -2096,10 +2096,10 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/OrderDetail"
+                    "$ref": "#/components/schemas/CustomerSummary"
                   },
                   "type": "array",
-                  "title": "Response List Orders Orders  Get"
+                  "title": "Response List Customers Orders Customers  Get"
                 }
               }
             }
@@ -2116,7 +2116,135 @@
             "BrokerOrganization": []
           }
         ]
-      },
+      }
+    },
+    "/orders/customers/{customer_id}": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Get Customer",
+        "operationId": "get_customer_orders_customers__customer_id__get",
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Customer Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/seller/": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "List Seller Orders",
+        "operationId": "list_seller_orders_orders_seller__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/OrderDetail"
+                  },
+                  "type": "array",
+                  "title": "Response List Seller Orders Orders Seller  Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ]
+      }
+    },
+    "/orders/provider/": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "List Provider Orders",
+        "operationId": "list_provider_orders_orders_provider__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/OrderDetail"
+                  },
+                  "type": "array",
+                  "title": "Response List Provider Orders Orders Provider  Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ]
+      }
+    },
+    "/orders/": {
       "post": {
         "tags": [
           "orders"
@@ -2358,6 +2486,112 @@
         ],
         "title": "AcceptByTokenBody"
       },
+      "AddressDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "province": {
+            "type": "string",
+            "title": "Province"
+          },
+          "municipality": {
+            "type": "string",
+            "title": "Municipality"
+          },
+          "district": {
+            "type": "string",
+            "title": "District"
+          },
+          "neighborhood": {
+            "type": "string",
+            "title": "Neighborhood"
+          },
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "province",
+          "municipality",
+          "district",
+          "neighborhood",
+          "address",
+          "reference",
+          "is_active"
+        ],
+        "title": "AddressDetail"
+      },
+      "AddressInput": {
+        "properties": {
+          "province": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Province"
+          },
+          "municipality": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Municipality"
+          },
+          "district": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "District"
+          },
+          "neighborhood": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Neighborhood"
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Address"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          }
+        },
+        "type": "object",
+        "required": [
+          "province",
+          "municipality",
+          "district",
+          "neighborhood",
+          "address"
+        ],
+        "title": "AddressInput"
+      },
       "ApiKey": {
         "properties": {
           "organization_id": {
@@ -2593,6 +2827,100 @@
         ],
         "title": "Category"
       },
+      "CustomerDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "identification": {
+            "type": "string",
+            "title": "Identification"
+          },
+          "addresses": {
+            "items": {
+              "$ref": "#/components/schemas/AddressDetail"
+            },
+            "type": "array",
+            "title": "Addresses"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "phone",
+          "identification",
+          "addresses"
+        ],
+        "title": "CustomerDetail"
+      },
+      "CustomerInput": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Name"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Phone"
+          },
+          "identification": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Identification"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "phone",
+          "identification"
+        ],
+        "title": "CustomerInput"
+      },
+      "CustomerSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "identification": {
+            "type": "string",
+            "title": "Identification"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "phone",
+          "identification"
+        ],
+        "title": "CustomerSummary"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -2796,17 +3124,6 @@
       },
       "OrderCreate": {
         "properties": {
-          "name": {
-            "type": "string",
-            "maxLength": 255,
-            "title": "Name"
-          },
-          "customer_phone": {
-            "type": "string",
-            "maxLength": 32,
-            "minLength": 1,
-            "title": "Customer Phone"
-          },
           "lines": {
             "items": {
               "$ref": "#/components/schemas/OrderLineCreate"
@@ -2814,12 +3131,54 @@
             "type": "array",
             "minItems": 1,
             "title": "Lines"
+          },
+          "customer_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Id"
+          },
+          "customer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CustomerInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "address_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address Id"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AddressInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
         "required": [
-          "name",
-          "customer_phone",
           "lines"
         ],
         "title": "OrderCreate"
@@ -2840,10 +3199,23 @@
             "format": "uuid",
             "title": "Seller Organization Id"
           },
+          "seller": {
+            "$ref": "#/components/schemas/OrganizationRef"
+          },
           "customer_id": {
             "type": "string",
             "format": "uuid",
             "title": "Customer Id"
+          },
+          "customer_snapshot": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Customer Snapshot"
+          },
+          "address_snapshot": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Address Snapshot"
           },
           "created_at": {
             "type": "string",
@@ -2886,7 +3258,10 @@
           "id",
           "name",
           "seller_organization_id",
+          "seller",
           "customer_id",
+          "customer_snapshot",
+          "address_snapshot",
           "created_at",
           "updated_at",
           "status",

@@ -1,0 +1,10 @@
+node_modules
+dist
+**/dist
+.pnpm-store
+coverage
+packages/api/src/generated
+packages/api/openapi.json
+pnpm-lock.yaml
+services/api/.venv
+services/api/.ruff_cache

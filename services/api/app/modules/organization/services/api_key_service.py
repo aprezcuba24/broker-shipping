@@ -19,7 +19,9 @@ class ApiKeyService(BaseService[ApiKey]):
         data["organization_id"] = UUID(str(data["organization_id"]))
         return ApiKeyPublic(**data)
 
-    async def create_for_organization(self, organization_id: UUID, name: str) -> tuple[str, ApiKey]:
+    async def create_for_organization(
+        self, organization_id: UUID, name: str
+    ) -> tuple[str, ApiKey]:
         raw, prefix, secret_hash = generate_api_key()
         entity = ApiKey(
             organization_id=organization_id,

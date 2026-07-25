@@ -5,17 +5,36 @@ from collections.abc import Sequence
 from uuid import UUID
 
 from fastapi import HTTPException
+from pydantic import BaseModel
 
-from app.lib.persistence import BaseService
-from app.modules.orders.models.order import Order
+from app.lib.persistence import BaseService, FilterSpec
+from app.modules.orders.models.address import Address
+from app.modules.orders.models.customer import Customer
+from app.modules.orders.models.order import (
+    PROVIDER_ORDER_LIST_FILTER_SPEC,
+    SELLER_ORDER_LIST_FILTER_SPEC,
+    Order,
+)
 from app.modules.orders.models.order_line import OrderLine
+from app.modules.orders.invoice_code import format_invoice_code
 from app.modules.orders.repositories import OrderRepository
-from app.modules.orders.schemas import OrderCreate, OrderDetail, build_order_detail
+from app.modules.orders.schemas import (
+    OrderCreate,
+    OrderDetail,
+    build_address_snapshot,
+    build_customer_snapshot,
+    build_order_detail,
+)
+from app.modules.orders.services.address_service import AddressService
+from app.modules.orders.services.customer_service import CustomerService
 from app.modules.orders.services.order_line_service import OrderLineService
 from app.modules.organization.models import Organization, OrganizationType
-from app.modules.organization.repositories import OrganizationRepository
+from app.modules.organization.repositories import (
+    OrganizationRepository,
+    SellerOrganizationDataRepository,
+)
+from app.modules.organization.services import ProviderSellerLinkService
 from app.modules.products.services import SellerProductService
-from app.modules.user.services import UserService
 
 
 class OrderService(BaseService[Order]):
@@ -24,14 +43,20 @@ class OrderService(BaseService[Order]):
         repository: OrderRepository,
         line_service: OrderLineService,
         product_service: SellerProductService,
-        user_service: UserService,
+        customer_service: CustomerService,
+        address_service: AddressService,
         org_repository: OrganizationRepository,
+        seller_data_repository: SellerOrganizationDataRepository,
+        link_service: ProviderSellerLinkService,
     ) -> None:
         super().__init__(repository)
         self._line_service = line_service
         self._product_service = product_service
-        self._user_service = user_service
+        self._customer_service = customer_service
+        self._address_service = address_service
         self._org_repo = org_repository
+        self._seller_data_repo = seller_data_repository
+        self._link_service = link_service
 
     @classmethod
     def creation_exclude(cls) -> frozenset[str]:
@@ -40,6 +65,46 @@ class OrderService(BaseService[Order]):
     @classmethod
     def patch_allowed_keys(cls) -> frozenset[str]:
         return frozenset(Order.model_fields.keys()) - Order.IMMUTABLE_FIELDS
+
+    @classmethod
+    def seller_list_filter_spec(cls) -> FilterSpec[Order]:
+        return SELLER_ORDER_LIST_FILTER_SPEC
+
+    @classmethod
+    def provider_list_filter_spec(cls) -> FilterSpec[Order]:
+        return PROVIDER_ORDER_LIST_FILTER_SPEC
+
+    async def _ensure_provider_filter_allowed(
+        self,
+        seller_organization_id: UUID,
+        filters: BaseModel | None,
+    ) -> None:
+        if filters is None:
+            return
+        provider_id = getattr(filters, "provider_organization_id", None)
+        if provider_id is None:
+            return
+        allowed = await self._link_service.list_active_provider_ids(
+            seller_organization_id
+        )
+        if provider_id not in allowed:
+            raise HTTPException(status_code=403, detail="Forbidden")
+
+    async def _ensure_seller_filter_allowed(
+        self,
+        provider_organization_id: UUID,
+        filters: BaseModel | None,
+    ) -> None:
+        if filters is None:
+            return
+        seller_id = getattr(filters, "seller_organization_id", None)
+        if seller_id is None:
+            return
+        if not await self._link_service.has_active_link(
+            seller_id,
+            provider_organization_id,
+        ):
+            raise HTTPException(status_code=403, detail="Forbidden")
 
     def _visible_lines(
         self,
@@ -60,13 +125,13 @@ class OrderService(BaseService[Order]):
             raise HTTPException(status_code=404, detail="Order not found")
         return visible
 
-    async def _orgs_by_id_for_lines(
+    async def _orgs_by_id_for_order(
         self,
+        order: Order,
         lines: Sequence[OrderLine],
     ) -> dict[UUID, Organization]:
         org_ids = {line.organization_id for line in lines}
-        if not org_ids:
-            return {}
+        org_ids.add(order.seller_organization_id)
         orgs = await self._org_repo.list_by_ids(org_ids)
         return {org.id: org for org in orgs}
 
@@ -80,15 +145,11 @@ class OrderService(BaseService[Order]):
         visible = self._visible_lines(order, all_lines, organization)
         return build_order_detail(order, visible, orgs_by_id)
 
-    async def list_for_organization(
+    async def _orders_to_details(
         self,
+        orders: list[Order],
         organization: Organization,
     ) -> list[OrderDetail]:
-        if organization.type == OrganizationType.seller:
-            orders = await self._repo.list_by_seller_organization_id(organization.id)
-        else:
-            orders = await self._repo.list_by_provider_organization_id(organization.id)
-
         if not orders:
             return []
 
@@ -98,25 +159,56 @@ class OrderService(BaseService[Order]):
         for line in all_lines:
             lines_by_order[line.order_id].append(line)
 
-        orgs_by_id = await self._orgs_by_id_for_lines(all_lines)
+        seller_ids = {order.seller_organization_id for order in orders}
+        line_org_ids = {line.organization_id for line in all_lines}
+        orgs_by_id = {
+            org.id: org
+            for org in await self._org_repo.list_by_ids(seller_ids | line_org_ids)
+        }
         return [
             self._to_detail(order, lines_by_order[order.id], organization, orgs_by_id)
             for order in orders
         ]
+
+    async def list_for_seller(
+        self,
+        organization: Organization,
+        *,
+        filters: BaseModel | None = None,
+    ) -> list[OrderDetail]:
+        await self._ensure_provider_filter_allowed(organization.id, filters)
+        orders = await self._repo.list_for_seller_filtered(
+            organization.id,
+            filters=filters,
+            filter_spec=type(self).seller_list_filter_spec(),
+        )
+        return await self._orders_to_details(orders, organization)
+
+    async def list_for_provider(
+        self,
+        organization: Organization,
+        *,
+        filters: BaseModel | None = None,
+    ) -> list[OrderDetail]:
+        await self._ensure_seller_filter_allowed(organization.id, filters)
+        orders = await self._repo.list_for_provider_filtered(
+            organization.id,
+            filters=filters,
+            filter_spec=type(self).provider_list_filter_spec(),
+        )
+        return await self._orders_to_details(orders, organization)
 
     async def create_with_lines(
         self,
         body: OrderCreate,
         organization: Organization,
     ) -> OrderDetail:
-        if organization.type != OrganizationType.seller:
-            raise HTTPException(
-                status_code=403,
-                detail="Only seller organizations can create orders",
-            )
-
-        customer = await self._user_service.find_or_create_customer_by_phone(
-            body.customer_phone,
+        customer, address = await self._customer_service.resolve_customer_and_address(
+            customer_id=body.customer_id,
+            customer=body.customer,
+            address_id=body.address_id,
+            address=body.address,
+            organization=organization,
         )
 
         line_entities: list[OrderLine] = []
@@ -127,17 +219,24 @@ class OrderService(BaseService[Order]):
                 detail="Product not found",
             )
             line_entities.append(
-                self._line_service.build_from_product(product, item.quantity, item.price),
+                self._line_service.build_from_product(
+                    product, item.quantity, item.price
+                ),
             )
 
+        invoice_number = await self._seller_data_repo.allocate_invoice_number(
+            organization.id
+        )
         order = Order(
-            name=body.name,
+            name=format_invoice_code(invoice_number),
             seller_organization_id=organization.id,
             customer_id=customer.id,
+            customer_snapshot=build_customer_snapshot(customer),
+            address_snapshot=build_address_snapshot(address),
         )
         order = await self.create(order)
         lines = await self._line_service.create_for_order(order.id, line_entities)
-        orgs_by_id = await self._orgs_by_id_for_lines(lines)
+        orgs_by_id = await self._orgs_by_id_for_order(order, lines)
         return build_order_detail(order, lines, orgs_by_id)
 
     async def get_or_404_detail(
@@ -149,7 +248,7 @@ class OrderService(BaseService[Order]):
         if order is None:
             raise HTTPException(status_code=404, detail="Order not found")
         lines = await self._line_service.list_for_order(order_id)
-        orgs_by_id = await self._orgs_by_id_for_lines(lines)
+        orgs_by_id = await self._orgs_by_id_for_order(order, lines)
         return self._to_detail(order, lines, organization, orgs_by_id)
 
     async def cancel_order(
@@ -157,19 +256,13 @@ class OrderService(BaseService[Order]):
         order_id: UUID,
         organization: Organization,
     ) -> OrderDetail:
-        if organization.type != OrganizationType.seller:
-            raise HTTPException(
-                status_code=403,
-                detail="Only seller organizations can cancel orders",
-            )
-
         order = await self.get(order_id)
         if order is None or order.seller_organization_id != organization.id:
             raise HTTPException(status_code=404, detail="Order not found")
 
         await self._line_service.cancel_all_if_created(order_id)
         lines = await self._line_service.list_for_order(order_id)
-        orgs_by_id = await self._orgs_by_id_for_lines(lines)
+        orgs_by_id = await self._orgs_by_id_for_order(order, lines)
         return build_order_detail(order, lines, orgs_by_id)
 
     async def cancel_line(
@@ -194,5 +287,5 @@ class OrderService(BaseService[Order]):
 
         await self._line_service.cancel_one(line)
         lines = await self._line_service.list_for_order(order_id)
-        orgs_by_id = await self._orgs_by_id_for_lines(lines)
+        orgs_by_id = await self._orgs_by_id_for_order(order, lines)
         return self._to_detail(order, lines, organization, orgs_by_id)

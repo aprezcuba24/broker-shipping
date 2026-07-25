@@ -16,6 +16,9 @@ from app.modules.organization.models.organization_invitation import (
     OrganizationInvitation,
 )
 from app.modules.organization.models.provider_seller_link import ProviderSellerLink
+from app.modules.organization.models.seller_organization_data import (
+    SellerOrganizationData,
+)
 from app.modules.organization.models.user_organization import UserOrganization
 
 MODULE_MODELS: tuple[type[SQLModel], ...] = (
@@ -24,6 +27,7 @@ MODULE_MODELS: tuple[type[SQLModel], ...] = (
     ApiKey,
     OrganizationInvitation,
     ProviderSellerLink,
+    SellerOrganizationData,
 )
 
 __all__ = [
@@ -41,5 +45,6 @@ __all__ = [
     "OrganizationInvitation",
     "OrganizationType",
     "ProviderSellerLink",
+    "SellerOrganizationData",
     "UserOrganization",
 ]
