@@ -57,4 +57,31 @@ def require_organization(
     return _resolve
 
 
+async def optional_seller_organization(
+    user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_db)],
+    organization_id: UUID | None = None,
+) -> Organization | None:
+    if organization_id is None:
+        return None
+    return await ensure_organization_access(
+        session,
+        user,
+        organization_id=organization_id,
+        required_org_type=OrganizationType.seller,
+    )
+
+
 CurrentUserDep = Annotated[User, Depends(get_current_user)]
+ProviderOrgDep = Annotated[
+    Organization,
+    Depends(require_organization(OrganizationType.provider)),
+]
+SellerOrgDep = Annotated[
+    Organization,
+    Depends(require_organization(OrganizationType.seller)),
+]
+OptionalSellerOrgDep = Annotated[
+    Organization | None,
+    Depends(optional_seller_organization),
+]

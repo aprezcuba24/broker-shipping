@@ -1,0 +1,95 @@
+"""Pytest configuration: Postgres test DB, schema DDL, ASGI client."""
+
+from __future__ import annotations
+
+import os
+from collections.abc import AsyncIterator
+
+os.environ["POSTGRES_DB"] = os.environ.get("POSTGRES_DB_TEST", "broker_test")
+if len(os.environ.get("JWT_SECRET", "")) < 32:
+    os.environ["JWT_SECRET"] = "pytest-jwt-secret-must-be-at-least-thirty-two-bytes"
+
+import pytest
+import pytest_asyncio
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
+from sqlmodel import SQLModel
+
+from app.db.model_loader import load_all_table_models
+from app.main import app, lifespan
+from tests.factories.organization_factory import OrganizationFactory
+from tests.factories.product_factory import ProductFactory
+from tests.factories.user_factory import UserFactory
+
+pytestmark = pytest.mark.asyncio(loop_scope="session")
+
+
+@pytest_asyncio.fixture(scope="session")
+async def test_engine() -> AsyncIterator[AsyncEngine]:
+    load_all_table_models()
+    from app.config import settings
+
+    engine = create_async_engine(settings.database_url)
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.drop_all)
+        await conn.run_sync(SQLModel.metadata.create_all)
+    try:
+        yield engine
+    finally:
+        async with engine.begin() as conn:
+            await conn.run_sync(SQLModel.metadata.drop_all)
+        await engine.dispose()
+
+
+@pytest_asyncio.fixture(scope="session")
+async def client(test_engine: AsyncEngine) -> AsyncIterator[AsyncClient]:
+    async with lifespan(app):
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+        ) as ac:
+            yield ac
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def _truncate_tables(test_engine: AsyncEngine) -> AsyncIterator[None]:
+    async with test_engine.begin() as conn:
+        await conn.execute(
+            text(
+                "TRUNCATE TABLE provider_seller_link, user_organization, "
+                '"user", product, organization RESTART IDENTITY CASCADE'
+            )
+        )
+    yield
+
+
+@pytest_asyncio.fixture
+async def db_session(test_engine: AsyncEngine) -> AsyncIterator[AsyncSession]:
+    session_maker = async_sessionmaker(
+        test_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
+    async with session_maker() as session:
+        yield session
+
+
+@pytest_asyncio.fixture
+async def user_factory(db_session: AsyncSession) -> UserFactory:
+    return UserFactory(db_session)
+
+
+@pytest_asyncio.fixture
+async def organization_factory(db_session: AsyncSession) -> OrganizationFactory:
+    return OrganizationFactory(db_session)
+
+
+@pytest_asyncio.fixture
+async def product_factory(db_session: AsyncSession) -> ProductFactory:
+    return ProductFactory(db_session)
