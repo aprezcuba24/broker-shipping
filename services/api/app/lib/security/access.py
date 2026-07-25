@@ -6,16 +6,30 @@ from uuid import UUID
 
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
+from sqlmodel import col, select
 
 from app.models.organization.enums import OrganizationType
 from app.models.organization.organization import Organization
 from app.models.organization.user_organization import UserOrganization
+from app.models.user.api_key import ApiKey
 from app.models.user.user import User
 
 
 async def load_user_by_id(session: AsyncSession, user_id: UUID) -> User | None:
     result = await session.execute(select(User).where(User.id == user_id))
+    return result.scalar_one_or_none()
+
+
+async def load_active_api_key_by_prefix(
+    session: AsyncSession,
+    prefix: str,
+) -> ApiKey | None:
+    result = await session.execute(
+        select(ApiKey).where(
+            ApiKey.prefix == prefix,
+            col(ApiKey.revoked_at).is_(None),
+        )
+    )
     return result.scalar_one_or_none()
 
 

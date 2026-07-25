@@ -8,3 +8,7 @@ from app.lib.security.tokens import create_access_token
 def bearer_headers(*, user_id: UUID | str) -> dict[str, str]:
     uid = user_id if isinstance(user_id, UUID) else UUID(str(user_id))
     return {"Authorization": f"Bearer {create_access_token(uid)}"}
+
+
+def api_key_headers(*, raw_key: str) -> dict[str, str]:
+    return {"X-API-Key": raw_key}
