@@ -1,5 +1,6 @@
 export { brokerFetch, configureApi, type ApiAuthConfig } from './client'
 export { formatApiError } from './lib/format-api-error'
+export { formatDateTime } from './lib/utils'
 
 export { loginSchema, type LoginFormValues } from './auth/login-schema'
 export { AuthProvider, useAuth } from './auth/auth-context'

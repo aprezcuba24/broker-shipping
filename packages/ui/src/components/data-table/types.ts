@@ -33,7 +33,7 @@ export type DataTablePagination = {
 export type DataTableProps<TData> = {
   columns: ColumnDef<TData>[]
   data: TData[]
-  pagination: DataTablePagination
+  pagination?: DataTablePagination
   getRowId?: (row: TData) => string
   isLoading?: boolean
   emptyMessage?: ReactNode

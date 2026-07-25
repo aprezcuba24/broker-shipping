@@ -165,11 +165,11 @@ export function DataTable<TData>({
   emptyMessage = 'No hay datos',
   className,
 }: DataTableProps<TData>) {
-  const isClientPagination = pagination.total === undefined
-  const total = pagination.total ?? data.length
-  const pageSize = pagination.pageSize ?? PAGE_SIZE
+  const isClientPagination = pagination?.total === undefined
+  const total = pagination?.total ?? data.length
+  const pageSize = pagination?.pageSize ?? PAGE_SIZE
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
-  const safePage = Math.min(Math.max(pagination.page, 1), totalPages)
+  const safePage = Math.min(Math.max(pagination?.page ?? 1, 1), totalPages)
   const pageData = useMemo(() => {
     if (!isClientPagination) {
       return data
@@ -267,7 +267,7 @@ export function DataTable<TData>({
         </Table>
       </div>
 
-      <DataTablePaginationBar {...paginationBar} />
+      {pagination ? <DataTablePaginationBar {...paginationBar} onPageChange={pagination.onPageChange} /> : null}
     </div>
   )
 }

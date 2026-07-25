@@ -2172,13 +2172,13 @@
         }
       }
     },
-    "/orders/": {
+    "/orders/seller/": {
       "get": {
         "tags": [
           "orders"
         ],
-        "summary": "List Orders",
-        "operationId": "list_orders_orders__get",
+        "summary": "List Seller Orders",
+        "operationId": "list_seller_orders_orders_seller__get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -2189,7 +2189,7 @@
                     "$ref": "#/components/schemas/OrderDetail"
                   },
                   "type": "array",
-                  "title": "Response List Orders Orders  Get"
+                  "title": "Response List Seller Orders Orders Seller  Get"
                 }
               }
             }
@@ -2206,7 +2206,45 @@
             "BrokerOrganization": []
           }
         ]
-      },
+      }
+    },
+    "/orders/provider/": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "List Provider Orders",
+        "operationId": "list_provider_orders_orders_provider__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/OrderDetail"
+                  },
+                  "type": "array",
+                  "title": "Response List Provider Orders Orders Provider  Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BrokerBearer": []
+          },
+          {
+            "BrokerApiKey": []
+          },
+          {
+            "BrokerOrganization": []
+          }
+        ]
+      }
+    },
+    "/orders/": {
       "post": {
         "tags": [
           "orders"
