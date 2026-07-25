@@ -13,7 +13,7 @@ description: >-
 
 **Canonical reference (list filters):** `apps/backoffice/src/pages/product/`
 
-**Prerequisites:** API module with list/create/patch/delete routes. See [broker-api-development](../broker-api-development/SKILL.md). Regenerate client hooks after OpenAPI changes.
+**Prerequisites:** The entity must exist in OpenAPI (`pnpm rpc:schema`) before generating client hooks. Regenerate hooks after OpenAPI changes.
 
 ```bash
 pnpm rpc:schema          # export OpenAPI from FastAPI
@@ -258,7 +258,7 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
 
 ### List filters pattern (URL-synced)
 
-When the list API supports query filters (backend `FilterSpec`), sync filter state with URL search params and pass them to `useCRUD`.
+When the list API supports query filters, sync filter state with URL search params and pass them to `useCRUD`.
 
 **Reusable primitives in `@broker/ui`:**
 
@@ -332,14 +332,13 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
 ```
 
 **Rules for list filters:**
-- Filter query param names must match the backend `FilterSpec` field names exactly (e.g. `name`, `category_id`).
+- Filter query param names must match the OpenAPI list endpoint query parameters exactly (e.g. `name`, `category_id`).
 - Empty filter values are removed from the URL and omitted from the API request.
 - Text search uses `DebouncedInput`; selects and toggles update the URL immediately.
 - Expose `filters` and `setFilter` from the provider — `filter.tsx` must not call `useUrlSearchFilters` directly (single source of truth in context).
 - Pass the Orval list hook as `useList` and optional `filters` — `useCRUD` adds query params via `brokerFetch` (no manual wrapper in the page).
 - For tenant-scoped filtered lists, add `resetOnChange: [activeOrganization?.id]` and `onReset: resetFilters`.
 - Use `EntitySelect` with `allOption={{ label: 'Todas las categorías' }}` (or equivalent) for optional relation filters — not required in create/edit `DialogForm`.
-- Backend list filters require `FilterSpec` on the API route; see [broker-api-development](../broker-api-development/SKILL.md).
 
 **Filter UI — `filter.tsx`:**
 
@@ -718,7 +717,7 @@ Consumers get this from `use{Entities}()`:
 - [ ] Spanish UI strings; field validation aligned with API model
 - [ ] Tenant-scoped entities inject `organization_id` from active organization in `toCreateVariables` (or provider `submitCreate` wrapper)
 - [ ] Tenant-scoped lists: `resetOnChange: [activeOrganization?.id]` in `useCRUD`; with URL filters also pass `onReset: resetFilters`
-- [ ] Filtered lists: `useUrlSearchFilters` in context; `useCRUD({ filters, useList, getListQueryKey })`; `filter.tsx` uses `DebouncedInput` for text; URL params match backend `FilterSpec`
+- [ ] Filtered lists: `useUrlSearchFilters` in context; `useCRUD({ filters, useList, getListQueryKey })`; `filter.tsx` uses `DebouncedInput` for text; URL params match OpenAPI list query parameters
 
 ### Mobile-first conventions (inherited from `@broker/ui`)
 

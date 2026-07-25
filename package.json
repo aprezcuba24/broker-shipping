@@ -11,19 +11,12 @@
     "dev:admin": "pnpm --filter @broker/admin dev",
     "dev:seller": "pnpm --filter @broker/seller dev",
     "dev:api": "cd services/api && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
-    "test:api": "cd services/api && uv run pytest",
-    "migrate:api": "cd services/api && uv run alembic upgrade head",
-    "seed:api": "cd services/api && uv run python scripts/seed_base_data.py",
-    "rpc:schema": "cd services/api && uv run python scripts/export_openapi.py",
     "rpc:client": "pnpm --filter @broker/api codegen",
-    "rpc": "pnpm rpc:schema && pnpm rpc:client",
     "build": "pnpm -r --filter './apps/*' run build",
-    "format": "pnpm format:ts && pnpm format:py",
-    "format:check": "pnpm format:ts:check && pnpm format:py:check",
+    "format": "pnpm format:ts",
+    "format:check": "pnpm format:ts:check",
     "format:ts": "prettier --write \"apps/**/*.{ts,tsx,js,jsx,json,css,md}\" \"packages/**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "format:ts:check": "prettier --check \"apps/**/*.{ts,tsx,js,jsx,json,css,md}\" \"packages/**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "format:py": "cd services/api && uv run ruff format .",
-    "format:py:check": "cd services/api && uv run ruff format --check ."
+    "format:ts:check": "prettier --check \"apps/**/*.{ts,tsx,js,jsx,json,css,md}\" \"packages/**/*.{ts,tsx,js,jsx,json,css,md}\""
   },
   "engines": {
     "node": ">=20"

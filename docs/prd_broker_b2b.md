@@ -155,9 +155,7 @@ debido a:
 ### API principal
 
 - FastAPI
-- Arquitectura modular monolítica
 - REST API
-- JWT/Auth
 - OpenAPI
 
 ---
@@ -260,33 +258,6 @@ debido a:
 
 # 6. Diseño Técnico Inicial
 
-## Backend Stack
-
-### Framework
-
-- FastAPI
-
-### ORM
-
-- SQLModel
-
-### Migraciones
-
-- Alembic
-
-### Validación
-
-- Pydantic
-
-### Async Tasks
-
-Opciones:
-- Celery
-- arq
-- Dramatiq
-
----
-
 ## Frontend Stack
 
 ### React
@@ -336,15 +307,10 @@ Construir la base técnica del sistema.
 
 ### Backend Base
 
-- [ ] Configurar FastAPI
-- [ ] Configurar PostgreSQL
-- [ ] Configurar Alembic
-- [ ] Configurar Redis
-- [ ] Sistema de autenticación JWT
-- [ ] Sistema multi-tenant
-- [ ] Roles y permisos
-- [ ] Logging estructurado
-- [ ] OpenAPI documentation
+- [ ] Definir e implementar API base (FastAPI + PostgreSQL)
+- [ ] Autenticación y autorización
+- [ ] Multi-tenant y control de acceso
+- [ ] Logging y documentación OpenAPI
 
 ### Frontend Base
 
@@ -489,7 +455,7 @@ Aunque inicialmente sea un monolito modular, el sistema debe publicar eventos in
 
 ## Seguridad
 
-- JWT
+- autenticación y autorización
 - API keys
 - scopes
 - rate limiting
