@@ -151,3 +151,14 @@ export type {
   TopHeaderProps,
   AppLayoutProps,
 } from './components/layout/types'
+
+export {
+  ActiveOrganizationProvider,
+  useActiveOrganization,
+} from './organization/active-organization-context'
+export type {
+  ActiveOrganizationContextValue,
+  ActiveOrganizationProviderProps,
+} from './organization/active-organization-context'
+export { OrganizationSelect } from './organization/organization-select'
+export { OrganizationScopedApiProvider } from './organization/organization-scoped-api-provider'

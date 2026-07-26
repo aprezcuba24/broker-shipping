@@ -1,5 +1,5 @@
 import { useAuth } from '@broker/api'
-import { AppLayout, initialsFromName } from '@broker/ui'
+import { AppLayout, initialsFromName, OrganizationSelect } from '@broker/ui'
 import { useNavigate } from 'react-router-dom'
 import { sellerBottomItems, sellerBrand, sellerNavItems } from '../config/navigation'
 
@@ -15,6 +15,7 @@ export function SellerLayout() {
   return (
     <AppLayout
       headerTitle="Portal vendedores"
+      headerExtra={<OrganizationSelect />}
       navItems={sellerNavItems}
       bottomItems={sellerBottomItems}
       brand={sellerBrand}

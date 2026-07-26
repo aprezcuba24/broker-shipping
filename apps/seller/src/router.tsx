@@ -1,4 +1,5 @@
 import { RequireAuth } from '@broker/api'
+import { ActiveOrganizationProvider, OrganizationScopedApiProvider } from '@broker/ui'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { SellerLayout } from './layouts/seller-layout'
 import { HomePage } from './pages/home'
@@ -24,7 +25,11 @@ export default function App() {
         <Route
           element={
             <RequireAuth loginPath="/login">
-              <SellerLayout />
+              <ActiveOrganizationProvider organizationType="seller">
+                <OrganizationScopedApiProvider baseUrl={import.meta.env.VITE_API_URL}>
+                  <SellerLayout />
+                </OrganizationScopedApiProvider>
+              </ActiveOrganizationProvider>
             </RequireAuth>
           }
         >

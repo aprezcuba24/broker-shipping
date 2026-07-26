@@ -1,5 +1,5 @@
 import { useAuth } from '@broker/api'
-import { AppLayout, initialsFromName } from '@broker/ui'
+import { AppLayout, initialsFromName, OrganizationSelect } from '@broker/ui'
 import { useNavigate } from 'react-router-dom'
 import { backofficeBottomItems, backofficeBrand, backofficeNavItems } from '../config/navigation'
 
@@ -15,6 +15,7 @@ export function BackofficeLayout() {
   return (
     <AppLayout
       headerTitle="Portal proveedores"
+      headerExtra={<OrganizationSelect />}
       navItems={backofficeNavItems}
       bottomItems={backofficeBottomItems}
       brand={backofficeBrand}
