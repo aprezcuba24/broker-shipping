@@ -1,11 +1,8 @@
 import { RequireAuth } from '@broker/api'
-import { ActiveOrganizationProvider, OrganizationScopedApiProvider } from '@broker/ui'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { BackofficeLayout } from './layouts/backoffice-layout'
+import { HomePage } from './pages/home'
 import { LoginPage } from './pages/login'
-import { CategoryPage } from './pages/category'
-import { OrganizationPage } from './pages/organization'
-import { ProductPage } from './pages/product'
 
 export default function App() {
   return (
@@ -15,20 +12,13 @@ export default function App() {
         <Route
           element={
             <RequireAuth loginPath="/login">
-              <ActiveOrganizationProvider>
-                <OrganizationScopedApiProvider baseUrl={import.meta.env.VITE_API_URL}>
-                  <BackofficeLayout />
-                </OrganizationScopedApiProvider>
-              </ActiveOrganizationProvider>
+              <BackofficeLayout />
             </RequireAuth>
           }
         >
-          <Route index element={<Navigate to="/products" replace />} />
-          <Route path="/products" element={<ProductPage />} />
-          <Route path="/categories" element={<CategoryPage />} />
-          <Route path="/organizations" element={<OrganizationPage />} />
+          <Route index element={<HomePage />} />
         </Route>
-        <Route path="*" element={<Navigate to="/products" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   )

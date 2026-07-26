@@ -12,7 +12,7 @@ import type { AuthContextValue, AuthProviderProps } from './types'
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-export function AuthProvider({ storage, baseUrl, appType, children }: AuthProviderProps) {
+export function AuthProvider({ storage, baseUrl, children }: AuthProviderProps) {
   const queryClient = useQueryClient()
   const tokenRef = useRef<string | null>(storage.getToken())
   const [token, setToken] = useState<string | null>(() => storage.getToken())
@@ -45,11 +45,7 @@ export function AuthProvider({ storage, baseUrl, appType, children }: AuthProvid
     void queryClient.removeQueries({ queryKey: getMeUsersMeGetQueryKey() })
   }, [meQuery.isError, token, storage, queryClient])
 
-  const loginMutation = useLoginUsersLoginPost({
-    request: {
-      headers: { app_type: appType },
-    },
-  })
+  const loginMutation = useLoginUsersLoginPost()
 
   const login = useCallback(
     async (values: LoginFormValues) => {

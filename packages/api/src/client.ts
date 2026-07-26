@@ -5,12 +5,14 @@ export type ApiAuthConfig = {
   getOrganizationId?: () => string | null
 }
 
+export type BrokerFetchParams = Record<string, string | number | boolean | null | undefined>
+
 export type BrokerFetchConfig = {
   url: string
   method: string
   headers?: Record<string, string>
   data?: unknown
-  params?: Record<string, string>
+  params?: BrokerFetchParams
   signal?: AbortSignal
 }
 
@@ -26,11 +28,12 @@ function getBaseUrl(): string {
   return authConfig.baseUrl ?? DEFAULT_BASE_URL
 }
 
-function buildUrl(path: string, params?: Record<string, string>): string {
+function buildUrl(path: string, params?: BrokerFetchParams): string {
   const url = new URL(path, getBaseUrl())
   if (params) {
     for (const [key, value] of Object.entries(params)) {
-      url.searchParams.set(key, value)
+      if (value === null || value === undefined) continue
+      url.searchParams.set(key, String(value))
     }
   }
   return url.toString()

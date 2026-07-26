@@ -1,7 +1,5 @@
 export { cn, formatPriceCents, toPriceCents } from './lib/utils'
-export { initialsFromUsername } from './lib/initials'
-
-export { AddressShow } from './components/address'
+export { initialsFromName } from './lib/initials'
 
 export { LoginForm } from './components/auth/login-form'
 export type { LoginFields, LoginFormProps } from './components/auth/login-form'
@@ -27,12 +25,8 @@ export type { ButtonModalProps } from './components/button-modal'
 export { FormModal } from './components/form-modal'
 export type { FormModalFormProps, FormModalHandle, FormModalProps } from './components/form-modal'
 export { useFormSubmitHandle } from './hooks/use-form-submit-handle'
-export { useCRUD } from './hooks/use-crud'
-export type { CrudContextValue, UseCrudOptions, UseCrudResult } from './hooks/use-crud'
 export { useResetOnChange } from './hooks/use-reset-on-change'
 export { pickQueryParams, useUrlSearchFilters } from './hooks/use-url-search-filters'
-export { useSellerProviderCategories } from './hooks/use-seller-provider-categories'
-export { useSellerLinkedProviders } from './hooks/use-seller-linked-providers'
 export { DebouncedInput } from './components/debounced-input'
 export type { DebouncedInputProps } from './components/debounced-input'
 export { ListFilterBar } from './components/list-filter-bar'
@@ -140,17 +134,6 @@ export {
   SelectValue,
 } from './components/ui/select'
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './components/ui/tabs'
-
-export {
-  ActiveOrganizationProvider,
-  useActiveOrganization,
-} from './organization/active-organization-context'
-export type {
-  ActiveOrganizationContextValue,
-  ActiveOrganizationProviderProps,
-} from './organization/active-organization-context'
-export { OrganizationScopedApiProvider } from './organization/organization-scoped-api-provider'
-export { OrganizationSelect } from './organization/organization-select'
 
 export { AppLayout } from './components/layout/app-layout'
 export { Sidebar } from './components/layout/sidebar'

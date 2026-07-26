@@ -7,7 +7,7 @@ import { Field, FieldError, FieldGroup, FieldLabel } from '../ui/field'
 import { Input } from '../ui/input'
 
 export type LoginFields = {
-  username: string
+  email: string
   password: string
 }
 
@@ -15,7 +15,7 @@ export type LoginFormProps = {
   title: string
   description: string
   schema: z.ZodObject<{
-    username: z.ZodString
+    email: z.ZodString
     password: z.ZodString
   }>
   onSubmit: (values: LoginFields) => void | Promise<void>
@@ -35,7 +35,7 @@ export function LoginForm({
 }: LoginFormProps) {
   const form = useForm<LoginFields>({
     resolver: zodResolver(schema),
-    defaultValues: { username: '', password: '' },
+    defaultValues: { email: '', password: '' },
   })
 
   return (
@@ -49,16 +49,16 @@ export function LoginForm({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FieldGroup>
               <Controller
-                name="username"
+                name="email"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="username">Usuario</FieldLabel>
+                    <FieldLabel htmlFor="email">Correo</FieldLabel>
                     <Input
                       {...field}
-                      id="username"
-                      type="text"
-                      autoComplete="username"
+                      id="email"
+                      type="email"
+                      autoComplete="email"
                       aria-invalid={fieldState.invalid}
                     />
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}

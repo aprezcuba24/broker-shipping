@@ -1,8 +1,8 @@
 import { RequireAuth } from '@broker/api'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AdminLayout } from './layouts/admin-layout'
+import { HomePage } from './pages/home'
 import { LoginPage } from './pages/login'
-import { OrganizationListPage } from './pages/organization/list'
 
 export default function App() {
   return (
@@ -16,8 +16,9 @@ export default function App() {
             </RequireAuth>
           }
         >
-          <Route path="/organizations" element={<OrganizationListPage />} />
+          <Route index element={<HomePage />} />
         </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   )

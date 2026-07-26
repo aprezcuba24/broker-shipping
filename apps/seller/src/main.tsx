@@ -11,11 +11,7 @@ const queryClient = new QueryClient()
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <AuthProvider
-        storage={sellerAuthStorage}
-        baseUrl={import.meta.env.VITE_API_URL}
-        appType="seller_app"
-      >
+      <AuthProvider storage={sellerAuthStorage} baseUrl={import.meta.env.VITE_API_URL}>
         <App />
       </AuthProvider>
     </QueryClientProvider>
