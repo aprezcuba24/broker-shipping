@@ -10,6 +10,7 @@ export type AuthContextValue = {
   isLoading: boolean
   isLoggingIn: boolean
   loginError: string | null
+  isEmailNotVerified: boolean
   login: (values: LoginFormValues) => Promise<void>
   logout: () => void
 }

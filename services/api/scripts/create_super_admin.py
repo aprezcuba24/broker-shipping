@@ -30,6 +30,7 @@ from sqlmodel import select
 from app.config import settings
 from app.db.session import create_async_engine_and_session_maker
 from app.lib.security.passwords import hash_password
+from app.lib.utils import utc_now
 from app.models.user.user import User
 
 
@@ -57,6 +58,7 @@ async def create_super_admin(
                 email=email,
                 password_hash=hash_password(password),
                 is_super_admin=True,
+                email_verified_at=utc_now(),
             )
             session.add(user)
             await session.commit()

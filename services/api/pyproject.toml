@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Broker B2B API (FastAPI scaffold)"
 requires-python = ">=3.12"
 dependencies = [
+    "aiosmtplib>=4.0.0",
     "alembic>=1.18.4",
     "asyncpg>=0.31.0",
     "bcrypt>=4.0.1",

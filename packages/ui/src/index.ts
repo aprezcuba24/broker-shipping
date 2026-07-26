@@ -1,8 +1,12 @@
 export { cn, formatPriceCents, toPriceCents } from './lib/utils'
 export { initialsFromName } from './lib/initials'
 
-export { LoginForm } from './components/auth/login-form'
+export { LoginForm, AuthFormLink } from './components/auth/login-form'
 export type { LoginFields, LoginFormProps } from './components/auth/login-form'
+export { RegisterForm } from './components/auth/register-form'
+export type { RegisterFields, RegisterFormProps } from './components/auth/register-form'
+export { VerifyEmailCard } from './components/auth/verify-email-card'
+export type { VerifyEmailCardProps, VerifyEmailStatus } from './components/auth/verify-email-card'
 
 export { ConfirmDialog } from './components/confirm-dialog'
 export type { ConfirmDialogProps } from './components/confirm-dialog'

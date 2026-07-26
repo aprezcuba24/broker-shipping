@@ -8,6 +8,7 @@ import {
 } from '../generated/users/users'
 import { formatApiError } from '../lib/format-api-error'
 import type { LoginFormValues } from './login-schema'
+import { isEmailNotVerifiedError } from './register-schema'
 import type { AuthContextValue, AuthProviderProps } from './types'
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -72,8 +73,15 @@ export function AuthProvider({ storage, baseUrl, children }: AuthProviderProps) 
   const isAuthenticated = Boolean(token && user && !meQuery.isError)
 
   const loginError = loginMutation.isError
-    ? formatApiError(loginMutation.error, 'No se pudo iniciar sesión. Comprueba tus credenciales.')
+    ? isEmailNotVerifiedError(loginMutation.error)
+      ? 'Debes confirmar tu correo antes de iniciar sesión.'
+      : formatApiError(
+          loginMutation.error,
+          'No se pudo iniciar sesión. Comprueba tus credenciales.',
+        )
     : null
+  const isEmailNotVerified =
+    loginMutation.isError && isEmailNotVerifiedError(loginMutation.error)
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -83,10 +91,21 @@ export function AuthProvider({ storage, baseUrl, children }: AuthProviderProps) 
       isLoading,
       isLoggingIn: loginMutation.isPending,
       loginError,
+      isEmailNotVerified,
       login,
       logout,
     }),
-    [token, user, isAuthenticated, isLoading, loginMutation.isPending, loginError, login, logout],
+    [
+      token,
+      user,
+      isAuthenticated,
+      isLoading,
+      loginMutation.isPending,
+      loginError,
+      isEmailNotVerified,
+      login,
+      logout,
+    ],
   )
 
   return <AuthContext value={value}>{children}</AuthContext>

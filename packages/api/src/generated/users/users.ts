@@ -25,11 +25,14 @@ import type {
 
 import type {
   HTTPValidationError,
+  MessageResponse,
   OrganizationPublic,
+  ResendVerificationRequest,
   TokenResponse,
   UserLogin,
   UserPublic,
-  UserRegister
+  UserRegister,
+  VerifyEmailRequest
 } from '.././models';
 
 import { brokerFetch } from '../../client';
@@ -100,6 +103,134 @@ export const useRegisterUsersRegisterPost = <TError = HTTPValidationError,
       > => {
 
       const mutationOptions = getRegisterUsersRegisterPostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Verify Email Endpoint
+ */
+export const verifyEmailEndpointUsersVerifyEmailPost = (
+    verifyEmailRequest: VerifyEmailRequest,
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<MessageResponse>(
+      {url: `/users/verify-email`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: verifyEmailRequest, signal
+    },
+      options);
+    }
+  
+
+
+export const getVerifyEmailEndpointUsersVerifyEmailPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyEmailEndpointUsersVerifyEmailPost>>, TError,{data: VerifyEmailRequest}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof verifyEmailEndpointUsersVerifyEmailPost>>, TError,{data: VerifyEmailRequest}, TContext> => {
+
+const mutationKey = ['verifyEmailEndpointUsersVerifyEmailPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof verifyEmailEndpointUsersVerifyEmailPost>>, {data: VerifyEmailRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  verifyEmailEndpointUsersVerifyEmailPost(data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type VerifyEmailEndpointUsersVerifyEmailPostMutationResult = NonNullable<Awaited<ReturnType<typeof verifyEmailEndpointUsersVerifyEmailPost>>>
+    export type VerifyEmailEndpointUsersVerifyEmailPostMutationBody = VerifyEmailRequest
+    export type VerifyEmailEndpointUsersVerifyEmailPostMutationError = HTTPValidationError
+
+    /**
+ * @summary Verify Email Endpoint
+ */
+export const useVerifyEmailEndpointUsersVerifyEmailPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyEmailEndpointUsersVerifyEmailPost>>, TError,{data: VerifyEmailRequest}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof verifyEmailEndpointUsersVerifyEmailPost>>,
+        TError,
+        {data: VerifyEmailRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getVerifyEmailEndpointUsersVerifyEmailPostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Resend Verification
+ */
+export const resendVerificationUsersResendVerificationPost = (
+    resendVerificationRequest: ResendVerificationRequest,
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<MessageResponse>(
+      {url: `/users/resend-verification`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: resendVerificationRequest, signal
+    },
+      options);
+    }
+  
+
+
+export const getResendVerificationUsersResendVerificationPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resendVerificationUsersResendVerificationPost>>, TError,{data: ResendVerificationRequest}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof resendVerificationUsersResendVerificationPost>>, TError,{data: ResendVerificationRequest}, TContext> => {
+
+const mutationKey = ['resendVerificationUsersResendVerificationPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof resendVerificationUsersResendVerificationPost>>, {data: ResendVerificationRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  resendVerificationUsersResendVerificationPost(data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ResendVerificationUsersResendVerificationPostMutationResult = NonNullable<Awaited<ReturnType<typeof resendVerificationUsersResendVerificationPost>>>
+    export type ResendVerificationUsersResendVerificationPostMutationBody = ResendVerificationRequest
+    export type ResendVerificationUsersResendVerificationPostMutationError = HTTPValidationError
+
+    /**
+ * @summary Resend Verification
+ */
+export const useResendVerificationUsersResendVerificationPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resendVerificationUsersResendVerificationPost>>, TError,{data: ResendVerificationRequest}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof resendVerificationUsersResendVerificationPost>>,
+        TError,
+        {data: ResendVerificationRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getResendVerificationUsersResendVerificationPostMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

@@ -4,6 +4,7 @@
  * Broker API
  * OpenAPI spec version: 0.1.0
  */
+import type { UserRegisterClientApp } from './userRegisterClientApp';
 
 export interface UserRegister {
   /**
@@ -17,4 +18,5 @@ export interface UserRegister {
    * @maxLength 128
    */
   password: string;
+  client_app: UserRegisterClientApp;
 }

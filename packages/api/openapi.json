@@ -96,6 +96,88 @@
         }
       }
     },
+    "/users/verify-email": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Verify Email Endpoint",
+        "operationId": "verify_email_endpoint_users_verify_email_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyEmailRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/resend-verification": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Resend Verification",
+        "operationId": "resend_verification_users_resend_verification_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResendVerificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/login": {
       "post": {
         "tags": [
@@ -1135,6 +1217,19 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "MessageResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "MessageResponse"
+      },
       "OrganizationPublic": {
         "properties": {
           "id": {
@@ -1299,6 +1394,29 @@
         "type": "object",
         "title": "ProductUpdate"
       },
+      "ResendVerificationRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "client_app": {
+            "type": "string",
+            "enum": [
+              "backoffice",
+              "seller"
+            ],
+            "title": "Client App"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "client_app"
+        ],
+        "title": "ResendVerificationRequest"
+      },
       "TokenResponse": {
         "properties": {
           "access_token": {
@@ -1356,6 +1474,10 @@
             "type": "boolean",
             "title": "Is Super Admin"
           },
+          "email_verified": {
+            "type": "boolean",
+            "title": "Email Verified"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -1368,6 +1490,7 @@
           "name",
           "email",
           "is_super_admin",
+          "email_verified",
           "created_at"
         ],
         "title": "UserPublic"
@@ -1390,13 +1513,22 @@
             "maxLength": 128,
             "minLength": 8,
             "title": "Password"
+          },
+          "client_app": {
+            "type": "string",
+            "enum": [
+              "backoffice",
+              "seller"
+            ],
+            "title": "Client App"
           }
         },
         "type": "object",
         "required": [
           "name",
           "email",
-          "password"
+          "password",
+          "client_app"
         ],
         "title": "UserRegister"
       },
@@ -1439,6 +1571,20 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "VerifyEmailRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "VerifyEmailRequest"
       }
     },
     "securitySchemes": {

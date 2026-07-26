@@ -10,5 +10,6 @@ export interface UserPublic {
   name: string;
   email: string;
   is_super_admin: boolean;
+  email_verified: boolean;
   created_at: string;
 }

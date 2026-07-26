@@ -3,6 +3,7 @@ from __future__ import annotations
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.lib.security.passwords import hash_password
+from app.lib.utils import utc_now
 from app.models.user.user import User
 
 
@@ -13,12 +14,14 @@ async def create_user(
     email: str,
     password: str,
     is_super_admin: bool = False,
+    email_verified: bool = True,
 ) -> dict:
     entity = User(
         name=name,
         email=email,
         password_hash=hash_password(password),
         is_super_admin=is_super_admin,
+        email_verified_at=utc_now() if email_verified else None,
     )
     session.add(entity)
     await session.flush()
@@ -40,6 +43,7 @@ class UserFactory:
         email: str | None = None,
         password: str = "secret123",
         is_super_admin: bool = False,
+        email_verified: bool = True,
     ) -> dict:
         self._n += 1
         final_name = name or f"User {self._n:04d}"
@@ -50,4 +54,5 @@ class UserFactory:
             email=final_email,
             password=password,
             is_super_admin=is_super_admin,
+            email_verified=email_verified,
         )

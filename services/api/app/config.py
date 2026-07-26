@@ -29,6 +29,16 @@ class Settings(BaseSettings):
     jwt_algorithm: str = Field(default="HS256")
     jwt_expire_minutes: int = Field(default=60 * 24)
 
+    smtp_host: str = Field(default="localhost")
+    smtp_port: int = Field(default=1025)
+    smtp_user: str = Field(default="")
+    smtp_password: str = Field(default="")
+    smtp_use_tls: bool = Field(default=False)
+    mail_from: str = Field(default="noreply@broker.local")
+    email_verification_token_hours: int = Field(default=24)
+    frontend_backoffice_url: str = Field(default="http://localhost:5173")
+    frontend_seller_url: str = Field(default="http://localhost:5174")
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def database_url(self) -> str:

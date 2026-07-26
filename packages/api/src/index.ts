@@ -3,6 +3,14 @@ export { formatApiError } from './lib/format-api-error'
 export { formatDateTime } from './lib/utils'
 
 export { loginSchema, type LoginFormValues } from './auth/login-schema'
+export {
+  registerSchema,
+  clientAppSchema,
+  EMAIL_NOT_VERIFIED_DETAIL,
+  isEmailNotVerifiedError,
+  type RegisterFormValues,
+  type ClientApp,
+} from './auth/register-schema'
 export { AuthProvider, useAuth } from './auth/auth-context'
 export { RequireAuth } from './auth/require-auth'
 export { createLocalStorageAuthStorage } from './auth/storage'
