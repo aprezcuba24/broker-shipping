@@ -5,10 +5,12 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
+from app.lib.security.access import is_super_admin, list_all_provider_organization_ids
 from app.models.organization.enums import OrganizationType
 from app.models.organization.organization import Organization
 from app.models.organization.provider_seller_link import ProviderSellerLink
 from app.models.organization.user_organization import UserOrganization
+from app.models.user.user import User
 
 
 async def list_active_provider_ids(
@@ -64,14 +66,20 @@ async def list_seller_org_ids_for_user(
 
 async def resolve_provider_ids(
     session: AsyncSession,
-    user_id: UUID,
+    user: User,
     seller_organization_id: UUID | None = None,
 ) -> list[UUID]:
-    """Provider org IDs linked to one seller org, or to all of the user's seller orgs."""
+    """Provider org IDs linked to one seller org, or to all of the user's seller orgs.
+
+    Super admins see every provider organization (membership and links ignored).
+    """
+    if is_super_admin(user):
+        return await list_all_provider_organization_ids(session)
+
     if seller_organization_id is not None:
         return await list_active_provider_ids(session, seller_organization_id)
 
-    seller_org_ids = await list_seller_org_ids_for_user(session, user_id)
+    seller_org_ids = await list_seller_org_ids_for_user(session, user.id)
     provider_ids: list[UUID] = []
     seen: set[UUID] = set()
     for seller_org_id in seller_org_ids:

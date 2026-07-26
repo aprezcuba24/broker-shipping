@@ -21,6 +21,7 @@ class UserPublic(BaseModel):
     id: UUID
     name: str
     email: EmailStr
+    is_super_admin: bool
     created_at: datetime
 
 

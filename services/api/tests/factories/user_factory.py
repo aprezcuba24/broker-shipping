@@ -12,11 +12,13 @@ async def create_user(
     name: str,
     email: str,
     password: str,
+    is_super_admin: bool = False,
 ) -> dict:
     entity = User(
         name=name,
         email=email,
         password_hash=hash_password(password),
+        is_super_admin=is_super_admin,
     )
     session.add(entity)
     await session.flush()
@@ -37,6 +39,7 @@ class UserFactory:
         name: str | None = None,
         email: str | None = None,
         password: str = "secret123",
+        is_super_admin: bool = False,
     ) -> dict:
         self._n += 1
         final_name = name or f"User {self._n:04d}"
@@ -46,4 +49,5 @@ class UserFactory:
             name=final_name,
             email=final_email,
             password=password,
+            is_super_admin=is_super_admin,
         )

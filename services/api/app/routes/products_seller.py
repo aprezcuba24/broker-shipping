@@ -26,7 +26,7 @@ async def list_products(
     seller_org_id = organization.id if organization is not None else None
     result = await seller_product_service.list_accessible_products(
         session,
-        user.id,
+        user,
         pagination=pagination,
         seller_organization_id=seller_org_id,
         name=name,
@@ -46,7 +46,7 @@ async def get_product(
     product = await seller_product_service.get_accessible_product(
         session,
         product_id,
-        user.id,
+        user,
         seller_organization_id=seller_org_id,
     )
     return ProductPublic.model_validate(product)

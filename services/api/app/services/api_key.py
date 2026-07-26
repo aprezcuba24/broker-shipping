@@ -7,23 +7,30 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
-from app.lib.security.access import load_active_api_key_by_prefix
+from app.lib.security.access import is_super_admin, load_active_api_key_by_prefix
 from app.lib.security.api_keys import generate_api_key, hash_secret, split_raw
 from app.lib.utils import utc_now
 from app.models.user.api_key import ApiKey
+from app.models.user.user import User
 from app.schemas.api_key import ApiKeyCreate
+
+
+_SUPER_ADMIN_API_KEY_DETAIL = "Super admins cannot create API keys"
 
 
 async def create_for_user(
     session: AsyncSession,
-    user_id: UUID,
+    user: User,
     data: ApiKeyCreate,
 ) -> tuple[str, ApiKey]:
+    if is_super_admin(user):
+        raise HTTPException(status_code=403, detail=_SUPER_ADMIN_API_KEY_DETAIL)
+
     raw, prefix, secret_hash = generate_api_key()
     entity = ApiKey(
         name=data.name,
         description=data.description,
-        created_by_user_id=user_id,
+        created_by_user_id=user.id,
         prefix=prefix,
         secret_hash=secret_hash,
     )

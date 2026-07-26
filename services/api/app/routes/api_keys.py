@@ -18,7 +18,7 @@ async def create_api_key(
     user: JwtUserDep,
     session: Annotated[AsyncSession, Depends(get_db)],
 ) -> ApiKeyCreatedResponse:
-    raw, entity = await api_key_service.create_for_user(session, user.id, body)
+    raw, entity = await api_key_service.create_for_user(session, user, body)
     pub = ApiKeyPublic.model_validate(entity)
     return ApiKeyCreatedResponse(**pub.model_dump(), raw_key=raw)
 

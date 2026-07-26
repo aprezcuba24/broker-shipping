@@ -6,6 +6,7 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
+from app.lib.security.access import is_super_admin, load_user_by_id
 from app.lib.security.passwords import hash_password, verify_password
 from app.models.organization.organization import Organization
 from app.models.organization.user_organization import UserOrganization
@@ -49,6 +50,10 @@ async def list_user_organizations(
     session: AsyncSession,
     user_id: UUID,
 ) -> list[Organization]:
+    user = await load_user_by_id(session, user_id)
+    if user is not None and is_super_admin(user):
+        return []
+
     result = await session.execute(
         select(Organization)
         .join(

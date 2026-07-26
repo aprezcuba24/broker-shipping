@@ -13,4 +13,5 @@ class User(SQLModel, table=True):
     name: str = Field(max_length=255)
     email: str = Field(max_length=255, unique=True, index=True)
     password_hash: str = Field(max_length=255)
+    is_super_admin: bool = Field(default=False, index=True)
     created_at: datetime = Field(default_factory=utc_now)
