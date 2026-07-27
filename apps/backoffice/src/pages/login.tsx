@@ -4,7 +4,7 @@ import {
   useAuth,
   useResendVerificationUsersResendVerificationPost,
 } from '@broker/api'
-import { AuthFormLink, Button, LoginForm } from '@broker/ui'
+import { AuthFormLink, Button, LoginForm, peekInviteToken } from '@broker/ui'
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
@@ -65,6 +65,10 @@ export function LoginPage() {
         setLastEmail(values.email)
         setResendMessage(null)
         await login(values)
+        if (peekInviteToken()) {
+          void navigate('/accept-invitation')
+          return
+        }
         void navigate('/')
       }}
     />

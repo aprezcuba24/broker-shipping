@@ -1,10 +1,18 @@
-import { RequireAuth } from '@broker/api'
-import { ActiveOrganizationProvider, OrganizationScopedApiProvider } from '@broker/ui'
+import { OrganizationType, RequireAuth } from '@broker/api'
+import {
+  ActiveOrganizationProvider,
+  OrganizationScopedApiProvider,
+  RequireOrganization,
+} from '@broker/ui'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { BackofficeLayout } from './layouts/backoffice-layout'
+import { AcceptInvitationPage } from './pages/accept-invitation'
 import { HomePage } from './pages/home'
 import { LoginPage } from './pages/login'
+import { OnboardingPage } from './pages/onboarding'
 import { RegisterPage } from './pages/register'
+import { InvitationsSettingsPage } from './pages/settings/invitations'
+import { OrganizationsSettingsPage } from './pages/settings/organizations'
 import { VerifyEmailPage } from './pages/verify-email'
 
 export default function App() {
@@ -22,18 +30,37 @@ export default function App() {
           }
         />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
+        <Route
+          path="/onboarding"
+          element={
+            <RequireAuth loginPath="/login">
+              <ActiveOrganizationProvider organizationType={OrganizationType.provider}>
+                <OnboardingPage
+                  organizationType={OrganizationType.provider}
+                  title="Configura tu organización"
+                  description="Como proveedor, crea la organización con la que trabajarás en Broker."
+                />
+              </ActiveOrganizationProvider>
+            </RequireAuth>
+          }
+        />
         <Route
           element={
             <RequireAuth loginPath="/login">
-              <ActiveOrganizationProvider organizationType="provider">
-                <OrganizationScopedApiProvider baseUrl={import.meta.env.VITE_API_URL}>
-                  <BackofficeLayout />
-                </OrganizationScopedApiProvider>
+              <ActiveOrganizationProvider organizationType={OrganizationType.provider}>
+                <RequireOrganization>
+                  <OrganizationScopedApiProvider baseUrl={import.meta.env.VITE_API_URL}>
+                    <BackofficeLayout />
+                  </OrganizationScopedApiProvider>
+                </RequireOrganization>
               </ActiveOrganizationProvider>
             </RequireAuth>
           }
         >
           <Route index element={<HomePage />} />
+          <Route path="settings/organizations" element={<OrganizationsSettingsPage />} />
+          <Route path="settings/invitations" element={<InvitationsSettingsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
