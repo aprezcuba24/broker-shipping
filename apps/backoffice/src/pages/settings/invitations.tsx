@@ -1,12 +1,4 @@
 import {
-  formatApiError,
-  getListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGetQueryKey,
-  useAcceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPost,
-  useCreateMemberInvitationOrganizationsOrganizationIdMemberInvitationsPost,
-  useListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet,
-  useRejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPost,
-} from '@broker/api'
-import {
   Card,
   CardContent,
   CardDescription,
@@ -15,40 +7,15 @@ import {
   MemberInviteForm,
   PageWrapper,
   SellerLinkRequestsList,
-  useActiveOrganization,
 } from '@broker/ui'
-import { useQueryClient } from '@tanstack/react-query'
 import { Mail } from 'lucide-react'
-import { useState } from 'react'
+import { useInvitationsSettings } from '@/hooks/use-invitations-settings'
 
 export function InvitationsSettingsPage() {
-  const { activeOrganization } = useActiveOrganization()
-  const orgId = activeOrganization?.id ?? ''
-  const queryClient = useQueryClient()
-  const [memberSuccess, setMemberSuccess] = useState<string | null>(null)
-  const [pendingId, setPendingId] = useState<string | null>(null)
+  const { hasActiveOrg, memberInviteProps, sellerLinkRequestsProps } =
+    useInvitationsSettings()
 
-  const invitationsQuery =
-    useListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet(orgId, {
-      query: { enabled: Boolean(orgId) },
-    })
-  const memberInvite = useCreateMemberInvitationOrganizationsOrganizationIdMemberInvitationsPost()
-  const acceptRequest =
-    useAcceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPost()
-  const rejectRequest =
-    useRejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPost()
-
-  const invalidate = async () => {
-    if (!orgId) return
-    await queryClient.invalidateQueries({
-      queryKey:
-        getListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGetQueryKey(
-          orgId,
-        ),
-    })
-  }
-
-  if (!activeOrganization) {
+  if (!hasActiveOrg) {
     return (
       <PageWrapper title="Invitaciones" description="Selecciona una organización.">
         <p className="text-sm text-muted-foreground">No hay organización activa.</p>
@@ -70,25 +37,7 @@ export function InvitationsSettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <MemberInviteForm
-            isSubmitting={memberInvite.isPending}
-            successMessage={memberSuccess}
-            error={
-              memberInvite.isError
-                ? formatApiError(memberInvite.error, 'No se pudo enviar la invitación.')
-                : null
-            }
-            onSubmit={async ({ invitee_email }) => {
-              setMemberSuccess(null)
-              memberInvite.reset()
-              await memberInvite.mutateAsync({
-                organizationId: orgId,
-                data: { invitee_email },
-              })
-              setMemberSuccess(`Invitación enviada a ${invitee_email}.`)
-              await invalidate()
-            }}
-          />
+          <MemberInviteForm {...memberInviteProps} />
         </CardContent>
       </Card>
 
@@ -100,29 +49,7 @@ export function InvitationsSettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <SellerLinkRequestsList
-            invitations={invitationsQuery.data ?? []}
-            isLoading={invitationsQuery.isPending}
-            pendingId={pendingId}
-            onAccept={async (invitationId) => {
-              setPendingId(invitationId)
-              try {
-                await acceptRequest.mutateAsync({ organizationId: orgId, invitationId })
-                await invalidate()
-              } finally {
-                setPendingId(null)
-              }
-            }}
-            onReject={async (invitationId) => {
-              setPendingId(invitationId)
-              try {
-                await rejectRequest.mutateAsync({ organizationId: orgId, invitationId })
-                await invalidate()
-              } finally {
-                setPendingId(null)
-              }
-            }}
-          />
+          <SellerLinkRequestsList {...sellerLinkRequestsProps} />
         </CardContent>
       </Card>
     </PageWrapper>

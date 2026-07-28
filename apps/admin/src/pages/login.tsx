@@ -1,22 +1,17 @@
-import { loginSchema, useAuth } from '@broker/api'
 import { LoginForm } from '@broker/ui'
-import { useNavigate } from 'react-router-dom'
+import { useLoginPage } from '@/hooks/use-login-page'
 
 export function LoginPage() {
-  const navigate = useNavigate()
-  const { login, isLoggingIn, loginError } = useAuth()
+  const login = useLoginPage()
 
   return (
     <LoginForm
       title="Broker"
       description="Administración global. Introduce tus credenciales para continuar."
-      schema={loginSchema}
-      isSubmitting={isLoggingIn}
-      error={loginError}
-      onSubmit={async (values) => {
-        await login(values)
-        void navigate('/')
-      }}
+      schema={login.schema}
+      isSubmitting={login.isSubmitting}
+      error={login.error}
+      onSubmit={login.onSubmit}
     />
   )
 }

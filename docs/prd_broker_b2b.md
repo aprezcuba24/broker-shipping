@@ -111,11 +111,7 @@ debido a:
 ### Aplicación para vendedores
 
 - Tecnología:
-  - CapacitorJS
   - React
-- Plataformas:
-  - Android
-  - iOS
 - Funciones:
   - explorar productos,
   - sincronizar tiendas,
@@ -266,10 +262,6 @@ debido a:
 - React Query
 - Zustand
 - Tailwind
-
-### Mobile
-
-- CapacitorJS
 
 ---
 

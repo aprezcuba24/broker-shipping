@@ -1,79 +1,16 @@
-import {
-  formatApiError,
-  getMyOrganizationsUsersMyOrganizationsGetQueryKey,
-  useAcceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost,
-  useAuth,
-} from '@broker/api'
-import {
-  AcceptInvitationCard,
-  peekInviteToken,
-  storeInviteToken,
-  takeInviteToken,
-  type AcceptInvitationStatus,
-} from '@broker/ui'
-import { useQueryClient } from '@tanstack/react-query'
-import { useCallback, useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { AcceptInvitationCard } from '@broker/ui'
+import { useAcceptInvitation } from '@/hooks/use-accept-invitation'
+import { useNavigate } from 'react-router-dom'
 
 export function AcceptInvitationPage() {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const { isAuthenticated, isLoading: authLoading } = useAuth()
-  const queryClient = useQueryClient()
-  const acceptMutation = useAcceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost()
-  const [status, setStatus] = useState<AcceptInvitationStatus>('loading')
-  const [message, setMessage] = useState<string | null>(null)
-  const [attempt, setAttempt] = useState(0)
-
-  const runAccept = useCallback(async () => {
-    const fromUrl = searchParams.get('token')
-    if (fromUrl) {
-      storeInviteToken(fromUrl)
-    }
-    const token = fromUrl ?? peekInviteToken()
-    if (!token) {
-      setStatus('error')
-      setMessage('Falta el token de invitación.')
-      return
-    }
-
-    if (authLoading) {
-      setStatus('loading')
-      return
-    }
-
-    if (!isAuthenticated) {
-      storeInviteToken(token)
-      setStatus('needs-auth')
-      return
-    }
-
-    setStatus('loading')
-    setMessage(null)
-    try {
-      await acceptMutation.mutateAsync({ data: { token } })
-      takeInviteToken()
-      await queryClient.invalidateQueries({
-        queryKey: getMyOrganizationsUsersMyOrganizationsGetQueryKey(),
-      })
-      setStatus('success')
-      setMessage('Ya formas parte de la organización.')
-    } catch (error) {
-      setStatus('error')
-      setMessage(formatApiError(error, 'No se pudo aceptar la invitación.'))
-    }
-  }, [acceptMutation, authLoading, isAuthenticated, queryClient, searchParams])
-
-  useEffect(() => {
-    void runAccept()
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-run on attempt / auth
-  }, [attempt, authLoading, isAuthenticated])
+  const { status, message, retry } = useAcceptInvitation()
 
   return (
     <AcceptInvitationCard
       status={status}
       message={message}
-      onRetry={() => setAttempt((n) => n + 1)}
+      onRetry={retry}
       onGoHome={() => void navigate('/')}
       onGoLogin={() => void navigate('/login')}
     />

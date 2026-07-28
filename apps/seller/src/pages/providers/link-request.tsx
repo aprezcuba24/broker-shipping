@@ -1,10 +1,4 @@
 import {
-  formatApiError,
-  getListMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGetQueryKey,
-  useCreateSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPost,
-  useListMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet,
-} from '@broker/api'
-import {
   Card,
   CardContent,
   CardDescription,
@@ -12,19 +6,17 @@ import {
   CardTitle,
   PageWrapper,
   ProviderLinkRequestForm,
-  useActiveOrganization,
 } from '@broker/ui'
-import { useQueryClient } from '@tanstack/react-query'
 import { Link2 } from 'lucide-react'
-import { useState } from 'react'
+import { useProviderLinkRequest } from '@/hooks/use-provider-link-request'
 
 export function ProviderLinkRequestPage() {
-  const { activeOrganization } = useActiveOrganization()
-  const queryClient = useQueryClient()
-  const [success, setSuccess] = useState<string | null>(null)
-  const createMutation =
-    useCreateSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPost()
-  const mineQuery = useListMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet()
+  const {
+    activeOrganization,
+    createFormProps,
+    requests,
+    isLoadingRequests,
+  } = useProviderLinkRequest()
 
   return (
     <PageWrapper
@@ -43,28 +35,7 @@ export function ProviderLinkRequestPage() {
           {!activeOrganization ? (
             <p className="text-sm text-muted-foreground">Selecciona una organización vendedora.</p>
           ) : (
-            <ProviderLinkRequestForm
-              isSubmitting={createMutation.isPending}
-              successMessage={success}
-              error={
-                createMutation.isError
-                  ? formatApiError(createMutation.error, 'No se pudo enviar la solicitud.')
-                  : null
-              }
-              onSubmit={async ({ provider_organization_id }) => {
-                setSuccess(null)
-                createMutation.reset()
-                await createMutation.mutateAsync({
-                  organizationId: provider_organization_id,
-                  params: { seller_organization_id: activeOrganization.id },
-                })
-                setSuccess('Solicitud enviada. El proveedor recibirá un correo.')
-                await queryClient.invalidateQueries({
-                  queryKey:
-                    getListMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGetQueryKey(),
-                })
-              }}
-            />
+            <ProviderLinkRequestForm {...createFormProps} />
           )}
         </CardContent>
       </Card>
@@ -74,12 +45,12 @@ export function ProviderLinkRequestPage() {
           <CardTitle>Tus solicitudes pendientes</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          {mineQuery.isPending ? (
+          {isLoadingRequests ? (
             <p className="text-sm text-muted-foreground">Cargando…</p>
-          ) : (mineQuery.data ?? []).length === 0 ? (
+          ) : requests.length === 0 ? (
             <p className="text-sm text-muted-foreground">No hay solicitudes pendientes.</p>
           ) : (
-            (mineQuery.data ?? []).map((inv) => (
+            requests.map((inv) => (
               <div
                 key={inv.id}
                 className="rounded-md border border-border px-3 py-2 text-sm"

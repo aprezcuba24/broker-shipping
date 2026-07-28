@@ -24,10 +24,7 @@ export default function App() {
         <Route
           path="/register"
           element={
-            <RegisterPage
-              clientApp="seller"
-              description="Crea tu cuenta de vendedor. Te enviaremos un correo para confirmarla."
-            />
+            <RegisterPage description="Crea tu cuenta de vendedor. Te enviaremos un correo para confirmarla." />
           }
         />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
@@ -38,7 +35,6 @@ export default function App() {
             <RequireAuth loginPath="/login">
               <ActiveOrganizationProvider organizationType={OrganizationType.seller}>
                 <OnboardingPage
-                  organizationType={OrganizationType.seller}
                   title="Configura tu organización"
                   description="Como vendedor, crea la organización con la que trabajarás en Broker."
                 />

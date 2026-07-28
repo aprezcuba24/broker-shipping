@@ -1,11 +1,4 @@
 import {
-  formatApiError,
-  getMyOrganizationsUsersMyOrganizationsGetQueryKey,
-  OrganizationType,
-  useCreateOrganizationOrganizationsPost,
-  useListOrganizationsOrganizationsGet,
-} from '@broker/api'
-import {
   Button,
   Card,
   CardContent,
@@ -14,18 +7,18 @@ import {
   CardTitle,
   CreateOrganizationForm,
   PageWrapper,
-  useActiveOrganization,
 } from '@broker/ui'
-import { useQueryClient } from '@tanstack/react-query'
 import { Building2 } from 'lucide-react'
-import { useState } from 'react'
+import { useOrganizationsSettings } from '@/hooks/use-organizations-settings'
 
 export function OrganizationsSettingsPage() {
-  const { organizations, setActiveOrganization } = useActiveOrganization()
-  const queryClient = useQueryClient()
-  const [showForm, setShowForm] = useState(false)
-  const createMutation = useCreateOrganizationOrganizationsPost()
-  const listQuery = useListOrganizationsOrganizationsGet()
+  const {
+    organizations,
+    showForm,
+    toggleForm,
+    selectOrganization,
+    createFormProps,
+  } = useOrganizationsSettings()
 
   return (
     <PageWrapper
@@ -33,7 +26,7 @@ export function OrganizationsSettingsPage() {
       description="Gestiona las organizaciones a las que perteneces."
       icon={Building2}
       buttons={[
-        <Button key="create" type="button" onClick={() => setShowForm((v) => !v)}>
+        <Button key="create" type="button" onClick={toggleForm}>
           {showForm ? 'Cancelar' : 'Crear organización'}
         </Button>,
       ]}
@@ -48,24 +41,7 @@ export function OrganizationsSettingsPage() {
             <CreateOrganizationForm
               embedded
               submitLabel="Crear"
-              isSubmitting={createMutation.isPending}
-              error={
-                createMutation.isError
-                  ? formatApiError(createMutation.error, 'No se pudo crear.')
-                  : null
-              }
-              onSubmit={async ({ name }) => {
-                createMutation.reset()
-                const org = await createMutation.mutateAsync({
-                  data: { name, type: OrganizationType.provider },
-                })
-                await queryClient.invalidateQueries({
-                  queryKey: getMyOrganizationsUsersMyOrganizationsGetQueryKey(),
-                })
-                await listQuery.refetch()
-                setActiveOrganization(org.id)
-                setShowForm(false)
-              }}
+              {...createFormProps}
             />
           </CardContent>
         </Card>
@@ -84,7 +60,7 @@ export function OrganizationsSettingsPage() {
                 key={org.id}
                 type="button"
                 className="flex w-full items-center justify-between rounded-md border border-border px-3 py-2 text-left text-sm hover:bg-muted/50"
-                onClick={() => setActiveOrganization(org.id)}
+                onClick={() => selectOrganization(org.id)}
               >
                 <span className="font-medium">{org.name}</span>
                 <span className="font-mono text-xs text-muted-foreground">{org.id}</span>
