@@ -5,7 +5,7 @@ export { useCrudDialogs } from './hooks/use-crud-dialogs'
 export type { CrudDialogs, CreateDialogState, EditDialogState } from './hooks/use-crud-dialogs'
 
 export { useAsyncAction } from './hooks/use-async-action'
-export type { AsyncAction, UseAsyncActionOptions } from './hooks/use-async-action'
+export type { AsyncAction } from './hooks/use-async-action'
 
 export { useCrudController } from './hooks/use-crud-controller'
 export type {
@@ -46,6 +46,9 @@ export type {
 
 export { EntityFormPage } from './components/entity-form-page'
 export type { EntityFormPageProps } from './components/entity-form-page'
+
+export { EntityEditFormPage } from './components/entity-edit-form-page'
+export type { EntityEditFormPageProps } from './components/entity-edit-form-page'
 
 export { EditRowButton } from './components/edit-row-button'
 export type { EditRowButtonProps } from './components/edit-row-button'

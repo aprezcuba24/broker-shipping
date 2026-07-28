@@ -118,4 +118,5 @@ export function ProductPage() {
   )
 }
 
-export { ProductCreatePage, ProductEditPage } from './form-page'
+export { ProductCreatePage } from './create-page'
+export { ProductEditPage } from './edit-page'

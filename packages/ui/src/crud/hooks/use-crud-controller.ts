@@ -1,3 +1,4 @@
+import { formatApiError } from '@broker/api'
 import { useQueryClient, type QueryKey, type UseQueryResult } from '@tanstack/react-query'
 import { useCallback, useMemo } from 'react'
 
@@ -125,16 +126,17 @@ export function useCrudController<
       if (variables === null) throw new Error('Create skipped: toVariables returned null')
       return create.mutation.mutateAsync(variables)
     },
-    {
-      onSuccess: async (result) => {
-        if (onSuccess) {
-          await onSuccess('create', result)
-          return
-        }
-        await invalidateList()
-        dialogs?.create.close()
-      },
-      onError: (error) => onError?.(error, 'create'),
+    async (result) => {
+      if (onSuccess) {
+        await onSuccess('create', result)
+        return
+      }
+      await invalidateList()
+      dialogs?.create.close()
+    },
+    (error) => {
+      onError?.(error, 'create')
+      return formatApiError(error)
     },
   )
 
@@ -147,16 +149,17 @@ export function useCrudController<
       if (variables === null) throw new Error('Update skipped: toVariables returned null')
       return update.mutation.mutateAsync(variables)
     },
-    {
-      onSuccess: async (result) => {
-        if (onSuccess) {
-          await onSuccess('update', result)
-          return
-        }
-        await invalidateList()
-        dialogs?.edit.close()
-      },
-      onError: (error) => onError?.(error, 'update'),
+    async (result) => {
+      if (onSuccess) {
+        await onSuccess('update', result)
+        return
+      }
+      await invalidateList()
+      dialogs?.edit.close()
+    },
+    (error) => {
+      onError?.(error, 'update')
+      return formatApiError(error)
     },
   )
 
@@ -167,15 +170,16 @@ export function useCrudController<
       if (variables === null) throw new Error('Delete skipped: toVariables returned null')
       return remove.mutation.mutateAsync(variables)
     },
-    {
-      onSuccess: async (result) => {
-        if (onSuccess) {
-          await onSuccess('remove', result)
-          return
-        }
-        await invalidateList()
-      },
-      onError: (error) => onError?.(error, 'remove'),
+    async (result) => {
+      if (onSuccess) {
+        await onSuccess('remove', result)
+        return
+      }
+      await invalidateList()
+    },
+    (error) => {
+      onError?.(error, 'remove')
+      return formatApiError(error)
     },
   )
 

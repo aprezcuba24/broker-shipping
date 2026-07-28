@@ -52,6 +52,7 @@ export {
   ClearFiltersButton,
   EntityFormDialog,
   EntityFormPage,
+  EntityEditFormPage,
   EditRowButton,
   DeleteRowButton,
 } from './crud'
@@ -62,7 +63,6 @@ export type {
   CreateDialogState,
   EditDialogState,
   AsyncAction,
-  UseAsyncActionOptions,
   CrudAction,
   CrudController,
   UseCrudControllerOptions,
@@ -73,6 +73,7 @@ export type {
   EntityFormHandle,
   EntityFormProps,
   EntityFormPageProps,
+  EntityEditFormPageProps,
   EditRowButtonProps,
   DeleteRowButtonProps,
 } from './crud'
