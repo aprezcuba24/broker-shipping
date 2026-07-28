@@ -6,6 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.db.session import create_async_engine_and_session_maker
+from app.lib.events import get_bus
+from app.lib.events.registry import register_handlers
 from app.routes import router as routes_router
 
 
@@ -16,6 +18,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     )
     app.state.engine = engine
     app.state.session_maker = session_maker
+    register_handlers(get_bus())
     try:
         yield
     finally:

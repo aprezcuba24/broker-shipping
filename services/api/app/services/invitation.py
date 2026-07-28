@@ -8,6 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.config import settings
+from app.events.types import MemberInvitedEvent, SellerLinkRequestedEvent
+from app.lib.events import emit
 from app.lib.utils import utc_now
 from app.models.organization.enums import (
     InvitationKind,
@@ -17,7 +19,6 @@ from app.models.organization.enums import (
 from app.models.organization.organization_invitation import OrganizationInvitation
 from app.models.user.user import User
 from app.schemas.invitation import InvitationCreatedResponse, InvitationPublic, MemberPublic
-from app.services import email as email_service
 from app.services import organization as org_service
 from app.services import provider_seller_link as link_service
 
@@ -90,24 +91,19 @@ async def create_member_invite(
         created_by_user_id=created_by_user_id,
     )
     session.add(invitation)
-    await session.flush()
+    await session.commit()
+    await session.refresh(invitation)
 
     client_app = "backoffice" if org.type == OrganizationType.provider else "seller"
-    try:
-        await email_service.send_member_invitation_email(
-            to=email,
+    await emit(
+        MemberInvitedEvent(
+            invitation_id=invitation.id,
+            invitee_email=email,
             organization_name=org.name,
             accept_url=_accept_url(client_app=client_app, token=token),
-        )
-        await session.commit()
-    except Exception:
-        await session.rollback()
-        raise HTTPException(
-            status_code=503,
-            detail="Failed to send invitation email",
-        ) from None
-
-    await session.refresh(invitation)
+        ),
+        background=True,
+    )
     return InvitationCreatedResponse.model_validate(invitation)
 
 
@@ -152,27 +148,20 @@ async def create_seller_link_request(
         created_by_user_id=user_id,
     )
     session.add(invitation)
-    await session.flush()
+    await session.commit()
+    await session.refresh(invitation)
 
     members = await org_service.list_active_member_users(session, provider_organization_id)
-    review_url = _invitations_review_url()
-    try:
-        for member in members:
-            await email_service.send_seller_link_request_email(
-                to=member.email,
-                provider_organization_name=provider.name,
-                seller_organization_name=seller.name,
-                review_url=review_url,
-            )
-        await session.commit()
-    except Exception:
-        await session.rollback()
-        raise HTTPException(
-            status_code=503,
-            detail="Failed to send notification emails",
-        ) from None
-
-    await session.refresh(invitation)
+    await emit(
+        SellerLinkRequestedEvent(
+            invitation_id=invitation.id,
+            provider_organization_name=provider.name,
+            seller_organization_name=seller.name,
+            review_url=_invitations_review_url(),
+            recipient_emails=tuple(m.email for m in members),
+        ),
+        background=True,
+    )
     return InvitationPublic.model_validate(invitation)
 
 

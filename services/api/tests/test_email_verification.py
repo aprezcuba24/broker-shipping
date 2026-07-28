@@ -21,7 +21,16 @@ def mock_send_email(monkeypatch: pytest.MonkeyPatch) -> list[dict[str, str]]:
     async def _fake_send(*, to: str, name: str, verify_url: str) -> None:
         sent.append({"to": to, "name": name, "verify_url": verify_url})
 
-    monkeypatch.setattr("app.services.auth.send_verification_email", _fake_send)
+    async def _emit_sync(event: object, *, background: bool = False) -> None:
+        from app.lib.events import get_bus
+
+        await get_bus().emit(event, background=False)
+
+    monkeypatch.setattr("app.services.auth.emit", _emit_sync)
+    monkeypatch.setattr(
+        "app.events.handlers.email.send_verification_email",
+        _fake_send,
+    )
     return sent
 
 

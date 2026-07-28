@@ -41,12 +41,18 @@ def mock_invitation_emails(monkeypatch: pytest.MonkeyPatch) -> list[dict[str, st
             }
         )
 
+    async def _emit_sync(event: object, *, background: bool = False) -> None:
+        from app.lib.events import get_bus
+
+        await get_bus().emit(event, background=False)
+
+    monkeypatch.setattr("app.services.invitation.emit", _emit_sync)
     monkeypatch.setattr(
-        "app.services.invitation.email_service.send_member_invitation_email",
+        "app.events.handlers.email.send_member_invitation_email",
         _member,
     )
     monkeypatch.setattr(
-        "app.services.invitation.email_service.send_seller_link_request_email",
+        "app.events.handlers.email.send_seller_link_request_email",
         _request,
     )
     return sent

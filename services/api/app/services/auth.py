@@ -8,6 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.config import settings
+from app.events.types import EmailVerificationRequestedEvent
+from app.lib.events import emit
 from app.lib.security.access import is_super_admin, load_user_by_id
 from app.lib.security.api_keys import hash_secret
 from app.lib.security.email_verification import generate_verification_token
@@ -17,7 +19,6 @@ from app.models.organization.organization import Organization
 from app.models.organization.user_organization import UserOrganization
 from app.models.user.user import User
 from app.schemas.auth import ClientApp, UserLogin, UserRegister
-from app.services.email import send_verification_email
 
 EMAIL_NOT_VERIFIED_DETAIL = "Email not verified"
 _RESEND_OK_MESSAGE = (
@@ -62,26 +63,18 @@ async def register_user(session: AsyncSession, data: UserRegister) -> User:
     )
     raw_token = _set_verification_token(user)
     session.add(user)
+    await session.commit()
+    await session.refresh(user)
 
-    try:
-        await session.flush()
-        await send_verification_email(
-            to=user.email,
+    await emit(
+        EmailVerificationRequestedEvent(
+            user_id=user.id,
+            email=user.email,
             name=user.name,
             verify_url=_verification_url(data.client_app, raw_token),
-        )
-        await session.commit()
-    except HTTPException:
-        await session.rollback()
-        raise
-    except Exception:
-        await session.rollback()
-        raise HTTPException(
-            status_code=503,
-            detail="Failed to send verification email",
-        ) from None
-
-    await session.refresh(user)
+        ),
+        background=True,
+    )
     return user
 
 
@@ -138,22 +131,17 @@ async def resend_verification_email(
 
     raw_token = _set_verification_token(user)
     session.add(user)
+    await session.commit()
 
-    try:
-        await session.flush()
-        await send_verification_email(
-            to=user.email,
+    await emit(
+        EmailVerificationRequestedEvent(
+            user_id=user.id,
+            email=user.email,
             name=user.name,
             verify_url=_verification_url(client_app, raw_token),
-        )
-        await session.commit()
-    except Exception:
-        await session.rollback()
-        raise HTTPException(
-            status_code=503,
-            detail="Failed to send verification email",
-        ) from None
-
+        ),
+        background=True,
+    )
     return _RESEND_OK_MESSAGE
 
 
