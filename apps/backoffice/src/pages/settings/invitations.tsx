@@ -1,10 +1,10 @@
 import {
   formatApiError,
-  getListOrganizationInvitationsOrganizationsOrganizationIdInvitationsGetQueryKey,
-  useAcceptInvitationOrganizationsOrganizationIdInvitationsInvitationIdAcceptPost,
+  getListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGetQueryKey,
+  useAcceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPost,
   useCreateMemberInvitationOrganizationsOrganizationIdMemberInvitationsPost,
-  useListOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet,
-  useRejectInvitationOrganizationsOrganizationIdInvitationsInvitationIdRejectPost,
+  useListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet,
+  useRejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPost,
 } from '@broker/api'
 import {
   Card,
@@ -28,21 +28,23 @@ export function InvitationsSettingsPage() {
   const [memberSuccess, setMemberSuccess] = useState<string | null>(null)
   const [pendingId, setPendingId] = useState<string | null>(null)
 
-  const invitationsQuery = useListOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet(
-    orgId,
-    { query: { enabled: Boolean(orgId) } },
-  )
+  const invitationsQuery =
+    useListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet(orgId, {
+      query: { enabled: Boolean(orgId) },
+    })
   const memberInvite = useCreateMemberInvitationOrganizationsOrganizationIdMemberInvitationsPost()
   const acceptRequest =
-    useAcceptInvitationOrganizationsOrganizationIdInvitationsInvitationIdAcceptPost()
+    useAcceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPost()
   const rejectRequest =
-    useRejectInvitationOrganizationsOrganizationIdInvitationsInvitationIdRejectPost()
+    useRejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPost()
 
   const invalidate = async () => {
     if (!orgId) return
     await queryClient.invalidateQueries({
       queryKey:
-        getListOrganizationInvitationsOrganizationsOrganizationIdInvitationsGetQueryKey(orgId),
+        getListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGetQueryKey(
+          orgId,
+        ),
     })
   }
 

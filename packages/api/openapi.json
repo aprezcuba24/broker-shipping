@@ -998,39 +998,6 @@
         ]
       }
     },
-    "/organizations/seller-link-requests/mine": {
-      "get": {
-        "tags": [
-          "organizations"
-        ],
-        "summary": "List My Seller Link Requests",
-        "operationId": "list_my_seller_link_requests_organizations_seller_link_requests_mine_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/InvitationPublic"
-                  },
-                  "type": "array",
-                  "title": "Response List My Seller Link Requests Organizations Seller Link Requests Mine Get"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          },
-          {
-            "APIKeyHeader": []
-          }
-        ]
-      }
-    },
     "/organizations/invitations/accept-by-token": {
       "post": {
         "tags": [
@@ -1124,244 +1091,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/InvitationCreatedResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/organizations/{organization_id}/seller-link-requests": {
-      "post": {
-        "tags": [
-          "organizations"
-        ],
-        "summary": "Create Seller Link Request",
-        "operationId": "create_seller_link_request_organizations__organization_id__seller_link_requests_post",
-        "security": [
-          {
-            "HTTPBearer": []
-          },
-          {
-            "APIKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "organization_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Organization Id"
-            }
-          },
-          {
-            "name": "seller_organization_id",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Seller Organization Id"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InvitationPublic"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/organizations/{organization_id}/invitations": {
-      "get": {
-        "tags": [
-          "organizations"
-        ],
-        "summary": "List Organization Invitations",
-        "operationId": "list_organization_invitations_organizations__organization_id__invitations_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          },
-          {
-            "APIKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "organization_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Organization Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/InvitationPublic"
-                  },
-                  "title": "Response List Organization Invitations Organizations  Organization Id  Invitations Get"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/organizations/{organization_id}/invitations/{invitation_id}/accept": {
-      "post": {
-        "tags": [
-          "organizations"
-        ],
-        "summary": "Accept Invitation",
-        "operationId": "accept_invitation_organizations__organization_id__invitations__invitation_id__accept_post",
-        "security": [
-          {
-            "HTTPBearer": []
-          },
-          {
-            "APIKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "invitation_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Invitation Id"
-            }
-          },
-          {
-            "name": "organization_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Organization Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MemberPublic"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/organizations/{organization_id}/invitations/{invitation_id}/reject": {
-      "post": {
-        "tags": [
-          "organizations"
-        ],
-        "summary": "Reject Invitation",
-        "operationId": "reject_invitation_organizations__organization_id__invitations__invitation_id__reject_post",
-        "security": [
-          {
-            "HTTPBearer": []
-          },
-          {
-            "APIKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "invitation_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Invitation Id"
-            }
-          },
-          {
-            "name": "organization_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Organization Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InvitationPublic"
                 }
               }
             }
@@ -1559,13 +1288,190 @@
         }
       }
     },
-    "/organizations/{organization_id}/linked-sellers": {
+    "/organizations/provider/{organization_id}/invitations": {
+      "get": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "List Organization Invitations",
+        "operationId": "list_organization_invitations_organizations_provider__organization_id__invitations_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InvitationPublic"
+                  },
+                  "title": "Response List Organization Invitations Organizations Provider  Organization Id  Invitations Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organizations/provider/{organization_id}/invitations/{invitation_id}/accept": {
+      "post": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "Accept Invitation",
+        "operationId": "accept_invitation_organizations_provider__organization_id__invitations__invitation_id__accept_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "invitation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Invitation Id"
+            }
+          },
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organizations/provider/{organization_id}/invitations/{invitation_id}/reject": {
+      "post": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "Reject Invitation",
+        "operationId": "reject_invitation_organizations_provider__organization_id__invitations__invitation_id__reject_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "invitation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Invitation Id"
+            }
+          },
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organizations/provider/{organization_id}/linked-sellers": {
       "get": {
         "tags": [
           "organizations"
         ],
         "summary": "List Linked Sellers",
-        "operationId": "list_linked_sellers_organizations__organization_id__linked_sellers_get",
+        "operationId": "list_linked_sellers_organizations_provider__organization_id__linked_sellers_get",
         "security": [
           {
             "HTTPBearer": []
@@ -1596,7 +1502,7 @@
                   "items": {
                     "$ref": "#/components/schemas/OrganizationPublic"
                   },
-                  "title": "Response List Linked Sellers Organizations  Organization Id  Linked Sellers Get"
+                  "title": "Response List Linked Sellers Organizations Provider  Organization Id  Linked Sellers Get"
                 }
               }
             }
@@ -1614,13 +1520,13 @@
         }
       }
     },
-    "/organizations/{organization_id}/linked-sellers/{seller_organization_id}": {
+    "/organizations/provider/{organization_id}/linked-sellers/{seller_organization_id}": {
       "patch": {
         "tags": [
           "organizations"
         ],
         "summary": "Patch Seller Link",
-        "operationId": "patch_seller_link_organizations__organization_id__linked_sellers__seller_organization_id__patch",
+        "operationId": "patch_seller_link_organizations_provider__organization_id__linked_sellers__seller_organization_id__patch",
         "security": [
           {
             "HTTPBearer": []
@@ -1664,6 +1570,100 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organizations/seller/seller-link-requests/mine": {
+      "get": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "List My Seller Link Requests",
+        "operationId": "list_my_seller_link_requests_organizations_seller_seller_link_requests_mine_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InvitationPublic"
+                  },
+                  "type": "array",
+                  "title": "Response List My Seller Link Requests Organizations Seller Seller Link Requests Mine Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/organizations/seller/{organization_id}/seller-link-requests": {
+      "post": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "Create Seller Link Request",
+        "operationId": "create_seller_link_request_organizations_seller__organization_id__seller_link_requests_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          },
+          {
+            "name": "seller_organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Seller Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationPublic"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",

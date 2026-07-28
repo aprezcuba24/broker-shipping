@@ -155,7 +155,7 @@ async def test_seller_link_request_email_and_accept_reject(
     seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
 
     request = await client.post(
-        f"/organizations/{provider_org['id']}/seller-link-requests",
+        f"/organizations/seller/{provider_org['id']}/seller-link-requests",
         params={"seller_organization_id": seller_org["id"]},
         headers=bearer_headers(user_id=seller_user["id"]),
     )
@@ -165,14 +165,14 @@ async def test_seller_link_request_email_and_accept_reject(
     assert any(e["to"] == "prov@req.com" for e in mock_invitation_emails)
 
     duplicate = await client.post(
-        f"/organizations/{provider_org['id']}/seller-link-requests",
+        f"/organizations/seller/{provider_org['id']}/seller-link-requests",
         params={"seller_organization_id": seller_org["id"]},
         headers=bearer_headers(user_id=seller_user["id"]),
     )
     assert duplicate.status_code == 409
 
     accept = await client.post(
-        f"/organizations/{provider_org['id']}/invitations/{inv_id}/accept",
+        f"/organizations/provider/{provider_org['id']}/invitations/{inv_id}/accept",
         headers=bearer_headers(user_id=provider_user["id"]),
     )
     assert accept.status_code == 200
@@ -191,14 +191,14 @@ async def test_seller_link_request_reject(
     seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
 
     request = await client.post(
-        f"/organizations/{provider_org['id']}/seller-link-requests",
+        f"/organizations/seller/{provider_org['id']}/seller-link-requests",
         params={"seller_organization_id": seller_org["id"]},
         headers=bearer_headers(user_id=seller_user["id"]),
     )
     inv_id = request.json()["id"]
 
     reject = await client.post(
-        f"/organizations/{provider_org['id']}/invitations/{inv_id}/reject",
+        f"/organizations/provider/{provider_org['id']}/invitations/{inv_id}/reject",
         headers=bearer_headers(user_id=provider_user["id"]),
     )
     assert reject.status_code == 200

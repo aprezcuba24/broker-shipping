@@ -25,7 +25,7 @@ import type {
 
 import type {
   AcceptByTokenBody,
-  CreateSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPostParams,
+  CreateSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPostParams,
   HTTPValidationError,
   InvitationCreatedResponse,
   InvitationPublic,
@@ -201,98 +201,6 @@ export const useCreateOrganizationOrganizationsPost = <TError = HTTPValidationEr
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * @summary List My Seller Link Requests
- */
-export const listMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet = (
-    
- options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
-) => {
-      
-      
-      return brokerFetch<InvitationPublic[]>(
-      {url: `/organizations/seller-link-requests/mine`, method: 'GET', signal
-    },
-      options);
-    }
-  
-
-
-
-export const getListMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGetQueryKey = () => {
-    return [
-    `/organizations/seller-link-requests/mine`
-    ] as const;
-    }
-
-    
-export const getListMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGetQueryOptions = <TData = Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGetQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet>>> = ({ signal }) => listMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet(requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ListMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGetQueryResult = NonNullable<Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet>>>
-export type ListMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGetQueryError = unknown
-
-
-export function useListMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet<TData = Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet>>,
-          TError,
-          Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof brokerFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet<TData = Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet>>,
-          TError,
-          Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof brokerFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet<TData = Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary List My Seller Link Requests
- */
-
-export function useListMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet<TData = Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getListMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGetQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-
-/**
  * @summary Accept Invitation By Token
  */
 export const acceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost = (
@@ -418,288 +326,6 @@ export const useCreateMemberInvitationOrganizationsOrganizationIdMemberInvitatio
       > => {
 
       const mutationOptions = getCreateMemberInvitationOrganizationsOrganizationIdMemberInvitationsPostMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * @summary Create Seller Link Request
- */
-export const createSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPost = (
-    organizationId: string,
-    params: CreateSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPostParams,
- options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
-) => {
-      
-      
-      return brokerFetch<InvitationPublic>(
-      {url: `/organizations/${organizationId}/seller-link-requests`, method: 'POST',
-        params, signal
-    },
-      options);
-    }
-  
-
-
-export const getCreateSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPostMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPost>>, TError,{organizationId: string;params: CreateSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPostParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPost>>, TError,{organizationId: string;params: CreateSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPostParams}, TContext> => {
-
-const mutationKey = ['createSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPost'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPost>>, {organizationId: string;params: CreateSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPostParams}> = (props) => {
-          const {organizationId,params} = props ?? {};
-
-          return  createSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPost(organizationId,params,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPostMutationResult = NonNullable<Awaited<ReturnType<typeof createSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPost>>>
-    
-    export type CreateSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPostMutationError = HTTPValidationError
-
-    /**
- * @summary Create Seller Link Request
- */
-export const useCreateSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPost = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPost>>, TError,{organizationId: string;params: CreateSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPostParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPost>>,
-        TError,
-        {organizationId: string;params: CreateSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPostParams},
-        TContext
-      > => {
-
-      const mutationOptions = getCreateSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPostMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * @summary List Organization Invitations
- */
-export const listOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet = (
-    organizationId: string,
- options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
-) => {
-      
-      
-      return brokerFetch<InvitationPublic[]>(
-      {url: `/organizations/${organizationId}/invitations`, method: 'GET', signal
-    },
-      options);
-    }
-  
-
-
-
-export const getListOrganizationInvitationsOrganizationsOrganizationIdInvitationsGetQueryKey = (organizationId?: string,) => {
-    return [
-    `/organizations/${organizationId}/invitations`
-    ] as const;
-    }
-
-    
-export const getListOrganizationInvitationsOrganizationsOrganizationIdInvitationsGetQueryOptions = <TData = Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet>>, TError = HTTPValidationError>(organizationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListOrganizationInvitationsOrganizationsOrganizationIdInvitationsGetQueryKey(organizationId);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet>>> = ({ signal }) => listOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet(organizationId, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(organizationId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ListOrganizationInvitationsOrganizationsOrganizationIdInvitationsGetQueryResult = NonNullable<Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet>>>
-export type ListOrganizationInvitationsOrganizationsOrganizationIdInvitationsGetQueryError = HTTPValidationError
-
-
-export function useListOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet<TData = Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet>>, TError = HTTPValidationError>(
- organizationId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet>>,
-          TError,
-          Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof brokerFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet<TData = Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet>>, TError = HTTPValidationError>(
- organizationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet>>,
-          TError,
-          Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof brokerFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet<TData = Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet>>, TError = HTTPValidationError>(
- organizationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary List Organization Invitations
- */
-
-export function useListOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet<TData = Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet>>, TError = HTTPValidationError>(
- organizationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getListOrganizationInvitationsOrganizationsOrganizationIdInvitationsGetQueryOptions(organizationId,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-
-/**
- * @summary Accept Invitation
- */
-export const acceptInvitationOrganizationsOrganizationIdInvitationsInvitationIdAcceptPost = (
-    organizationId: string,
-    invitationId: string,
- options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
-) => {
-      
-      
-      return brokerFetch<MemberPublic>(
-      {url: `/organizations/${organizationId}/invitations/${invitationId}/accept`, method: 'POST', signal
-    },
-      options);
-    }
-  
-
-
-export const getAcceptInvitationOrganizationsOrganizationIdInvitationsInvitationIdAcceptPostMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof acceptInvitationOrganizationsOrganizationIdInvitationsInvitationIdAcceptPost>>, TError,{organizationId: string;invitationId: string}, TContext>, request?: SecondParameter<typeof brokerFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof acceptInvitationOrganizationsOrganizationIdInvitationsInvitationIdAcceptPost>>, TError,{organizationId: string;invitationId: string}, TContext> => {
-
-const mutationKey = ['acceptInvitationOrganizationsOrganizationIdInvitationsInvitationIdAcceptPost'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof acceptInvitationOrganizationsOrganizationIdInvitationsInvitationIdAcceptPost>>, {organizationId: string;invitationId: string}> = (props) => {
-          const {organizationId,invitationId} = props ?? {};
-
-          return  acceptInvitationOrganizationsOrganizationIdInvitationsInvitationIdAcceptPost(organizationId,invitationId,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AcceptInvitationOrganizationsOrganizationIdInvitationsInvitationIdAcceptPostMutationResult = NonNullable<Awaited<ReturnType<typeof acceptInvitationOrganizationsOrganizationIdInvitationsInvitationIdAcceptPost>>>
-    
-    export type AcceptInvitationOrganizationsOrganizationIdInvitationsInvitationIdAcceptPostMutationError = HTTPValidationError
-
-    /**
- * @summary Accept Invitation
- */
-export const useAcceptInvitationOrganizationsOrganizationIdInvitationsInvitationIdAcceptPost = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof acceptInvitationOrganizationsOrganizationIdInvitationsInvitationIdAcceptPost>>, TError,{organizationId: string;invitationId: string}, TContext>, request?: SecondParameter<typeof brokerFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof acceptInvitationOrganizationsOrganizationIdInvitationsInvitationIdAcceptPost>>,
-        TError,
-        {organizationId: string;invitationId: string},
-        TContext
-      > => {
-
-      const mutationOptions = getAcceptInvitationOrganizationsOrganizationIdInvitationsInvitationIdAcceptPostMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * @summary Reject Invitation
- */
-export const rejectInvitationOrganizationsOrganizationIdInvitationsInvitationIdRejectPost = (
-    organizationId: string,
-    invitationId: string,
- options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
-) => {
-      
-      
-      return brokerFetch<InvitationPublic>(
-      {url: `/organizations/${organizationId}/invitations/${invitationId}/reject`, method: 'POST', signal
-    },
-      options);
-    }
-  
-
-
-export const getRejectInvitationOrganizationsOrganizationIdInvitationsInvitationIdRejectPostMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rejectInvitationOrganizationsOrganizationIdInvitationsInvitationIdRejectPost>>, TError,{organizationId: string;invitationId: string}, TContext>, request?: SecondParameter<typeof brokerFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof rejectInvitationOrganizationsOrganizationIdInvitationsInvitationIdRejectPost>>, TError,{organizationId: string;invitationId: string}, TContext> => {
-
-const mutationKey = ['rejectInvitationOrganizationsOrganizationIdInvitationsInvitationIdRejectPost'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof rejectInvitationOrganizationsOrganizationIdInvitationsInvitationIdRejectPost>>, {organizationId: string;invitationId: string}> = (props) => {
-          const {organizationId,invitationId} = props ?? {};
-
-          return  rejectInvitationOrganizationsOrganizationIdInvitationsInvitationIdRejectPost(organizationId,invitationId,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type RejectInvitationOrganizationsOrganizationIdInvitationsInvitationIdRejectPostMutationResult = NonNullable<Awaited<ReturnType<typeof rejectInvitationOrganizationsOrganizationIdInvitationsInvitationIdRejectPost>>>
-    
-    export type RejectInvitationOrganizationsOrganizationIdInvitationsInvitationIdRejectPostMutationError = HTTPValidationError
-
-    /**
- * @summary Reject Invitation
- */
-export const useRejectInvitationOrganizationsOrganizationIdInvitationsInvitationIdRejectPost = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rejectInvitationOrganizationsOrganizationIdInvitationsInvitationIdRejectPost>>, TError,{organizationId: string;invitationId: string}, TContext>, request?: SecondParameter<typeof brokerFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof rejectInvitationOrganizationsOrganizationIdInvitationsInvitationIdRejectPost>>,
-        TError,
-        {organizationId: string;invitationId: string},
-        TContext
-      > => {
-
-      const mutationOptions = getRejectInvitationOrganizationsOrganizationIdInvitationsInvitationIdRejectPostMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -923,16 +549,16 @@ export const usePatchMemberOrganizationsOrganizationIdMembersUserIdPatch = <TErr
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * @summary List Linked Sellers
+ * @summary List Organization Invitations
  */
-export const listLinkedSellersOrganizationsOrganizationIdLinkedSellersGet = (
+export const listOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet = (
     organizationId: string,
  options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
 ) => {
       
       
-      return brokerFetch<OrganizationPublic[]>(
-      {url: `/organizations/${organizationId}/linked-sellers`, method: 'GET', signal
+      return brokerFetch<InvitationPublic[]>(
+      {url: `/organizations/provider/${organizationId}/invitations`, method: 'GET', signal
     },
       options);
     }
@@ -940,69 +566,287 @@ export const listLinkedSellersOrganizationsOrganizationIdLinkedSellersGet = (
 
 
 
-export const getListLinkedSellersOrganizationsOrganizationIdLinkedSellersGetQueryKey = (organizationId?: string,) => {
+export const getListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGetQueryKey = (organizationId?: string,) => {
     return [
-    `/organizations/${organizationId}/linked-sellers`
+    `/organizations/provider/${organizationId}/invitations`
     ] as const;
     }
 
     
-export const getListLinkedSellersOrganizationsOrganizationIdLinkedSellersGetQueryOptions = <TData = Awaited<ReturnType<typeof listLinkedSellersOrganizationsOrganizationIdLinkedSellersGet>>, TError = HTTPValidationError>(organizationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listLinkedSellersOrganizationsOrganizationIdLinkedSellersGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export const getListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGetQueryOptions = <TData = Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet>>, TError = HTTPValidationError>(organizationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListLinkedSellersOrganizationsOrganizationIdLinkedSellersGetQueryKey(organizationId);
+  const queryKey =  queryOptions?.queryKey ?? getListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGetQueryKey(organizationId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listLinkedSellersOrganizationsOrganizationIdLinkedSellersGet>>> = ({ signal }) => listLinkedSellersOrganizationsOrganizationIdLinkedSellersGet(organizationId, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet>>> = ({ signal }) => listOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet(organizationId, requestOptions, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(organizationId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listLinkedSellersOrganizationsOrganizationIdLinkedSellersGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(organizationId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type ListLinkedSellersOrganizationsOrganizationIdLinkedSellersGetQueryResult = NonNullable<Awaited<ReturnType<typeof listLinkedSellersOrganizationsOrganizationIdLinkedSellersGet>>>
-export type ListLinkedSellersOrganizationsOrganizationIdLinkedSellersGetQueryError = HTTPValidationError
+export type ListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGetQueryResult = NonNullable<Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet>>>
+export type ListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGetQueryError = HTTPValidationError
 
 
-export function useListLinkedSellersOrganizationsOrganizationIdLinkedSellersGet<TData = Awaited<ReturnType<typeof listLinkedSellersOrganizationsOrganizationIdLinkedSellersGet>>, TError = HTTPValidationError>(
- organizationId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listLinkedSellersOrganizationsOrganizationIdLinkedSellersGet>>, TError, TData>> & Pick<
+export function useListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet<TData = Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet>>, TError = HTTPValidationError>(
+ organizationId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listLinkedSellersOrganizationsOrganizationIdLinkedSellersGet>>,
+          Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet>>,
           TError,
-          Awaited<ReturnType<typeof listLinkedSellersOrganizationsOrganizationIdLinkedSellersGet>>
+          Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet>>
         > , 'initialData'
       >, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListLinkedSellersOrganizationsOrganizationIdLinkedSellersGet<TData = Awaited<ReturnType<typeof listLinkedSellersOrganizationsOrganizationIdLinkedSellersGet>>, TError = HTTPValidationError>(
- organizationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listLinkedSellersOrganizationsOrganizationIdLinkedSellersGet>>, TError, TData>> & Pick<
+export function useListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet<TData = Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet>>, TError = HTTPValidationError>(
+ organizationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listLinkedSellersOrganizationsOrganizationIdLinkedSellersGet>>,
+          Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet>>,
           TError,
-          Awaited<ReturnType<typeof listLinkedSellersOrganizationsOrganizationIdLinkedSellersGet>>
+          Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet>>
         > , 'initialData'
       >, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListLinkedSellersOrganizationsOrganizationIdLinkedSellersGet<TData = Awaited<ReturnType<typeof listLinkedSellersOrganizationsOrganizationIdLinkedSellersGet>>, TError = HTTPValidationError>(
- organizationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listLinkedSellersOrganizationsOrganizationIdLinkedSellersGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export function useListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet<TData = Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet>>, TError = HTTPValidationError>(
+ organizationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Organization Invitations
+ */
+
+export function useListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet<TData = Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet>>, TError = HTTPValidationError>(
+ organizationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGetQueryOptions(organizationId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary Accept Invitation
+ */
+export const acceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPost = (
+    organizationId: string,
+    invitationId: string,
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<MemberPublic>(
+      {url: `/organizations/provider/${organizationId}/invitations/${invitationId}/accept`, method: 'POST', signal
+    },
+      options);
+    }
+  
+
+
+export const getAcceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof acceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPost>>, TError,{organizationId: string;invitationId: string}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof acceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPost>>, TError,{organizationId: string;invitationId: string}, TContext> => {
+
+const mutationKey = ['acceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof acceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPost>>, {organizationId: string;invitationId: string}> = (props) => {
+          const {organizationId,invitationId} = props ?? {};
+
+          return  acceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPost(organizationId,invitationId,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AcceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPostMutationResult = NonNullable<Awaited<ReturnType<typeof acceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPost>>>
+    
+    export type AcceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPostMutationError = HTTPValidationError
+
+    /**
+ * @summary Accept Invitation
+ */
+export const useAcceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof acceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPost>>, TError,{organizationId: string;invitationId: string}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof acceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPost>>,
+        TError,
+        {organizationId: string;invitationId: string},
+        TContext
+      > => {
+
+      const mutationOptions = getAcceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Reject Invitation
+ */
+export const rejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPost = (
+    organizationId: string,
+    invitationId: string,
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<InvitationPublic>(
+      {url: `/organizations/provider/${organizationId}/invitations/${invitationId}/reject`, method: 'POST', signal
+    },
+      options);
+    }
+  
+
+
+export const getRejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPost>>, TError,{organizationId: string;invitationId: string}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof rejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPost>>, TError,{organizationId: string;invitationId: string}, TContext> => {
+
+const mutationKey = ['rejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof rejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPost>>, {organizationId: string;invitationId: string}> = (props) => {
+          const {organizationId,invitationId} = props ?? {};
+
+          return  rejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPost(organizationId,invitationId,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPostMutationResult = NonNullable<Awaited<ReturnType<typeof rejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPost>>>
+    
+    export type RejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPostMutationError = HTTPValidationError
+
+    /**
+ * @summary Reject Invitation
+ */
+export const useRejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPost>>, TError,{organizationId: string;invitationId: string}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof rejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPost>>,
+        TError,
+        {organizationId: string;invitationId: string},
+        TContext
+      > => {
+
+      const mutationOptions = getRejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary List Linked Sellers
+ */
+export const listLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet = (
+    organizationId: string,
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<OrganizationPublic[]>(
+      {url: `/organizations/provider/${organizationId}/linked-sellers`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getListLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGetQueryKey = (organizationId?: string,) => {
+    return [
+    `/organizations/provider/${organizationId}/linked-sellers`
+    ] as const;
+    }
+
+    
+export const getListLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGetQueryOptions = <TData = Awaited<ReturnType<typeof listLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet>>, TError = HTTPValidationError>(organizationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGetQueryKey(organizationId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet>>> = ({ signal }) => listLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet(organizationId, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(organizationId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGetQueryResult = NonNullable<Awaited<ReturnType<typeof listLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet>>>
+export type ListLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGetQueryError = HTTPValidationError
+
+
+export function useListLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet<TData = Awaited<ReturnType<typeof listLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet>>, TError = HTTPValidationError>(
+ organizationId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet>>,
+          TError,
+          Awaited<ReturnType<typeof listLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet<TData = Awaited<ReturnType<typeof listLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet>>, TError = HTTPValidationError>(
+ organizationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet>>,
+          TError,
+          Awaited<ReturnType<typeof listLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet<TData = Awaited<ReturnType<typeof listLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet>>, TError = HTTPValidationError>(
+ organizationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List Linked Sellers
  */
 
-export function useListLinkedSellersOrganizationsOrganizationIdLinkedSellersGet<TData = Awaited<ReturnType<typeof listLinkedSellersOrganizationsOrganizationIdLinkedSellersGet>>, TError = HTTPValidationError>(
- organizationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listLinkedSellersOrganizationsOrganizationIdLinkedSellersGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export function useListLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet<TData = Awaited<ReturnType<typeof listLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet>>, TError = HTTPValidationError>(
+ organizationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getListLinkedSellersOrganizationsOrganizationIdLinkedSellersGetQueryOptions(organizationId,options)
+  const queryOptions = getListLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGetQueryOptions(organizationId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1017,7 +861,7 @@ export function useListLinkedSellersOrganizationsOrganizationIdLinkedSellersGet<
 /**
  * @summary Patch Seller Link
  */
-export const patchSellerLinkOrganizationsOrganizationIdLinkedSellersSellerOrganizationIdPatch = (
+export const patchSellerLinkOrganizationsProviderOrganizationIdLinkedSellersSellerOrganizationIdPatch = (
     organizationId: string,
     sellerOrganizationId: string,
     memberIsActivePatch: MemberIsActivePatch,
@@ -1025,7 +869,7 @@ export const patchSellerLinkOrganizationsOrganizationIdLinkedSellersSellerOrgani
       
       
       return brokerFetch<void>(
-      {url: `/organizations/${organizationId}/linked-sellers/${sellerOrganizationId}`, method: 'PATCH',
+      {url: `/organizations/provider/${organizationId}/linked-sellers/${sellerOrganizationId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: memberIsActivePatch
     },
@@ -1034,11 +878,11 @@ export const patchSellerLinkOrganizationsOrganizationIdLinkedSellersSellerOrgani
   
 
 
-export const getPatchSellerLinkOrganizationsOrganizationIdLinkedSellersSellerOrganizationIdPatchMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchSellerLinkOrganizationsOrganizationIdLinkedSellersSellerOrganizationIdPatch>>, TError,{organizationId: string;sellerOrganizationId: string;data: MemberIsActivePatch}, TContext>, request?: SecondParameter<typeof brokerFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof patchSellerLinkOrganizationsOrganizationIdLinkedSellersSellerOrganizationIdPatch>>, TError,{organizationId: string;sellerOrganizationId: string;data: MemberIsActivePatch}, TContext> => {
+export const getPatchSellerLinkOrganizationsProviderOrganizationIdLinkedSellersSellerOrganizationIdPatchMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchSellerLinkOrganizationsProviderOrganizationIdLinkedSellersSellerOrganizationIdPatch>>, TError,{organizationId: string;sellerOrganizationId: string;data: MemberIsActivePatch}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof patchSellerLinkOrganizationsProviderOrganizationIdLinkedSellersSellerOrganizationIdPatch>>, TError,{organizationId: string;sellerOrganizationId: string;data: MemberIsActivePatch}, TContext> => {
 
-const mutationKey = ['patchSellerLinkOrganizationsOrganizationIdLinkedSellersSellerOrganizationIdPatch'];
+const mutationKey = ['patchSellerLinkOrganizationsProviderOrganizationIdLinkedSellersSellerOrganizationIdPatch'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1048,10 +892,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchSellerLinkOrganizationsOrganizationIdLinkedSellersSellerOrganizationIdPatch>>, {organizationId: string;sellerOrganizationId: string;data: MemberIsActivePatch}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchSellerLinkOrganizationsProviderOrganizationIdLinkedSellersSellerOrganizationIdPatch>>, {organizationId: string;sellerOrganizationId: string;data: MemberIsActivePatch}> = (props) => {
           const {organizationId,sellerOrganizationId,data} = props ?? {};
 
-          return  patchSellerLinkOrganizationsOrganizationIdLinkedSellersSellerOrganizationIdPatch(organizationId,sellerOrganizationId,data,requestOptions)
+          return  patchSellerLinkOrganizationsProviderOrganizationIdLinkedSellersSellerOrganizationIdPatch(organizationId,sellerOrganizationId,data,requestOptions)
         }
 
         
@@ -1059,23 +903,179 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PatchSellerLinkOrganizationsOrganizationIdLinkedSellersSellerOrganizationIdPatchMutationResult = NonNullable<Awaited<ReturnType<typeof patchSellerLinkOrganizationsOrganizationIdLinkedSellersSellerOrganizationIdPatch>>>
-    export type PatchSellerLinkOrganizationsOrganizationIdLinkedSellersSellerOrganizationIdPatchMutationBody = MemberIsActivePatch
-    export type PatchSellerLinkOrganizationsOrganizationIdLinkedSellersSellerOrganizationIdPatchMutationError = HTTPValidationError
+    export type PatchSellerLinkOrganizationsProviderOrganizationIdLinkedSellersSellerOrganizationIdPatchMutationResult = NonNullable<Awaited<ReturnType<typeof patchSellerLinkOrganizationsProviderOrganizationIdLinkedSellersSellerOrganizationIdPatch>>>
+    export type PatchSellerLinkOrganizationsProviderOrganizationIdLinkedSellersSellerOrganizationIdPatchMutationBody = MemberIsActivePatch
+    export type PatchSellerLinkOrganizationsProviderOrganizationIdLinkedSellersSellerOrganizationIdPatchMutationError = HTTPValidationError
 
     /**
  * @summary Patch Seller Link
  */
-export const usePatchSellerLinkOrganizationsOrganizationIdLinkedSellersSellerOrganizationIdPatch = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchSellerLinkOrganizationsOrganizationIdLinkedSellersSellerOrganizationIdPatch>>, TError,{organizationId: string;sellerOrganizationId: string;data: MemberIsActivePatch}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+export const usePatchSellerLinkOrganizationsProviderOrganizationIdLinkedSellersSellerOrganizationIdPatch = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchSellerLinkOrganizationsProviderOrganizationIdLinkedSellersSellerOrganizationIdPatch>>, TError,{organizationId: string;sellerOrganizationId: string;data: MemberIsActivePatch}, TContext>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof patchSellerLinkOrganizationsOrganizationIdLinkedSellersSellerOrganizationIdPatch>>,
+        Awaited<ReturnType<typeof patchSellerLinkOrganizationsProviderOrganizationIdLinkedSellersSellerOrganizationIdPatch>>,
         TError,
         {organizationId: string;sellerOrganizationId: string;data: MemberIsActivePatch},
         TContext
       > => {
 
-      const mutationOptions = getPatchSellerLinkOrganizationsOrganizationIdLinkedSellersSellerOrganizationIdPatchMutationOptions(options);
+      const mutationOptions = getPatchSellerLinkOrganizationsProviderOrganizationIdLinkedSellersSellerOrganizationIdPatchMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary List My Seller Link Requests
+ */
+export const listMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet = (
+    
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<InvitationPublic[]>(
+      {url: `/organizations/seller/seller-link-requests/mine`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getListMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGetQueryKey = () => {
+    return [
+    `/organizations/seller/seller-link-requests/mine`
+    ] as const;
+    }
+
+    
+export const getListMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGetQueryOptions = <TData = Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGetQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet>>> = ({ signal }) => listMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet(requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGetQueryResult = NonNullable<Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet>>>
+export type ListMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGetQueryError = unknown
+
+
+export function useListMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet<TData = Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet>>,
+          TError,
+          Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet<TData = Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet>>,
+          TError,
+          Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet<TData = Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List My Seller Link Requests
+ */
+
+export function useListMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet<TData = Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGetQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary Create Seller Link Request
+ */
+export const createSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPost = (
+    organizationId: string,
+    params: CreateSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPostParams,
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<InvitationPublic>(
+      {url: `/organizations/seller/${organizationId}/seller-link-requests`, method: 'POST',
+        params, signal
+    },
+      options);
+    }
+  
+
+
+export const getCreateSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPost>>, TError,{organizationId: string;params: CreateSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPostParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPost>>, TError,{organizationId: string;params: CreateSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPostParams}, TContext> => {
+
+const mutationKey = ['createSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPost>>, {organizationId: string;params: CreateSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPostParams}> = (props) => {
+          const {organizationId,params} = props ?? {};
+
+          return  createSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPost(organizationId,params,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPostMutationResult = NonNullable<Awaited<ReturnType<typeof createSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPost>>>
+    
+    export type CreateSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPostMutationError = HTTPValidationError
+
+    /**
+ * @summary Create Seller Link Request
+ */
+export const useCreateSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPost>>, TError,{organizationId: string;params: CreateSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPostParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPost>>,
+        TError,
+        {organizationId: string;params: CreateSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPostParams},
+        TContext
+      > => {
+
+      const mutationOptions = getCreateSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPostMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

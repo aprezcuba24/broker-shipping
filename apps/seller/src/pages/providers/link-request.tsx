@@ -1,8 +1,8 @@
 import {
   formatApiError,
-  getListMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGetQueryKey,
-  useCreateSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPost,
-  useListMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet,
+  getListMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGetQueryKey,
+  useCreateSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPost,
+  useListMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet,
 } from '@broker/api'
 import {
   Card,
@@ -23,8 +23,8 @@ export function ProviderLinkRequestPage() {
   const queryClient = useQueryClient()
   const [success, setSuccess] = useState<string | null>(null)
   const createMutation =
-    useCreateSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPost()
-  const mineQuery = useListMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGet()
+    useCreateSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPost()
+  const mineQuery = useListMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGet()
 
   return (
     <PageWrapper
@@ -61,7 +61,7 @@ export function ProviderLinkRequestPage() {
                 setSuccess('Solicitud enviada. El proveedor recibirá un correo.')
                 await queryClient.invalidateQueries({
                   queryKey:
-                    getListMySellerLinkRequestsOrganizationsSellerLinkRequestsMineGetQueryKey(),
+                    getListMySellerLinkRequestsOrganizationsSellerSellerLinkRequestsMineGetQueryKey(),
                 })
               }}
             />

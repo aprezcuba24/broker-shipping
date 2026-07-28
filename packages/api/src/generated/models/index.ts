@@ -19,7 +19,7 @@ export * from './apiKeyPublicLastUsedAt';
 export * from './apiKeyPublicRevokedAt';
 export * from './apiKeyPublicUpdatedAt';
 export * from './createProductProductsProviderPostParams';
-export * from './createSellerLinkRequestOrganizationsOrganizationIdSellerLinkRequestsPostParams';
+export * from './createSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPostParams';
 export * from './deleteProductProductsProviderProductIdDeleteParams';
 export * from './getProductProductsProviderProductIdGetParams';
 export * from './getProductProductsSellerProductIdGetParams';
