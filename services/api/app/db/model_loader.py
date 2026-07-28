@@ -1,7 +1,6 @@
-from app.modules import get_app_modules
+from app.models import get_all_table_models
 
 
-def load_module_models() -> None:
-    """Import and register all SQLModel tables declared by ``AppModule.get_models``."""
-    for module in get_app_modules():
-        module.get_models()
+def load_all_table_models() -> None:
+    """Import and register all SQLModel tables declared by domain packages."""
+    get_all_table_models()

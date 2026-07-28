@@ -5,24 +5,21 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.lib.security.api_keys import generate_api_key
-from app.modules.organization.models import ApiKey
+from app.models.user.api_key import ApiKey
 
 
 async def create_api_key_row(
     session: AsyncSession,
     *,
-    organization_id: UUID | str,
-    name: str = "integration",
+    user_id: UUID | str,
+    name: str = "Test key",
+    description: str | None = None,
 ) -> tuple[str, dict]:
-    org_uuid = (
-        organization_id
-        if isinstance(organization_id, UUID)
-        else UUID(str(organization_id))
-    )
     raw, prefix, secret_hash = generate_api_key()
     entity = ApiKey(
-        organization_id=org_uuid,
         name=name,
+        description=description,
+        created_by_user_id=UUID(str(user_id)),
         prefix=prefix,
         secret_hash=secret_hash,
     )
@@ -35,10 +32,19 @@ async def create_api_key_row(
 class ApiKeyFactory:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+        self._n = 0
 
     async def build(
-        self, *, organization_id: UUID | str, name: str = "default"
+        self,
+        *,
+        user_id: UUID | str,
+        name: str | None = None,
+        description: str | None = None,
     ) -> tuple[str, dict]:
+        self._n += 1
         return await create_api_key_row(
-            self._session, organization_id=organization_id, name=name
+            self._session,
+            user_id=user_id,
+            name=name or f"Key {self._n:04d}",
+            description=description,
         )

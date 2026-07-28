@@ -1,24 +1,27 @@
 from __future__ import annotations
 
-from uuid import UUID
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.lib.security.passwords import hash_password
-from app.modules.user.models import User
+from app.lib.utils import utc_now
+from app.models.user.user import User
 
 
 async def create_user(
     session: AsyncSession,
     *,
-    username: str,
+    name: str,
+    email: str,
     password: str,
     is_super_admin: bool = False,
+    email_verified: bool = True,
 ) -> dict:
     entity = User(
-        username=username,
+        name=name,
+        email=email,
         password_hash=hash_password(password),
         is_super_admin=is_super_admin,
+        email_verified_at=utc_now() if email_verified else None,
     )
     session.add(entity)
     await session.flush()
@@ -36,15 +39,20 @@ class UserFactory:
     async def build(
         self,
         *,
-        username: str | None = None,
+        name: str | None = None,
+        email: str | None = None,
         password: str = "secret123",
         is_super_admin: bool = False,
+        email_verified: bool = True,
     ) -> dict:
         self._n += 1
-        uname = username or f"user_{self._n:04d}"
+        final_name = name or f"User {self._n:04d}"
+        final_email = email or f"user_{self._n:04d}@example.com"
         return await create_user(
             self._session,
-            username=uname,
+            name=final_name,
+            email=final_email,
             password=password,
             is_super_admin=is_super_admin,
+            email_verified=email_verified,
         )

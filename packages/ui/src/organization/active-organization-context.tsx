@@ -1,37 +1,70 @@
-import { useListOrganizationsOrganizationsGet, type Organization } from '@broker/api'
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import {
+  OrganizationType,
+  useAuth,
+  useMyOrganizationsUsersMyOrganizationsGet,
+  type OrganizationPublic,
+} from '@broker/api'
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 
 export type ActiveOrganizationContextValue = {
-  organizations: Organization[]
-  activeOrganization: Organization | null
+  organizations: OrganizationPublic[]
+  activeOrganization: OrganizationPublic | null
   setActiveOrganization: (organizationId: string) => void
+  isLoading: boolean
 }
 
 const ActiveOrganizationContext = createContext<ActiveOrganizationContextValue | null>(null)
 
 export type ActiveOrganizationProviderProps = {
   children: ReactNode
+  organizationType?: typeof OrganizationType.provider | typeof OrganizationType.seller
 }
 
-export function ActiveOrganizationProvider({ children }: ActiveOrganizationProviderProps) {
+export function ActiveOrganizationProvider({
+  children,
+  organizationType,
+}: ActiveOrganizationProviderProps) {
+  const { token } = useAuth()
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const { data: organizations = [], isPending } = useListOrganizationsOrganizationsGet()
+  const { data, isPending } = useMyOrganizationsUsersMyOrganizationsGet({
+    query: {
+      enabled: Boolean(token),
+    },
+  })
 
-  const activeId = selectedId ?? organizations[0]?.id
-  const activeOrganization = organizations.find((org) => org.id === activeId) ?? null
+  const organizations = useMemo(() => {
+    const list = data ?? []
+    if (!organizationType) return list
+    return list.filter((org) => org.type === organizationType)
+  }, [data, organizationType])
 
-  const setActiveOrganization = (organizationId: string) => {
-    if (!organizations.some((org) => org.id === organizationId)) return
-    setSelectedId(organizationId)
-  }
+  const activeOrganization = useMemo(() => {
+    if (selectedId) {
+      const selected = organizations.find((org) => org.id === selectedId)
+      if (selected) return selected
+    }
+    return organizations[0] ?? null
+  }, [organizations, selectedId])
 
-  if (isPending) return null
-
-  return (
-    <ActiveOrganizationContext value={{ organizations, activeOrganization, setActiveOrganization }}>
-      {children}
-    </ActiveOrganizationContext>
+  const setActiveOrganization = useCallback(
+    (organizationId: string) => {
+      if (!organizations.some((org) => org.id === organizationId)) return
+      setSelectedId(organizationId)
+    },
+    [organizations],
   )
+
+  const value = useMemo<ActiveOrganizationContextValue>(
+    () => ({
+      organizations,
+      activeOrganization,
+      setActiveOrganization,
+      isLoading: Boolean(token) && isPending,
+    }),
+    [organizations, activeOrganization, setActiveOrganization, isPending, token],
+  )
+
+  return <ActiveOrganizationContext value={value}>{children}</ActiveOrganizationContext>
 }
 
 export function useActiveOrganization(): ActiveOrganizationContextValue {

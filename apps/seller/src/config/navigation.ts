@@ -1,4 +1,4 @@
-import { ClipboardList, HelpCircle, LayoutDashboard, Package, Settings, Store } from 'lucide-react'
+import { Building2, LayoutDashboard, Link2, Mail, Store } from 'lucide-react'
 import type { NavItem, SidebarBrand } from '@broker/ui'
 
 export const sellerBrand: SidebarBrand = {
@@ -9,11 +9,9 @@ export const sellerBrand: SidebarBrand = {
 
 export const sellerNavItems: NavItem[] = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-  { to: '/products', label: 'Catálogo', icon: Package },
-  { to: '/orders', label: 'Órdenes', icon: ClipboardList },
+  { to: '/providers/link-request', label: 'Proveedores', icon: Link2 },
+  { to: '/settings/invitations', label: 'Invitaciones', icon: Mail },
+  { to: '/settings/organizations', label: 'Organizaciones', icon: Building2 },
 ]
 
-export const sellerBottomItems: NavItem[] = [
-  { to: '/settings', label: 'Configuración', icon: Settings },
-  { to: '/support', label: 'Soporte', icon: HelpCircle },
-]
+export const sellerBottomItems: NavItem[] = []

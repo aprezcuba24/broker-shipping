@@ -5,12 +5,14 @@ export type ApiAuthConfig = {
   getOrganizationId?: () => string | null
 }
 
+export type BrokerFetchParams = Record<string, string | number | boolean | null | undefined>
+
 export type BrokerFetchConfig = {
   url: string
   method: string
   headers?: Record<string, string>
   data?: unknown
-  params?: Record<string, string>
+  params?: BrokerFetchParams
   signal?: AbortSignal
 }
 
@@ -26,14 +28,30 @@ function getBaseUrl(): string {
   return authConfig.baseUrl ?? DEFAULT_BASE_URL
 }
 
-function buildUrl(path: string, params?: Record<string, string>): string {
+function buildUrl(path: string, params?: BrokerFetchParams): string {
   const url = new URL(path, getBaseUrl())
   if (params) {
     for (const [key, value] of Object.entries(params)) {
-      url.searchParams.set(key, value)
+      if (value === null || value === undefined) continue
+      url.searchParams.set(key, String(value))
     }
   }
   return url.toString()
+}
+
+function resolveParams(params?: BrokerFetchParams): BrokerFetchParams | undefined {
+  const organizationId = authConfig.getOrganizationId?.()
+  if (!organizationId) return params
+
+  const hasExplicitOrg =
+    params !== undefined &&
+    Object.prototype.hasOwnProperty.call(params, 'organization_id') &&
+    params.organization_id !== null &&
+    params.organization_id !== undefined
+
+  if (hasExplicitOrg) return params
+
+  return { ...params, organization_id: organizationId }
 }
 
 export async function brokerFetch<T>(config: BrokerFetchConfig, options?: RequestInit): Promise<T> {
@@ -47,11 +65,6 @@ export async function brokerFetch<T>(config: BrokerFetchConfig, options?: Reques
   const apiKey = authConfig.getApiKey?.()
   if (apiKey) {
     headers.set('X-API-Key', apiKey)
-  }
-
-  const organizationId = authConfig.getOrganizationId?.()
-  if (organizationId) {
-    headers.set('X-Organization-Id', organizationId)
   }
 
   if (options?.headers) {
@@ -69,7 +82,7 @@ export async function brokerFetch<T>(config: BrokerFetchConfig, options?: Reques
         ? (config.data as BodyInit)
         : undefined
 
-  const res = await fetch(buildUrl(config.url, config.params), {
+  const res = await fetch(buildUrl(config.url, resolveParams(config.params)), {
     ...options,
     method: config.method,
     headers,

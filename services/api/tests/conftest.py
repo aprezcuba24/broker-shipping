@@ -5,10 +5,9 @@ from __future__ import annotations
 import os
 from collections.abc import AsyncIterator
 
-# Base de datos de test (mismo host/puerto/credenciales que en `.env`; solo cambia el nombre).
 os.environ["POSTGRES_DB"] = os.environ.get("POSTGRES_DB_TEST", "broker_test")
-if len(os.environ.get("JWT_SECRET_KEY", "")) < 32:
-    os.environ["JWT_SECRET_KEY"] = "pytest-jwt-secret-must-be-at-least-thirty-two-bytes"
+if len(os.environ.get("JWT_SECRET", "")) < 32:
+    os.environ["JWT_SECRET"] = "pytest-jwt-secret-must-be-at-least-thirty-two-bytes"
 
 import pytest
 import pytest_asyncio
@@ -22,11 +21,9 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlmodel import SQLModel
 
-from app.db.model_loader import load_module_models
+from app.db.model_loader import load_all_table_models
 from app.main import app, lifespan
 from tests.factories.api_key_factory import ApiKeyFactory
-from tests.factories.category_factory import CategoryFactory
-from tests.factories.customer_factory import CustomerFactory
 from tests.factories.organization_factory import OrganizationFactory
 from tests.factories.product_factory import ProductFactory
 from tests.factories.user_factory import UserFactory
@@ -36,7 +33,7 @@ pytestmark = pytest.mark.asyncio(loop_scope="session")
 
 @pytest_asyncio.fixture(scope="session")
 async def test_engine() -> AsyncIterator[AsyncEngine]:
-    load_module_models()
+    load_all_table_models()
     from app.config import settings
 
     engine = create_async_engine(settings.database_url)
@@ -67,8 +64,7 @@ async def _truncate_tables(test_engine: AsyncEngine) -> AsyncIterator[None]:
         await conn.execute(
             text(
                 "TRUNCATE TABLE api_key, organization_invitation, provider_seller_link, "
-                'order_line, "order", address, customer, user_organization, "user", '
-                "category, product, organization RESTART IDENTITY CASCADE",
+                "user_organization, \"user\", product, organization RESTART IDENTITY CASCADE"
             )
         )
     yield
@@ -91,25 +87,15 @@ async def user_factory(db_session: AsyncSession) -> UserFactory:
 
 
 @pytest_asyncio.fixture
-async def organization_factory(db_session: AsyncSession) -> OrganizationFactory:
-    return OrganizationFactory(db_session)
-
-
-@pytest_asyncio.fixture
 async def api_key_factory(db_session: AsyncSession) -> ApiKeyFactory:
     return ApiKeyFactory(db_session)
 
 
 @pytest_asyncio.fixture
+async def organization_factory(db_session: AsyncSession) -> OrganizationFactory:
+    return OrganizationFactory(db_session)
+
+
+@pytest_asyncio.fixture
 async def product_factory(db_session: AsyncSession) -> ProductFactory:
     return ProductFactory(db_session)
-
-
-@pytest_asyncio.fixture
-async def category_factory(db_session: AsyncSession) -> CategoryFactory:
-    return CategoryFactory(db_session)
-
-
-@pytest_asyncio.fixture
-async def customer_factory(db_session: AsyncSession) -> CustomerFactory:
-    return CustomerFactory(db_session)

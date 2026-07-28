@@ -15,7 +15,7 @@ export function LoginPage() {
       error={loginError}
       onSubmit={async (values) => {
         await login(values)
-        void navigate('/organizations')
+        void navigate('/')
       }}
     />
   )

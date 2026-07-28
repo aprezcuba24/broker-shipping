@@ -1,8 +1,9 @@
+"""API key generation and parsing (pure helpers, no I/O)."""
+
 from __future__ import annotations
 
 import hashlib
 import secrets
-
 
 PREFIX_LENGTH = 12
 SECRET_BYTES = 16  # 32 hex chars
@@ -15,8 +16,8 @@ def hash_secret(secret: str) -> str:
 def generate_api_key() -> tuple[str, str, str]:
     """Return ``(raw_full_key, prefix, secret_hash)``.
 
-    Raw format: ``bk_<prefix>_<secret_hex>`` where ``secret_hex`` is ``SECRET_BYTES``
-    random bytes as hex (length ``SECRET_BYTES * 2``).
+    Raw format: ``bk_<prefix>_<secret_hex>`` where ``secret_hex`` is
+    ``SECRET_BYTES`` random bytes as hex (length ``SECRET_BYTES * 2``).
     """
     prefix = secrets.token_hex(PREFIX_LENGTH // 2)[:PREFIX_LENGTH]
     secret_part = secrets.token_hex(SECRET_BYTES)

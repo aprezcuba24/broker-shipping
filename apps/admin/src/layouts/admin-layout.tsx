@@ -1,5 +1,5 @@
 import { useAuth } from '@broker/api'
-import { AppLayout, initialsFromUsername } from '@broker/ui'
+import { AppLayout, initialsFromName } from '@broker/ui'
 import { useNavigate } from 'react-router-dom'
 import { adminBottomItems, adminBrand, adminNavItems } from '../config/navigation'
 
@@ -21,9 +21,9 @@ export function AdminLayout() {
       user={
         user
           ? {
-              name: user.username,
+              name: user.name,
               role: 'Acceso global',
-              initials: initialsFromUsername(user.username),
+              initials: initialsFromName(user.name),
             }
           : undefined
       }

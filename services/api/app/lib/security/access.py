@@ -1,92 +1,89 @@
-"""Auth helpers without FastAPI ``Depends`` (JWT, org membership, loaders)."""
+"""Auth helpers without FastAPI ``Depends`` (membership, org type)."""
 
 from __future__ import annotations
 
 from uuid import UUID
 
 from fastapi import HTTPException
-from fastapi.security import HTTPAuthorizationCredentials
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import col, select
 
-from app.lib.headers import optional_stripped_str
-from app.lib.security.tokens import decode_access_token_from_string
-from app.modules.organization.models.enums import OrganizationType
-from app.modules.organization.models.organization import Organization
-from app.modules.organization.repositories.organization_repository import (
-    OrganizationRepository,
-)
-from app.modules.organization.repositories.user_organization_repository import (
-    UserOrganizationRepository,
-)
-from app.modules.user.models import User
-from app.modules.user.repositories.user_repository import UserRepository
+from app.models.organization.enums import OrganizationType
+from app.models.organization.organization import Organization
+from app.models.organization.user_organization import UserOrganization
+from app.models.user.api_key import ApiKey
+from app.models.user.user import User
 
 
-def parse_organization_id(raw: str | None) -> UUID | None:
-    normalized = optional_stripped_str(raw)
-    if normalized is None:
-        return None
-    try:
-        return UUID(normalized)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid organization id") from None
+def is_super_admin(user: User) -> bool:
+    return bool(user.is_super_admin)
 
 
-async def load_user_from_bearer(
-    credentials: HTTPAuthorizationCredentials | None,
-    user_repo: UserRepository,
-) -> User:
-    token = credentials.credentials.strip() if credentials else None
-    if not token:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    try:
-        uid = decode_access_token_from_string(token)
-    except ValueError:
-        raise HTTPException(status_code=401, detail="Not authenticated") from None
-    user = await user_repo.get_by_id(uid)
-    if user is None:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    return user
+async def load_user_by_id(session: AsyncSession, user_id: UUID) -> User | None:
+    result = await session.execute(select(User).where(User.id == user_id))
+    return result.scalar_one_or_none()
+
+
+async def load_active_api_key_by_prefix(
+    session: AsyncSession,
+    prefix: str,
+) -> ApiKey | None:
+    result = await session.execute(
+        select(ApiKey).where(
+            ApiKey.prefix == prefix,
+            col(ApiKey.revoked_at).is_(None),
+        )
+    )
+    return result.scalar_one_or_none()
+
+
+async def list_all_provider_organization_ids(
+    session: AsyncSession,
+) -> list[UUID]:
+    result = await session.execute(
+        select(Organization.id)
+        .where(Organization.type == OrganizationType.provider)
+        .order_by(Organization.name)
+    )
+    return list(result.scalars().all())
 
 
 async def ensure_organization_access(
+    session: AsyncSession,
     user: User,
-    user_org_repo: UserOrganizationRepository,
-    org_repo: OrganizationRepository,
     *,
-    path_organization_id: UUID | None,
-    header_org_raw: str | None,
-    required: bool,
-    required_org_type: OrganizationType | None = None,
-) -> UUID | None:
-    organization_id = path_organization_id or parse_organization_id(header_org_raw)
-    if organization_id is None:
-        if required:
-            raise HTTPException(status_code=400, detail="Organization context required")
-        return None
-    if not user.is_super_admin:
-        await user_org_repo.is_active_member(user.id, organization_id)
-        if required_org_type is not None:
-            org = await org_repo.get_by_id(organization_id)
-            if org is None:
-                raise HTTPException(status_code=404, detail="Organization not found")
-            if org.type != required_org_type:
-                raise HTTPException(status_code=403, detail="Forbidden")
-    return organization_id
-
-
-async def load_organization(
-    org_repo: OrganizationRepository,
     organization_id: UUID,
+    required_org_type: OrganizationType | None = None,
 ) -> Organization:
-    organization = await org_repo.get_by_id(organization_id)
+    if is_super_admin(user):
+        result = await session.execute(
+            select(Organization).where(Organization.id == organization_id)
+        )
+        organization = result.scalar_one_or_none()
+        if organization is None:
+            raise HTTPException(status_code=404, detail="Organization not found")
+        if required_org_type is not None and organization.type != required_org_type:
+            raise HTTPException(status_code=403, detail="Forbidden")
+        return organization
+
+    membership = await session.execute(
+        select(UserOrganization).where(
+            UserOrganization.user_id == user.id,
+            UserOrganization.organization_id == organization_id,
+            UserOrganization.is_active.is_(True),
+        )
+    )
+    if membership.scalar_one_or_none() is None:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    result = await session.execute(
+        select(Organization).where(Organization.id == organization_id)
+    )
+    organization = result.scalar_one_or_none()
     if organization is None:
         raise HTTPException(status_code=404, detail="Organization not found")
-    return organization
 
-
-def assert_organization_type(
-    organization: Organization,
-    required_org_type: OrganizationType | None,
-) -> None:
     if required_org_type is not None and organization.type != required_org_type:
         raise HTTPException(status_code=403, detail="Forbidden")
+
+    return organization

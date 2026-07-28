@@ -2,9 +2,10 @@ import { EntitySelect } from '../components/entity-select'
 import { useActiveOrganization } from './active-organization-context'
 
 export function OrganizationSelect() {
-  const { organizations, activeOrganization, setActiveOrganization } = useActiveOrganization()
+  const { organizations, activeOrganization, setActiveOrganization, isLoading } =
+    useActiveOrganization()
 
-  if (organizations.length === 0 || !activeOrganization) return null
+  if (isLoading || organizations.length === 0 || !activeOrganization) return null
 
   return (
     <EntitySelect

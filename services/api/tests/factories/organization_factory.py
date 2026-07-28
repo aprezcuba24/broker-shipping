@@ -4,12 +4,10 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.organization.models import (
-    Organization,
-    OrganizationType,
-    ProviderSellerLink,
-    UserOrganization,
-)
+from app.models.organization.enums import OrganizationType
+from app.models.organization.organization import Organization
+from app.models.organization.provider_seller_link import ProviderSellerLink
+from app.models.organization.user_organization import UserOrganization
 
 
 async def create_organization_for_user(
@@ -79,5 +77,7 @@ class OrganizationFactory:
         name: str | None = None,
     ) -> dict:
         return await self.build(
-            user_id=user_id, name=name, org_type=OrganizationType.seller
+            user_id=user_id,
+            name=name,
+            org_type=OrganizationType.seller,
         )

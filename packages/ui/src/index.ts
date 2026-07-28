@@ -1,10 +1,12 @@
 export { cn, formatPriceCents, toPriceCents } from './lib/utils'
-export { initialsFromUsername } from './lib/initials'
+export { initialsFromName } from './lib/initials'
 
-export { AddressShow } from './components/address'
-
-export { LoginForm } from './components/auth/login-form'
+export { LoginForm, AuthFormLink } from './components/auth/login-form'
 export type { LoginFields, LoginFormProps } from './components/auth/login-form'
+export { RegisterForm } from './components/auth/register-form'
+export type { RegisterFields, RegisterFormProps } from './components/auth/register-form'
+export { VerifyEmailCard } from './components/auth/verify-email-card'
+export type { VerifyEmailCardProps, VerifyEmailStatus } from './components/auth/verify-email-card'
 
 export { ConfirmDialog } from './components/confirm-dialog'
 export type { ConfirmDialogProps } from './components/confirm-dialog'
@@ -27,12 +29,8 @@ export type { ButtonModalProps } from './components/button-modal'
 export { FormModal } from './components/form-modal'
 export type { FormModalFormProps, FormModalHandle, FormModalProps } from './components/form-modal'
 export { useFormSubmitHandle } from './hooks/use-form-submit-handle'
-export { useCRUD } from './hooks/use-crud'
-export type { CrudContextValue, UseCrudOptions, UseCrudResult } from './hooks/use-crud'
 export { useResetOnChange } from './hooks/use-reset-on-change'
 export { pickQueryParams, useUrlSearchFilters } from './hooks/use-url-search-filters'
-export { useSellerProviderCategories } from './hooks/use-seller-provider-categories'
-export { useSellerLinkedProviders } from './hooks/use-seller-linked-providers'
 export { DebouncedInput } from './components/debounced-input'
 export type { DebouncedInputProps } from './components/debounced-input'
 export { ListFilterBar } from './components/list-filter-bar'
@@ -141,17 +139,6 @@ export {
 } from './components/ui/select'
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './components/ui/tabs'
 
-export {
-  ActiveOrganizationProvider,
-  useActiveOrganization,
-} from './organization/active-organization-context'
-export type {
-  ActiveOrganizationContextValue,
-  ActiveOrganizationProviderProps,
-} from './organization/active-organization-context'
-export { OrganizationScopedApiProvider } from './organization/organization-scoped-api-provider'
-export { OrganizationSelect } from './organization/organization-select'
-
 export { AppLayout } from './components/layout/app-layout'
 export { Sidebar } from './components/layout/sidebar'
 export { TopHeader } from './components/layout/top-header'
@@ -164,3 +151,41 @@ export type {
   TopHeaderProps,
   AppLayoutProps,
 } from './components/layout/types'
+
+export {
+  ActiveOrganizationProvider,
+  useActiveOrganization,
+} from './organization/active-organization-context'
+export type {
+  ActiveOrganizationContextValue,
+  ActiveOrganizationProviderProps,
+} from './organization/active-organization-context'
+export { OrganizationSelect } from './organization/organization-select'
+export { OrganizationScopedApiProvider } from './organization/organization-scoped-api-provider'
+export { RequireOrganization } from './organization/require-organization'
+export type { RequireOrganizationProps } from './organization/require-organization'
+export {
+  storeInviteToken,
+  peekInviteToken,
+  takeInviteToken,
+  clearInviteToken,
+} from './organization/invite-token-storage'
+export { CreateOrganizationForm } from './organization/create-organization-form'
+export type {
+  CreateOrganizationFields,
+  CreateOrganizationFormProps,
+} from './organization/create-organization-form'
+export { AcceptInvitationCard } from './organization/accept-invitation-card'
+export type {
+  AcceptInvitationCardProps,
+  AcceptInvitationStatus,
+} from './organization/accept-invitation-card'
+export { MemberInviteForm } from './organization/member-invite-form'
+export type { MemberInviteFields, MemberInviteFormProps } from './organization/member-invite-form'
+export { ProviderLinkRequestForm } from './organization/provider-link-request-form'
+export type {
+  ProviderLinkRequestFields,
+  ProviderLinkRequestFormProps,
+} from './organization/provider-link-request-form'
+export { SellerLinkRequestsList } from './organization/seller-link-requests-list'
+export type { SellerLinkRequestsListProps } from './organization/seller-link-requests-list'

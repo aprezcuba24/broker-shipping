@@ -11,7 +11,7 @@ def _quote_pg_ident(value: str) -> str:
 
 
 class Settings(BaseSettings):
-    """Carga `.env` en la raíz del monorepo; URLs de DB y Redis se derivan de las piezas."""
+    """Carga `.env` en la raíz del monorepo; URLs de DB se derivan de las piezas."""
 
     model_config = SettingsConfigDict(
         env_file=(".env", "../.env", "../../.env"),
@@ -24,31 +24,20 @@ class Settings(BaseSettings):
     postgres_host: str = Field(default="localhost")
     postgres_port: int = Field(default=6432)
     postgres_db: str = Field(default="broker")
-    postgres_db_test: str = Field(default="broker_test")
 
-    redis_host: str = Field(default="localhost")
-    redis_port: int = Field(default=6379)
-    redis_db: int = Field(default=0)
-
-    aws_access_key_id: str | None = None
-    aws_secret_access_key: str | None = None
-    aws_region: str = "us-east-1"
-    s3_bucket: str | None = None
-    aws_endpoint_url: str | None = None
-
-    jwt_secret_key: str = Field(
-        default="dev-only-jwt-secret-min-32-bytes-change-in-production",
-    )
+    jwt_secret: str = Field(default="change-me-in-production-use-32b+")
     jwt_algorithm: str = Field(default="HS256")
-    jwt_access_token_minutes: int = Field(default=60 * 24)
+    jwt_expire_minutes: int = Field(default=60 * 24)
 
-    openapi_server_url: str | None = Field(
-        default=None,
-        description=(
-            "If set (e.g. https://api.example.com), injected into "
-            "`servers` on the OpenAPI document for Swagger / clients."
-        ),
-    )
+    smtp_host: str = Field(default="localhost")
+    smtp_port: int = Field(default=1025)
+    smtp_user: str = Field(default="")
+    smtp_password: str = Field(default="")
+    smtp_use_tls: bool = Field(default=False)
+    mail_from: str = Field(default="noreply@broker.local")
+    email_verification_token_hours: int = Field(default=24)
+    frontend_backoffice_url: str = Field(default="http://localhost:5173")
+    frontend_seller_url: str = Field(default="http://localhost:5174")
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -69,11 +58,6 @@ class Settings(BaseSettings):
             f"postgresql://{u}:{p}@"
             f"{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
-
-    @computed_field  # type: ignore[prop-decorator]
-    @property
-    def redis_url(self) -> str:
-        return f"redis://{self.redis_host}:{self.redis_port}/{self.redis_db}"
 
 
 settings = Settings()

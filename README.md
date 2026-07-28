@@ -54,13 +54,24 @@ uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 Documentación con la API en marcha: **Swagger** (`http://localhost:8000/docs`), **ReDoc** (`http://localhost:8000/redoc`), y el esquema **OpenAPI en JSON** en `http://localhost:8000/openapi.json` (p. ej. `curl -s http://localhost:8000/openapi.json` o importar en Postman / generadores de cliente).
 
-**Migraciones (Alembic):** con el `.env` de la raíz cargado, ejecuta `pnpm migrate:api` o `uv run alembic upgrade head` dentro de `services/api` (la URL síncrona sale de las mismas variables `POSTGRES_*`; véase [`services/api/app/config.py`](services/api/app/config.py)).
+## Migraciones de base de datos (Alembic)
+
+Con Postgres levantado (`docker compose up -d`), desde `services/api`:
+
+```bash
+cd services/api
+uv sync
+uv run alembic upgrade head              # aplicar migraciones
+uv run alembic revision --autogenerate -m "descripcion"  # nueva revisión
+uv run alembic current                   # revisión aplicada
+uv run alembic history                   # historial
+```
+
+Las entidades SQLModel viven en `app/models/{dominio}/` (carpeta obligatoria por dominio). Revisa siempre el fichero generado en `alembic/versions/` antes de commitear.
 
 ## S3 / MinIO / AWS
 
 En desarrollo puedes apuntar `AWS_ENDPOINT_URL` a MinIO (el host/puerto debe coincidir con `MINIO_API_PORT`, p. ej. `http://localhost:9000`) y alinear `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` con `MINIO_ROOT_*`. En producción con **AWS S3**, deja `AWS_ENDPOINT_URL` vacío y configura bucket y credenciales IAM.
-
-Cliente mínimo en el código: [`services/api/app/s3_util.py`](services/api/app/s3_util.py).
 
 ## Construir todos los frontends
 

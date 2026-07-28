@@ -1,33 +1,42 @@
+"""JWT create / decode helpers."""
+
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
-from authx import AuthX, AuthXConfig
-from authx.exceptions import JWTDecodeError
+import jwt
 
 from app.config import settings
 
-_config = AuthXConfig(
-    JWT_SECRET_KEY=settings.jwt_secret_key,
-    JWT_ALGORITHM=settings.jwt_algorithm,  # type: ignore[arg-type]
-    JWT_ACCESS_TOKEN_EXPIRES=timedelta(minutes=settings.jwt_access_token_minutes),
-    JWT_TOKEN_LOCATION=["headers"],
-)
 
-auth = AuthX(config=_config)
+def create_access_token(user_id: UUID) -> str:
+    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.jwt_expire_minutes)
+    payload = {
+        "sub": str(user_id),
+        "exp": expire,
+    }
+    return jwt.encode(
+        payload,
+        settings.jwt_secret,
+        algorithm=settings.jwt_algorithm,
+    )
 
 
-def encode_access_token(user_id: UUID) -> str:
-    return auth.create_access_token(uid=str(user_id))
-
-
-def decode_access_token_from_string(token: str) -> UUID:
-    from authx.schema import RequestToken
-
+def decode_access_token(token: str) -> UUID:
     try:
-        payload = auth.verify_token(RequestToken(token=token, location="headers"))
-    except JWTDecodeError as exc:
-        msg = "Invalid or expired token"
-        raise ValueError(msg) from exc
-    return UUID(payload.sub)
+        payload = jwt.decode(
+            token,
+            settings.jwt_secret,
+            algorithms=[settings.jwt_algorithm],
+        )
+    except jwt.PyJWTError as exc:
+        raise ValueError("Invalid token") from exc
+
+    sub = payload.get("sub")
+    if not sub:
+        raise ValueError("Invalid token")
+    try:
+        return UUID(str(sub))
+    except ValueError as exc:
+        raise ValueError("Invalid token") from exc

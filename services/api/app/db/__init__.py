@@ -1,3 +1,3 @@
-from app.db.model_loader import load_module_models
+from app.db.model_loader import load_all_table_models
 
-__all__ = ["load_module_models"]
+__all__ = ["load_all_table_models"]
