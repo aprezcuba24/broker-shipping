@@ -8,7 +8,6 @@ class OrganizationType(StrEnum):
 
 class InvitationKind(StrEnum):
     member_invite = "member_invite"
-    seller_link_invite = "seller_link_invite"
     seller_link_request = "seller_link_request"
 
 

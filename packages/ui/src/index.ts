@@ -182,11 +182,6 @@ export type {
 } from './organization/accept-invitation-card'
 export { MemberInviteForm } from './organization/member-invite-form'
 export type { MemberInviteFields, MemberInviteFormProps } from './organization/member-invite-form'
-export { SellerOrgLinkInviteForm } from './organization/seller-org-link-invite-form'
-export type {
-  SellerOrgLinkInviteFields,
-  SellerOrgLinkInviteFormProps,
-} from './organization/seller-org-link-invite-form'
 export { ProviderLinkRequestForm } from './organization/provider-link-request-form'
 export type {
   ProviderLinkRequestFields,

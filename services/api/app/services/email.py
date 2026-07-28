@@ -63,25 +63,6 @@ async def send_member_invitation_email(
     )
 
 
-async def send_seller_link_invitation_email(
-    *,
-    to: str,
-    provider_organization_name: str,
-    accept_url: str,
-) -> None:
-    await _send(
-        to=to,
-        subject=f"Invitación de enlace comercial — {provider_organization_name}",
-        body=(
-            f"La organización proveedora «{provider_organization_name}» te invita a "
-            "enlazar tu organización vendedora en Broker.\n\n"
-            "Abre este enlace para aceptar (necesitas una cuenta de vendedor con organización):\n\n"
-            f"{accept_url}\n\n"
-            "Si no esperabas esta invitación, puedes ignorar este mensaje.\n"
-        ),
-    )
-
-
 async def send_seller_link_request_email(
     *,
     to: str,

@@ -34,8 +34,7 @@ import type {
   MemberIsActivePatch,
   MemberPublic,
   OrganizationCreate,
-  OrganizationPublic,
-  SellerLinkInviteCreate
+  OrganizationPublic
 } from '.././models';
 
 import { brokerFetch } from '../../client';
@@ -419,71 +418,6 @@ export const useCreateMemberInvitationOrganizationsOrganizationIdMemberInvitatio
       > => {
 
       const mutationOptions = getCreateMemberInvitationOrganizationsOrganizationIdMemberInvitationsPostMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * @summary Create Seller Link Invitation
- */
-export const createSellerLinkInvitationOrganizationsOrganizationIdSellerLinkInvitationsPost = (
-    organizationId: string,
-    sellerLinkInviteCreate: SellerLinkInviteCreate,
- options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
-) => {
-      
-      
-      return brokerFetch<InvitationCreatedResponse>(
-      {url: `/organizations/${organizationId}/seller-link-invitations`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: sellerLinkInviteCreate, signal
-    },
-      options);
-    }
-  
-
-
-export const getCreateSellerLinkInvitationOrganizationsOrganizationIdSellerLinkInvitationsPostMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSellerLinkInvitationOrganizationsOrganizationIdSellerLinkInvitationsPost>>, TError,{organizationId: string;data: SellerLinkInviteCreate}, TContext>, request?: SecondParameter<typeof brokerFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createSellerLinkInvitationOrganizationsOrganizationIdSellerLinkInvitationsPost>>, TError,{organizationId: string;data: SellerLinkInviteCreate}, TContext> => {
-
-const mutationKey = ['createSellerLinkInvitationOrganizationsOrganizationIdSellerLinkInvitationsPost'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSellerLinkInvitationOrganizationsOrganizationIdSellerLinkInvitationsPost>>, {organizationId: string;data: SellerLinkInviteCreate}> = (props) => {
-          const {organizationId,data} = props ?? {};
-
-          return  createSellerLinkInvitationOrganizationsOrganizationIdSellerLinkInvitationsPost(organizationId,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateSellerLinkInvitationOrganizationsOrganizationIdSellerLinkInvitationsPostMutationResult = NonNullable<Awaited<ReturnType<typeof createSellerLinkInvitationOrganizationsOrganizationIdSellerLinkInvitationsPost>>>
-    export type CreateSellerLinkInvitationOrganizationsOrganizationIdSellerLinkInvitationsPostMutationBody = SellerLinkInviteCreate
-    export type CreateSellerLinkInvitationOrganizationsOrganizationIdSellerLinkInvitationsPostMutationError = HTTPValidationError
-
-    /**
- * @summary Create Seller Link Invitation
- */
-export const useCreateSellerLinkInvitationOrganizationsOrganizationIdSellerLinkInvitationsPost = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSellerLinkInvitationOrganizationsOrganizationIdSellerLinkInvitationsPost>>, TError,{organizationId: string;data: SellerLinkInviteCreate}, TContext>, request?: SecondParameter<typeof brokerFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createSellerLinkInvitationOrganizationsOrganizationIdSellerLinkInvitationsPost>>,
-        TError,
-        {organizationId: string;data: SellerLinkInviteCreate},
-        TContext
-      > => {
-
-      const mutationOptions = getCreateSellerLinkInvitationOrganizationsOrganizationIdSellerLinkInvitationsPostMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

@@ -8,16 +8,10 @@ from app.models.organization.enums import InvitationKind, InvitationStatus
 
 class AcceptByTokenBody(BaseModel):
     token: str = Field(min_length=1, max_length=64)
-    seller_organization_id: UUID | None = None
 
 
 class MemberInviteCreate(BaseModel):
     invitee_email: EmailStr
-
-
-class SellerLinkInviteCreate(BaseModel):
-    invitee_email: EmailStr
-    counterparty_organization_id: UUID | None = None
 
 
 class MemberIsActivePatch(BaseModel):

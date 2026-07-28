@@ -4,7 +4,6 @@
  * Broker API
  * OpenAPI spec version: 0.1.0
  */
-import type { AcceptByTokenBodySellerOrganizationId } from './acceptByTokenBodySellerOrganizationId';
 
 export interface AcceptByTokenBody {
   /**
@@ -12,5 +11,4 @@ export interface AcceptByTokenBody {
    * @maxLength 64
    */
   token: string;
-  seller_organization_id?: AcceptByTokenBodySellerOrganizationId;
 }

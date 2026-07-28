@@ -3,8 +3,6 @@ import {
   getMyOrganizationsUsersMyOrganizationsGetQueryKey,
   useAcceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost,
   useAuth,
-  useMyOrganizationsUsersMyOrganizationsGet,
-  OrganizationType,
 } from '@broker/api'
 import {
   AcceptInvitationCard,
@@ -20,11 +18,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 export function AcceptInvitationPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { isAuthenticated, isLoading: authLoading, token: authToken } = useAuth()
+  const { isAuthenticated, isLoading: authLoading } = useAuth()
   const queryClient = useQueryClient()
-  const orgsQuery = useMyOrganizationsUsersMyOrganizationsGet({
-    query: { enabled: Boolean(authToken) },
-  })
   const acceptMutation = useAcceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost()
   const [status, setStatus] = useState<AcceptInvitationStatus>('loading')
   const [message, setMessage] = useState<string | null>(null)
@@ -35,75 +30,44 @@ export function AcceptInvitationPage() {
     if (fromUrl) {
       storeInviteToken(fromUrl)
     }
-    const inviteToken = fromUrl ?? peekInviteToken()
-    if (!inviteToken) {
+    const token = fromUrl ?? peekInviteToken()
+    if (!token) {
       setStatus('error')
       setMessage('Falta el token de invitación.')
       return
     }
 
-    if (authLoading || (isAuthenticated && orgsQuery.isPending)) {
+    if (authLoading) {
       setStatus('loading')
       return
     }
 
     if (!isAuthenticated) {
-      storeInviteToken(inviteToken)
+      storeInviteToken(token)
       setStatus('needs-auth')
-      return
-    }
-
-    const sellerOrgs = (orgsQuery.data ?? []).filter((o) => o.type === OrganizationType.seller)
-    if (sellerOrgs.length === 0) {
-      storeInviteToken(inviteToken)
-      setStatus('needs-org')
       return
     }
 
     setStatus('loading')
     setMessage(null)
     try {
-      await acceptMutation.mutateAsync({
-        data: {
-          token: inviteToken,
-          seller_organization_id: sellerOrgs[0].id,
-        },
-      })
+      await acceptMutation.mutateAsync({ data: { token } })
       takeInviteToken()
       await queryClient.invalidateQueries({
         queryKey: getMyOrganizationsUsersMyOrganizationsGetQueryKey(),
       })
       setStatus('success')
-      setMessage('Enlace comercial establecido con el proveedor.')
+      setMessage('Ya formas parte de la organización.')
     } catch (error) {
-      // member_invite does not need seller_organization_id — retry without it
-      try {
-        await acceptMutation.mutateAsync({ data: { token: inviteToken } })
-        takeInviteToken()
-        await queryClient.invalidateQueries({
-          queryKey: getMyOrganizationsUsersMyOrganizationsGetQueryKey(),
-        })
-        setStatus('success')
-        setMessage('Ya formas parte de la organización.')
-      } catch (inner) {
-        setStatus('error')
-        setMessage(formatApiError(inner, formatApiError(error, 'No se pudo aceptar la invitación.')))
-      }
+      setStatus('error')
+      setMessage(formatApiError(error, 'No se pudo aceptar la invitación.'))
     }
-  }, [
-    acceptMutation,
-    authLoading,
-    isAuthenticated,
-    orgsQuery.data,
-    orgsQuery.isPending,
-    queryClient,
-    searchParams,
-  ])
+  }, [acceptMutation, authLoading, isAuthenticated, queryClient, searchParams])
 
   useEffect(() => {
     void runAccept()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attempt, authLoading, isAuthenticated, orgsQuery.isPending, orgsQuery.data])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-run on attempt / auth
+  }, [attempt, authLoading, isAuthenticated])
 
   return (
     <AcceptInvitationCard

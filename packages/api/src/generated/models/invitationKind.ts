@@ -11,6 +11,5 @@ export type InvitationKind = typeof InvitationKind[keyof typeof InvitationKind];
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const InvitationKind = {
   member_invite: 'member_invite',
-  seller_link_invite: 'seller_link_invite',
   seller_link_request: 'seller_link_request',
 } as const;

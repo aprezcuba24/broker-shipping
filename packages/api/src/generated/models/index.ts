@@ -6,7 +6,6 @@
  */
 
 export * from './acceptByTokenBody';
-export * from './acceptByTokenBodySellerOrganizationId';
 export * from './apiKeyCreate';
 export * from './apiKeyCreateDescription';
 export * from './apiKeyCreatedResponse';
@@ -59,8 +58,6 @@ export * from './productUpdateName';
 export * from './resendVerificationRequest';
 export * from './resendVerificationRequestClientApp';
 export * from './rootGet200';
-export * from './sellerLinkInviteCreate';
-export * from './sellerLinkInviteCreateCounterpartyOrganizationId';
 export * from './tokenResponse';
 export * from './userLogin';
 export * from './userPublic';

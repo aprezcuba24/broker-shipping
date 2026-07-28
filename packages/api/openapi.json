@@ -1141,67 +1141,6 @@
         }
       }
     },
-    "/organizations/{organization_id}/seller-link-invitations": {
-      "post": {
-        "tags": [
-          "organizations"
-        ],
-        "summary": "Create Seller Link Invitation",
-        "operationId": "create_seller_link_invitation_organizations__organization_id__seller_link_invitations_post",
-        "security": [
-          {
-            "HTTPBearer": []
-          },
-          {
-            "APIKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "organization_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Organization Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SellerLinkInviteCreate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InvitationCreatedResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/organizations/{organization_id}/seller-link-requests": {
       "post": {
         "tags": [
@@ -1826,18 +1765,6 @@
             "maxLength": 64,
             "minLength": 1,
             "title": "Token"
-          },
-          "seller_organization_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Seller Organization Id"
           }
         },
         "type": "object",
@@ -2159,7 +2086,6 @@
         "type": "string",
         "enum": [
           "member_invite",
-          "seller_link_invite",
           "seller_link_request"
         ],
         "title": "InvitationKind"
@@ -2528,32 +2454,6 @@
           "client_app"
         ],
         "title": "ResendVerificationRequest"
-      },
-      "SellerLinkInviteCreate": {
-        "properties": {
-          "invitee_email": {
-            "type": "string",
-            "format": "email",
-            "title": "Invitee Email"
-          },
-          "counterparty_organization_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Counterparty Organization Id"
-          }
-        },
-        "type": "object",
-        "required": [
-          "invitee_email"
-        ],
-        "title": "SellerLinkInviteCreate"
       },
       "TokenResponse": {
         "properties": {

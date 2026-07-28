@@ -15,7 +15,6 @@ from app.schemas.invitation import (
     MemberInviteCreate,
     MemberIsActivePatch,
     MemberPublic,
-    SellerLinkInviteCreate,
 )
 from app.schemas.organization import OrganizationCreate, OrganizationPublic
 from app.services import invitation as invitation_service
@@ -72,12 +71,7 @@ async def accept_invitation_by_token(
     user: CurrentUserDep,
     session: Annotated[AsyncSession, Depends(get_db)],
 ) -> MemberPublic:
-    return await invitation_service.accept_by_token(
-        session,
-        user,
-        body.token,
-        seller_organization_id=body.seller_organization_id,
-    )
+    return await invitation_service.accept_by_token(session, user, body.token)
 
 
 @router.post(
@@ -96,26 +90,6 @@ async def create_member_invitation(
         organization_id=organization.id,
         created_by_user_id=user.id,
         invitee_email=str(body.invitee_email),
-    )
-
-
-@router.post(
-    "/{organization_id}/seller-link-invitations",
-    response_model=InvitationCreatedResponse,
-    status_code=201,
-)
-async def create_seller_link_invitation(
-    organization: ProviderMemberOrgDep,
-    body: SellerLinkInviteCreate,
-    user: CurrentUserDep,
-    session: Annotated[AsyncSession, Depends(get_db)],
-) -> InvitationCreatedResponse:
-    return await invitation_service.create_seller_link_invite(
-        session,
-        provider_organization_id=organization.id,
-        created_by_user_id=user.id,
-        invitee_email=str(body.invitee_email),
-        counterparty_organization_id=body.counterparty_organization_id,
     )
 
 

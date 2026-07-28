@@ -24,16 +24,6 @@ def mock_invitation_emails(monkeypatch: pytest.MonkeyPatch) -> list[dict[str, st
             }
         )
 
-    async def _seller_link(*, to: str, provider_organization_name: str, accept_url: str) -> None:
-        sent.append(
-            {
-                "kind": "seller_link",
-                "to": to,
-                "provider_organization_name": provider_organization_name,
-                "accept_url": accept_url,
-            }
-        )
-
     async def _request(
         *,
         to: str,
@@ -54,10 +44,6 @@ def mock_invitation_emails(monkeypatch: pytest.MonkeyPatch) -> list[dict[str, st
     monkeypatch.setattr(
         "app.services.invitation.email_service.send_member_invitation_email",
         _member,
-    )
-    monkeypatch.setattr(
-        "app.services.invitation.email_service.send_seller_link_invitation_email",
-        _seller_link,
     )
     monkeypatch.setattr(
         "app.services.invitation.email_service.send_seller_link_request_email",
@@ -155,88 +141,6 @@ async def test_member_invite_email_and_accept(
     )
     assert orgs.status_code == 200
     assert any(o["id"] == org["id"] for o in orgs.json())
-
-
-async def test_seller_link_invite_creates_provider_seller_link(
-    client: AsyncClient,
-    user_factory: UserFactory,
-    organization_factory: OrganizationFactory,
-    mock_invitation_emails: list[dict[str, str]],
-) -> None:
-    provider_user = await user_factory.build(email="prov@link.com")
-    seller_user = await user_factory.build(email="sell@link.com")
-    provider_org = await organization_factory.build(user_id=provider_user["id"])
-    seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
-
-    create = await client.post(
-        f"/organizations/{provider_org['id']}/seller-link-invitations",
-        json={
-            "invitee_email": "sell@link.com",
-            "counterparty_organization_id": seller_org["id"],
-        },
-        headers=bearer_headers(user_id=provider_user["id"]),
-    )
-    assert create.status_code == 201
-    token = create.json()["token"]
-    assert mock_invitation_emails[0]["kind"] == "seller_link"
-
-    accept = await client.post(
-        "/organizations/invitations/accept-by-token",
-        json={"token": token},
-        headers=bearer_headers(user_id=seller_user["id"]),
-    )
-    assert accept.status_code == 200
-    assert accept.json()["organization_id"] == seller_org["id"]
-
-    linked = await client.get(
-        f"/organizations/{provider_org['id']}/linked-sellers",
-        headers=bearer_headers(user_id=provider_user["id"]),
-    )
-    assert linked.status_code == 200
-    assert any(s["id"] == seller_org["id"] for s in linked.json())
-
-    providers = await client.get(
-        "/organizations/seller/providers",
-        params={"organization_id": seller_org["id"]},
-        headers=bearer_headers(user_id=seller_user["id"]),
-    )
-    assert providers.status_code == 200
-    assert any(p["id"] == provider_org["id"] for p in providers.json())
-
-
-async def test_seller_link_invite_without_counterparty_needs_seller_org_id(
-    client: AsyncClient,
-    user_factory: UserFactory,
-    organization_factory: OrganizationFactory,
-    mock_invitation_emails: list[dict[str, str]],
-) -> None:
-    provider_user = await user_factory.build(email="prov2@link.com")
-    seller_user = await user_factory.build(email="sell2@link.com")
-    provider_org = await organization_factory.build(user_id=provider_user["id"])
-    seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
-
-    create = await client.post(
-        f"/organizations/{provider_org['id']}/seller-link-invitations",
-        json={"invitee_email": "sell2@link.com"},
-        headers=bearer_headers(user_id=provider_user["id"]),
-    )
-    assert create.status_code == 201
-    token = create.json()["token"]
-
-    missing = await client.post(
-        "/organizations/invitations/accept-by-token",
-        json={"token": token},
-        headers=bearer_headers(user_id=seller_user["id"]),
-    )
-    assert missing.status_code == 400
-
-    accept = await client.post(
-        "/organizations/invitations/accept-by-token",
-        json={"token": token, "seller_organization_id": seller_org["id"]},
-        headers=bearer_headers(user_id=seller_user["id"]),
-    )
-    assert accept.status_code == 200
-    assert len(mock_invitation_emails) == 1
 
 
 async def test_seller_link_request_email_and_accept_reject(

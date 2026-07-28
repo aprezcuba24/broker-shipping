@@ -111,62 +111,6 @@ async def create_member_invite(
     return InvitationCreatedResponse.model_validate(invitation)
 
 
-async def create_seller_link_invite(
-    session: AsyncSession,
-    *,
-    provider_organization_id: UUID,
-    created_by_user_id: UUID,
-    invitee_email: str,
-    counterparty_organization_id: UUID | None = None,
-) -> InvitationCreatedResponse:
-    await _require_provider_org(session, provider_organization_id)
-    provider = await org_service.get_organization(session, provider_organization_id)
-    assert provider is not None
-
-    if counterparty_organization_id is not None:
-        seller = await org_service.get_organization(session, counterparty_organization_id)
-        if seller is None:
-            raise HTTPException(status_code=404, detail="Seller organization not found")
-        if seller.type != OrganizationType.seller:
-            raise HTTPException(status_code=400, detail="Counterparty must be a seller organization")
-        if await link_service.has_active_link(
-            session, provider_organization_id, counterparty_organization_id
-        ):
-            raise HTTPException(status_code=400, detail="Already linked to this seller organization")
-
-    email = _normalize_email(invitee_email)
-    token = secrets.token_urlsafe(32)
-    invitation = OrganizationInvitation(
-        organization_id=provider_organization_id,
-        counterparty_organization_id=counterparty_organization_id,
-        kind=InvitationKind.seller_link_invite,
-        status=InvitationStatus.pending,
-        token=token,
-        invitee_email=email,
-        user_id=None,
-        created_by_user_id=created_by_user_id,
-    )
-    session.add(invitation)
-    await session.flush()
-
-    try:
-        await email_service.send_seller_link_invitation_email(
-            to=email,
-            provider_organization_name=provider.name,
-            accept_url=_accept_url(client_app="seller", token=token),
-        )
-        await session.commit()
-    except Exception:
-        await session.rollback()
-        raise HTTPException(
-            status_code=503,
-            detail="Failed to send invitation email",
-        ) from None
-
-    await session.refresh(invitation)
-    return InvitationCreatedResponse.model_validate(invitation)
-
-
 async def create_seller_link_request(
     session: AsyncSession,
     *,
@@ -236,8 +180,6 @@ async def accept_by_token(
     session: AsyncSession,
     user: User,
     token: str,
-    *,
-    seller_organization_id: UUID | None = None,
 ) -> MemberPublic:
     invitation = await _get_by_token(session, token.strip())
     if invitation is None:
@@ -247,13 +189,6 @@ async def accept_by_token(
 
     if invitation.kind == InvitationKind.member_invite:
         return await _accept_member_invite(session, user, invitation)
-    if invitation.kind == InvitationKind.seller_link_invite:
-        return await _accept_seller_link_invite(
-            session,
-            user,
-            invitation,
-            seller_organization_id=seller_organization_id,
-        )
     raise HTTPException(status_code=400, detail="Invalid invitation type")
 
 
@@ -278,51 +213,6 @@ async def _accept_member_invite(
         invitation.organization_id,
         is_active=True,
     )
-    invitation.status = InvitationStatus.accepted
-    invitation.updated_at = utc_now()
-    session.add(invitation)
-    await session.commit()
-    await session.refresh(membership)
-    return MemberPublic.model_validate(membership)
-
-
-async def _accept_seller_link_invite(
-    session: AsyncSession,
-    user: User,
-    invitation: OrganizationInvitation,
-    *,
-    seller_organization_id: UUID | None,
-) -> MemberPublic:
-    provider = await org_service.get_organization(session, invitation.organization_id)
-    if provider is None or provider.type != OrganizationType.provider:
-        raise HTTPException(status_code=400, detail="Invalid invitation")
-
-    seller_org_id = invitation.counterparty_organization_id or seller_organization_id
-    if seller_org_id is None:
-        raise HTTPException(
-            status_code=400,
-            detail="seller_organization_id is required to accept this invitation",
-        )
-
-    seller = await org_service.require_seller_org_membership(session, user.id, seller_org_id)
-
-    if invitation.counterparty_organization_id is not None:
-        if invitation.counterparty_organization_id != seller_org_id:
-            raise HTTPException(
-                status_code=403,
-                detail="Invitation is for a different seller organization",
-            )
-    else:
-        invitation.counterparty_organization_id = seller.id
-
-    await link_service.link_provider_to_seller(
-        session,
-        provider.id,
-        seller.id,
-    )
-    membership = await org_service.get_membership(session, user.id, seller.id)
-    assert membership is not None
-
     invitation.status = InvitationStatus.accepted
     invitation.updated_at = utc_now()
     session.add(invitation)
@@ -397,10 +287,7 @@ async def cancel_invite(
     invitation = await _get_by_id(session, invitation_id)
     if invitation is None or invitation.organization_id != organization_id:
         raise HTTPException(status_code=404, detail="Invitation not found")
-    if invitation.kind not in (
-        InvitationKind.member_invite,
-        InvitationKind.seller_link_invite,
-    ):
+    if invitation.kind != InvitationKind.member_invite:
         raise HTTPException(status_code=400, detail="Invalid invitation type")
     if invitation.status != InvitationStatus.pending:
         raise HTTPException(status_code=400, detail="Invitation is not pending")

@@ -3,7 +3,6 @@ import {
   getListOrganizationInvitationsOrganizationsOrganizationIdInvitationsGetQueryKey,
   useAcceptInvitationOrganizationsOrganizationIdInvitationsInvitationIdAcceptPost,
   useCreateMemberInvitationOrganizationsOrganizationIdMemberInvitationsPost,
-  useCreateSellerLinkInvitationOrganizationsOrganizationIdSellerLinkInvitationsPost,
   useListOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet,
   useRejectInvitationOrganizationsOrganizationIdInvitationsInvitationIdRejectPost,
 } from '@broker/api'
@@ -16,7 +15,6 @@ import {
   MemberInviteForm,
   PageWrapper,
   SellerLinkRequestsList,
-  SellerOrgLinkInviteForm,
   useActiveOrganization,
 } from '@broker/ui'
 import { useQueryClient } from '@tanstack/react-query'
@@ -28,7 +26,6 @@ export function InvitationsSettingsPage() {
   const orgId = activeOrganization?.id ?? ''
   const queryClient = useQueryClient()
   const [memberSuccess, setMemberSuccess] = useState<string | null>(null)
-  const [sellerSuccess, setSellerSuccess] = useState<string | null>(null)
   const [pendingId, setPendingId] = useState<string | null>(null)
 
   const invitationsQuery = useListOrganizationInvitationsOrganizationsOrganizationIdInvitationsGet(
@@ -36,8 +33,6 @@ export function InvitationsSettingsPage() {
     { query: { enabled: Boolean(orgId) } },
   )
   const memberInvite = useCreateMemberInvitationOrganizationsOrganizationIdMemberInvitationsPost()
-  const sellerInvite =
-    useCreateSellerLinkInvitationOrganizationsOrganizationIdSellerLinkInvitationsPost()
   const acceptRequest =
     useAcceptInvitationOrganizationsOrganizationIdInvitationsInvitationIdAcceptPost()
   const rejectRequest =
@@ -62,73 +57,38 @@ export function InvitationsSettingsPage() {
   return (
     <PageWrapper
       title="Invitaciones"
-      description="Invita miembros a tu organización o enlaza organizaciones vendedoras."
+      description="Invita miembros a tu organización y gestiona solicitudes de enlace de vendedores."
       icon={Mail}
     >
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Invitar miembro</CardTitle>
-            <CardDescription>
-              Se enviará un correo con un enlace de aceptación.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <MemberInviteForm
-              isSubmitting={memberInvite.isPending}
-              successMessage={memberSuccess}
-              error={
-                memberInvite.isError
-                  ? formatApiError(memberInvite.error, 'No se pudo enviar la invitación.')
-                  : null
-              }
-              onSubmit={async ({ invitee_email }) => {
-                setMemberSuccess(null)
-                memberInvite.reset()
-                await memberInvite.mutateAsync({
-                  organizationId: orgId,
-                  data: { invitee_email },
-                })
-                setMemberSuccess(`Invitación enviada a ${invitee_email}.`)
-                await invalidate()
-              }}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Invitar organización vendedora</CardTitle>
-            <CardDescription>
-              Enlace comercial entre tu organización proveedora y una org vendedora.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <SellerOrgLinkInviteForm
-              isSubmitting={sellerInvite.isPending}
-              successMessage={sellerSuccess}
-              error={
-                sellerInvite.isError
-                  ? formatApiError(sellerInvite.error, 'No se pudo enviar la invitación.')
-                  : null
-              }
-              onSubmit={async (values) => {
-                setSellerSuccess(null)
-                sellerInvite.reset()
-                await sellerInvite.mutateAsync({
-                  organizationId: orgId,
-                  data: {
-                    invitee_email: values.invitee_email,
-                    counterparty_organization_id: values.counterparty_organization_id,
-                  },
-                })
-                setSellerSuccess(`Invitación enviada a ${values.invitee_email}.`)
-                await invalidate()
-              }}
-            />
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Invitar miembro</CardTitle>
+          <CardDescription>
+            Se enviará un correo con un enlace de aceptación.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <MemberInviteForm
+            isSubmitting={memberInvite.isPending}
+            successMessage={memberSuccess}
+            error={
+              memberInvite.isError
+                ? formatApiError(memberInvite.error, 'No se pudo enviar la invitación.')
+                : null
+            }
+            onSubmit={async ({ invitee_email }) => {
+              setMemberSuccess(null)
+              memberInvite.reset()
+              await memberInvite.mutateAsync({
+                organizationId: orgId,
+                data: { invitee_email },
+              })
+              setMemberSuccess(`Invitación enviada a ${invitee_email}.`)
+              await invalidate()
+            }}
+          />
+        </CardContent>
+      </Card>
 
       <Card className="mt-6">
         <CardHeader>
