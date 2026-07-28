@@ -13,6 +13,11 @@ import { OnboardingPage } from './pages/onboarding'
 import { RegisterPage } from './pages/register'
 import { InvitationsSettingsPage } from './pages/settings/invitations'
 import { OrganizationsSettingsPage } from './pages/settings/organizations'
+import {
+  ProductCreatePage,
+  ProductEditPage,
+  ProductPage,
+} from './pages/product'
 import { VerifyEmailPage } from './pages/verify-email'
 
 export default function App() {
@@ -55,6 +60,9 @@ export default function App() {
           }
         >
           <Route index element={<HomePage />} />
+          <Route path="products" element={<ProductPage />} />
+          <Route path="products/new" element={<ProductCreatePage />} />
+          <Route path="products/:productId" element={<ProductEditPage />} />
           <Route path="settings/organizations" element={<OrganizationsSettingsPage />} />
           <Route path="settings/invitations" element={<InvitationsSettingsPage />} />
         </Route>

@@ -1,17 +1,25 @@
 import { useImperativeHandle } from 'react'
 import type { FieldValues, UseFormHandleSubmit } from 'react-hook-form'
 
-import type { FormModalHandle } from '../components/form-modal'
+import type { EntityFormHandle } from '../crud/components/entity-form-dialog'
+
+/** @deprecated Prefer EntityFormHandle from the CRUD kit. */
+export type FormModalHandle = EntityFormHandle
 
 export function useFormSubmitHandle<T extends FieldValues>(
-  ref: React.Ref<FormModalHandle> | undefined,
+  ref: React.Ref<EntityFormHandle> | undefined,
   handleSubmit: UseFormHandleSubmit<T>,
-  onValid: (values: T) => void | Promise<void>,
+  onValid: (values: T) => unknown | Promise<unknown>,
 ) {
   useImperativeHandle(ref, () => ({
     submit: () =>
-      handleSubmit(onValid, () => {
-        throw new Error('validation')
-      })(),
+      handleSubmit(
+        async (values) => {
+          await onValid(values)
+        },
+        () => {
+          throw new Error('validation')
+        },
+      )(),
   }))
 }

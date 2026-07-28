@@ -10,6 +10,13 @@ export const ColumnType = {
 
 export type ColumnType = (typeof ColumnType)[keyof typeof ColumnType]
 
+export type SortDirection = 'asc' | 'desc'
+
+export type DataTableSort = {
+  id: string
+  direction: SortDirection
+}
+
 export type ColumnDef<TData> = {
   id: string
   header: ReactNode
@@ -19,6 +26,7 @@ export type ColumnDef<TData> = {
   /** Hidden below this breakpoint (mobile-first). */
   hideOn?: 'sm' | 'md' | 'lg'
   className?: string
+  sortable?: boolean
   cell?: (row: TData) => ReactNode
 }
 
@@ -38,4 +46,9 @@ export type DataTableProps<TData> = {
   isLoading?: boolean
   emptyMessage?: ReactNode
   className?: string
+  onRowClick?: (row: TData) => void
+  rowClassName?: string | ((row: TData) => string | undefined)
+  renderRow?: (row: TData, context: { index: number; columns: ColumnDef<TData>[] }) => ReactNode
+  sort?: DataTableSort | null
+  onSortChange?: (sort: DataTableSort | null) => void
 }
