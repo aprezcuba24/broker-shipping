@@ -8,7 +8,7 @@ import {
   type ProductPublic,
 } from '@broker/api'
 import {
-  Button,
+  BtnLink,
   DataTable,
   PageWrapper,
   useActiveOrganization,
@@ -16,7 +16,7 @@ import {
   useListParams,
 } from '@broker/ui'
 import { Package, Plus } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useMemo } from 'react'
 
 import { buildProductColumns } from './columns'
@@ -83,12 +83,9 @@ export function ProductPage() {
       description="Gestiona el catálogo de productos de tu organización."
       icon={Package}
       buttons={[
-        <Button key="create" size="sm" className="w-full sm:w-auto" asChild>
-          <Link to="/products/new">
-            <Plus className="h-4 w-4" />
-            Nuevo producto
-          </Link>
-        </Button>,
+        <BtnLink key="create" to="/products/new" icon={Plus}>
+          Nuevo producto
+        </BtnLink>,
       ]}
     >
       <div className="space-y-4">
