@@ -10,7 +10,8 @@ from sqlmodel import select
 from app.config import settings
 from app.events.types import EmailVerificationRequestedEvent
 from app.lib.events import emit
-from app.lib.security.access import is_super_admin, load_user_by_id
+from app.lib.persistence import get_entity
+from app.lib.security.access import is_super_admin
 from app.lib.security.api_keys import hash_secret
 from app.lib.security.email_verification import generate_verification_token
 from app.lib.security.passwords import hash_password, verify_password
@@ -38,8 +39,8 @@ def _set_verification_token(user: User) -> str:
 
 
 async def register_user(session: AsyncSession, data: UserRegister) -> User:
-    existing = await session.execute(select(User).where(User.email == data.email))
-    if existing.scalar_one_or_none() is not None:
+    existing = await get_entity(session, User, email=data.email, required=False)
+    if existing is not None:
         raise HTTPException(status_code=409, detail="Email already registered")
 
     user = User(
@@ -64,8 +65,7 @@ async def register_user(session: AsyncSession, data: UserRegister) -> User:
 
 
 async def authenticate_user(session: AsyncSession, data: UserLogin) -> User:
-    result = await session.execute(select(User).where(User.email == data.email))
-    user = result.scalar_one_or_none()
+    user = await get_entity(session, User, email=data.email, required=False)
     if user is None or not verify_password(data.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     if user.email_verified_at is None:
@@ -75,10 +75,12 @@ async def authenticate_user(session: AsyncSession, data: UserLogin) -> User:
 
 async def verify_email(session: AsyncSession, token: str) -> User:
     token_hash = hash_secret(token)
-    result = await session.execute(
-        select(User).where(User.email_verification_token_hash == token_hash)
+    user = await get_entity(
+        session,
+        User,
+        email_verification_token_hash=token_hash,
+        required=False,
     )
-    user = result.scalar_one_or_none()
     if user is None:
         raise HTTPException(status_code=400, detail="Invalid or expired token")
     if user.email_verified_at is not None:
@@ -103,8 +105,7 @@ async def resend_verification_email(
     email: str,
     client_app: ClientApp,
 ) -> str:
-    result = await session.execute(select(User).where(User.email == email))
-    user = result.scalar_one_or_none()
+    user = await get_entity(session, User, email=email, required=False)
     if user is None or user.email_verified_at is not None:
         return _RESEND_OK_MESSAGE
 
@@ -127,7 +128,7 @@ async def list_user_organizations(
     session: AsyncSession,
     user_id: UUID,
 ) -> list[Organization]:
-    user = await load_user_by_id(session, user_id)
+    user = await get_entity(session, User, id=user_id, required=False)
     if user is not None and is_super_admin(user):
         return []
 

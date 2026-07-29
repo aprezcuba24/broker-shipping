@@ -20,11 +20,6 @@ def is_super_admin(user: User) -> bool:
     return bool(user.is_super_admin)
 
 
-async def load_user_by_id(session: AsyncSession, user_id: UUID) -> User | None:
-    result = await session.execute(select(User).where(User.id == user_id))
-    return result.scalar_one_or_none()
-
-
 async def load_active_api_key_by_prefix(
     session: AsyncSession,
     prefix: str,

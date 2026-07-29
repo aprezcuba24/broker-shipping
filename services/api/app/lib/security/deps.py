@@ -11,7 +11,8 @@ from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBea
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.deps import get_db
-from app.lib.security.access import ensure_organization_access, load_user_by_id
+from app.lib.persistence import get_entity
+from app.lib.security.access import ensure_organization_access
 from app.lib.security.api_keys import split_raw
 from app.lib.security.tokens import decode_access_token
 from app.models.organization.enums import OrganizationType
@@ -36,7 +37,7 @@ async def _get_user_from_jwt(
         user_id = decode_access_token(token)
     except ValueError:
         return None
-    return await load_user_by_id(session, user_id)
+    return await get_entity(session, User, id=user_id, required=False)
 
 
 async def get_current_user(
@@ -53,7 +54,9 @@ async def get_current_user(
     if raw_key and split_raw(raw_key) is not None:
         key = await api_key_service.verify_raw(session, raw_key)
         if key is not None:
-            creator = await load_user_by_id(session, key.created_by_user_id)
+            creator = await get_entity(
+                session, User, id=key.created_by_user_id, required=False
+            )
             if creator is not None:
                 await api_key_service.touch_last_used(session, key)
                 return creator
