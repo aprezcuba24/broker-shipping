@@ -29,13 +29,10 @@ from sqlmodel import select
 
 from app.config import settings
 from app.db.session import create_async_engine_and_session_maker
+from app.lib.normalize import normalize_email
 from app.lib.security.passwords import hash_password
 from app.lib.utils import utc_now
 from app.models.user.user import User
-
-
-def _normalize_email(email: str) -> str:
-    return email.strip().lower()
 
 
 async def create_super_admin(
@@ -109,7 +106,7 @@ def main() -> None:
         help="Elevate an existing user to super admin by email.",
     )
     args = parser.parse_args()
-    email = _normalize_email(args.email)
+    email = normalize_email(args.email)
 
     if args.promote:
         user = asyncio.run(promote_super_admin(email=email))

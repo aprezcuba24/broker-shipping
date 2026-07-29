@@ -14,6 +14,7 @@ from app.lib.security.access import is_super_admin, load_user_by_id
 from app.lib.security.api_keys import hash_secret
 from app.lib.security.email_verification import generate_verification_token
 from app.lib.security.passwords import hash_password, verify_password
+from app.lib.normalize import normalize_email
 from app.lib.utils import utc_now
 from app.models.organization.organization import Organization
 from app.models.organization.user_organization import UserOrganization
@@ -25,10 +26,6 @@ _RESEND_OK_MESSAGE = (
     "If an account exists for that email and is not verified, "
     "a new confirmation link has been sent."
 )
-
-
-def _normalize_email(email: str) -> str:
-    return email.strip().lower()
 
 
 def _frontend_base_url(client_app: ClientApp) -> str:
@@ -51,7 +48,7 @@ def _set_verification_token(user: User) -> str:
 
 
 async def register_user(session: AsyncSession, data: UserRegister) -> User:
-    email = _normalize_email(str(data.email))
+    email = normalize_email(str(data.email))
     existing = await session.execute(select(User).where(User.email == email))
     if existing.scalar_one_or_none() is not None:
         raise HTTPException(status_code=409, detail="Email already registered")
@@ -79,7 +76,7 @@ async def register_user(session: AsyncSession, data: UserRegister) -> User:
 
 
 async def authenticate_user(session: AsyncSession, data: UserLogin) -> User:
-    email = _normalize_email(str(data.email))
+    email = normalize_email(str(data.email))
     result = await session.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
     if user is None or not verify_password(data.password, user.password_hash):
@@ -123,7 +120,7 @@ async def resend_verification_email(
     email: str,
     client_app: ClientApp,
 ) -> str:
-    normalized = _normalize_email(email)
+    normalized = normalize_email(email)
     result = await session.execute(select(User).where(User.email == normalized))
     user = result.scalar_one_or_none()
     if user is None or user.email_verified_at is not None:
