@@ -20,7 +20,7 @@ async def create_organization_for_user(
     name: str,
     org_type: OrganizationType,
 ) -> Organization:
-    org = Organization(name=name.strip(), type=org_type)
+    org = Organization(name=name, type=org_type)
     session.add(org)
     await session.flush()
     session.add(

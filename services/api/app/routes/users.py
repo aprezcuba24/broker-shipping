@@ -52,7 +52,7 @@ async def resend_verification(
 ) -> MessageResponse:
     message = await resend_verification_email(
         session,
-        str(body.email),
+        body.email,
         body.client_app,
     )
     return MessageResponse(message=message)

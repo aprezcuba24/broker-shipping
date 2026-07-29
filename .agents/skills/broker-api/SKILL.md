@@ -72,7 +72,12 @@ Tenant-owned catalog data (products, future categories, etc.) → `OrganizationE
 
 - Separate Create / Update / Public (see `app/schemas/product.py`).
 - Update schemas: inherit from Create when fields match; make fields optional with `default=None`.
-- Share validators on the base class (e.g. strip `name`).
+- **Request schemas normalize input** via shared types in `app.schemas.fields`:
+  - `NormalizedEmail` — strip + lower (emails)
+  - `NonEmptyStr` — strip; reject empty
+  - `OptionalStrippedStr` — strip; empty → `None`
+- Helpers live in `app.lib.normalize`. Services must **not** re-strip / re-normalize body fields.
+- Public/response schemas do not normalize (they reflect DB state).
 - Public: `model_config = ConfigDict(from_attributes=True)`.
 - Never accept `organization_id` in the body for tenant-scoped creates — take it from the resolved org dep.
 

@@ -10,7 +10,6 @@ from sqlmodel import select
 from app.config import settings
 from app.events.types import MemberInvitedEvent, SellerLinkRequestedEvent
 from app.lib.events import emit
-from app.lib.normalize import normalize_email
 from app.lib.utils import utc_now
 from app.models.organization.enums import (
     InvitationKind,
@@ -76,14 +75,13 @@ async def create_member_invite(
     if org is None:
         raise HTTPException(status_code=404, detail="Organization not found")
 
-    email = normalize_email(invitee_email)
     token = secrets.token_urlsafe(32)
     invitation = OrganizationInvitation(
         organization_id=organization_id,
         kind=InvitationKind.member_invite,
         status=InvitationStatus.pending,
         token=token,
-        invitee_email=email,
+        invitee_email=invitee_email,
         user_id=None,
         created_by_user_id=created_by_user_id,
     )
@@ -95,7 +93,7 @@ async def create_member_invite(
     await emit(
         MemberInvitedEvent(
             invitation_id=invitation.id,
-            invitee_email=email,
+            invitee_email=invitee_email,
             organization_name=org.name,
             accept_url=_accept_url(client_app=client_app, token=token),
         ),
@@ -167,7 +165,7 @@ async def accept_by_token(
     user: User,
     token: str,
 ) -> MemberPublic:
-    invitation = await _get_by_token(session, token.strip())
+    invitation = await _get_by_token(session, token)
     if invitation is None:
         raise HTTPException(status_code=404, detail="Invitation not found")
     if invitation.status != InvitationStatus.pending:
@@ -185,7 +183,7 @@ async def _accept_member_invite(
 ) -> MemberPublic:
     if invitation.invitee_email is None:
         raise HTTPException(status_code=400, detail="Invalid invitation")
-    if normalize_email(user.email) != normalize_email(invitation.invitee_email):
+    if user.email != invitation.invitee_email:
         raise HTTPException(
             status_code=403,
             detail="Invitation email does not match authenticated user",

@@ -1,25 +1,17 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field
+
+from app.schemas.fields import NonEmptyStr
 
 
 class ProductCreate(BaseModel):
-    name: str = Field(min_length=1, max_length=255)
-
-    @field_validator("name")
-    @classmethod
-    def strip_name(cls, value: str | None) -> str | None:
-        if value is None:
-            return None
-        stripped = value.strip()
-        if not stripped:
-            raise ValueError("name must not be empty")
-        return stripped
+    name: NonEmptyStr = Field(max_length=255)
 
 
 class ProductUpdate(ProductCreate):
-    name: str | None = Field(default=None, min_length=1, max_length=255)
+    name: NonEmptyStr | None = Field(default=None, max_length=255)
 
 
 class ProductPublic(BaseModel):
