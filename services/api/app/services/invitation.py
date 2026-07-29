@@ -142,16 +142,14 @@ async def accept_by_token(
     )
     if invitation.status != InvitationStatus.pending:
         raise HTTPException(status_code=400, detail="Invitation is not pending")
-    return await _accept_member_invite(session, user, invitation)
+    return await accept_member_invite(session, user, invitation)
 
 
-async def _accept_member_invite(
+async def accept_member_invite(
     session: AsyncSession,
     user: User,
     invitation: OrganizationInvitation,
 ) -> MemberPublic:
-    if invitation.invitee_email is None:
-        raise HTTPException(status_code=400, detail="Invalid invitation")
     if user.email != invitation.invitee_email:
         raise HTTPException(
             status_code=403,
