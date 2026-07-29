@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from app.db.context import background_session
 from app.events.types import (
     EmailVerificationRequestedEvent,
     MemberInvitedEvent,
     SellerLinkRequestedEvent,
 )
 from app.lib.events.registry import listener
+from app.services import organization as org_service
 from app.services.email import (
     send_member_invitation_email,
     send_seller_link_request_email,
@@ -24,7 +26,12 @@ async def on_member_invited(event: MemberInvitedEvent) -> None:
 
 @listener(SellerLinkRequestedEvent)
 async def on_seller_link_requested(event: SellerLinkRequestedEvent) -> None:
-    for to in event.recipient_emails:
+    async with background_session() as session:
+        members = await org_service.list_active_member_users(
+            session, event.invitation.organization_id
+        )
+        recipient_emails = [member.email for member in members]
+    for to in recipient_emails:
         await send_seller_link_request_email(
             to=to,
             provider_organization_name=event.provider_organization_name,

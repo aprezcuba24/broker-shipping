@@ -6,7 +6,6 @@ from uuid import UUID
 from app.config import settings
 from app.models.organization.organization import Organization
 from app.models.organization.organization_invitation import OrganizationInvitation
-from app.models.user.user import User
 
 
 @dataclass(frozen=True)
@@ -14,7 +13,6 @@ class SellerLinkRequestedEvent:
     invitation: OrganizationInvitation
     provider: Organization
     seller: Organization
-    members: tuple[User, ...]
 
     @property
     def invitation_id(self) -> UUID:
@@ -33,7 +31,3 @@ class SellerLinkRequestedEvent:
         return (
             f"{settings.frontend_base_url('backoffice')}/settings/invitations"
         )
-
-    @property
-    def recipient_emails(self) -> tuple[str, ...]:
-        return tuple(m.email for m in self.members)

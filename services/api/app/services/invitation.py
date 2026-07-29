@@ -33,6 +33,23 @@ async def _require_provider_org(
     return org
 
 
+async def find_pending_seller_link_request(
+    session: AsyncSession,
+    *,
+    provider_organization_id: UUID,
+    seller_organization_id: UUID,
+) -> OrganizationInvitation | None:
+    return await get_entity(
+        session,
+        OrganizationInvitation,
+        organization_id=provider_organization_id,
+        counterparty_organization_id=seller_organization_id,
+        kind=InvitationKind.seller_link_request,
+        status=InvitationStatus.pending,
+        required=False,
+    )
+
+
 async def create_member_invite(
     session: AsyncSession,
     *,
@@ -80,15 +97,11 @@ async def create_seller_link_request(
     ):
         raise HTTPException(status_code=400, detail="Already linked to this provider")
 
-    existing = await session.execute(
-        select(OrganizationInvitation).where(
-            OrganizationInvitation.organization_id == provider_organization_id,
-            OrganizationInvitation.counterparty_organization_id == seller_organization_id,
-            OrganizationInvitation.kind == InvitationKind.seller_link_request,
-            OrganizationInvitation.status == InvitationStatus.pending,
-        )
-    )
-    if existing.scalar_one_or_none() is not None:
+    if await find_pending_seller_link_request(
+        session,
+        provider_organization_id=provider_organization_id,
+        seller_organization_id=seller_organization_id,
+    ) is not None:
         raise HTTPException(status_code=409, detail="Link request already pending")
 
     invitation = OrganizationInvitation(
@@ -105,13 +118,11 @@ async def create_seller_link_request(
     await session.commit()
     await session.refresh(invitation)
 
-    members = await org_service.list_active_member_users(session, provider_organization_id)
     await emit(
         SellerLinkRequestedEvent(
             invitation=invitation,
             provider=provider,
             seller=seller,
-            members=tuple(members),
         ),
         background=True,
     )
@@ -123,13 +134,15 @@ async def accept_by_token(
     user: User,
     token: str,
 ) -> MemberPublic:
-    invitation = await get_entity(session, OrganizationInvitation, token=token)
+    invitation = await get_entity(
+        session,
+        OrganizationInvitation,
+        token=token,
+        kind=InvitationKind.member_invite,
+    )
     if invitation.status != InvitationStatus.pending:
         raise HTTPException(status_code=400, detail="Invitation is not pending")
-
-    if invitation.kind == InvitationKind.member_invite:
-        return await _accept_member_invite(session, user, invitation)
-    raise HTTPException(status_code=400, detail="Invalid invitation type")
+    return await _accept_member_invite(session, user, invitation)
 
 
 async def _accept_member_invite(
