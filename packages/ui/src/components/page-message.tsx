@@ -22,14 +22,16 @@ export function PageMessage({
     <PageWrapper
       title={title}
       icon={icon}
-      buttons={
-        backTo
-          ? [
-              <BtnLink key="back" to={backTo} variant="outline" size="sm" icon={ArrowLeft}>
-                {backLabel}
-              </BtnLink>,
-            ]
-          : undefined
+      leading={
+        backTo ? (
+          <BtnLink
+            to={backTo}
+            variant="outline"
+            size="icon-sm"
+            icon={ArrowLeft}
+            aria-label={backLabel}
+          />
+        ) : undefined
       }
     >
       <p className="text-sm text-muted-foreground">{message}</p>

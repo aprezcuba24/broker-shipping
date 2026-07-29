@@ -63,19 +63,18 @@ export function EntityFormPage<TValues>({
       title={title}
       description={description}
       icon={icon}
-      buttons={[
+      leading={
         <Button
-          key="back"
           type="button"
           variant="outline"
-          size="sm"
-          icon={ArrowLeft}
+          size="icon-sm"
+          aria-label="Volver"
           onClick={handleCancel}
         >
-          Volver
-        </Button>,
-        ...(headerButtons ?? []),
-      ]}
+          <ArrowLeft aria-hidden />
+        </Button>
+      }
+      buttons={headerButtons}
     >
       <div className="mx-auto w-full max-w-2xl space-y-6">
         <Form
