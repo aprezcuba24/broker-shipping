@@ -122,15 +122,11 @@ export function ProductPage() {
   const { activeOrganization } = useActiveOrganization()
   const list = useListParams({ filterKeys: ['name'] as const, defaultPageSize: 20 })
 
-  const query = useListProductsProductsProviderGet(
-    {
-      organization_id: activeOrganization?.id ?? '',
-      page: list.queryParams.page,
-      page_size: list.queryParams.page_size,
-      name: list.queryParams.name || undefined,
-    },
-    { query: { enabled: Boolean(activeOrganization?.id) } },
-  )
+  const query = useListProductsProductsProviderGet({
+    page: list.queryParams.page,
+    page_size: list.queryParams.page_size,
+    name: list.queryParams.name || undefined,
+  } as ListProductsProductsProviderGetParams)
 
   const deleteMutation = useDeleteProductProductsProviderProductIdDelete()
 
@@ -142,10 +138,10 @@ export function ProductPage() {
     getTotal: (data) => data?.total ?? 0,
     remove: {
       mutation: deleteMutation,
-      toVariables: (item) =>
-        activeOrganization?.id
-          ? { productId: item.id, params: { organization_id: activeOrganization.id } }
-          : null,
+      toVariables: (item) => ({
+        productId: item.id,
+        params: {} as DeleteProductProductsProviderProductIdDeleteParams,
+      }),
     },
     resetOn: [activeOrganization?.id],
   })
@@ -195,7 +191,7 @@ export function ProductPage() {
 **Rules:**
 - `toVariables` returning `null` skips the mutation.
 - Patch/delete id param names come from OpenAPI (`productId`, `organizationId`, …) — match generated types exactly.
-- Tenant-scoped routes: inject `organization_id` in `toVariables` / list params from `useActiveOrganization()`. `OrganizationScopedApiProvider` also auto-appends it via `brokerFetch`, but TypeScript still requires the field when the generated type marks it required.
+- Tenant-scoped routes: do **not** pass `organization_id` from the page. `OrganizationScopedApiProvider` injects it via `brokerFetch`. Cast empty/partial params (`{} as *Params` or `as List*Params`) when Orval marks `organization_id` required. Use `useActiveOrganization` only for `resetOn` when the list must refresh on org switch. Routes behind `RequireOrganization` always have an active org — no `query.enabled` guard.
 - `resetOn: [activeOrganization?.id]` invalidates the list, resets page to 1, and clears URL filters. Does **not** run on initial mount.
 - Bare-array list endpoints: omit `getItems` / `getTotal` (defaults handle arrays) and omit `total` in pagination for client-side paging, or pass `total: items.length`.
 

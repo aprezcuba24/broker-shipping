@@ -1,12 +1,9 @@
 import {
   getListProductsProductsProviderGetQueryKey,
   useCreateProductProductsProviderPost,
+  type CreateProductProductsProviderPostParams,
 } from '@broker/api'
-import {
-  EntityFormPage,
-  useActiveOrganization,
-  useAsyncAction,
-} from '@broker/ui'
+import { EntityFormPage, useAsyncAction } from '@broker/ui'
 import { Package } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
@@ -16,14 +13,13 @@ import { ProductForm, productFormDefaultValues, type ProductFormValues } from '.
 export function ProductCreatePage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { activeOrganization } = useActiveOrganization()
   const createMutation = useCreateProductProductsProviderPost()
 
   const create = useAsyncAction(
     async (values: ProductFormValues) => {
       return createMutation.mutateAsync({
         data: values,
-        params: { organization_id: activeOrganization!.id },
+        params: {} as CreateProductProductsProviderPostParams,
       })
     },
     async () => {

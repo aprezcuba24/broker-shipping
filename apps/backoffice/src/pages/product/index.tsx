@@ -2,6 +2,8 @@ import {
   getListProductsProductsProviderGetQueryKey,
   useDeleteProductProductsProviderProductIdDelete,
   useListProductsProductsProviderGet,
+  type DeleteProductProductsProviderProductIdDeleteParams,
+  type ListProductsProductsProviderGetParams,
   type PageProductPublic,
   type ProductPublic,
 } from '@broker/api'
@@ -31,17 +33,11 @@ export function ProductPage() {
     defaultPageSize: 20,
   })
 
-  const query = useListProductsProductsProviderGet(
-    {
-      organization_id: activeOrganization?.id ?? '',
-      page: list.queryParams.page,
-      page_size: list.queryParams.page_size,
-      name: list.queryParams.name || undefined,
-    },
-    {
-      query: { enabled: Boolean(activeOrganization?.id) },
-    },
-  )
+  const query = useListProductsProductsProviderGet({
+    page: list.queryParams.page,
+    page_size: list.queryParams.page_size,
+    name: list.queryParams.name || undefined,
+  } as ListProductsProductsProviderGetParams)
 
   const deleteMutation = useDeleteProductProductsProviderProductIdDelete()
 
@@ -51,7 +47,10 @@ export function ProductPage() {
     PageProductPublic,
     never,
     never,
-    { productId: string; params: { organization_id: string } }
+    {
+      productId: string
+      params: DeleteProductProductsProviderProductIdDeleteParams
+    }
   >({
     list,
     query,
@@ -60,10 +59,10 @@ export function ProductPage() {
     getTotal: (data) => data?.total ?? 0,
     remove: {
       mutation: deleteMutation,
-      toVariables: (item) =>
-        activeOrganization?.id
-          ? { productId: item.id, params: { organization_id: activeOrganization.id } }
-          : null,
+      toVariables: (item) => ({
+        productId: item.id,
+        params: {} as DeleteProductProductsProviderProductIdDeleteParams,
+      }),
     },
     resetOn: [activeOrganization?.id],
   })

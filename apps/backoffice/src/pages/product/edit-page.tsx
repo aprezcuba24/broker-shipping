@@ -2,12 +2,10 @@ import {
   getListProductsProductsProviderGetQueryKey,
   useGetProductProductsProviderProductIdGet,
   usePatchProductProductsProviderProductIdPatch,
+  type GetProductProductsProviderProductIdGetParams,
+  type PatchProductProductsProviderProductIdPatchParams,
 } from '@broker/api'
-import {
-  EntityEditFormPage,
-  useActiveOrganization,
-  useAsyncAction,
-} from '@broker/ui'
+import { EntityEditFormPage, useAsyncAction } from '@broker/ui'
 import { Package } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
@@ -18,11 +16,10 @@ export function ProductEditPage() {
   const { productId = '' } = useParams<{ productId: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { activeOrganization } = useActiveOrganization()
 
   const productQuery = useGetProductProductsProviderProductIdGet(
     productId,
-    { organization_id: activeOrganization!.id },
+    {} as GetProductProductsProviderProductIdGetParams,
     { query: { enabled: Boolean(productId) } },
   )
 
@@ -33,7 +30,7 @@ export function ProductEditPage() {
       return patchMutation.mutateAsync({
         productId,
         data: values,
-        params: { organization_id: activeOrganization!.id },
+        params: {} as PatchProductProductsProviderProductIdPatchParams,
       })
     },
     async () => {

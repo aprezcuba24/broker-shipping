@@ -1,4 +1,9 @@
-export { brokerFetch, configureApi, type ApiAuthConfig } from './client'
+export {
+  brokerFetch,
+  configureApi,
+  type ApiAuthConfig,
+  type OrganizationScopedParams,
+} from './client'
 export { formatApiError } from './lib/format-api-error'
 export { formatDateTime } from './lib/utils'
 

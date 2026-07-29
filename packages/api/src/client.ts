@@ -5,6 +5,12 @@ export type ApiAuthConfig = {
   getOrganizationId?: () => string | null
 }
 
+/** Params of tenant-scoped routes when `organization_id` is injected by `brokerFetch`. */
+export type OrganizationScopedParams<T extends { organization_id?: string }> = Omit<
+  T,
+  'organization_id'
+>
+
 export type BrokerFetchParams = Record<string, string | number | boolean | null | undefined>
 
 export type BrokerFetchConfig = {
