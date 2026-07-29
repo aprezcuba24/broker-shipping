@@ -35,13 +35,13 @@ async def link_provider_to_seller(
     provider_organization_id: UUID,
     seller_organization_id: UUID,
 ) -> ProviderSellerLink:
-    result = await session.execute(
-        select(ProviderSellerLink).where(
-            ProviderSellerLink.provider_organization_id == provider_organization_id,
-            ProviderSellerLink.seller_organization_id == seller_organization_id,
-        )
+    link = await get_entity(
+        session,
+        ProviderSellerLink,
+        provider_organization_id=provider_organization_id,
+        seller_organization_id=seller_organization_id,
+        required=False,
     )
-    link = result.scalar_one_or_none()
     if link is None:
         link = ProviderSellerLink(
             provider_organization_id=provider_organization_id,

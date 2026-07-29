@@ -55,15 +55,6 @@ async def list_organizations_for_user(
     return list(result.scalars().all())
 
 
-async def get_organization(
-    session: AsyncSession,
-    organization_id: UUID,
-) -> Organization | None:
-    return await get_entity(
-        session, Organization, id=organization_id, required=False
-    )
-
-
 async def is_active_member(
     session: AsyncSession,
     user_id: UUID,
@@ -86,13 +77,13 @@ async def upsert_membership(
     *,
     is_active: bool = True,
 ) -> UserOrganization:
-    result = await session.execute(
-        select(UserOrganization).where(
-            UserOrganization.user_id == user_id,
-            UserOrganization.organization_id == organization_id,
-        )
+    membership = await get_entity(
+        session,
+        UserOrganization,
+        user_id=user_id,
+        organization_id=organization_id,
+        required=False,
     )
-    membership = result.scalar_one_or_none()
     if membership is None:
         membership = UserOrganization(
             user_id=user_id,
@@ -106,20 +97,6 @@ async def upsert_membership(
         session.add(membership)
     await session.flush()
     return membership
-
-
-async def get_membership(
-    session: AsyncSession,
-    user_id: UUID,
-    organization_id: UUID,
-) -> UserOrganization | None:
-    return await get_entity(
-        session,
-        UserOrganization,
-        user_id=user_id,
-        organization_id=organization_id,
-        required=False,
-    )
 
 
 async def require_seller_org_membership(

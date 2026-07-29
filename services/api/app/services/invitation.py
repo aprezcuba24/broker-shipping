@@ -18,6 +18,7 @@ from app.models.organization.enums import (
 )
 from app.models.organization.organization import Organization
 from app.models.organization.organization_invitation import OrganizationInvitation
+from app.models.organization.user_organization import UserOrganization
 from app.models.user.user import User
 from app.schemas.invitation import InvitationCreatedResponse, InvitationPublic, MemberPublic
 from app.services import organization as org_service
@@ -196,8 +197,12 @@ async def accept_seller_link_request(
         provider_organization_id,
         seller_org_id,
     )
-    membership = await org_service.get_membership(
-        session, invitation.user_id, seller_org_id
+    membership = await get_entity(
+        session,
+        UserOrganization,
+        user_id=invitation.user_id,
+        organization_id=seller_org_id,
+        required=False,
     )
     if membership is None:
         raise HTTPException(status_code=400, detail="Invalid seller link request")
