@@ -18,7 +18,8 @@ from app.lib.utils import utc_now
 from app.models.organization.organization import Organization
 from app.models.organization.user_organization import UserOrganization
 from app.models.user.user import User
-from app.schemas.auth import ClientApp, UserLogin, UserRegister
+from app.schemas.auth import UserLogin, UserRegister
+from app.types import ClientApp
 
 EMAIL_NOT_VERIFIED_DETAIL = "Email not verified"
 _RESEND_OK_MESSAGE = (
@@ -27,14 +28,8 @@ _RESEND_OK_MESSAGE = (
 )
 
 
-def _frontend_base_url(client_app: ClientApp) -> str:
-    if client_app == "backoffice":
-        return settings.frontend_backoffice_url.rstrip("/")
-    return settings.frontend_seller_url.rstrip("/")
-
-
 def _verification_url(client_app: ClientApp, raw_token: str) -> str:
-    return f"{_frontend_base_url(client_app)}/verify-email?token={raw_token}"
+    return f"{settings.frontend_base_url(client_app)}/verify-email?token={raw_token}"
 
 
 def _set_verification_token(user: User) -> str:

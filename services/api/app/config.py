@@ -5,6 +5,8 @@ from urllib.parse import quote_plus
 from pydantic import Field, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from app.types import ClientApp
+
 
 def _quote_pg_ident(value: str) -> str:
     return quote_plus(value, safe="")
@@ -38,6 +40,11 @@ class Settings(BaseSettings):
     email_verification_token_hours: int = Field(default=24)
     frontend_backoffice_url: str = Field(default="http://localhost:5173")
     frontend_seller_url: str = Field(default="http://localhost:5174")
+
+    def frontend_base_url(self, client_app: ClientApp) -> str:
+        if client_app == "backoffice":
+            return self.frontend_backoffice_url.rstrip("/")
+        return self.frontend_seller_url.rstrip("/")
 
     @computed_field  # type: ignore[prop-decorator]
     @property

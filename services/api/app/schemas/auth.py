@@ -1,12 +1,10 @@
 from datetime import datetime
-from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.schemas.fields import NonEmptyStr, NormalizedEmail
-
-ClientApp = Literal["backoffice", "seller"]
+from app.types import ClientApp
 
 
 class UserRegister(BaseModel):

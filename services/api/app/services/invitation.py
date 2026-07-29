@@ -19,20 +19,18 @@ from app.models.organization.enums import (
 from app.models.organization.organization_invitation import OrganizationInvitation
 from app.models.user.user import User
 from app.schemas.invitation import InvitationCreatedResponse, InvitationPublic, MemberPublic
+from app.types import ClientApp
 from app.services import organization as org_service
 from app.services import provider_seller_link as link_service
 
 
-def _accept_url(*, client_app: str, token: str) -> str:
-    if client_app == "backoffice":
-        base = settings.frontend_backoffice_url.rstrip("/")
-    else:
-        base = settings.frontend_seller_url.rstrip("/")
+def _accept_url(*, client_app: ClientApp, token: str) -> str:
+    base = settings.frontend_base_url(client_app)
     return f"{base}/accept-invitation?token={token}"
 
 
 def _invitations_review_url() -> str:
-    base = settings.frontend_backoffice_url.rstrip("/")
+    base = settings.frontend_base_url("backoffice")
     return f"{base}/settings/invitations"
 
 
