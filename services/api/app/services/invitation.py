@@ -7,7 +7,6 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from app.config import settings
 from app.events.types import MemberInvitedEvent, SellerLinkRequestedEvent
 from app.lib.events import emit
 from app.lib.utils import utc_now
@@ -19,19 +18,8 @@ from app.models.organization.enums import (
 from app.models.organization.organization_invitation import OrganizationInvitation
 from app.models.user.user import User
 from app.schemas.invitation import InvitationCreatedResponse, InvitationPublic, MemberPublic
-from app.types import ClientApp
 from app.services import organization as org_service
 from app.services import provider_seller_link as link_service
-
-
-def _accept_url(*, client_app: ClientApp, token: str) -> str:
-    base = settings.frontend_base_url(client_app)
-    return f"{base}/accept-invitation?token={token}"
-
-
-def _invitations_review_url() -> str:
-    base = settings.frontend_base_url("backoffice")
-    return f"{base}/settings/invitations"
 
 
 async def _get_by_token(
@@ -87,14 +75,8 @@ async def create_member_invite(
     await session.commit()
     await session.refresh(invitation)
 
-    client_app = "backoffice" if org.type == OrganizationType.provider else "seller"
     await emit(
-        MemberInvitedEvent(
-            invitation_id=invitation.id,
-            invitee_email=invitee_email,
-            organization_name=org.name,
-            accept_url=_accept_url(client_app=client_app, token=token),
-        ),
+        MemberInvitedEvent(invitation=invitation, organization=org),
         background=True,
     )
     return InvitationCreatedResponse.model_validate(invitation)
@@ -147,11 +129,10 @@ async def create_seller_link_request(
     members = await org_service.list_active_member_users(session, provider_organization_id)
     await emit(
         SellerLinkRequestedEvent(
-            invitation_id=invitation.id,
-            provider_organization_name=provider.name,
-            seller_organization_name=seller.name,
-            review_url=_invitations_review_url(),
-            recipient_emails=tuple(m.email for m in members),
+            invitation=invitation,
+            provider=provider,
+            seller=seller,
+            members=tuple(members),
         ),
         background=True,
     )

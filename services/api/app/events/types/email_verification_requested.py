@@ -9,23 +9,6 @@ from app.types import ClientApp
 
 
 @dataclass(frozen=True)
-class MemberInvitedEvent:
-    invitation_id: UUID
-    invitee_email: str
-    organization_name: str
-    accept_url: str
-
-
-@dataclass(frozen=True)
-class SellerLinkRequestedEvent:
-    invitation_id: UUID
-    provider_organization_name: str
-    seller_organization_name: str
-    review_url: str
-    recipient_emails: tuple[str, ...]
-
-
-@dataclass(frozen=True)
 class EmailVerificationRequestedEvent:
     user: User
     client_app: ClientApp
