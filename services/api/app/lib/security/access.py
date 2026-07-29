@@ -8,6 +8,7 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
+from app.lib.persistence import get_entity
 from app.models.organization.enums import OrganizationType
 from app.models.organization.organization import Organization
 from app.models.organization.user_organization import UserOrganization
@@ -56,12 +57,7 @@ async def ensure_organization_access(
     required_org_type: OrganizationType | None = None,
 ) -> Organization:
     if is_super_admin(user):
-        result = await session.execute(
-            select(Organization).where(Organization.id == organization_id)
-        )
-        organization = result.scalar_one_or_none()
-        if organization is None:
-            raise HTTPException(status_code=404, detail="Organization not found")
+        organization = await get_entity(session, Organization, id=organization_id)
         if required_org_type is not None and organization.type != required_org_type:
             raise HTTPException(status_code=403, detail="Forbidden")
         return organization
@@ -76,12 +72,7 @@ async def ensure_organization_access(
     if membership.scalar_one_or_none() is None:
         raise HTTPException(status_code=403, detail="Forbidden")
 
-    result = await session.execute(
-        select(Organization).where(Organization.id == organization_id)
-    )
-    organization = result.scalar_one_or_none()
-    if organization is None:
-        raise HTTPException(status_code=404, detail="Organization not found")
+    organization = await get_entity(session, Organization, id=organization_id)
 
     if required_org_type is not None and organization.type != required_org_type:
         raise HTTPException(status_code=403, detail="Forbidden")

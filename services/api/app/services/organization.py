@@ -6,6 +6,7 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
+from app.lib.persistence import get_entity
 from app.lib.utils import utc_now
 from app.models.organization.enums import OrganizationType
 from app.models.organization.organization import Organization
@@ -58,10 +59,9 @@ async def get_organization(
     session: AsyncSession,
     organization_id: UUID,
 ) -> Organization | None:
-    result = await session.execute(
-        select(Organization).where(Organization.id == organization_id)
+    return await get_entity(
+        session, Organization, id=organization_id, required=False
     )
-    return result.scalar_one_or_none()
 
 
 async def is_active_member(
@@ -113,13 +113,13 @@ async def get_membership(
     user_id: UUID,
     organization_id: UUID,
 ) -> UserOrganization | None:
-    result = await session.execute(
-        select(UserOrganization).where(
-            UserOrganization.user_id == user_id,
-            UserOrganization.organization_id == organization_id,
-        )
+    return await get_entity(
+        session,
+        UserOrganization,
+        user_id=user_id,
+        organization_id=organization_id,
+        required=False,
     )
-    return result.scalar_one_or_none()
 
 
 async def require_seller_org_membership(
@@ -127,9 +127,7 @@ async def require_seller_org_membership(
     user_id: UUID,
     organization_id: UUID,
 ) -> Organization:
-    org = await get_organization(session, organization_id)
-    if org is None:
-        raise HTTPException(status_code=404, detail="Organization not found")
+    org = await get_entity(session, Organization, id=organization_id)
     if org.type != OrganizationType.seller:
         raise HTTPException(status_code=403, detail="Forbidden")
     if not await is_active_member(session, user_id, organization_id):

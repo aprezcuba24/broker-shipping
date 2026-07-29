@@ -9,12 +9,14 @@ from sqlmodel import select
 
 from app.events.types import MemberInvitedEvent, SellerLinkRequestedEvent
 from app.lib.events import emit
+from app.lib.persistence import get_entity
 from app.lib.utils import utc_now
 from app.models.organization.enums import (
     InvitationKind,
     InvitationStatus,
     OrganizationType,
 )
+from app.models.organization.organization import Organization
 from app.models.organization.organization_invitation import OrganizationInvitation
 from app.models.user.user import User
 from app.schemas.invitation import InvitationCreatedResponse, InvitationPublic, MemberPublic
@@ -22,32 +24,13 @@ from app.services import organization as org_service
 from app.services import provider_seller_link as link_service
 
 
-async def _get_by_token(
-    session: AsyncSession,
-    token: str,
-) -> OrganizationInvitation | None:
-    result = await session.execute(
-        select(OrganizationInvitation).where(OrganizationInvitation.token == token)
-    )
-    return result.scalar_one_or_none()
-
-
-async def _get_by_id(
-    session: AsyncSession,
-    invitation_id: UUID,
-) -> OrganizationInvitation | None:
-    result = await session.execute(
-        select(OrganizationInvitation).where(OrganizationInvitation.id == invitation_id)
-    )
-    return result.scalar_one_or_none()
-
-
-async def _require_provider_org(session: AsyncSession, organization_id: UUID) -> None:
-    org = await org_service.get_organization(session, organization_id)
-    if org is None:
-        raise HTTPException(status_code=404, detail="Organization not found")
+async def _require_provider_org(
+    session: AsyncSession, organization_id: UUID
+) -> Organization:
+    org = await get_entity(session, Organization, id=organization_id)
     if org.type != OrganizationType.provider:
         raise HTTPException(status_code=403, detail="Forbidden")
+    return org
 
 
 async def create_member_invite(
@@ -57,9 +40,7 @@ async def create_member_invite(
     created_by_user_id: UUID,
     invitee_email: str,
 ) -> InvitationCreatedResponse:
-    org = await org_service.get_organization(session, organization_id)
-    if org is None:
-        raise HTTPException(status_code=404, detail="Organization not found")
+    org = await get_entity(session, Organization, id=organization_id)
 
     token = secrets.token_urlsafe(32)
     invitation = OrganizationInvitation(
@@ -89,12 +70,10 @@ async def create_seller_link_request(
     seller_organization_id: UUID,
     user_id: UUID,
 ) -> InvitationPublic:
-    await _require_provider_org(session, provider_organization_id)
+    provider = await _require_provider_org(session, provider_organization_id)
     seller = await org_service.require_seller_org_membership(
         session, user_id, seller_organization_id
     )
-    provider = await org_service.get_organization(session, provider_organization_id)
-    assert provider is not None
 
     if await link_service.has_active_link(
         session, provider_organization_id, seller_organization_id
@@ -144,9 +123,7 @@ async def accept_by_token(
     user: User,
     token: str,
 ) -> MemberPublic:
-    invitation = await _get_by_token(session, token)
-    if invitation is None:
-        raise HTTPException(status_code=404, detail="Invitation not found")
+    invitation = await get_entity(session, OrganizationInvitation, token=token)
     if invitation.status != InvitationStatus.pending:
         raise HTTPException(status_code=400, detail="Invitation is not pending")
 
@@ -190,9 +167,11 @@ async def accept_seller_link_request(
     provider_organization_id: UUID,
 ) -> MemberPublic:
     await _require_provider_org(session, provider_organization_id)
-    invitation = await _get_by_id(session, invitation_id)
+    invitation = await get_entity(
+        session, OrganizationInvitation, id=invitation_id, required=False
+    )
     if invitation is None or invitation.organization_id != provider_organization_id:
-        raise HTTPException(status_code=404, detail="Invitation not found")
+        raise HTTPException(status_code=404, detail="Not found")
     if invitation.kind != InvitationKind.seller_link_request:
         raise HTTPException(status_code=400, detail="Invalid invitation type")
     if invitation.status != InvitationStatus.pending:
@@ -226,9 +205,11 @@ async def reject_seller_link_request(
     provider_organization_id: UUID,
 ) -> InvitationPublic:
     await _require_provider_org(session, provider_organization_id)
-    invitation = await _get_by_id(session, invitation_id)
+    invitation = await get_entity(
+        session, OrganizationInvitation, id=invitation_id, required=False
+    )
     if invitation is None or invitation.organization_id != provider_organization_id:
-        raise HTTPException(status_code=404, detail="Invitation not found")
+        raise HTTPException(status_code=404, detail="Not found")
     if invitation.kind != InvitationKind.seller_link_request:
         raise HTTPException(status_code=400, detail="Invalid invitation type")
     if invitation.status != InvitationStatus.pending:
@@ -247,9 +228,11 @@ async def cancel_invite(
     invitation_id: UUID,
     organization_id: UUID,
 ) -> None:
-    invitation = await _get_by_id(session, invitation_id)
+    invitation = await get_entity(
+        session, OrganizationInvitation, id=invitation_id, required=False
+    )
     if invitation is None or invitation.organization_id != organization_id:
-        raise HTTPException(status_code=404, detail="Invitation not found")
+        raise HTTPException(status_code=404, detail="Not found")
     if invitation.kind != InvitationKind.member_invite:
         raise HTTPException(status_code=400, detail="Invalid invitation type")
     if invitation.status != InvitationStatus.pending:

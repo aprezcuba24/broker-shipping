@@ -6,6 +6,7 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
+from app.lib.persistence import get_entity
 from app.lib.persistence.pagination import paginate
 from app.lib.security.access import is_super_admin
 from app.models.product.product import Product
@@ -55,15 +56,9 @@ async def get_accessible_product(
         seller_organization_id,
     )
     if not provider_ids:
-        raise HTTPException(status_code=404, detail="Product not found")
+        raise HTTPException(status_code=404, detail="Not found")
 
-    result = await session.execute(
-        select(Product).where(
-            Product.id == product_id,
-            col(Product.organization_id).in_(provider_ids),
-        )
-    )
-    product = result.scalar_one_or_none()
-    if product is None:
-        raise HTTPException(status_code=404, detail="Product not found")
+    product = await get_entity(session, Product, id=product_id, required=False)
+    if product is None or product.organization_id not in provider_ids:
+        raise HTTPException(status_code=404, detail="Not found")
     return product

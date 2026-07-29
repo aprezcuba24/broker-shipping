@@ -7,6 +7,7 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
+from app.lib.persistence import get_entity
 from app.lib.security.access import is_super_admin, load_active_api_key_by_prefix
 from app.lib.security.api_keys import generate_api_key, hash_secret, split_raw
 from app.lib.utils import utc_now
@@ -67,15 +68,12 @@ async def revoke_for_user(
     user_id: UUID,
     key_id: UUID,
 ) -> ApiKey:
-    result = await session.execute(
-        select(ApiKey).where(
-            ApiKey.id == key_id,
-            ApiKey.created_by_user_id == user_id,
-        )
+    entity = await get_entity(
+        session,
+        ApiKey,
+        id=key_id,
+        created_by_user_id=user_id,
     )
-    entity = result.scalar_one_or_none()
-    if entity is None:
-        raise HTTPException(status_code=404, detail="API key not found")
     if entity.revoked_at is None:
         entity.revoked_at = utc_now()
         entity.updated_at = utc_now()
