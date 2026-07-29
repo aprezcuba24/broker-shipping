@@ -28,10 +28,6 @@ _RESEND_OK_MESSAGE = (
 )
 
 
-def _verification_url(client_app: ClientApp, raw_token: str) -> str:
-    return f"{settings.frontend_base_url(client_app)}/verify-email?token={raw_token}"
-
-
 def _set_verification_token(user: User) -> str:
     raw, token_hash = generate_verification_token()
     user.email_verification_token_hash = token_hash
@@ -58,10 +54,9 @@ async def register_user(session: AsyncSession, data: UserRegister) -> User:
 
     await emit(
         EmailVerificationRequestedEvent(
-            user_id=user.id,
-            email=user.email,
-            name=user.name,
-            verify_url=_verification_url(data.client_app, raw_token),
+            user=user,
+            client_app=data.client_app,
+            raw_token=raw_token,
         ),
         background=True,
     )
@@ -119,10 +114,9 @@ async def resend_verification_email(
 
     await emit(
         EmailVerificationRequestedEvent(
-            user_id=user.id,
-            email=user.email,
-            name=user.name,
-            verify_url=_verification_url(client_app, raw_token),
+            user=user,
+            client_app=client_app,
+            raw_token=raw_token,
         ),
         background=True,
     )
