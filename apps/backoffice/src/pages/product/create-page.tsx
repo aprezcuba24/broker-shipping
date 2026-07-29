@@ -3,32 +3,23 @@ import {
   useCreateProductProductsProviderPost,
   type CreateProductProductsProviderPostParams,
 } from '@broker/api'
-import { EntityFormPage, useAsyncAction } from '@broker/ui'
+import { EntityFormPage, useEntityFormMutation } from '@broker/ui'
 import { Package } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import { useQueryClient } from '@tanstack/react-query'
 
 import { ProductForm, productFormDefaultValues, type ProductFormValues } from './form'
 
 export function ProductCreatePage() {
-  const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const createMutation = useCreateProductProductsProviderPost()
 
-  const create = useAsyncAction(
-    async (values: ProductFormValues) => {
-      return createMutation.mutateAsync({
+  const create = useEntityFormMutation({
+    mutate: (values: ProductFormValues) =>
+      createMutation.mutateAsync({
         data: values,
         params: {} as CreateProductProductsProviderPostParams,
-      })
-    },
-    async () => {
-      await queryClient.invalidateQueries({
-        queryKey: getListProductsProductsProviderGetQueryKey(),
-      })
-      navigate('/products')
-    },
-  )
+      }),
+    invalidateKeys: [getListProductsProductsProviderGetQueryKey()],
+    redirectTo: '/products',
+  })
 
   return (
     <EntityFormPage

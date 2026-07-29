@@ -14,6 +14,17 @@ export type {
   UseCrudControllerOptions,
 } from './hooks/use-crud-controller'
 
+export { useQueryCacheSync } from './hooks/use-query-cache-sync'
+export type {
+  QueryCacheSync,
+  UseQueryCacheSyncOptions,
+} from './hooks/use-query-cache-sync'
+
+export { useEntityFormMutation } from './hooks/use-entity-form-mutation'
+export type { UseEntityFormMutationOptions } from './hooks/use-entity-form-mutation'
+
+export { entityFormKey } from './hooks/entity-form-key'
+
 export {
   textColumn,
   dateColumn,

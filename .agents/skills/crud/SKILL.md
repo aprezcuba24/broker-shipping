@@ -29,7 +29,7 @@ Each entity uses **exactly one** form presentation:
 | Mode | Shell | When |
 |------|-------|------|
 | Modal | `EntityFormDialog` + `useCrudDialogs` | Few fields; create/edit without leaving the list |
-| Full page | `EntityFormPage` in `form-page.tsx` | Many fields, or dedicated create/edit routes |
+| Full page | `EntityFormPage` / `EntityEditFormPage` in `create-page.tsx` / `edit-page.tsx` | Many fields, or dedicated create/edit routes |
 
 **Do not** mount both a modal and a full-page form for the same entity. Product is the canonical **full-page** example.
 
@@ -51,9 +51,9 @@ Page (index.tsx)                    ← list + delete (and modal forms if that m
 ```
 
 **No magic rules:**
-- `useCrudController` never receives hook factories. The page invokes Orval hooks and passes the results in.
+- `useCrudController` / `useEntityFormMutation` never receive hook factories. The page invokes Orval hooks and passes results / `mutate` callbacks in.
 - Default behaviours (invalidate list, close dialog when present, format errors, reset page) are overridable via callbacks.
-- If the orchestrator does not fit, compose `useListParams` + `useCrudDialogs` + `useAsyncAction` directly.
+- If the orchestrator does not fit, compose `useListParams` + `useCrudDialogs` + `useAsyncAction` / `useQueryCacheSync` directly.
 - `dialogs` is optional on `useCrudController` — omit it for full-page CRUDs.
 
 ---
@@ -66,7 +66,8 @@ pages/{entity}/
 ├── columns.tsx      # build{Entity}Columns({ onEdit, onDelete, isDeleting })
 ├── filters.tsx      # optional: URL-synced filter bar
 ├── form.tsx         # {Entity}Form + Zod schema (shared by dialog or page)
-└── form-page.tsx    # full-page create/edit (required for full-page mode)
+├── create-page.tsx  # full-page create (required for full-page mode)
+└── edit-page.tsx    # full-page edit (required for full-page mode)
 ```
 
 No context file. Columns receive handlers via a factory — explicit and traceable.
@@ -94,6 +95,9 @@ No context file. Columns receive handlers via a factory — explicit and traceab
 | `useCrudDialogs` | Create/edit dialog open state + `formKey` |
 | `useAsyncAction` | Wraps async work with `isPending`, `error` (`formatApiError`), `clearError` |
 | `useCrudController` | Normalises list data, wires mutations → invalidate → close dialog |
+| `useQueryCacheSync` | After a mutation: optional `setQueryData` for detail + `invalidateQueries` for given keys |
+| `useEntityFormMutation` | Full-page create/edit: mutate → cache sync → navigate (`useQueryCacheSync` + `useAsyncAction`) |
+| `entityFormKey` | Remount key for edit forms (`id` + `updated_at`) so react-hook-form picks up fresh defaults |
 | `useResetOnChange` | Low-level org/scope reset (also used inside the controller) |
 | `useUrlSearchFilters` / `pickQueryParams` | Low-level URL filter primitives |
 
@@ -306,21 +310,92 @@ export function ProductFilters({ filters, setFilter, onClear, hasActiveFilters }
 
 ---
 
-## 5. Full-page forms — `form-page.tsx`
+## 5. Full-page forms — `create-page.tsx` / `edit-page.tsx`
 
-**Canonical for product.** Mount the same `ProductForm` inside `EntityFormPage`. Create/patch mutations live here (not on the list page).
+**Canonical for product.** Mount the same `ProductForm` inside `EntityFormPage` / `EntityEditFormPage`. Create/patch mutations live here (not on the list page). Use `useEntityFormMutation` for mutate → cache sync → redirect. The page still calls Orval hooks; the kit does not receive hook factories.
+
+**Create** — invalidate list only (no detail cache write):
 
 ```tsx
-<EntityFormPage
-  title="Nuevo producto"
-  Form={ProductForm}
-  defaultValues={productFormDefaultValues}
-  onSubmit={create.run}
-  isSubmitting={create.isPending}
-  error={create.error}
-  backTo="/products"
-/>
+const createMutation = useCreateProductProductsProviderPost()
+
+const create = useEntityFormMutation({
+  mutate: (values: ProductFormValues) =>
+    createMutation.mutateAsync({
+      data: values,
+      params: {} as CreateProductProductsProviderPostParams,
+    }),
+  invalidateKeys: [getListProductsProductsProviderGetQueryKey()],
+  redirectTo: '/products',
+})
+
+return (
+  <EntityFormPage
+    title="Nuevo producto"
+    Form={ProductForm}
+    defaultValues={productFormDefaultValues}
+    formKey="create"
+    onSubmit={create.run}
+    isSubmitting={create.isPending}
+    error={create.error}
+    backTo="/products"
+  />
+)
 ```
+
+**Edit** — write detail cache, invalidate list + detail, remount form with `entityFormKey`:
+
+```tsx
+const detailParams = {} as GetProductProductsProviderProductIdGetParams
+const detailQueryKey = getGetProductProductsProviderProductIdGetQueryKey(
+  productId,
+  detailParams,
+)
+
+const productQuery = useGetProductProductsProviderProductIdGet(
+  productId,
+  detailParams,
+  { query: { enabled: Boolean(productId) } },
+)
+const patchMutation = usePatchProductProductsProviderProductIdPatch()
+
+const update = useEntityFormMutation({
+  mutate: (values: ProductFormValues) =>
+    patchMutation.mutateAsync({
+      productId,
+      data: values,
+      params: {} as PatchProductProductsProviderProductIdPatchParams,
+    }),
+  detailQueryKey,
+  invalidateKeys: [
+    getListProductsProductsProviderGetQueryKey(),
+    detailQueryKey,
+  ],
+  redirectTo: '/products',
+})
+
+return (
+  <EntityEditFormPage
+    isLoading={productQuery.isLoading}
+    isError={productQuery.isError}
+    data={productQuery.data}
+    loadingTitle="Editar producto"
+    notFoundTitle="Producto no encontrado"
+    notFoundMessage="No se pudo cargar el producto solicitado."
+    backTo="/products"
+    title="Editar producto"
+    description={(product) => `Edita «${product.name}».`}
+    Form={ProductForm}
+    defaultValues={(product) => ({ name: product.name })}
+    formKey={(product) => entityFormKey(product)}
+    onSubmit={update.run}
+    isSubmitting={update.isPending}
+    error={update.error}
+  />
+)
+```
+
+Compose `useQueryCacheSync` + `useAsyncAction` yourself when you need a different success flow (e.g. stay on the page).
 
 Routes (product): `/products/new`, `/products/:productId`. List create button and row edit navigate to these routes.
 
@@ -354,7 +429,9 @@ Tenant query reset lives in each page via `resetOn` / `useResetOnChange` — not
 - [ ] Page calls Orval hooks explicitly; `useCrudController` receives results, not factories
 - [ ] `{Entity}FormValues` inferred from Zod; `toVariables` match generated mutation types
 - [ ] Modal mode: create uses `dialogs.create.formKey`; edit uses `item.id` as `formKey`
-- [ ] Full-page mode: list create/edit navigate to routes; mutations live in `form-page.tsx`
+- [ ] Full-page mode: list create/edit navigate to routes; mutations live in `create-page` / `edit-page`
+- [ ] Full-page create/edit use `useEntityFormMutation` (not hand-rolled `useAsyncAction` + `invalidateQueries`)
+- [ ] Full-page edit: pass `detailQueryKey` + `formKey={entityFormKey}` so re-edit shows fresh data
 - [ ] Row actions: `BtnList` + `EditRowButton` + `DeleteRowButton`
 - [ ] `aria-label` on icon-only edit/delete triggers
 - [ ] Server-paginated lists pass `pagination.total` from the API envelope
@@ -376,7 +453,8 @@ Tenant query reset lives in each page via `resetOn` / `useResetOnChange` — not
 - **Do not** mount both `EntityFormDialog` and `EntityFormPage` for the same entity — pick one form mode.
 - **Do not** hide Orval hooks inside a generic factory passed to `useCrudController` — keep them in the page.
 - **Do not** add boolean `isEdit` props to a monolithic form — one `Form`, different `defaultValues` / `onSubmit` at the call site.
-- **Do not** skip `formKey` — without it, react-hook-form keeps stale values when reopening modals.
+- **Do not** skip `formKey` — without it, react-hook-form keeps stale values when reopening modals or after a detail refetch.
+- **Do not** invalidate only the list query after a full-page PATCH — leave the detail query stale and the next edit shows old data; use `useEntityFormMutation` with `detailQueryKey` (and `entityFormKey`).
 - **Do not** put list/pagination/mutation orchestration in ad-hoc `useState` when the kit already covers it.
 - **Do not** use `@broker/ui` `RowActions` dropdown in new CRUD pages unless the row has many actions.
 - **Do not** invalidate tenant queries globally from `router.tsx` or `ActiveOrganizationProvider`.

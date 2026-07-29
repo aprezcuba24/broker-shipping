@@ -1,45 +1,52 @@
 import {
+  getGetProductProductsProviderProductIdGetQueryKey,
   getListProductsProductsProviderGetQueryKey,
   useGetProductProductsProviderProductIdGet,
   usePatchProductProductsProviderProductIdPatch,
   type GetProductProductsProviderProductIdGetParams,
   type PatchProductProductsProviderProductIdPatchParams,
 } from '@broker/api'
-import { EntityEditFormPage, useAsyncAction } from '@broker/ui'
+import {
+  EntityEditFormPage,
+  entityFormKey,
+  useEntityFormMutation,
+} from '@broker/ui'
 import { Package } from 'lucide-react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { useQueryClient } from '@tanstack/react-query'
+import { useParams } from 'react-router-dom'
 
 import { ProductForm, type ProductFormValues } from './form'
 
 export function ProductEditPage() {
   const { productId = '' } = useParams<{ productId: string }>()
-  const navigate = useNavigate()
-  const queryClient = useQueryClient()
+
+  const detailParams = {} as GetProductProductsProviderProductIdGetParams
+  const detailQueryKey = getGetProductProductsProviderProductIdGetQueryKey(
+    productId,
+    detailParams,
+  )
 
   const productQuery = useGetProductProductsProviderProductIdGet(
     productId,
-    {} as GetProductProductsProviderProductIdGetParams,
+    detailParams,
     { query: { enabled: Boolean(productId) } },
   )
 
   const patchMutation = usePatchProductProductsProviderProductIdPatch()
 
-  const update = useAsyncAction(
-    async (values: ProductFormValues) => {
-      return patchMutation.mutateAsync({
+  const update = useEntityFormMutation({
+    mutate: (values: ProductFormValues) =>
+      patchMutation.mutateAsync({
         productId,
         data: values,
         params: {} as PatchProductProductsProviderProductIdPatchParams,
-      })
-    },
-    async () => {
-      await queryClient.invalidateQueries({
-        queryKey: getListProductsProductsProviderGetQueryKey(),
-      })
-      navigate('/products')
-    },
-  )
+      }),
+    detailQueryKey,
+    invalidateKeys: [
+      getListProductsProductsProviderGetQueryKey(),
+      detailQueryKey,
+    ],
+    redirectTo: '/products',
+  })
 
   return (
     <EntityEditFormPage
@@ -55,7 +62,7 @@ export function ProductEditPage() {
       icon={Package}
       Form={ProductForm}
       defaultValues={(product) => ({ name: product.name })}
-      formKey={(product) => product.id}
+      formKey={(product) => entityFormKey(product)}
       onSubmit={update.run}
       isSubmitting={update.isPending}
       error={update.error}
