@@ -6,6 +6,7 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
+from app.lib.persistence import get_entity
 from app.lib.utils import utc_now
 from app.models.organization.enums import OrganizationType
 from app.models.organization.organization import Organization
@@ -20,7 +21,7 @@ async def create_organization_for_user(
     name: str,
     org_type: OrganizationType,
 ) -> Organization:
-    org = Organization(name=name.strip(), type=org_type)
+    org = Organization(name=name, type=org_type)
     session.add(org)
     await session.flush()
     session.add(
@@ -54,16 +55,6 @@ async def list_organizations_for_user(
     return list(result.scalars().all())
 
 
-async def get_organization(
-    session: AsyncSession,
-    organization_id: UUID,
-) -> Organization | None:
-    result = await session.execute(
-        select(Organization).where(Organization.id == organization_id)
-    )
-    return result.scalar_one_or_none()
-
-
 async def is_active_member(
     session: AsyncSession,
     user_id: UUID,
@@ -86,13 +77,13 @@ async def upsert_membership(
     *,
     is_active: bool = True,
 ) -> UserOrganization:
-    result = await session.execute(
-        select(UserOrganization).where(
-            UserOrganization.user_id == user_id,
-            UserOrganization.organization_id == organization_id,
-        )
+    membership = await get_entity(
+        session,
+        UserOrganization,
+        user_id=user_id,
+        organization_id=organization_id,
+        required=False,
     )
-    membership = result.scalar_one_or_none()
     if membership is None:
         membership = UserOrganization(
             user_id=user_id,
@@ -108,28 +99,12 @@ async def upsert_membership(
     return membership
 
 
-async def get_membership(
-    session: AsyncSession,
-    user_id: UUID,
-    organization_id: UUID,
-) -> UserOrganization | None:
-    result = await session.execute(
-        select(UserOrganization).where(
-            UserOrganization.user_id == user_id,
-            UserOrganization.organization_id == organization_id,
-        )
-    )
-    return result.scalar_one_or_none()
-
-
 async def require_seller_org_membership(
     session: AsyncSession,
     user_id: UUID,
     organization_id: UUID,
 ) -> Organization:
-    org = await get_organization(session, organization_id)
-    if org is None:
-        raise HTTPException(status_code=404, detail="Organization not found")
+    org = await get_entity(session, Organization, id=organization_id)
     if org.type != OrganizationType.seller:
         raise HTTPException(status_code=403, detail="Forbidden")
     if not await is_active_member(session, user_id, organization_id):

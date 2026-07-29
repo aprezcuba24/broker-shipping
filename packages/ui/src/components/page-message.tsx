@@ -1,7 +1,6 @@
 import { ArrowLeft, type LucideIcon } from 'lucide-react'
-import { Link } from 'react-router-dom'
 
-import { Button } from './button'
+import { BtnLink } from './btn-link'
 import { PageWrapper } from './page-wrapper'
 
 export type PageMessageProps = {
@@ -23,17 +22,16 @@ export function PageMessage({
     <PageWrapper
       title={title}
       icon={icon}
-      buttons={
-        backTo
-          ? [
-              <Button key="back" variant="outline" size="sm" asChild>
-                <Link to={backTo}>
-                  <ArrowLeft className="h-4 w-4" />
-                  {backLabel}
-                </Link>
-              </Button>,
-            ]
-          : undefined
+      leading={
+        backTo ? (
+          <BtnLink
+            to={backTo}
+            variant="outline"
+            size="icon-sm"
+            icon={ArrowLeft}
+            aria-label={backLabel}
+          />
+        ) : undefined
       }
     >
       <p className="text-sm text-muted-foreground">{message}</p>

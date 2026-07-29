@@ -1,21 +1,21 @@
 from datetime import datetime
-from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-ClientApp = Literal["backoffice", "seller"]
+from app.schemas.fields import NonEmptyStr, NormalizedEmail
+from app.types import ClientApp
 
 
 class UserRegister(BaseModel):
-    name: str = Field(min_length=1, max_length=255)
-    email: EmailStr
+    name: NonEmptyStr = Field(max_length=255)
+    email: NormalizedEmail
     password: str = Field(min_length=8, max_length=128)
     client_app: ClientApp
 
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    email: NormalizedEmail
     password: str
 
 
@@ -36,11 +36,11 @@ class TokenResponse(BaseModel):
 
 
 class VerifyEmailRequest(BaseModel):
-    token: str = Field(min_length=1)
+    token: NonEmptyStr = Field(max_length=512)
 
 
 class ResendVerificationRequest(BaseModel):
-    email: EmailStr
+    email: NormalizedEmail
     client_app: ClientApp
 
 

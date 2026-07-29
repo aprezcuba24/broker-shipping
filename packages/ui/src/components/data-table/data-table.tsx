@@ -1,10 +1,11 @@
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
 import { useMemo, type ReactNode } from 'react'
 
 import { cn } from '../../lib/utils'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { formatCellValue, inferColumnType } from './formatters'
 import { DataTablePaginationBar } from './pagination'
-import type { ColumnDef, DataTableProps } from './types'
+import type { ColumnDef, DataTableProps, DataTableSort } from './types'
 
 const PAGE_SIZE = 10
 
@@ -26,11 +27,11 @@ const hideOnCardClassName = {
   lg: 'hidden lg:flex',
 } as const
 
-function columnVisibilityClass<TData>(column: ColumnDef<TData>) {
+export function columnVisibilityClass<TData>(column: ColumnDef<TData>) {
   return column.hideOn ? hideOnClassName[column.hideOn] : undefined
 }
 
-function columnCardVisibilityClass<TData>(column: ColumnDef<TData>) {
+export function columnCardVisibilityClass<TData>(column: ColumnDef<TData>) {
   return column.hideOn ? hideOnCardClassName[column.hideOn] : undefined
 }
 
@@ -39,7 +40,11 @@ function getCellValue<TData>(row: TData, column: ColumnDef<TData>): unknown {
   return (row as Record<string, unknown>)[key]
 }
 
-function resolveRowId<TData>(row: TData, index: number, getRowId?: (row: TData) => string): string {
+export function resolveRowId<TData>(
+  row: TData,
+  index: number,
+  getRowId?: (row: TData) => string,
+): string {
   if (getRowId) {
     return getRowId(row)
   }
@@ -47,7 +52,7 @@ function resolveRowId<TData>(row: TData, index: number, getRowId?: (row: TData) 
   return id !== undefined && id !== null ? String(id) : String(index)
 }
 
-function renderCellContent<TData>(row: TData, column: ColumnDef<TData>) {
+export function renderCellContent<TData>(row: TData, column: ColumnDef<TData>) {
   if (column.cell) {
     return column.cell(row)
   }
@@ -56,6 +61,51 @@ function renderCellContent<TData>(row: TData, column: ColumnDef<TData>) {
   const value = getCellValue(row, column)
   const type = inferColumnType(fieldName, value, column.type)
   return formatCellValue(value, type)
+}
+
+export function DataTableCell<TData>({
+  row,
+  column,
+}: {
+  row: TData
+  column: ColumnDef<TData>
+}) {
+  return (
+    <TableCell
+      data-column={column.id}
+      className={cn(
+        alignClassName[column.align ?? 'left'],
+        columnVisibilityClass(column),
+        column.className,
+      )}
+    >
+      {renderCellContent(row, column)}
+    </TableCell>
+  )
+}
+
+export function DataTableRow<TData>({
+  row,
+  columns,
+  className,
+  onClick,
+}: {
+  row: TData
+  columns: ColumnDef<TData>[]
+  className?: string
+  onClick?: () => void
+}) {
+  return (
+    <TableRow
+      className={cn(onClick && 'cursor-pointer', className)}
+      onClick={onClick}
+      data-clickable={onClick ? 'true' : undefined}
+    >
+      {columns.map((column) => (
+        <DataTableCell key={column.id} row={row} column={column} />
+      ))}
+    </TableRow>
+  )
 }
 
 function DataField<TData>({ row, column }: { row: TData; column: ColumnDef<TData> }) {
@@ -76,28 +126,54 @@ function DataField<TData>({ row, column }: { row: TData; column: ColumnDef<TData
   )
 }
 
-function MobileCardRow<TData>({
-  row,
+export function DataTableCards<TData>({
+  rows,
   columns,
   actionsColumn,
+  getRowId,
+  onRowClick,
+  rowClassName,
 }: {
-  row: TData
+  rows: TData[]
   columns: ColumnDef<TData>[]
   actionsColumn?: ColumnDef<TData>
+  getRowId?: (row: TData) => string
+  onRowClick?: (row: TData) => void
+  rowClassName?: string | ((row: TData) => string | undefined)
 }) {
   return (
-    <article className="broker-data-table__card">
-      <div className="space-y-0.5">
-        {columns.map((column) => (
-          <DataField key={column.id} row={row} column={column} />
-        ))}
-      </div>
-      {actionsColumn ? (
-        <div data-column="actions" className="broker-data-table__card-actions flex justify-end">
-          {renderCellContent(row, actionsColumn)}
-        </div>
-      ) : null}
-    </article>
+    <div className="divide-y divide-surface-container-high">
+      {rows.map((row, index) => {
+        const resolvedClassName =
+          typeof rowClassName === 'function' ? rowClassName(row) : rowClassName
+        return (
+          <article
+            key={resolveRowId(row, index, getRowId)}
+            className={cn(
+              'broker-data-table__card',
+              onRowClick && 'cursor-pointer',
+              resolvedClassName,
+            )}
+            onClick={onRowClick ? () => onRowClick(row) : undefined}
+          >
+            <div className="space-y-0.5">
+              {columns.map((column) => (
+                <DataField key={column.id} row={row} column={column} />
+              ))}
+            </div>
+            {actionsColumn ? (
+              <div
+                data-column="actions"
+                className="broker-data-table__card-actions flex justify-end"
+                onClick={(event) => event.stopPropagation()}
+              >
+                {renderCellContent(row, actionsColumn)}
+              </div>
+            ) : null}
+          </article>
+        )
+      })}
+    </div>
   )
 }
 
@@ -156,6 +232,27 @@ function EmptyCardState({ message }: { message: ReactNode }) {
   )
 }
 
+function SortIcon({ sort, columnId }: { sort?: DataTableSort | null; columnId: string }) {
+  if (!sort || sort.id !== columnId) {
+    return <ArrowUpDown className="size-3.5 opacity-50" aria-hidden />
+  }
+  return sort.direction === 'asc' ? (
+    <ArrowUp className="size-3.5" aria-hidden />
+  ) : (
+    <ArrowDown className="size-3.5" aria-hidden />
+  )
+}
+
+function nextSort(current: DataTableSort | null | undefined, columnId: string): DataTableSort | null {
+  if (!current || current.id !== columnId) {
+    return { id: columnId, direction: 'asc' }
+  }
+  if (current.direction === 'asc') {
+    return { id: columnId, direction: 'desc' }
+  }
+  return null
+}
+
 export function DataTable<TData>({
   columns,
   data,
@@ -164,6 +261,11 @@ export function DataTable<TData>({
   isLoading = false,
   emptyMessage = 'No hay datos',
   className,
+  onRowClick,
+  rowClassName,
+  renderRow,
+  sort,
+  onSortChange,
 }: DataTableProps<TData>) {
   const isClientPagination = pagination?.total === undefined
   const total = pagination?.total ?? data.length
@@ -200,16 +302,14 @@ export function DataTable<TData>({
         ) : showEmptyState ? (
           <EmptyCardState message={emptyMessage} />
         ) : (
-          <div className="divide-y divide-surface-container-high">
-            {pageData.map((row, index) => (
-              <MobileCardRow
-                key={resolveRowId(row, index, getRowId)}
-                row={row}
-                columns={dataColumns}
-                actionsColumn={actionsColumn}
-              />
-            ))}
-          </div>
+          <DataTableCards
+            rows={pageData}
+            columns={dataColumns}
+            actionsColumn={actionsColumn}
+            getRowId={getRowId}
+            onRowClick={onRowClick}
+            rowClassName={rowClassName}
+          />
         )}
       </div>
 
@@ -217,19 +317,40 @@ export function DataTable<TData>({
         <Table>
           <TableHeader>
             <TableRow>
-              {columns.map((column) => (
-                <TableHead
-                  key={column.id}
-                  data-column={column.id}
-                  className={cn(
-                    alignClassName[column.align ?? 'left'],
-                    columnVisibilityClass(column),
-                    column.className,
-                  )}
-                >
-                  {column.header}
-                </TableHead>
-              ))}
+              {columns.map((column) => {
+                const canSort = Boolean(column.sortable && onSortChange)
+                return (
+                  <TableHead
+                    key={column.id}
+                    data-column={column.id}
+                    className={cn(
+                      alignClassName[column.align ?? 'left'],
+                      columnVisibilityClass(column),
+                      column.className,
+                    )}
+                    aria-sort={
+                      canSort && sort?.id === column.id
+                        ? sort.direction === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : undefined
+                    }
+                  >
+                    {canSort ? (
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-1 font-medium hover:text-foreground"
+                        onClick={() => onSortChange?.(nextSort(sort, column.id))}
+                      >
+                        {column.header}
+                        <SortIcon sort={sort} columnId={column.id} />
+                      </button>
+                    ) : (
+                      column.header
+                    )}
+                  </TableHead>
+                )
+              })}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -245,29 +366,40 @@ export function DataTable<TData>({
                 </TableCell>
               </TableRow>
             ) : (
-              pageData.map((row, index) => (
-                <TableRow key={resolveRowId(row, index, getRowId)}>
-                  {columns.map((column) => (
-                    <TableCell
-                      key={column.id}
-                      data-column={column.id}
-                      className={cn(
-                        alignClassName[column.align ?? 'left'],
-                        columnVisibilityClass(column),
-                        column.className,
-                      )}
-                    >
-                      {renderCellContent(row, column)}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              pageData.map((row, index) => {
+                if (renderRow) {
+                  return (
+                    <FragmentOrNode key={resolveRowId(row, index, getRowId)}>
+                      {renderRow(row, { index, columns })}
+                    </FragmentOrNode>
+                  )
+                }
+                const resolvedClassName =
+                  typeof rowClassName === 'function' ? rowClassName(row) : rowClassName
+                return (
+                  <DataTableRow
+                    key={resolveRowId(row, index, getRowId)}
+                    row={row}
+                    columns={columns}
+                    className={resolvedClassName}
+                    onClick={onRowClick ? () => onRowClick(row) : undefined}
+                  />
+                )
+              })
             )}
           </TableBody>
         </Table>
       </div>
 
-      {pagination ? <DataTablePaginationBar {...paginationBar} onPageChange={pagination.onPageChange} /> : null}
+      {pagination ? (
+        <DataTablePaginationBar {...paginationBar} onPageChange={pagination.onPageChange} />
+      ) : null}
     </div>
   )
 }
+
+function FragmentOrNode({ children }: { children: ReactNode }) {
+  return <>{children}</>
+}
+
+export { DataTablePaginationBar } from './pagination'

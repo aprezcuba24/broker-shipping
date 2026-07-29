@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
+from app.lib.persistence import get_entity
 from app.lib.persistence.apply_update import apply_partial_update
 from app.lib.persistence.pagination import paginate
 from app.models.product.product import Product
@@ -32,16 +32,12 @@ async def get_product_for_organization(
     product_id: UUID,
     organization_id: UUID,
 ) -> Product:
-    result = await session.execute(
-        select(Product).where(
-            Product.id == product_id,
-            Product.organization_id == organization_id,
-        )
+    return await get_entity(
+        session,
+        Product,
+        id=product_id,
+        organization_id=organization_id,
     )
-    product = result.scalar_one_or_none()
-    if product is None:
-        raise HTTPException(status_code=404, detail="Product not found")
-    return product
 
 
 async def create_product(

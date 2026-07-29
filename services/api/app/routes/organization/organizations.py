@@ -72,7 +72,7 @@ async def create_member_invitation(
         session,
         organization_id=organization.id,
         created_by_user_id=user.id,
-        invitee_email=str(body.invitee_email),
+        invitee_email=body.invitee_email,
     )
 
 

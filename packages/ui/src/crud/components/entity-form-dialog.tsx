@@ -1,22 +1,22 @@
 import { useRef } from 'react'
 
-import { ButtonModal, type ButtonModalProps } from './button-modal'
+import { ButtonModal, type ButtonModalProps } from '../../components/button-modal'
 
-export type FormModalHandle = {
+export type EntityFormHandle = {
   submit: () => Promise<void>
 }
 
-export type FormModalFormProps<TValues> = {
-  ref?: React.Ref<FormModalHandle>
+export type EntityFormProps<TValues> = {
+  ref?: React.Ref<EntityFormHandle>
   defaultValues?: TValues
-  onSubmit: (values: TValues) => void | Promise<void>
+  onSubmit: (values: TValues) => unknown | Promise<unknown>
   isSubmitting?: boolean
   error?: string | null
 }
 
-export type FormModalProps<TValues> = {
-  Form: React.ComponentType<FormModalFormProps<TValues>>
-  onSubmit: (values: TValues) => void | Promise<void>
+export type EntityFormDialogProps<TValues> = {
+  Form: React.ComponentType<EntityFormProps<TValues>>
+  onSubmit: (values: TValues) => unknown | Promise<unknown>
   defaultValues?: TValues
   isSubmitting?: boolean
   error?: string | null
@@ -28,7 +28,7 @@ export type FormModalProps<TValues> = {
   'onAccept' | 'onCancel' | 'onSubmit' | 'isLoading' | 'open' | 'onOpenChange' | 'children'
 >
 
-export function FormModal<TValues>({
+export function EntityFormDialog<TValues>({
   Form,
   onSubmit,
   defaultValues,
@@ -38,8 +38,8 @@ export function FormModal<TValues>({
   open,
   onOpenChange,
   ...buttonProps
-}: FormModalProps<TValues>) {
-  const formRef = useRef<FormModalHandle>(null)
+}: EntityFormDialogProps<TValues>) {
+  const formRef = useRef<EntityFormHandle>(null)
 
   const handleAccept = async () => {
     await formRef.current?.submit()

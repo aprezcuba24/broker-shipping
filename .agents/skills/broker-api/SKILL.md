@@ -26,7 +26,8 @@ Do **not** port Dishka modules, `X-Organization-Id` headers, or the old `app/mod
 ```
 services/api/app/
 ├── main.py                 # FastAPI app + lifespan (engine/session)
-├── config.py               # Settings / DB URL / JWT
+├── config.py               # Settings / DB URL / JWT / frontend_base_url
+├── types.py                # Shared domain type aliases (Literal, etc.)
 ├── deps.py                 # get_db
 ├── models/{domain}/        # SQLModel tables + DOMAIN_MODELS
 ├── schemas/                # Pydantic request/response DTOs
@@ -57,6 +58,15 @@ Register new routers in [`app/routes/__init__.py`](services/api/app/routes/__ini
 
 ---
 
+## Shared domain types
+
+- Domain type aliases (`ClientApp`, future `Literal` / aliases reused across layers) live in [`app/types.py`](services/api/app/types.py).
+- `config`, `schemas`, and `services` import from there; do **not** redefine the same `Literal` in schemas or config.
+- Do **not** put these aliases in `schemas/` (keeps config free of DTO imports) or in `schemas/fields.py` (that module is for Pydantic `Annotated` normalization only).
+- Frontend email/deep links: use `settings.frontend_base_url(client_app: ClientApp)` — do not repeat `rstrip("/")` / if-else on `frontend_*_url` in services.
+
+---
+
 ## Models
 
 1. Prefer `EntityModel` (`id`, `created_at`, `updated_at`) or `OrganizationEntityModel` (+ `organization_id` FK) from `app.lib.persistence`.
@@ -72,7 +82,12 @@ Tenant-owned catalog data (products, future categories, etc.) → `OrganizationE
 
 - Separate Create / Update / Public (see `app/schemas/product.py`).
 - Update schemas: inherit from Create when fields match; make fields optional with `default=None`.
-- Share validators on the base class (e.g. strip `name`).
+- **Request schemas normalize input** via shared types in `app.schemas.fields`:
+  - `NormalizedEmail` — strip + lower (emails)
+  - `NonEmptyStr` — strip; reject empty
+  - `OptionalStrippedStr` — strip; empty → `None`
+- Helpers live in `app.lib.normalize`. Services must **not** re-strip / re-normalize body fields.
+- Public/response schemas do not normalize (they reflect DB state).
 - Public: `model_config = ConfigDict(from_attributes=True)`.
 - Never accept `organization_id` in the body for tenant-scoped creates — take it from the resolved org dep.
 

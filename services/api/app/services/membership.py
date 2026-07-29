@@ -2,13 +2,12 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
+from app.lib.persistence import get_entity
 from app.models.organization.user_organization import UserOrganization
 from app.schemas.invitation import MemberPublic
-from app.services import organization as org_service
 
 
 async def list_members(
@@ -30,9 +29,12 @@ async def set_member_is_active(
     *,
     is_active: bool,
 ) -> MemberPublic:
-    membership = await org_service.get_membership(session, user_id, organization_id)
-    if membership is None:
-        raise HTTPException(status_code=404, detail="Member not found")
+    membership = await get_entity(
+        session,
+        UserOrganization,
+        user_id=user_id,
+        organization_id=organization_id,
+    )
     membership.is_active = is_active
     session.add(membership)
     await session.commit()

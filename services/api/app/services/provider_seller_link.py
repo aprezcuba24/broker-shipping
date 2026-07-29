@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
+from app.lib.persistence import get_entity
 from app.lib.security.access import is_super_admin, list_all_provider_organization_ids
 from app.lib.utils import utc_now
 from app.models.organization.enums import OrganizationType
@@ -35,13 +35,13 @@ async def link_provider_to_seller(
     provider_organization_id: UUID,
     seller_organization_id: UUID,
 ) -> ProviderSellerLink:
-    result = await session.execute(
-        select(ProviderSellerLink).where(
-            ProviderSellerLink.provider_organization_id == provider_organization_id,
-            ProviderSellerLink.seller_organization_id == seller_organization_id,
-        )
+    link = await get_entity(
+        session,
+        ProviderSellerLink,
+        provider_organization_id=provider_organization_id,
+        seller_organization_id=seller_organization_id,
+        required=False,
     )
-    link = result.scalar_one_or_none()
     if link is None:
         link = ProviderSellerLink(
             provider_organization_id=provider_organization_id,
@@ -64,15 +64,12 @@ async def set_link_active(
     *,
     is_active: bool,
 ) -> None:
-    result = await session.execute(
-        select(ProviderSellerLink).where(
-            ProviderSellerLink.provider_organization_id == provider_organization_id,
-            ProviderSellerLink.seller_organization_id == seller_organization_id,
-        )
+    link = await get_entity(
+        session,
+        ProviderSellerLink,
+        provider_organization_id=provider_organization_id,
+        seller_organization_id=seller_organization_id,
     )
-    link = result.scalar_one_or_none()
-    if link is None:
-        raise HTTPException(status_code=404, detail="Link not found")
     link.is_active = is_active
     session.add(link)
     await session.commit()
