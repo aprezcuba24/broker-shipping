@@ -412,3 +412,73 @@ async def test_product_public_excludes_inactive_tags(
     body = r.json()
     assert [t["name"] for t in body["tags"]] == ["Active"]
     assert all(t["is_active"] for t in body["tags"])
+
+
+async def test_list_products_filters_by_all_tag_ids(
+    client: AsyncClient,
+    provider_context: dict,
+    tag_factory: TagFactory,
+) -> None:
+    org_id = provider_context["organization_id"]
+    headers = provider_context["headers"]
+    params = provider_context["params"]
+    tag_1 = await tag_factory.build(organization_id=org_id, name="T1")
+    tag_2 = await tag_factory.build(organization_id=org_id, name="T2")
+    tag_3 = await tag_factory.build(organization_id=org_id, name="T3")
+
+    r_a = await client.post(
+        "/products/provider/",
+        params=params,
+        headers=headers,
+        json={"name": "Product A", "tag_ids": [tag_1["id"], tag_2["id"]]},
+    )
+    r_b = await client.post(
+        "/products/provider/",
+        params=params,
+        headers=headers,
+        json={"name": "Product B", "tag_ids": [tag_1["id"]]},
+    )
+    r_c = await client.post(
+        "/products/provider/",
+        params=params,
+        headers=headers,
+        json={"name": "Product C", "tag_ids": []},
+    )
+    assert r_a.status_code == 201
+    assert r_b.status_code == 201
+    assert r_c.status_code == 201
+    product_a = r_a.json()["id"]
+    product_b = r_b.json()["id"]
+
+    r_one = await client.get(
+        "/products/provider/",
+        params=[*params.items(), ("tag_ids", tag_1["id"])],
+        headers=headers,
+    )
+    assert r_one.status_code == 200
+    assert {p["id"] for p in r_one.json()["items"]} == {product_a, product_b}
+
+    r_both = await client.get(
+        "/products/provider/",
+        params=[
+            *params.items(),
+            ("tag_ids", tag_1["id"]),
+            ("tag_ids", tag_2["id"]),
+        ],
+        headers=headers,
+    )
+    assert r_both.status_code == 200
+    assert [p["id"] for p in r_both.json()["items"]] == [product_a]
+
+    r_none = await client.get(
+        "/products/provider/",
+        params=[
+            *params.items(),
+            ("tag_ids", tag_1["id"]),
+            ("tag_ids", tag_3["id"]),
+        ],
+        headers=headers,
+    )
+    assert r_none.status_code == 200
+    assert r_none.json()["items"] == []
+    assert r_none.json()["total"] == 0

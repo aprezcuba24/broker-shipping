@@ -7,6 +7,7 @@
 
 export type ListProductsProductsProviderGetParams = {
 name?: string | null;
+tag_ids?: string[] | null;
 organization_id: string;
 /**
  * @minimum 1

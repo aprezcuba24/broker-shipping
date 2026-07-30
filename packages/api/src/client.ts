@@ -11,7 +11,15 @@ export type OrganizationScopedParams<T extends { organization_id?: string }> = O
   'organization_id'
 >
 
-export type BrokerFetchParams = Record<string, string | number | boolean | null | undefined>
+export type BrokerFetchParamValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | ReadonlyArray<string | number | boolean>
+
+export type BrokerFetchParams = Record<string, BrokerFetchParamValue>
 
 export type BrokerFetchConfig = {
   url: string
@@ -34,12 +42,22 @@ function getBaseUrl(): string {
   return authConfig.baseUrl ?? DEFAULT_BASE_URL
 }
 
+function appendParam(url: URL, key: string, value: string | number | boolean): void {
+  url.searchParams.append(key, String(value))
+}
+
 function buildUrl(path: string, params?: BrokerFetchParams): string {
   const url = new URL(path, getBaseUrl())
   if (params) {
     for (const [key, value] of Object.entries(params)) {
       if (value === null || value === undefined) continue
-      url.searchParams.set(key, String(value))
+      if (typeof value === 'object') {
+        for (const item of value) {
+          appendParam(url, key, item)
+        }
+        continue
+      }
+      appendParam(url, key, value)
     }
   }
   return url.toString()

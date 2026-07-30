@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.deps import get_db
@@ -20,12 +20,14 @@ async def list_products(
     session: Annotated[AsyncSession, Depends(get_db)],
     pagination: PaginationDep,
     name: str | None = None,
+    tag_ids: Annotated[list[UUID] | None, Query()] = None,
 ) -> Page[ProductPublic]:
     result = await product_service.list_products_for_organization(
         session,
         organization.id,
         pagination=pagination,
         name=name,
+        tag_ids=tag_ids,
     )
     return Page.from_mapped(result, pagination, ProductPublic.model_validate)
 

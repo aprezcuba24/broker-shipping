@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
+from sqlalchemy import exists
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
@@ -9,6 +10,7 @@ from app.lib.persistence import get_entity
 from app.lib.persistence.apply_update import apply_partial_update
 from app.lib.persistence.pagination import paginate
 from app.models.product.product import Product
+from app.models.product.product_tag import ProductTag
 from app.schemas.pagination import PageResult, PaginationParams
 from app.schemas.product import ProductCreate, ProductUpdate
 from app.services import product_tag as product_tag_service
@@ -20,10 +22,20 @@ async def list_products_for_organization(
     *,
     pagination: PaginationParams,
     name: str | None = None,
+    tag_ids: list[UUID] | None = None,
 ) -> PageResult[Product]:
     stmt = select(Product).where(Product.organization_id == organization_id)
     if name:
         stmt = stmt.where(col(Product.name).ilike(f"%{name}%"))
+    if tag_ids:
+        unique_tag_ids = list(dict.fromkeys(tag_ids))
+        for tag_id in unique_tag_ids:
+            stmt = stmt.where(
+                exists().where(
+                    ProductTag.product_id == Product.id,
+                    ProductTag.tag_id == tag_id,
+                )
+            )
     stmt = stmt.order_by(Product.name)
     result = await paginate(session, stmt, pagination)
     await product_tag_service.attach_tags_to_products(session, result.items)

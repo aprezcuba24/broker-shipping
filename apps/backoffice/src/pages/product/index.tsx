@@ -23,20 +23,17 @@ import { buildProductColumns } from './columns'
 import { ProductFilters } from './filters'
 import type { ProductFormValues } from './form'
 
-const productListFilterKeys = ['name'] as const
-
 export function ProductPage() {
   const navigate = useNavigate()
   const { activeOrganization } = useActiveOrganization()
   const list = useListParams({
-    filterKeys: productListFilterKeys,
+    filterKeys: ['name'],
+    arrayFilterKeys: ['tag_ids'],
     defaultPageSize: 20,
   })
 
   const query = useListProductsProductsProviderGet({
-    page: list.queryParams.page,
-    page_size: list.queryParams.page_size,
-    name: list.queryParams.name || undefined,
+    ...list.queryParams,
   } as ListProductsProductsProviderGetParams)
 
   const deleteMutation = useDeleteProductProductsProviderProductIdDelete()

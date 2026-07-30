@@ -8,8 +8,10 @@ import {
   FieldGroup,
   FieldLabel,
   Input,
+  TagsField,
   useFormSubmitHandle,
   type EntityFormProps,
+  type TagOption,
 } from '@broker/ui'
 
 export const productFormSchema = z.object({
@@ -18,12 +20,18 @@ export const productFormSchema = z.object({
     .trim()
     .min(1, 'El nombre es obligatorio')
     .max(255, 'Máximo 255 caracteres'),
+  tag_ids: z.array(z.string().uuid()).default([]),
 })
 
 export type ProductFormValues = z.infer<typeof productFormSchema>
 
 export const productFormDefaultValues: ProductFormValues = {
   name: '',
+  tag_ids: [],
+}
+
+export type ProductFormProps = EntityFormProps<ProductFormValues> & {
+  initialTags?: TagOption[]
 }
 
 export function ProductForm({
@@ -32,7 +40,8 @@ export function ProductForm({
   onSubmit,
   isSubmitting = false,
   error = null,
-}: EntityFormProps<ProductFormValues>) {
+  initialTags = [],
+}: ProductFormProps) {
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
     defaultValues,
@@ -56,6 +65,29 @@ export function ProductForm({
                 autoFocus
                 disabled={isSubmitting}
                 aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+            </Field>
+          )}
+        />
+
+        <Controller
+          name="tag_ids"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="product-tags">Etiquetas</FieldLabel>
+              <TagsField
+                id="product-tags"
+                value={field.value}
+                onValueChange={field.onChange}
+                initialTags={initialTags}
+                creatable
+                wrap
+                disabled={isSubmitting}
+                aria-invalid={fieldState.invalid}
+                placeholder="Añadir etiquetas…"
+                searchPlaceholder="Buscar o crear etiqueta…"
               />
               {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
             </Field>

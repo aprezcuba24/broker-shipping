@@ -5,6 +5,7 @@ import {
   usePatchProductProductsProviderProductIdPatch,
   type GetProductProductsProviderProductIdGetParams,
   type PatchProductProductsProviderProductIdPatchParams,
+  type ProductPublic,
 } from '@broker/api'
 import {
   EntityEditFormPage,
@@ -15,6 +16,17 @@ import { Package } from 'lucide-react'
 import { useParams } from 'react-router-dom'
 
 import { ProductForm, type ProductFormValues } from './form'
+
+function productToFormValues(product: ProductPublic): ProductFormValues {
+  return {
+    name: product.name,
+    tag_ids: product.tags?.map((tag) => tag.id) ?? [],
+  }
+}
+
+function productInitialTags(product: ProductPublic) {
+  return (product.tags ?? []).map((tag) => ({ id: tag.id, name: tag.name }))
+}
 
 export function ProductEditPage() {
   const { productId = '' } = useParams<{ productId: string }>()
@@ -37,7 +49,10 @@ export function ProductEditPage() {
     mutate: (values: ProductFormValues) =>
       patchMutation.mutateAsync({
         productId,
-        data: values,
+        data: {
+          name: values.name,
+          tag_ids: values.tag_ids,
+        },
         params: {} as PatchProductProductsProviderProductIdPatchParams,
       }),
     detailQueryKey,
@@ -61,8 +76,13 @@ export function ProductEditPage() {
       description={(product) => `Edita «${product.name}».`}
       icon={Package}
       Form={ProductForm}
-      defaultValues={(product) => ({ name: product.name })}
+      defaultValues={productToFormValues}
       formKey={(product) => entityFormKey(product)}
+      formProps={
+        productQuery.data
+          ? { initialTags: productInitialTags(productQuery.data) }
+          : undefined
+      }
       onSubmit={update.run}
       isSubmitting={update.isPending}
       error={update.error}

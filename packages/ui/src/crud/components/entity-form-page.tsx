@@ -13,6 +13,8 @@ export type EntityFormPageProps<TValues> = {
   isSubmitting?: boolean
   error?: string | null
   formKey?: string | number
+  /** Extra props forwarded to `Form` (e.g. initialTags). */
+  formProps?: Record<string, unknown>
   backTo?: string
   onCancel?: () => void
   submitLabel?: string
@@ -30,6 +32,7 @@ export function EntityFormPage<TValues>({
   isSubmitting = false,
   error = null,
   formKey,
+  formProps,
   backTo,
   onCancel,
   submitLabel = 'Guardar',
@@ -84,6 +87,7 @@ export function EntityFormPage<TValues>({
           onSubmit={onSubmit}
           isSubmitting={isSubmitting}
           error={error}
+          {...formProps}
         />
 
         <div className="sticky bottom-0 flex flex-col-reverse gap-2 border-t border-surface-container-high bg-background/95 py-3 backdrop-blur sm:flex-row sm:justify-end">
