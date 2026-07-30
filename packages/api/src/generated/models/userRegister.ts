@@ -7,10 +7,7 @@
 import type { UserRegisterClientApp } from './userRegisterClientApp';
 
 export interface UserRegister {
-  /**
-   * @minLength 1
-   * @maxLength 255
-   */
+  /** @maxLength 255 */
   name: string;
   email: string;
   /**

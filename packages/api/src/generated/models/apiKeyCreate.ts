@@ -7,10 +7,7 @@
 import type { ApiKeyCreateDescription } from './apiKeyCreateDescription';
 
 export interface ApiKeyCreate {
-  /**
-   * @minLength 1
-   * @maxLength 255
-   */
+  /** @maxLength 255 */
   name: string;
   description?: ApiKeyCreateDescription;
 }

@@ -18,6 +18,7 @@ import {
   ProductEditPage,
   ProductPage,
 } from './pages/product'
+import { TagPage } from './pages/tag'
 import { VerifyEmailPage } from './pages/verify-email'
 
 export default function App() {
@@ -63,6 +64,7 @@ export default function App() {
           <Route path="products" element={<ProductPage />} />
           <Route path="products/new" element={<ProductCreatePage />} />
           <Route path="products/:productId" element={<ProductEditPage />} />
+          <Route path="tags" element={<TagPage />} />
           <Route path="settings/organizations" element={<OrganizationsSettingsPage />} />
           <Route path="settings/invitations" element={<InvitationsSettingsPage />} />
         </Route>

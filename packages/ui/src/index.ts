@@ -127,6 +127,7 @@ export {
 } from './components/ui/card'
 export { Input } from './components/ui/input'
 export { Label } from './components/ui/label'
+export { Switch } from './components/ui/switch'
 export {
   Field,
   FieldContent,

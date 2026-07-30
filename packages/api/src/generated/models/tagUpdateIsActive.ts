@@ -5,7 +5,4 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface AcceptByTokenBody {
-  /** @maxLength 64 */
-  token: string;
-}
+export type TagUpdateIsActive = boolean | null;

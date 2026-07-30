@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Check, Minus } from 'lucide-react'
 
 import { ColumnType } from './types'
 
@@ -81,7 +82,11 @@ export function formatCellValue(value: unknown, type: ColumnType): ReactNode {
     case ColumnType.Number:
       return numberFormatter.format(Number(value))
     case ColumnType.Boolean:
-      return value ? 'Sí' : 'No'
+      return value ? (
+        <Check className="h-4 w-4 text-foreground" aria-label="Sí" />
+      ) : (
+        <Minus className="h-4 w-4 text-muted-foreground" aria-label="No" />
+      )
     case ColumnType.Text:
     default:
       return String(value)

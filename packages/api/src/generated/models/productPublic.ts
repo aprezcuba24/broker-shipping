@@ -5,6 +5,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ProductPublicUpdatedAt } from './productPublicUpdatedAt';
+import type { TagPublic } from './tagPublic';
 
 export interface ProductPublic {
   id: string;
@@ -12,4 +13,5 @@ export interface ProductPublic {
   organization_id: string;
   created_at: string;
   updated_at: ProductPublicUpdatedAt;
+  tags?: TagPublic[];
 }
