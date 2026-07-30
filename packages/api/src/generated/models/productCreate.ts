@@ -6,9 +6,7 @@
  */
 
 export interface ProductCreate {
-  /**
-   * @minLength 1
-   * @maxLength 255
-   */
+  /** @maxLength 255 */
   name: string;
+  tag_ids?: string[];
 }

@@ -1,7 +1,9 @@
 import type { ProductPublic } from '@broker/api'
 import {
   actionsColumn,
+  BadgeList,
   BtnList,
+  componentColumn,
   createdAtColumn,
   DeleteRowButton,
   EditRowButton,
@@ -23,6 +25,11 @@ export function buildProductColumns({
 }: BuildProductColumnsOptions): ColumnDef<ProductPublic>[] {
   return [
     textColumn<ProductPublic>({ id: 'name', header: 'Nombre' }),
+    componentColumn<ProductPublic>('tags', 'Etiquetas', (row) => (
+      <BadgeList
+        items={(row.tags ?? []).map((tag) => ({ id: tag.id, label: tag.name }))}
+      />
+    )),
     createdAtColumn<ProductPublic>(),
     updatedAtColumn<ProductPublic>(),
     actionsColumn<ProductPublic>((row) => (

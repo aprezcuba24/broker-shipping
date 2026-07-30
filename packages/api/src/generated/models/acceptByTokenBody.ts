@@ -6,9 +6,6 @@
  */
 
 export interface AcceptByTokenBody {
-  /**
-   * @minLength 1
-   * @maxLength 64
-   */
+  /** @maxLength 64 */
   token: string;
 }

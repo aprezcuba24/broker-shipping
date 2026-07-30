@@ -12,6 +12,7 @@ from app.lib.security.access import is_super_admin
 from app.models.product.product import Product
 from app.models.user.user import User
 from app.schemas.pagination import PageResult, PaginationParams
+from app.services import product_tag as product_tag_service
 from app.services import provider_seller_link as link_service
 
 
@@ -40,7 +41,9 @@ async def list_accessible_products(
     if name:
         stmt = stmt.where(col(Product.name).ilike(f"%{name}%"))
     stmt = stmt.order_by(Product.name)
-    return await paginate(session, stmt, pagination)
+    result = await paginate(session, stmt, pagination)
+    await product_tag_service.attach_tags_to_products(session, result.items)
+    return result
 
 
 async def get_accessible_product(
@@ -61,4 +64,5 @@ async def get_accessible_product(
     product = await get_entity(session, Product, id=product_id, required=False)
     if product is None or product.organization_id not in provider_ids:
         raise HTTPException(status_code=404, detail="Not found")
+    await product_tag_service.attach_tags_to_products(session, [product])
     return product

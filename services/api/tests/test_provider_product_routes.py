@@ -7,6 +7,7 @@ from httpx import AsyncClient
 from tests.factories.auth_helpers import bearer_headers
 from tests.factories.organization_factory import OrganizationFactory
 from tests.factories.product_factory import ProductFactory
+from tests.factories.tag_factory import TagFactory
 from tests.factories.user_factory import UserFactory
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")
@@ -44,6 +45,7 @@ async def test_create_list_get_patch_delete_product(
     body = r_create.json()
     assert body["name"] == "Arroz 1kg"
     assert body["organization_id"] == provider_context["organization_id"]
+    assert body["tags"] == []
     product_id = body["id"]
 
     r_list = await client.get(
@@ -288,3 +290,195 @@ async def test_list_products_name_filter_with_pagination(
     assert body["pages"] == 2
     assert len(body["items"]) == 1
     assert "Arroz" in body["items"][0]["name"]
+
+
+async def test_create_product_with_tag_ids(
+    client: AsyncClient,
+    provider_context: dict,
+    tag_factory: TagFactory,
+) -> None:
+    org_id = provider_context["organization_id"]
+    tag_a = await tag_factory.build(organization_id=org_id, name="A")
+    tag_b = await tag_factory.build(organization_id=org_id, name="B")
+
+    r = await client.post(
+        "/products/provider/",
+        params=provider_context["params"],
+        headers=provider_context["headers"],
+        json={
+            "name": "Con tags",
+            "tag_ids": [tag_b["id"], tag_a["id"]],
+        },
+    )
+    assert r.status_code == 201
+    body = r.json()
+    assert [t["name"] for t in body["tags"]] == ["A", "B"]
+    assert {t["id"] for t in body["tags"]} == {tag_a["id"], tag_b["id"]}
+
+
+async def test_create_product_uses_only_tag_ids_from_organization(
+    client: AsyncClient,
+    provider_context: dict,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    tag_factory: TagFactory,
+) -> None:
+    other_user = await user_factory.build()
+    other_org = await organization_factory.build(user_id=other_user["id"])
+    foreign_tag = await tag_factory.build(organization_id=other_org["id"])
+    local_tag = await tag_factory.build(
+        organization_id=provider_context["organization_id"],
+        name="Local",
+    )
+
+    r = await client.post(
+        "/products/provider/",
+        params=provider_context["params"],
+        headers=provider_context["headers"],
+        json={
+            "name": "Filtered tags",
+            "tag_ids": [foreign_tag["id"], local_tag["id"]],
+        },
+    )
+    assert r.status_code == 201
+    assert [tag["id"] for tag in r.json()["tags"]] == [local_tag["id"]]
+
+
+async def test_patch_product_replaces_tag_ids(
+    client: AsyncClient,
+    provider_context: dict,
+    tag_factory: TagFactory,
+) -> None:
+    org_id = provider_context["organization_id"]
+    tag_a = await tag_factory.build(organization_id=org_id, name="Keep")
+    tag_b = await tag_factory.build(organization_id=org_id, name="Drop")
+    tag_c = await tag_factory.build(organization_id=org_id, name="New")
+
+    r_create = await client.post(
+        "/products/provider/",
+        params=provider_context["params"],
+        headers=provider_context["headers"],
+        json={"name": "Tagged", "tag_ids": [tag_a["id"], tag_b["id"]]},
+    )
+    assert r_create.status_code == 201
+    product_id = r_create.json()["id"]
+
+    r_patch = await client.patch(
+        f"/products/provider/{product_id}",
+        params=provider_context["params"],
+        headers=provider_context["headers"],
+        json={"tag_ids": [tag_c["id"]]},
+    )
+    assert r_patch.status_code == 200
+    assert [t["id"] for t in r_patch.json()["tags"]] == [tag_c["id"]]
+
+    r_clear = await client.patch(
+        f"/products/provider/{product_id}",
+        params=provider_context["params"],
+        headers=provider_context["headers"],
+        json={"tag_ids": []},
+    )
+    assert r_clear.status_code == 200
+    assert r_clear.json()["tags"] == []
+
+
+async def test_product_public_excludes_inactive_tags(
+    client: AsyncClient,
+    provider_context: dict,
+    tag_factory: TagFactory,
+) -> None:
+    org_id = provider_context["organization_id"]
+    active = await tag_factory.build(
+        organization_id=org_id,
+        name="Active",
+        is_active=True,
+    )
+    inactive = await tag_factory.build(
+        organization_id=org_id,
+        name="Inactive",
+        is_active=False,
+    )
+
+    r = await client.post(
+        "/products/provider/",
+        params=provider_context["params"],
+        headers=provider_context["headers"],
+        json={
+            "name": "Mixed tags",
+            "tag_ids": [active["id"], inactive["id"]],
+        },
+    )
+    assert r.status_code == 201
+    body = r.json()
+    assert [t["name"] for t in body["tags"]] == ["Active"]
+    assert all(t["is_active"] for t in body["tags"])
+
+
+async def test_list_products_filters_by_all_tag_ids(
+    client: AsyncClient,
+    provider_context: dict,
+    tag_factory: TagFactory,
+) -> None:
+    org_id = provider_context["organization_id"]
+    headers = provider_context["headers"]
+    params = provider_context["params"]
+    tag_1 = await tag_factory.build(organization_id=org_id, name="T1")
+    tag_2 = await tag_factory.build(organization_id=org_id, name="T2")
+    tag_3 = await tag_factory.build(organization_id=org_id, name="T3")
+
+    r_a = await client.post(
+        "/products/provider/",
+        params=params,
+        headers=headers,
+        json={"name": "Product A", "tag_ids": [tag_1["id"], tag_2["id"]]},
+    )
+    r_b = await client.post(
+        "/products/provider/",
+        params=params,
+        headers=headers,
+        json={"name": "Product B", "tag_ids": [tag_1["id"]]},
+    )
+    r_c = await client.post(
+        "/products/provider/",
+        params=params,
+        headers=headers,
+        json={"name": "Product C", "tag_ids": []},
+    )
+    assert r_a.status_code == 201
+    assert r_b.status_code == 201
+    assert r_c.status_code == 201
+    product_a = r_a.json()["id"]
+    product_b = r_b.json()["id"]
+
+    r_one = await client.get(
+        "/products/provider/",
+        params=[*params.items(), ("tag_ids", tag_1["id"])],
+        headers=headers,
+    )
+    assert r_one.status_code == 200
+    assert {p["id"] for p in r_one.json()["items"]} == {product_a, product_b}
+
+    r_both = await client.get(
+        "/products/provider/",
+        params=[
+            *params.items(),
+            ("tag_ids", tag_1["id"]),
+            ("tag_ids", tag_2["id"]),
+        ],
+        headers=headers,
+    )
+    assert r_both.status_code == 200
+    assert [p["id"] for p in r_both.json()["items"]] == [product_a]
+
+    r_none = await client.get(
+        "/products/provider/",
+        params=[
+            *params.items(),
+            ("tag_ids", tag_1["id"]),
+            ("tag_ids", tag_3["id"]),
+        ],
+        headers=headers,
+    )
+    assert r_none.status_code == 200
+    assert r_none.json()["items"] == []
+    assert r_none.json()["total"] == 0

@@ -7,10 +7,7 @@
 import type { OrganizationType } from './organizationType';
 
 export interface OrganizationCreate {
-  /**
-   * @minLength 1
-   * @maxLength 255
-   */
+  /** @maxLength 255 */
   name: string;
   type: OrganizationType;
 }

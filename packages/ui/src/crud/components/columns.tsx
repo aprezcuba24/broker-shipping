@@ -92,6 +92,20 @@ export function badgeColumn<TData>(
   }
 }
 
+export function componentColumn<TData>(
+  id: string,
+  name: string,
+  component: (row: TData) => ReactNode,
+  options: Partial<Omit<ColumnDef<TData>, 'id' | 'header' | 'cell'>> = {},
+): ColumnDef<TData> {
+  return {
+    id,
+    header: name,
+    cell: component,
+    ...options,
+  }
+}
+
 export function linkColumn<TData>(
   options: BaseColumnOptions<TData> & {
     getHref: (row: TData) => string

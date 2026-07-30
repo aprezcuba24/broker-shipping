@@ -10,6 +10,7 @@ from tests.factories.organization_factory import (
     link_provider_to_seller,
 )
 from tests.factories.product_factory import ProductFactory
+from tests.factories.tag_factory import TagFactory
 from tests.factories.user_factory import UserFactory
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")
@@ -317,3 +318,51 @@ async def test_seller_list_without_links_returns_empty_page(
     assert body["items"] == []
     assert body["total"] == 0
     assert body["pages"] == 0
+
+
+async def test_seller_product_includes_only_active_tags(
+    client: AsyncClient,
+    db_session,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    tag_factory: TagFactory,
+) -> None:
+    provider_user = await user_factory.build()
+    seller_user = await user_factory.build()
+    provider_org = await organization_factory.build(user_id=provider_user["id"])
+    seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
+    await link_provider_to_seller(
+        db_session,
+        provider_organization_id=provider_org["id"],
+        seller_organization_id=seller_org["id"],
+    )
+    active = await tag_factory.build(
+        organization_id=provider_org["id"],
+        name="Visible",
+        is_active=True,
+    )
+    inactive = await tag_factory.build(
+        organization_id=provider_org["id"],
+        name="Hidden",
+        is_active=False,
+    )
+
+    r_create = await client.post(
+        "/products/provider/",
+        params={"organization_id": provider_org["id"]},
+        headers=bearer_headers(user_id=provider_user["id"]),
+        json={
+            "name": "Tagged product",
+            "tag_ids": [active["id"], inactive["id"]],
+        },
+    )
+    assert r_create.status_code == 201
+    product_id = r_create.json()["id"]
+
+    r = await client.get(
+        f"/products/seller/{product_id}",
+        params={"organization_id": seller_org["id"]},
+        headers=bearer_headers(user_id=seller_user["id"]),
+    )
+    assert r.status_code == 200
+    assert [t["name"] for t in r.json()["tags"]] == ["Visible"]

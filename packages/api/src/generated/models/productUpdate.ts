@@ -5,7 +5,9 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ProductUpdateName } from './productUpdateName';
+import type { ProductUpdateTagIds } from './productUpdateTagIds';
 
 export interface ProductUpdate {
   name?: ProductUpdateName;
+  tag_ids?: ProductUpdateTagIds;
 }

@@ -26,6 +26,7 @@ from app.main import app, lifespan
 from tests.factories.api_key_factory import ApiKeyFactory
 from tests.factories.organization_factory import OrganizationFactory
 from tests.factories.product_factory import ProductFactory
+from tests.factories.tag_factory import TagFactory
 from tests.factories.user_factory import UserFactory
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")
@@ -64,7 +65,8 @@ async def _truncate_tables(test_engine: AsyncEngine) -> AsyncIterator[None]:
         await conn.execute(
             text(
                 "TRUNCATE TABLE api_key, organization_invitation, provider_seller_link, "
-                "user_organization, \"user\", product, organization RESTART IDENTITY CASCADE"
+                "user_organization, \"user\", product_tag, tag, product, organization "
+                "RESTART IDENTITY CASCADE"
             )
         )
     yield
@@ -99,3 +101,8 @@ async def organization_factory(db_session: AsyncSession) -> OrganizationFactory:
 @pytest_asyncio.fixture
 async def product_factory(db_session: AsyncSession) -> ProductFactory:
     return ProductFactory(db_session)
+
+
+@pytest_asyncio.fixture
+async def tag_factory(db_session: AsyncSession) -> TagFactory:
+    return TagFactory(db_session)

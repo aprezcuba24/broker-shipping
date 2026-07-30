@@ -14,7 +14,10 @@ export function ProductCreatePage() {
   const create = useEntityFormMutation({
     mutate: (values: ProductFormValues) =>
       createMutation.mutateAsync({
-        data: values,
+        data: {
+          name: values.name,
+          tag_ids: values.tag_ids,
+        },
         params: {} as CreateProductProductsProviderPostParams,
       }),
     invalidateKeys: [getListProductsProductsProviderGetQueryKey()],
