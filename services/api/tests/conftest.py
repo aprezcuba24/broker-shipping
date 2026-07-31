@@ -25,6 +25,7 @@ from app.db.model_loader import load_all_table_models
 from app.main import app, lifespan
 from tests.factories.api_key_factory import ApiKeyFactory
 from tests.factories.customer_factory import CustomerFactory
+from tests.factories.location_factory import LocationFactory
 from tests.factories.organization_factory import OrganizationFactory
 from tests.factories.product_factory import ProductFactory
 from tests.factories.tag_factory import TagFactory
@@ -108,6 +109,11 @@ async def product_factory(db_session: AsyncSession) -> ProductFactory:
 @pytest_asyncio.fixture
 async def customer_factory(db_session: AsyncSession) -> CustomerFactory:
     return CustomerFactory(db_session)
+
+
+@pytest_asyncio.fixture
+async def location_factory(db_session: AsyncSession) -> LocationFactory:
+    return LocationFactory(db_session)
 
 
 @pytest_asyncio.fixture

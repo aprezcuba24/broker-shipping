@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import Index, UniqueConstraint
+from sqlalchemy import UniqueConstraint
 from sqlmodel import Field
 
 from app.lib.persistence.entity_model import EntityModel
@@ -14,7 +14,11 @@ class Customer(EntityModel, table=True):
             "ci",
             name="uq_customer_seller_ci",
         ),
-        Index("ix_customer_seller_phone", "seller_organization_id", "phone"),
+        UniqueConstraint(
+            "seller_organization_id",
+            "phone",
+            name="uq_customer_seller_phone",
+        ),
     )
 
     name: str = Field(max_length=255)

@@ -4,6 +4,7 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.customer.address import Address
 from app.models.customer.customer import Customer
 
 
@@ -14,6 +15,9 @@ async def create_customer(
     name: str | None = None,
     ci: str | None = None,
     phone: str | None = None,
+    address: str | None = None,
+    province_id: UUID | str | None = None,
+    municipality_id: UUID | str | None = None,
 ) -> dict:
     oid = (
         seller_organization_id
@@ -28,8 +32,29 @@ async def create_customer(
     )
     session.add(entity)
     await session.flush()
+
+    address_payload = None
+    if province_id is not None and municipality_id is not None:
+        address_entity = Address(
+            address=address if address is not None else "Factory street 1",
+            customer_id=entity.id,
+            province_id=(
+                province_id if isinstance(province_id, UUID) else UUID(str(province_id))
+            ),
+            municipality_id=(
+                municipality_id
+                if isinstance(municipality_id, UUID)
+                else UUID(str(municipality_id))
+            ),
+        )
+        session.add(address_entity)
+        await session.flush()
+        address_payload = address_entity.model_dump(mode="json")
+
     await session.commit()
-    return entity.model_dump(mode="json")
+    payload = entity.model_dump(mode="json")
+    payload["address"] = address_payload
+    return payload
 
 
 class CustomerFactory:
@@ -44,6 +69,9 @@ class CustomerFactory:
         name: str | None = None,
         ci: str | None = None,
         phone: str | None = None,
+        address: str | None = None,
+        province_id: UUID | str | None = None,
+        municipality_id: UUID | str | None = None,
     ) -> dict:
         self._n += 1
         return await create_customer(
@@ -52,4 +80,7 @@ class CustomerFactory:
             name=name or f"Customer-{self._n:04d}",
             ci=ci or f"CI{self._n:06d}",
             phone=phone or f"5{self._n:07d}",
+            address=address,
+            province_id=province_id,
+            municipality_id=municipality_id,
         )

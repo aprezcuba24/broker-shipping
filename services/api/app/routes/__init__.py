@@ -10,6 +10,7 @@ from app.routes import (
     tags_seller,
     users,
 )
+from app.routes.customer import customers_seller
 from app.routes.order import orders_provider, orders_seller
 from app.routes.organization import (
     organizations,
@@ -28,6 +29,7 @@ router.include_router(tags_provider.router)
 router.include_router(tags_seller.router)
 router.include_router(orders_seller.router)
 router.include_router(orders_provider.router)
+router.include_router(customers_seller.router)
 router.include_router(organizations.router)
 router.include_router(organizations_provider.router)
 router.include_router(organizations_seller.router)
