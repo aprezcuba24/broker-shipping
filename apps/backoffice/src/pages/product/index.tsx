@@ -98,7 +98,6 @@ export function ProductPage() {
           data={crud.items}
           isLoading={crud.isLoading}
           getRowId={(row) => row.id}
-          emptyMessage="No hay productos registrados"
           pagination={{
             page: list.page,
             pageSize: list.pageSize,

@@ -290,7 +290,8 @@ export function DataTable<TData>({
     page: safePage,
     total,
   }
-  const showEmptyState = !isLoading && total === 0
+  const showEmptyState = !isLoading && data.length === 0
+  const resolvedEmptyMessage = emptyMessage
 
   return (
     <div className={cn('broker-data-table', className)}>
@@ -300,7 +301,7 @@ export function DataTable<TData>({
             <LoadingCards columns={columns} />
           </div>
         ) : showEmptyState ? (
-          <EmptyCardState message={emptyMessage} />
+          <EmptyCardState message={resolvedEmptyMessage} />
         ) : (
           <DataTableCards
             rows={pageData}
@@ -362,7 +363,7 @@ export function DataTable<TData>({
                   colSpan={columns.length}
                   className="h-24 text-center text-muted-foreground"
                 >
-                  {emptyMessage}
+                  {resolvedEmptyMessage}
                 </TableCell>
               </TableRow>
             ) : (
