@@ -9,6 +9,7 @@ from app.db.context import configure_session_maker
 from app.db.session import create_async_engine_and_session_maker
 from app.lib.events import get_bus
 from app.lib.events.registry import register_handlers
+from app.lib.exceptions import register_exception_handlers
 from app.routes import router as routes_router
 
 
@@ -28,6 +29,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(title="Broker API", lifespan=lifespan)
+register_exception_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,

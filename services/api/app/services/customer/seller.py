@@ -2,9 +2,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import HTTPException
 from sqlalchemy import delete
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
@@ -73,14 +71,7 @@ async def create_customer(
         seller_organization_id=seller_organization_id,
     )
     session.add(customer)
-    try:
-        await session.flush()
-    except IntegrityError:
-        await session.rollback()
-        raise HTTPException(
-            status_code=409,
-            detail="Customer already exists",
-        ) from None
+    await session.flush()
 
     address = await create_customer_address(
         session,
@@ -117,14 +108,7 @@ async def update_customer(
             data=data.address,
         )
 
-    try:
-        await session.commit()
-    except IntegrityError:
-        await session.rollback()
-        raise HTTPException(
-            status_code=409,
-            detail="Customer already exists",
-        ) from None
+    await session.commit()
     await session.refresh(customer)
     await attach_addresses_to_customers(session, [customer])
     return customer
@@ -143,11 +127,4 @@ async def delete_customer(
     )
     await session.execute(delete(Address).where(Address.customer_id == customer.id))
     await session.delete(customer)
-    try:
-        await session.commit()
-    except IntegrityError:
-        await session.rollback()
-        raise HTTPException(
-            status_code=409,
-            detail="Customer is referenced by existing orders",
-        ) from None
+    await session.commit()
