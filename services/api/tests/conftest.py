@@ -24,6 +24,7 @@ from sqlmodel import SQLModel
 from app.db.model_loader import load_all_table_models
 from app.main import app, lifespan
 from tests.factories.api_key_factory import ApiKeyFactory
+from tests.factories.customer_factory import CustomerFactory
 from tests.factories.organization_factory import OrganizationFactory
 from tests.factories.product_factory import ProductFactory
 from tests.factories.tag_factory import TagFactory
@@ -65,7 +66,8 @@ async def _truncate_tables(test_engine: AsyncEngine) -> AsyncIterator[None]:
         await conn.execute(
             text(
                 "TRUNCATE TABLE api_key, organization_invitation, provider_seller_link, "
-                "user_organization, \"user\", product_tag, tag, product, organization "
+                "user_organization, \"user\", product_tag, tag, order_item, \"order\", "
+                "address, customer, municipality, province, product, organization "
                 "RESTART IDENTITY CASCADE"
             )
         )
@@ -101,6 +103,11 @@ async def organization_factory(db_session: AsyncSession) -> OrganizationFactory:
 @pytest_asyncio.fixture
 async def product_factory(db_session: AsyncSession) -> ProductFactory:
     return ProductFactory(db_session)
+
+
+@pytest_asyncio.fixture
+async def customer_factory(db_session: AsyncSession) -> CustomerFactory:
+    return CustomerFactory(db_session)
 
 
 @pytest_asyncio.fixture
