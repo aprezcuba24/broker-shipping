@@ -10,7 +10,7 @@ from fastapi import Depends, HTTPException
 from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.deps import get_db
+from app.deps import SessionDep
 from app.lib.persistence import get_entity
 from app.lib.security.access import ensure_organization_access
 from app.lib.security.api_keys import split_raw
@@ -45,7 +45,7 @@ async def get_current_user(
         HTTPAuthorizationCredentials | None, Depends(bearer_scheme)
     ],
     raw_key: Annotated[str | None, Depends(api_key_header)],
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
 ) -> User:
     user = await _get_user_from_jwt(credentials, session)
     if user is not None:
@@ -69,7 +69,7 @@ async def get_jwt_user(
         HTTPAuthorizationCredentials | None, Depends(bearer_scheme)
     ],
     raw_key: Annotated[str | None, Depends(api_key_header)],
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
 ) -> User:
     if raw_key and split_raw(raw_key) is not None:
         token = credentials.credentials.strip() if credentials else None
@@ -88,7 +88,7 @@ def require_organization(
     async def _resolve(
         organization_id: UUID,
         user: Annotated[User, Depends(get_current_user)],
-        session: Annotated[AsyncSession, Depends(get_db)],
+        session: SessionDep,
     ) -> Organization:
         return await ensure_organization_access(
             session,
@@ -102,7 +102,7 @@ def require_organization(
 
 async def optional_seller_organization(
     user: Annotated[User, Depends(get_current_user)],
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
     organization_id: UUID | None = None,
 ) -> Organization | None:
     if organization_id is None:

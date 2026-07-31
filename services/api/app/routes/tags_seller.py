@@ -1,10 +1,8 @@
-from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter
 
-from app.deps import get_db
+from app.deps import SessionDep
 from app.lib.persistence.pagination import PaginationDep
 from app.lib.security.deps import CurrentUserDep, SellerOrgDep
 from app.schemas.pagination import Page
@@ -18,7 +16,7 @@ router = APIRouter(prefix="/tags/seller", tags=["tags"])
 async def list_tags(
     user: CurrentUserDep,
     organization: SellerOrgDep,
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
     pagination: PaginationDep,
     name: str | None = None,
     provider_id: UUID | None = None,
@@ -39,7 +37,7 @@ async def get_tag(
     tag_id: UUID,
     user: CurrentUserDep,
     organization: SellerOrgDep,
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
 ) -> TagPublic:
     tag = await seller_tag_service.get_accessible_tag(
         session,

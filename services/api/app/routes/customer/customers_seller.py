@@ -1,10 +1,8 @@
-from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Response
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Response
 
-from app.deps import get_db
+from app.deps import SessionDep
 from app.lib.persistence.pagination import PaginationDep
 from app.lib.security.deps import SellerOrgDep
 from app.schemas.customer import CustomerCreate, CustomerPublic, CustomerUpdate
@@ -17,7 +15,7 @@ router = APIRouter(prefix="/customers/seller", tags=["customers"])
 @router.get("/", response_model=Page[CustomerPublic])
 async def list_customers(
     organization: SellerOrgDep,
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
     pagination: PaginationDep,
     name: str | None = None,
     ci: str | None = None,
@@ -38,7 +36,7 @@ async def list_customers(
 async def get_customer(
     customer_id: UUID,
     organization: SellerOrgDep,
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
 ) -> CustomerPublic:
     customer = await seller_customer_service.get_customer_for_seller(
         session,
@@ -52,7 +50,7 @@ async def get_customer(
 async def create_customer(
     body: CustomerCreate,
     organization: SellerOrgDep,
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
 ) -> CustomerPublic:
     customer = await seller_customer_service.create_customer(
         session,
@@ -67,7 +65,7 @@ async def patch_customer(
     customer_id: UUID,
     body: CustomerUpdate,
     organization: SellerOrgDep,
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
 ) -> CustomerPublic:
     customer = await seller_customer_service.update_customer(
         session,
@@ -82,7 +80,7 @@ async def patch_customer(
 async def delete_customer(
     customer_id: UUID,
     organization: SellerOrgDep,
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
 ) -> Response:
     await seller_customer_service.delete_customer(
         session,
