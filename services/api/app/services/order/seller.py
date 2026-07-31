@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import defaultdict
 from decimal import Decimal
 from uuid import UUID
 
@@ -12,61 +11,17 @@ from sqlmodel import col
 from app.lib.persistence import get_entity
 from app.lib.persistence.pagination import paginate
 from app.models.customer.customer import Customer
-from app.models.order.enums import Currency, OrderItemStatus, OrderStatus
+from app.models.order.enums import OrderItemStatus, OrderStatus
 from app.models.order.order import Order
 from app.models.order.order_item import OrderItem
 from app.models.organization.organization import Organization
 from app.models.product.product import Product
 from app.models.user.user import User
-from app.schemas.order import OrderCreate, OrderCurrencyTotal
+from app.schemas.order import OrderCreate
 from app.schemas.pagination import PageResult, PaginationParams
 from app.services import provider_seller_link as link_service
 from app.services.order.code import generate_next_order_code
-
-
-def compute_order_totals(items: list[OrderItem]) -> list[OrderCurrencyTotal]:
-    amounts: dict[Currency, Decimal] = defaultdict(lambda: Decimal("0"))
-    for item in items:
-        amounts[item.currency] += item.seller_provider_price * item.quantity
-    return [
-        OrderCurrencyTotal(currency=currency, amount=amount)
-        for currency, amount in sorted(amounts.items(), key=lambda pair: pair[0].value)
-    ]
-
-
-def attach_order_view(order: Order, items: list[OrderItem]) -> Order:
-    object.__setattr__(order, "items", items)
-    object.__setattr__(order, "totals", compute_order_totals(items))
-    return order
-
-
-async def load_items_by_order_ids(
-    session: AsyncSession,
-    order_ids: list[UUID],
-) -> dict[UUID, list[OrderItem]]:
-    if not order_ids:
-        return {}
-    result = await session.execute(
-        select(OrderItem)
-        .where(col(OrderItem.order_id).in_(order_ids))
-        .order_by(OrderItem.created_at, OrderItem.id)
-    )
-    items_by_order: dict[UUID, list[OrderItem]] = defaultdict(list)
-    for item in result.scalars().all():
-        items_by_order[item.order_id].append(item)
-    return dict(items_by_order)
-
-
-async def attach_items_and_totals(
-    session: AsyncSession,
-    orders: list[Order],
-) -> None:
-    items_by_order = await load_items_by_order_ids(
-        session,
-        [order.id for order in orders],
-    )
-    for order in orders:
-        attach_order_view(order, items_by_order.get(order.id, []))
+from app.services.order.helpers import attach_items_and_totals, attach_order_view
 
 
 async def create_order(

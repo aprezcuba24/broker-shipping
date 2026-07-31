@@ -19,6 +19,10 @@ class OrderCreate(BaseModel):
     items: list[OrderItemCreate] = Field(min_length=1)
 
 
+class OrderItemStatusUpdate(BaseModel):
+    status: OrderItemStatus
+
+
 class OrderItemPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
