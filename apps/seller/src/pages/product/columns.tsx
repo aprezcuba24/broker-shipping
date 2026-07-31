@@ -12,6 +12,8 @@ import {
 } from '@broker/ui'
 import { Eye } from 'lucide-react'
 
+import { ProductCartControl } from '@/components/product-cart-control'
+
 export type BuildProductColumnsOptions = {
   providerNameById: Map<string, string>
   onView: (item: ProductPublic) => void
@@ -33,6 +35,9 @@ export function buildProductColumns({
     )),
     createdAtColumn<ProductPublic>(),
     updatedAtColumn<ProductPublic>(),
+    componentColumn<ProductPublic>('cart', 'Carrito', (row) => (
+      <ProductCartControl product={row} />
+    )),
     actionsColumn<ProductPublic>((row) => (
       <BtnList>
         <Button

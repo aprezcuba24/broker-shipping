@@ -10,6 +10,7 @@ import { AcceptInvitationPage } from './pages/accept-invitation'
 import { HomePage } from './pages/home'
 import { LoginPage } from './pages/login'
 import { OnboardingPage } from './pages/onboarding'
+import { CartPage } from './pages/cart'
 import { ProductDetailPage, ProductPage } from './pages/product'
 import { ProviderLinkRequestPage } from './pages/providers/link-request'
 import { RegisterPage } from './pages/register'
@@ -59,6 +60,7 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="products" element={<ProductPage />} />
           <Route path="products/:productId" element={<ProductDetailPage />} />
+          <Route path="cart" element={<CartPage />} />
           <Route path="settings/organizations" element={<OrganizationsSettingsPage />} />
           <Route path="settings/invitations" element={<InvitationsSettingsPage />} />
           <Route path="providers/link-request" element={<ProviderLinkRequestPage />} />

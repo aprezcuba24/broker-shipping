@@ -1,4 +1,11 @@
-import { Building2, LayoutDashboard, Link2, Mail, Package, Store } from 'lucide-react'
+import {
+  Building2,
+  LayoutDashboard,
+  Link2,
+  Mail,
+  Package,
+  Store,
+} from 'lucide-react'
 import type { NavItem, SidebarBrand } from '@broker/ui'
 
 export const sellerBrand: SidebarBrand = {
