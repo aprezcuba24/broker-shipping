@@ -12,18 +12,29 @@ import { useCartPreview } from '@/hooks/use-cart-preview'
 import { useLinkedProviders } from '@/hooks/use-linked-providers'
 
 import { CartOrderTotals } from './cart-order-totals'
+import { CartPreviewProvider } from './cart-preview-context'
+import { computeCartTotals } from './cart-utils'
 import { buildCartColumns } from './columns'
 
 export function CartPage() {
   const { items, totalItems, clearCart } = useCart()
   const { getProviderName } = useLinkedProviders()
-  const { order, previewByProductId, isLoading, isError } = useCartPreview()
-  const totals = order?.totals ?? []
+  const {
+    order,
+    previewByProductId,
+    isInitialLoading,
+    isRefreshing,
+    isError,
+  } = useCartPreview()
+  const totals = useMemo(
+    () => computeCartTotals(items, previewByProductId),
+    [items, previewByProductId],
+  )
   const hasItems = items.length > 0
 
   const columns = useMemo(
-    () => buildCartColumns({ getProviderName, previewByProductId }),
-    [getProviderName, previewByProductId],
+    () => buildCartColumns({ getProviderName }),
+    [getProviderName],
   )
 
   return (
@@ -67,19 +78,22 @@ export function CartPage() {
       }
     >
       <div className="space-y-4">
-        <DataTable
-          columns={columns}
-          data={items}
-          getRowId={(row) => row.product.id}
-          pagination={{
-            page: 1,
-            total: items.length,
-            onPageChange: () => {},
-          }}
-        />
+        <CartPreviewProvider previewByProductId={previewByProductId}>
+          <DataTable
+            columns={columns}
+            data={items}
+            getRowId={(row) => row.product.id}
+            pagination={{
+              page: 1,
+              total: items.length,
+              onPageChange: () => {},
+            }}
+          />
+        </CartPreviewProvider>
         <CartOrderTotals
           totals={totals}
-          isLoading={isLoading}
+          isInitialLoading={isInitialLoading}
+          isRefreshing={isRefreshing}
           isError={isError}
           hasOrder={Boolean(order)}
         />

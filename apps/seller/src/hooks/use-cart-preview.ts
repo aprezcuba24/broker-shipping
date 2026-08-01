@@ -1,10 +1,11 @@
 import {
-  usePreviewOrderOrdersSellerPreviewPost,
+  previewOrderOrdersSellerPreviewPost,
   type OrderItemPublic,
   type OrderPublic,
   type PreviewOrderOrdersSellerPreviewPostParams,
 } from '@broker/api'
-import { useEffect, useMemo, useRef } from 'react'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { useEffect, useMemo, useState } from 'react'
 
 import { useCart } from '@/hooks/use-cart'
 
@@ -12,11 +13,6 @@ const PREVIEW_DEBOUNCE_MS = 300
 
 export function useCartPreview() {
   const { items, sellerOrgId } = useCart()
-  const mutation = usePreviewOrderOrdersSellerPreviewPost()
-  const mutateRef = useRef(mutation.mutate)
-  const resetRef = useRef(mutation.reset)
-  mutateRef.current = mutation.mutate
-  resetRef.current = mutation.reset
 
   const itemsKey = useMemo(
     () =>
@@ -29,27 +25,40 @@ export function useCartPreview() {
     [items],
   )
 
-  useEffect(() => {
-    if (!sellerOrgId || items.length === 0) {
-      resetRef.current()
-      return
-    }
+  const [debouncedItemsKey, setDebouncedItemsKey] = useState(itemsKey)
 
-    const snapshot = items
+  useEffect(() => {
     const timer = window.setTimeout(() => {
-      mutateRef.current({
-        data: snapshot.map(({ product, quantity }) => ({
-          product_id: product.id,
+      setDebouncedItemsKey(itemsKey)
+    }, PREVIEW_DEBOUNCE_MS)
+    return () => window.clearTimeout(timer)
+  }, [itemsKey])
+
+  const hasItems = items.length > 0
+  const enabled = Boolean(sellerOrgId) && hasItems
+
+  const query = useQuery({
+    queryKey: ['cart-preview', sellerOrgId, debouncedItemsKey],
+    queryFn: ({ signal }) => {
+      const snapshot = JSON.parse(debouncedItemsKey) as Array<{
+        id: string
+        quantity: number
+      }>
+      return previewOrderOrdersSellerPreviewPost(
+        snapshot.map(({ id, quantity }) => ({
+          product_id: id,
           quantity,
         })),
-        params: {} as PreviewOrderOrdersSellerPreviewPostParams,
-      })
-    }, PREVIEW_DEBOUNCE_MS)
+        {} as PreviewOrderOrdersSellerPreviewPostParams,
+        undefined,
+        signal,
+      )
+    },
+    enabled: enabled && debouncedItemsKey !== '[]',
+    placeholderData: keepPreviousData,
+  })
 
-    return () => window.clearTimeout(timer)
-  }, [itemsKey, sellerOrgId, items])
-
-  const order: OrderPublic | null = items.length === 0 ? null : (mutation.data ?? null)
+  const order: OrderPublic | null = hasItems ? (query.data ?? null) : null
 
   const previewByProductId = useMemo(() => {
     const map = new Map<string, OrderItemPublic>()
@@ -62,7 +71,8 @@ export function useCartPreview() {
   return {
     order,
     previewByProductId,
-    isLoading: items.length > 0 && mutation.isPending,
-    isError: mutation.isError,
+    isInitialLoading: hasItems && !order && query.isFetching,
+    isRefreshing: hasItems && Boolean(order) && query.isFetching && !query.isLoading,
+    isError: query.isError,
   }
 }
