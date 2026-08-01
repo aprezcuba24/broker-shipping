@@ -468,3 +468,141 @@ async def test_get_unknown_order_returns_404(
         headers=seller_order_ctx["seller_bearer"],
     )
     assert r.status_code == 404
+
+
+async def test_preview_order_with_mixed_currencies(
+    client: AsyncClient,
+    seller_order_ctx: dict,
+) -> None:
+    r = await client.post(
+        "/orders/seller/preview",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+        json=[
+            {
+                "product_id": seller_order_ctx["product_cup_id"],
+                "quantity": 2,
+                "seller_provider_price": "10.00",
+                "customer_change": "1.00",
+            },
+            {
+                "product_id": seller_order_ctx["product_usd_id"],
+                "quantity": 1,
+                "seller_provider_price": "25.50",
+            },
+        ],
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["code"] == ""
+    assert body["status"] == "created"
+    assert body["seller_organization_id"] == seller_order_ctx["seller_org_id"]
+    assert len(body["items"]) == 2
+
+    by_product = {item["product_id"]: item for item in body["items"]}
+    cup_item = by_product[seller_order_ctx["product_cup_id"]]
+    assert cup_item["provider_organization_id"] == seller_order_ctx["provider_cup_id"]
+    assert cup_item["currency"] == "cup"
+    assert cup_item["seller_commission"] == "1.50"
+    assert cup_item["unit_provider_price"] == "0.00"
+    assert cup_item["seller_provider_price"] == "10.00"
+    assert cup_item["customer_change"] == "1.00"
+    assert cup_item["quantity"] == 2
+    assert cup_item["status"] == "created"
+
+    usd_item = by_product[seller_order_ctx["product_usd_id"]]
+    assert usd_item["provider_organization_id"] == seller_order_ctx["provider_usd_id"]
+    assert usd_item["currency"] == "usd"
+    assert usd_item["seller_commission"] == "5.00"
+    assert usd_item["customer_change"] == "0.00"
+
+    totals = {t["currency"]: t["amount"] for t in body["totals"]}
+    assert totals == {"cup": "20.00", "usd": "25.50"}
+
+
+async def test_preview_order_defaults_seller_provider_price(
+    client: AsyncClient,
+    seller_order_ctx: dict,
+) -> None:
+    r = await client.post(
+        "/orders/seller/preview",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+        json=[
+            {
+                "product_id": seller_order_ctx["product_cup_id"],
+                "quantity": 3,
+            },
+        ],
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["items"][0]["seller_provider_price"] == "0.00"
+    assert body["totals"] == [{"currency": "cup", "amount": "0.00"}]
+
+
+async def test_preview_order_rejects_unlinked_product(
+    client: AsyncClient,
+    seller_order_ctx: dict,
+    db_session,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    product_factory: ProductFactory,
+) -> None:
+    provider_user = await user_factory.build()
+    unlinked_provider = await organization_factory.build(user_id=provider_user["id"])
+    unlinked_product = await product_factory.build(
+        organization_id=unlinked_provider["id"],
+    )
+    r = await client.post(
+        "/orders/seller/preview",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+        json=[
+            {
+                "product_id": unlinked_product["id"],
+                "quantity": 1,
+            },
+        ],
+    )
+    assert r.status_code == 404
+
+
+async def test_preview_order_empty_items_returns_422(
+    client: AsyncClient,
+    seller_order_ctx: dict,
+) -> None:
+    r = await client.post(
+        "/orders/seller/preview",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+        json=[],
+    )
+    assert r.status_code == 422
+
+
+async def test_preview_order_does_not_persist(
+    client: AsyncClient,
+    seller_order_ctx: dict,
+) -> None:
+    preview = await client.post(
+        "/orders/seller/preview",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+        json=[
+            {
+                "product_id": seller_order_ctx["product_cup_id"],
+                "quantity": 1,
+                "seller_provider_price": "10.00",
+            },
+        ],
+    )
+    assert preview.status_code == 200
+
+    listed = await client.get(
+        "/orders/seller/",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+    )
+    assert listed.status_code == 200
+    assert listed.json()["total"] == 0

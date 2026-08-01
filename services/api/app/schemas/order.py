@@ -1,5 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
+from typing import Annotated
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -12,6 +13,9 @@ class OrderItemCreate(BaseModel):
     quantity: int = Field(gt=0)
     seller_provider_price: Decimal = Field(default=Decimal("0"), ge=0)
     customer_change: Decimal = Field(default=Decimal("0"), ge=0)
+
+
+OrderPreviewItems = Annotated[list[OrderItemCreate], Field(min_length=1)]
 
 
 class OrderCreate(BaseModel):

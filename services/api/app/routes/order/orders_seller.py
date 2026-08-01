@@ -5,7 +5,7 @@ from fastapi import APIRouter
 from app.deps import SessionDep
 from app.lib.persistence.pagination import PaginationDep
 from app.lib.security.deps import CurrentUserDep, SellerOrgDep
-from app.schemas.order import OrderCreate, OrderPublic
+from app.schemas.order import OrderCreate, OrderPreviewItems, OrderPublic
 from app.schemas.pagination import Page
 from app.services.order import seller as seller_order_service
 
@@ -24,6 +24,22 @@ async def list_orders(
         pagination=pagination,
     )
     return Page.from_mapped(result, pagination, OrderPublic.model_validate)
+
+
+@router.post("/preview", response_model=OrderPublic)
+async def preview_order(
+    body: OrderPreviewItems,
+    user: CurrentUserDep,
+    organization: SellerOrgDep,
+    session: SessionDep,
+) -> OrderPublic:
+    order = await seller_order_service.preview_order(
+        session,
+        user,
+        organization.id,
+        body,
+    )
+    return OrderPublic.model_validate(order)
 
 
 @router.get("/{order_id}", response_model=OrderPublic)

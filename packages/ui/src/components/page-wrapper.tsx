@@ -3,13 +3,15 @@ import type { ReactNode } from 'react'
 
 import { BtnList } from './btn-list'
 import { HeaderPage } from './header-page'
+import { PageEmptyState, type PageEmptyStateProps } from './page-empty-state'
 
 export type PageWrapperProps = {
   title: string
   description?: string
   icon?: LucideIcon
   leading?: ReactNode
-  buttons?: ReactNode[]
+  buttons?: ReactNode[] | null
+  empty?: PageEmptyStateProps | null
   children: ReactNode
 }
 
@@ -19,6 +21,7 @@ export function PageWrapper({
   icon,
   leading,
   buttons,
+  empty,
   children,
 }: PageWrapperProps) {
   return (
@@ -26,7 +29,7 @@ export function PageWrapper({
       <HeaderPage title={title} description={description} icon={icon} leading={leading}>
         {buttons?.length ? <BtnList>{buttons}</BtnList> : null}
       </HeaderPage>
-      {children}
+      {empty != null ? <PageEmptyState {...empty} /> : children}
     </div>
   )
 }

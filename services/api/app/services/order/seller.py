@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi import HTTPException
 from sqlalchemy import select
@@ -17,27 +17,26 @@ from app.models.order.order_item import OrderItem
 from app.models.organization.organization import Organization
 from app.models.product.product import Product
 from app.models.user.user import User
-from app.schemas.order import OrderCreate
+from app.schemas.order import OrderCreate, OrderItemCreate
 from app.schemas.pagination import PageResult, PaginationParams
 from app.services import provider_seller_link as link_service
 from app.services.order.code import generate_next_order_code
 from app.services.order.helpers import attach_items_and_totals, attach_order_view
 
+_NIL_UUID = UUID(int=0)
+_TWOPLACES = Decimal("0.01")
 
-async def create_order(
+
+def _money(value: Decimal) -> Decimal:
+    return value.quantize(_TWOPLACES)
+
+
+async def _resolve_linked_products(
     session: AsyncSession,
     user: User,
     seller_organization_id: UUID,
-    data: OrderCreate,
-) -> Order:
-    await get_entity(
-        session,
-        Customer,
-        id=data.customer_id,
-        seller_organization_id=seller_organization_id,
-    )
-
-    product_ids = list(dict.fromkeys(item.product_id for item in data.items))
+    product_ids: list[UUID],
+) -> dict[UUID, Product]:
     provider_ids = await link_service.resolve_provider_ids(
         session,
         user,
@@ -55,6 +54,80 @@ async def create_order(
     products = {product.id: product for product in result.scalars().all()}
     if len(products) != len(product_ids):
         raise HTTPException(status_code=404, detail="Not found")
+    return products
+
+
+async def _build_order(
+    session: AsyncSession,
+    user: User,
+    seller_organization_id: UUID,
+    items_data: list[OrderItemCreate],
+    *,
+    customer_id: UUID = _NIL_UUID,
+    code: str = "",
+) -> tuple[Order, list[OrderItem]]:
+    product_ids = list(dict.fromkeys(item.product_id for item in items_data))
+    products = await _resolve_linked_products(
+        session,
+        user,
+        seller_organization_id,
+        product_ids,
+    )
+
+    order = Order(
+        id=uuid4(),
+        code=code,
+        seller_organization_id=seller_organization_id,
+        customer_id=customer_id,
+        status=OrderStatus.created,
+    )
+    items: list[OrderItem] = []
+    for item_data in items_data:
+        product = products[item_data.product_id]
+        items.append(
+            OrderItem(
+                order_id=order.id,
+                product_id=product.id,
+                provider_organization_id=product.organization_id,
+                unit_provider_price=_money(Decimal("0")),
+                seller_provider_price=_money(item_data.seller_provider_price),
+                customer_change=_money(item_data.customer_change),
+                quantity=item_data.quantity,
+                currency=product.currency,
+                status=OrderItemStatus.created,
+                seller_commission=_money(product.commission),
+            )
+        )
+    return order, items
+
+
+async def preview_order(
+    session: AsyncSession,
+    user: User,
+    seller_organization_id: UUID,
+    items_data: list[OrderItemCreate],
+) -> Order:
+    order, items = await _build_order(
+        session,
+        user,
+        seller_organization_id,
+        items_data,
+    )
+    return attach_order_view(order, items)
+
+
+async def create_order(
+    session: AsyncSession,
+    user: User,
+    seller_organization_id: UUID,
+    data: OrderCreate,
+) -> Order:
+    await get_entity(
+        session,
+        Customer,
+        id=data.customer_id,
+        seller_organization_id=seller_organization_id,
+    )
 
     await session.execute(
         select(Organization)
@@ -63,33 +136,16 @@ async def create_order(
     )
     code = await generate_next_order_code(session, seller_organization_id)
 
-    order = Order(
-        code=code,
-        seller_organization_id=seller_organization_id,
+    order, items = await _build_order(
+        session,
+        user,
+        seller_organization_id,
+        data.items,
         customer_id=data.customer_id,
-        status=OrderStatus.created,
+        code=code,
     )
     session.add(order)
-    await session.flush()
-
-    items: list[OrderItem] = []
-    for item_data in data.items:
-        product = products[item_data.product_id]
-        item = OrderItem(
-            order_id=order.id,
-            product_id=product.id,
-            provider_organization_id=product.organization_id,
-            unit_provider_price=Decimal("0"),
-            seller_provider_price=item_data.seller_provider_price,
-            customer_change=item_data.customer_change,
-            quantity=item_data.quantity,
-            currency=product.currency,
-            status=OrderItemStatus.created,
-            seller_commission=product.commission,
-        )
-        session.add(item)
-        items.append(item)
-
+    session.add_all(items)
     await session.commit()
     await session.refresh(order)
     for item in items:
