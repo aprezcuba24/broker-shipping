@@ -4,15 +4,15 @@
  * Broker API
  * OpenAPI spec version: 0.1.0
  */
-import type { ProductCreatePrice } from './productCreatePrice';
-import type { ProductCreateCommission } from './productCreateCommission';
 import type { Currency } from './currency';
 
 export interface ProductCreate {
   /** @maxLength 255 */
   name: string;
   tag_ids?: string[];
-  price?: ProductCreatePrice;
-  commission?: ProductCreateCommission;
+  /** @minimum 0 */
+  price?: number;
+  /** @minimum 0 */
+  commission?: number;
   currency?: Currency;
 }

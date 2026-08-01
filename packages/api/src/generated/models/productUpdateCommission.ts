@@ -5,4 +5,4 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ProductUpdateCommission = number | string | null;
+export type ProductUpdateCommission = number | null;

@@ -3876,8 +3876,7 @@
             "$ref": "#/components/schemas/Currency"
           },
           "amount": {
-            "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "integer",
             "title": "Amount"
           }
         },
@@ -3901,32 +3900,16 @@
             "title": "Quantity"
           },
           "seller_provider_price": {
-            "anyOf": [
-              {
-                "type": "number",
-                "minimum": 0.0
-              },
-              {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
-              }
-            ],
+            "type": "integer",
+            "minimum": 0.0,
             "title": "Seller Provider Price",
-            "default": "0"
+            "default": 0
           },
           "customer_change": {
-            "anyOf": [
-              {
-                "type": "number",
-                "minimum": 0.0
-              },
-              {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
-              }
-            ],
+            "type": "integer",
+            "minimum": 0.0,
             "title": "Customer Change",
-            "default": "0"
+            "default": 0
           }
         },
         "type": "object",
@@ -3959,18 +3942,15 @@
             "title": "Provider Organization Id"
           },
           "unit_provider_price": {
-            "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "integer",
             "title": "Unit Provider Price"
           },
           "seller_provider_price": {
-            "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "integer",
             "title": "Seller Provider Price"
           },
           "customer_change": {
-            "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "integer",
             "title": "Customer Change"
           },
           "quantity": {
@@ -3984,8 +3964,7 @@
             "$ref": "#/components/schemas/OrderItemStatus"
           },
           "seller_commission": {
-            "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "integer",
             "title": "Seller Commission"
           },
           "created_at": {
@@ -4353,32 +4332,16 @@
             "title": "Tag Ids"
           },
           "price": {
-            "anyOf": [
-              {
-                "type": "number",
-                "minimum": 0.0
-              },
-              {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
-              }
-            ],
+            "type": "integer",
+            "minimum": 0.0,
             "title": "Price",
-            "default": "0"
+            "default": 0
           },
           "commission": {
-            "anyOf": [
-              {
-                "type": "number",
-                "minimum": 0.0
-              },
-              {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
-              }
-            ],
+            "type": "integer",
+            "minimum": 0.0,
             "title": "Commission",
-            "default": "0"
+            "default": 0
           },
           "currency": {
             "$ref": "#/components/schemas/Currency",
@@ -4408,13 +4371,11 @@
             "title": "Organization Id"
           },
           "price": {
-            "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "integer",
             "title": "Price"
           },
           "commission": {
-            "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "integer",
             "title": "Commission"
           },
           "currency": {
@@ -4490,12 +4451,8 @@
           "price": {
             "anyOf": [
               {
-                "type": "number",
+                "type": "integer",
                 "minimum": 0.0
-              },
-              {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
               },
               {
                 "type": "null"
@@ -4506,12 +4463,8 @@
           "commission": {
             "anyOf": [
               {
-                "type": "number",
+                "type": "integer",
                 "minimum": 0.0
-              },
-              {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
               },
               {
                 "type": "null"

@@ -1,4 +1,3 @@
-from decimal import Decimal
 from uuid import uuid4
 
 import pytest
@@ -62,13 +61,13 @@ async def provider_order_ctx(
         organization_id=provider_a["id"],
         name="Product A",
         currency=Currency.cup,
-        commission=Decimal("1.00"),
+        commission=100,
     )
     product_b = await product_factory.build(
         organization_id=provider_b["id"],
         name="Product B",
         currency=Currency.usd,
-        commission=Decimal("2.00"),
+        commission=200,
     )
     customer = await customer_factory.build(seller_organization_id=seller_org["id"])
 
@@ -82,12 +81,12 @@ async def provider_order_ctx(
                 {
                     "product_id": product_a["id"],
                     "quantity": 2,
-                    "seller_provider_price": "10.00",
+                    "seller_provider_price": 1000,
                 },
                 {
                     "product_id": product_b["id"],
                     "quantity": 1,
-                    "seller_provider_price": "20.00",
+                    "seller_provider_price": 2000,
                 },
             ],
         },
@@ -177,7 +176,7 @@ async def test_provider_list_and_get_filters_own_items(
     assert page["items"][0]["id"] == provider_order_ctx["order_id"]
     assert len(page["items"][0]["items"]) == 1
     assert page["items"][0]["items"][0]["product_id"] == provider_order_ctx["product_a_id"]
-    assert page["items"][0]["totals"] == [{"currency": "cup", "amount": "20.00"}]
+    assert page["items"][0]["totals"] == [{"currency": "cup", "amount": 2000}]
 
     detail = await client.get(
         f"/orders/provider/{provider_order_ctx['order_id']}",
@@ -190,7 +189,7 @@ async def test_provider_list_and_get_filters_own_items(
     assert body["items"][0]["provider_organization_id"] == provider_order_ctx[
         "provider_a_id"
     ]
-    assert body["totals"] == [{"currency": "cup", "amount": "20.00"}]
+    assert body["totals"] == [{"currency": "cup", "amount": 2000}]
 
 
 async def test_provider_without_items_cannot_see_order(

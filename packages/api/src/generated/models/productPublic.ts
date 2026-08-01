@@ -12,10 +12,8 @@ export interface ProductPublic {
   id: string;
   name: string;
   organization_id: string;
-  /** @pattern ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$ */
-  price: string;
-  /** @pattern ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$ */
-  commission: string;
+  price: number;
+  commission: number;
   currency: Currency;
   created_at: string;
   updated_at: ProductPublicUpdatedAt;

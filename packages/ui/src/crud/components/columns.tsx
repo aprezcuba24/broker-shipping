@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
-import { formatMoney, formatPriceCents } from '../../lib/utils'
+import { formatMoney } from '../../lib/utils'
 import { ColumnType, type ColumnDef } from '../../components/data-table/types'
 
 type BaseColumnOptions<TData> = Omit<ColumnDef<TData>, 'type' | 'cell'> & {
@@ -56,9 +56,11 @@ export function moneyColumn<TData>(
   options: BaseColumnOptions<TData> & {
     /** When true, accessor value is already in cents. Default true. */
     cents?: boolean
+    /** Currency code for display. Default `"USD"`. */
+    currency?: string
   },
 ): ColumnDef<TData> {
-  const { cents = true, cell, ...rest } = options
+  const { cents = true, currency = 'USD', cell, ...rest } = options
   return {
     type: ColumnType.Number,
     align: rest.align ?? 'right',
@@ -71,7 +73,8 @@ export function moneyColumn<TData>(
         if (value === null || value === undefined || value === '') return '—'
         const amount = Number(value)
         if (!Number.isFinite(amount)) return String(value)
-        return formatPriceCents(cents ? amount : Math.round(amount * 100))
+        const centsValue = cents ? amount : Math.round(amount * 100)
+        return formatMoney(centsValue, currency)
       }),
   }
 }
@@ -102,9 +105,11 @@ export function currencyMoneyColumn<TData>(
         ) {
           return '—'
         }
+        const cents = Number(amount)
+        if (!Number.isFinite(cents)) return '—'
         return (
           <span className="tabular-nums text-sm">
-            {formatMoney(String(amount), currency)}
+            {formatMoney(cents, currency)}
           </span>
         )
       }),

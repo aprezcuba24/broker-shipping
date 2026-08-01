@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy import select
@@ -15,7 +14,7 @@ from app.schemas.order import OrderCurrencyTotal
 
 
 def compute_order_totals(items: list[OrderItem]) -> list[OrderCurrencyTotal]:
-    amounts: dict[Currency, Decimal] = defaultdict(lambda: Decimal("0"))
+    amounts: dict[Currency, int] = defaultdict(int)
     for item in items:
         amounts[item.currency] += item.seller_provider_price * item.quantity
     return [

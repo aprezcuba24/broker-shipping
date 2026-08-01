@@ -13,17 +13,13 @@ export interface OrderItemPublic {
   order_id: string;
   product_id: string;
   provider_organization_id: string;
-  /** @pattern ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$ */
-  unit_provider_price: string;
-  /** @pattern ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$ */
-  seller_provider_price: string;
-  /** @pattern ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$ */
-  customer_change: string;
+  unit_provider_price: number;
+  seller_provider_price: number;
+  customer_change: number;
   quantity: number;
   currency: Currency;
   status: OrderItemStatus;
-  /** @pattern ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$ */
-  seller_commission: string;
+  seller_commission: number;
   created_at: string;
   updated_at: OrderItemPublicUpdatedAt;
 }

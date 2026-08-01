@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from decimal import Decimal
 from uuid import UUID, uuid4
 
 from fastapi import HTTPException
@@ -24,11 +23,6 @@ from app.services.order.code import generate_next_order_code
 from app.services.order.helpers import attach_items_and_totals, attach_order_view
 
 _NIL_UUID = UUID(int=0)
-_TWOPLACES = Decimal("0.01")
-
-
-def _money(value: Decimal) -> Decimal:
-    return value.quantize(_TWOPLACES)
 
 
 async def _resolve_linked_products(
@@ -94,13 +88,13 @@ async def _build_order(
                 order_id=order.id,
                 product_id=product.id,
                 provider_organization_id=product.organization_id,
-                unit_provider_price=_money(product.price),
-                seller_provider_price=_money(seller_provider_price),
-                customer_change=_money(item_data.customer_change),
+                unit_provider_price=product.price,
+                seller_provider_price=seller_provider_price,
+                customer_change=item_data.customer_change,
                 quantity=item_data.quantity,
                 currency=product.currency,
                 status=OrderItemStatus.created,
-                seller_commission=_money(product.commission),
+                seller_commission=product.commission,
             )
         )
     return order, items

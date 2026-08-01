@@ -1,13 +1,12 @@
-from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy import (
+    BigInteger,
     CheckConstraint,
     Column,
     Enum as SAEnum,
     ForeignKey,
     Index,
-    Numeric,
 )
 from sqlmodel import Field
 
@@ -43,15 +42,15 @@ class OrderItem(EntityModel, table=True):
     )
     product_id: UUID = Field(foreign_key="product.id", index=True)
     provider_organization_id: UUID = Field(foreign_key="organization.id", index=True)
-    unit_provider_price: Decimal = Field(
-        sa_column=Column(Numeric(12, 2), nullable=False),
+    unit_provider_price: int = Field(
+        sa_column=Column(BigInteger, nullable=False),
     )
-    seller_provider_price: Decimal = Field(
-        sa_column=Column(Numeric(12, 2), nullable=False),
+    seller_provider_price: int = Field(
+        sa_column=Column(BigInteger, nullable=False),
     )
-    customer_change: Decimal = Field(
-        default=Decimal("0"),
-        sa_column=Column(Numeric(12, 2), nullable=False, server_default="0"),
+    customer_change: int = Field(
+        default=0,
+        sa_column=Column(BigInteger, nullable=False, server_default="0"),
     )
     quantity: int
     currency: Currency = Field(
@@ -75,6 +74,6 @@ class OrderItem(EntityModel, table=True):
             nullable=False,
         ),
     )
-    seller_commission: Decimal = Field(
-        sa_column=Column(Numeric(12, 2), nullable=False),
+    seller_commission: int = Field(
+        sa_column=Column(BigInteger, nullable=False),
     )

@@ -8,6 +8,5 @@ import type { Currency } from './currency';
 
 export interface OrderCurrencyTotal {
   currency: Currency;
-  /** @pattern ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$ */
-  amount: string;
+  amount: number;
 }

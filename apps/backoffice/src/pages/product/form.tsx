@@ -9,23 +9,18 @@ import {
   FieldGroup,
   FieldLabel,
   Input,
+  MoneyInput,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
   TagsField,
+  moneyCentsSchema,
   useFormSubmitHandle,
   type EntityFormProps,
   type TagOption,
 } from '@broker/ui'
-
-const moneySchema = z
-  .string()
-  .trim()
-  .min(1, 'Obligatorio')
-  .refine((value) => /^\d+(\.\d{1,2})?$/.test(value), 'Formato inválido')
-  .refine((value) => Number(value) >= 0, 'Debe ser mayor o igual a 0')
 
 export const productFormSchema = z.object({
   name: z
@@ -33,9 +28,9 @@ export const productFormSchema = z.object({
     .trim()
     .min(1, 'El nombre es obligatorio')
     .max(255, 'Máximo 255 caracteres'),
-  tag_ids: z.array(z.string().uuid()).default([]),
-  price: moneySchema,
-  commission: moneySchema,
+  tag_ids: z.array(z.string().uuid()),
+  price: moneyCentsSchema,
+  commission: moneyCentsSchema,
   currency: z.enum([Currency.cup, Currency.usd]),
 })
 
@@ -44,8 +39,8 @@ export type ProductFormValues = z.infer<typeof productFormSchema>
 export const productFormDefaultValues: ProductFormValues = {
   name: '',
   tag_ids: [],
-  price: '0',
-  commission: '0',
+  price: 0,
+  commission: 0,
   currency: Currency.cup,
 }
 
@@ -96,13 +91,10 @@ export function ProductForm({
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="product-price">Precio</FieldLabel>
-              <Input
-                {...field}
+              <MoneyInput
                 id="product-price"
-                type="number"
-                inputMode="decimal"
-                min={0}
-                step="0.01"
+                value={field.value}
+                onValueChange={field.onChange}
                 disabled={isSubmitting}
                 aria-invalid={fieldState.invalid}
               />
@@ -117,13 +109,10 @@ export function ProductForm({
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="product-commission">Comisión</FieldLabel>
-              <Input
-                {...field}
+              <MoneyInput
                 id="product-commission"
-                type="number"
-                inputMode="decimal"
-                min={0}
-                step="0.01"
+                value={field.value}
+                onValueChange={field.onChange}
                 disabled={isSubmitting}
                 aria-invalid={fieldState.invalid}
               />

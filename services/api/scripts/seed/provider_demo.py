@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from decimal import Decimal
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.lib.security.passwords import hash_password
@@ -52,15 +50,15 @@ async def run(session: AsyncSession) -> None:
             Product(
                 name=PRODUCT_NAME_CUP,
                 organization_id=org.id,
-                price=Decimal("100.00"),
-                commission=Decimal("5.00"),
+                price=10000,
+                commission=500,
                 currency=Currency.cup,
             ),
             Product(
                 name=PRODUCT_NAME_USD,
                 organization_id=org.id,
-                price=Decimal("25.00"),
-                commission=Decimal("2.50"),
+                price=2500,
+                commission=250,
                 currency=Currency.usd,
             ),
         ],

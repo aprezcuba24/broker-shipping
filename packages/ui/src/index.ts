@@ -1,4 +1,11 @@
-export { cn, formatMoney, formatPriceCents, toPriceCents } from './lib/utils'
+export {
+  cn,
+  formatMoney,
+  centsToInputValue,
+  parseMoneyInput,
+  isValidMoneyInput,
+  moneyCentsSchema,
+} from './lib/utils'
 export { initialsFromName } from './lib/initials'
 
 export { LoginForm, AuthFormLink } from './components/auth/login-form'
@@ -91,6 +98,8 @@ export type {
 } from './crud'
 export { DebouncedInput } from './components/debounced-input'
 export type { DebouncedInputProps } from './components/debounced-input'
+export { MoneyInput } from './components/money-input'
+export type { MoneyInputProps } from './components/money-input'
 export { ListFilterBar } from './components/list-filter-bar'
 export type { ListFilterBarProps } from './components/list-filter-bar'
 export { BtnConfirm } from './components/btn-confirm'

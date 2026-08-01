@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,8 +14,8 @@ async def create_product(
     organization_id: UUID | str,
     name: str | None = None,
     currency: Currency | None = None,
-    commission: Decimal | None = None,
-    price: Decimal | None = None,
+    commission: int | None = None,
+    price: int | None = None,
 ) -> dict:
     oid = (
         organization_id
@@ -27,8 +26,8 @@ async def create_product(
         name=name if name is not None else "Factory product",
         organization_id=oid,
         currency=currency if currency is not None else Currency.cup,
-        commission=commission if commission is not None else Decimal("0"),
-        price=price if price is not None else Decimal("0"),
+        commission=commission if commission is not None else 0,
+        price=price if price is not None else 0,
     )
     session.add(entity)
     await session.flush()
@@ -47,8 +46,8 @@ class ProductFactory:
         organization_id: UUID | str,
         name: str | None = None,
         currency: Currency | None = None,
-        commission: Decimal | None = None,
-        price: Decimal | None = None,
+        commission: int | None = None,
+        price: int | None = None,
     ) -> dict:
         self._n += 1
         final_name = name or f"SKU-{self._n:04d}"

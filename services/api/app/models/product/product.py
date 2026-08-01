@@ -1,6 +1,4 @@
-from decimal import Decimal
-
-from sqlalchemy import Column, Enum as SAEnum, Numeric
+from sqlalchemy import BigInteger, Column, Enum as SAEnum
 from sqlmodel import Field
 
 from app.lib.persistence.organization_entity_model import OrganizationEntityModel
@@ -23,11 +21,11 @@ class Product(OrganizationEntityModel, table=True):
             server_default="cup",
         ),
     )
-    price: Decimal = Field(
-        default=Decimal("0"),
-        sa_column=Column(Numeric(12, 2), nullable=False, server_default="0"),
+    price: int = Field(
+        default=0,
+        sa_column=Column(BigInteger, nullable=False, server_default="0"),
     )
-    commission: Decimal = Field(
-        default=Decimal("0"),
-        sa_column=Column(Numeric(12, 2), nullable=False, server_default="0"),
+    commission: int = Field(
+        default=0,
+        sa_column=Column(BigInteger, nullable=False, server_default="0"),
     )

@@ -1,5 +1,4 @@
 from datetime import datetime
-from decimal import Decimal
 from typing import Annotated
 from uuid import UUID
 
@@ -11,8 +10,8 @@ from app.models.order.enums import Currency, OrderItemStatus, OrderStatus
 class OrderItemCreate(BaseModel):
     product_id: UUID
     quantity: int = Field(gt=0)
-    seller_provider_price: Decimal = Field(default=Decimal("0"), ge=0)
-    customer_change: Decimal = Field(default=Decimal("0"), ge=0)
+    seller_provider_price: int = Field(default=0, ge=0)
+    customer_change: int = Field(default=0, ge=0)
 
 
 OrderPreviewItems = Annotated[list[OrderItemCreate], Field(min_length=1)]
@@ -34,20 +33,20 @@ class OrderItemPublic(BaseModel):
     order_id: UUID
     product_id: UUID
     provider_organization_id: UUID
-    unit_provider_price: Decimal
-    seller_provider_price: Decimal
-    customer_change: Decimal
+    unit_provider_price: int
+    seller_provider_price: int
+    customer_change: int
     quantity: int
     currency: Currency
     status: OrderItemStatus
-    seller_commission: Decimal
+    seller_commission: int
     created_at: datetime
     updated_at: datetime | None
 
 
 class OrderCurrencyTotal(BaseModel):
     currency: Currency
-    amount: Decimal
+    amount: int
 
 
 class OrderPublic(BaseModel):
