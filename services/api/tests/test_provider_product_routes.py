@@ -39,12 +39,20 @@ async def test_create_list_get_patch_delete_product(
         "/products/provider/",
         params=params,
         headers=headers,
-        json={"name": "  Arroz 1kg  "},
+        json={
+            "name": "  Arroz 1kg  ",
+            "price": "12.50",
+            "commission": "1.25",
+            "currency": "cup",
+        },
     )
     assert r_create.status_code == 201
     body = r_create.json()
     assert body["name"] == "Arroz 1kg"
     assert body["organization_id"] == provider_context["organization_id"]
+    assert body["price"] == "12.50"
+    assert body["commission"] == "1.25"
+    assert body["currency"] == "cup"
     assert body["tags"] == []
     product_id = body["id"]
 
@@ -60,6 +68,8 @@ async def test_create_list_get_patch_delete_product(
     assert body_list["page_size"] == 20
     assert body_list["pages"] == 1
     assert [p["id"] for p in body_list["items"]] == [product_id]
+    assert body_list["items"][0]["price"] == "12.50"
+    assert body_list["items"][0]["commission"] == "1.25"
 
     r_get = await client.get(
         f"/products/provider/{product_id}",
@@ -73,10 +83,19 @@ async def test_create_list_get_patch_delete_product(
         f"/products/provider/{product_id}",
         params=params,
         headers=headers,
-        json={"name": "Arroz premium"},
+        json={
+            "name": "Arroz premium",
+            "price": "15.00",
+            "commission": "2.00",
+            "currency": "usd",
+        },
     )
     assert r_patch.status_code == 200
-    assert r_patch.json()["name"] == "Arroz premium"
+    patched = r_patch.json()
+    assert patched["name"] == "Arroz premium"
+    assert patched["price"] == "15.00"
+    assert patched["commission"] == "2.00"
+    assert patched["currency"] == "usd"
 
     r_delete = await client.delete(
         f"/products/provider/{product_id}",

@@ -6,8 +6,14 @@
  */
 import type { ProductUpdateName } from './productUpdateName';
 import type { ProductUpdateTagIds } from './productUpdateTagIds';
+import type { ProductUpdatePrice } from './productUpdatePrice';
+import type { ProductUpdateCommission } from './productUpdateCommission';
+import type { ProductUpdateCurrency } from './productUpdateCurrency';
 
 export interface ProductUpdate {
   name?: ProductUpdateName;
   tag_ids?: ProductUpdateTagIds;
+  price?: ProductUpdatePrice;
+  commission?: ProductUpdateCommission;
+  currency?: ProductUpdateCurrency;
 }

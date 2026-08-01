@@ -1,6 +1,5 @@
 import type { OrderCurrencyTotal } from '@broker/api'
-
-import { formatMoney } from './cart-utils'
+import { formatMoney } from '@broker/ui'
 
 export type CartOrderTotalsProps = {
   totals: OrderCurrencyTotal[]

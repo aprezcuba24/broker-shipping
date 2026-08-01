@@ -84,13 +84,18 @@ async def _build_order(
     items: list[OrderItem] = []
     for item_data in items_data:
         product = products[item_data.product_id]
+        seller_provider_price = (
+            item_data.seller_provider_price
+            if "seller_provider_price" in item_data.model_fields_set
+            else product.price
+        )
         items.append(
             OrderItem(
                 order_id=order.id,
                 product_id=product.id,
                 provider_organization_id=product.organization_id,
-                unit_provider_price=_money(Decimal("0")),
-                seller_provider_price=_money(item_data.seller_provider_price),
+                unit_provider_price=_money(product.price),
+                seller_provider_price=_money(seller_provider_price),
                 customer_change=_money(item_data.customer_change),
                 quantity=item_data.quantity,
                 currency=product.currency,

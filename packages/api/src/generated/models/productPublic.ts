@@ -4,6 +4,7 @@
  * Broker API
  * OpenAPI spec version: 0.1.0
  */
+import type { Currency } from './currency';
 import type { ProductPublicUpdatedAt } from './productPublicUpdatedAt';
 import type { TagPublic } from './tagPublic';
 
@@ -11,6 +12,11 @@ export interface ProductPublic {
   id: string;
   name: string;
   organization_id: string;
+  /** @pattern ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$ */
+  price: string;
+  /** @pattern ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$ */
+  commission: string;
+  currency: Currency;
   created_at: string;
   updated_at: ProductPublicUpdatedAt;
   tags?: TagPublic[];

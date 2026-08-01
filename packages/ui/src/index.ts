@@ -1,4 +1,4 @@
-export { cn, formatPriceCents, toPriceCents } from './lib/utils'
+export { cn, formatMoney, formatPriceCents, toPriceCents } from './lib/utils'
 export { initialsFromName } from './lib/initials'
 
 export { LoginForm, AuthFormLink } from './components/auth/login-form'
@@ -49,6 +49,7 @@ export {
   updatedAtColumn,
   numberColumn,
   moneyColumn,
+  currencyMoneyColumn,
   booleanColumn,
   badgeColumn,
   componentColumn,

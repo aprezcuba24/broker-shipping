@@ -15,3 +15,8 @@ export function formatPriceCents(cents: number): string {
 export function toPriceCents(price: number): number {
   return Math.round(price * 100)
 }
+
+/** Format a decimal amount with a currency code, e.g. `"12.50 CUP"`. */
+export function formatMoney(amount: string | number, currency: string): string {
+  return `${amount} ${currency.toUpperCase()}`
+}

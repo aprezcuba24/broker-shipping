@@ -1,10 +1,10 @@
 import type { OrderItemPublic } from '@broker/api'
-import { componentColumn, textColumn, type ColumnDef } from '@broker/ui'
+import { componentColumn, formatMoney, textColumn, type ColumnDef } from '@broker/ui'
 
 import { ProductCartControl } from '@/components/product-cart-control'
 import type { CartItem } from '@/stores/cart-store'
 
-import { formatMoney, lineSubtotal } from './cart-utils'
+import { lineSubtotal } from './cart-utils'
 
 export type BuildCartColumnsOptions = {
   getProviderName: (id: string | null | undefined) => string
@@ -24,9 +24,6 @@ export function buildCartColumns({
     }),
     componentColumn<CartItem>('provider', 'Proveedor', (row) => (
       <span>{getProviderName(row.product.organization_id)}</span>
-    )),
-    componentColumn<CartItem>('quantity', 'Cantidad', (row) => (
-      <ProductCartControl product={row.product} />
     )),
     componentColumn<CartItem>('currency', 'Moneda', (row) => {
       const preview = previewByProductId.get(row.product.id)
@@ -60,5 +57,8 @@ export function buildCartColumns({
         </span>
       )
     }),
+    componentColumn<CartItem>('quantity', 'Cantidad', (row) => (
+      <ProductCartControl product={row.product} />
+    )),
   ]
 }

@@ -23,6 +23,10 @@ class Product(OrganizationEntityModel, table=True):
             server_default="cup",
         ),
     )
+    price: Decimal = Field(
+        default=Decimal("0"),
+        sa_column=Column(Numeric(12, 2), nullable=False, server_default="0"),
+    )
     commission: Decimal = Field(
         default=Decimal("0"),
         sa_column=Column(Numeric(12, 2), nullable=False, server_default="0"),

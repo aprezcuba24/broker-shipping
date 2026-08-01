@@ -6,6 +6,7 @@ import {
 import {
   BadgeList,
   BtnLink,
+  formatMoney,
   PageLoading,
   PageMessage,
   PageWrapper,
@@ -66,6 +67,18 @@ export function ProductDetailPage() {
         <div className="space-y-1">
           <dt className="text-sm font-medium text-muted-foreground">Proveedor</dt>
           <dd className="text-sm">{getProviderName(product.organization_id)}</dd>
+        </div>
+        <div className="space-y-1">
+          <dt className="text-sm font-medium text-muted-foreground">Precio</dt>
+          <dd className="text-sm tabular-nums">
+            {formatMoney(product.price, product.currency)}
+          </dd>
+        </div>
+        <div className="space-y-1">
+          <dt className="text-sm font-medium text-muted-foreground">Comisión</dt>
+          <dd className="text-sm tabular-nums">
+            {formatMoney(product.commission, product.currency)}
+          </dd>
         </div>
         <div className="space-y-1 sm:col-span-2">
           <dt className="text-sm font-medium text-muted-foreground">Etiquetas</dt>

@@ -16,6 +16,7 @@ async def create_product(
     name: str | None = None,
     currency: Currency | None = None,
     commission: Decimal | None = None,
+    price: Decimal | None = None,
 ) -> dict:
     oid = (
         organization_id
@@ -27,6 +28,7 @@ async def create_product(
         organization_id=oid,
         currency=currency if currency is not None else Currency.cup,
         commission=commission if commission is not None else Decimal("0"),
+        price=price if price is not None else Decimal("0"),
     )
     session.add(entity)
     await session.flush()
@@ -46,6 +48,7 @@ class ProductFactory:
         name: str | None = None,
         currency: Currency | None = None,
         commission: Decimal | None = None,
+        price: Decimal | None = None,
     ) -> dict:
         self._n += 1
         final_name = name or f"SKU-{self._n:04d}"
@@ -55,4 +58,5 @@ class ProductFactory:
             name=final_name,
             currency=currency,
             commission=commission,
+            price=price,
         )

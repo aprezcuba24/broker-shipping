@@ -59,12 +59,14 @@ async def seller_order_ctx(
         name="Arroz",
         currency=Currency.cup,
         commission=Decimal("1.50"),
+        price=Decimal("8.00"),
     )
     product_usd = await product_factory.build(
         organization_id=provider_usd["id"],
         name="Phone",
         currency=Currency.usd,
         commission=Decimal("5.00"),
+        price=Decimal("20.00"),
     )
     customer = await customer_factory.build(seller_organization_id=seller_org["id"])
     other_customer = await customer_factory.build(
@@ -126,7 +128,7 @@ async def test_create_order_with_mixed_currencies(
     assert cup_item["provider_organization_id"] == seller_order_ctx["provider_cup_id"]
     assert cup_item["currency"] == "cup"
     assert cup_item["seller_commission"] == "1.50"
-    assert cup_item["unit_provider_price"] == "0.00"
+    assert cup_item["unit_provider_price"] == "8.00"
     assert cup_item["seller_provider_price"] == "10.00"
     assert cup_item["customer_change"] == "1.00"
     assert cup_item["quantity"] == 2
@@ -136,6 +138,7 @@ async def test_create_order_with_mixed_currencies(
     assert usd_item["provider_organization_id"] == seller_order_ctx["provider_usd_id"]
     assert usd_item["currency"] == "usd"
     assert usd_item["seller_commission"] == "5.00"
+    assert usd_item["unit_provider_price"] == "20.00"
     assert usd_item["customer_change"] == "0.00"
 
     totals = {t["currency"]: t["amount"] for t in body["totals"]}
@@ -162,8 +165,9 @@ async def test_create_order_defaults_seller_provider_price(
     )
     assert r.status_code == 201
     body = r.json()
-    assert body["items"][0]["seller_provider_price"] == "0.00"
-    assert body["totals"] == [{"currency": "cup", "amount": "0.00"}]
+    assert body["items"][0]["unit_provider_price"] == "8.00"
+    assert body["items"][0]["seller_provider_price"] == "8.00"
+    assert body["totals"] == [{"currency": "cup", "amount": "24.00"}]
 
 
 async def test_create_order_increments_code_per_seller(
@@ -176,7 +180,7 @@ async def test_create_order_increments_code_per_seller(
             {
                 "product_id": seller_order_ctx["product_cup_id"],
                 "quantity": 1,
-                "seller_provider_price": "1.00",
+                "seller_provider_price": "10.00",
             },
         ],
     }
@@ -263,12 +267,12 @@ async def test_list_and_get_orders(
                 {
                     "product_id": seller_order_ctx["product_cup_id"],
                     "quantity": 2,
-                    "seller_provider_price": "4.00",
+                    "seller_provider_price": "10.00",
                 },
                 {
                     "product_id": seller_order_ctx["product_usd_id"],
                     "quantity": 1,
-                    "seller_provider_price": "9.00",
+                    "seller_provider_price": "25.00",
                 },
             ],
         },
@@ -288,8 +292,8 @@ async def test_list_and_get_orders(
     assert len(page["items"]) == 1
     assert page["items"][0]["id"] == order_id
     assert {t["currency"]: t["amount"] for t in page["items"][0]["totals"]} == {
-        "cup": "8.00",
-        "usd": "9.00",
+        "cup": "20.00",
+        "usd": "25.00",
     }
 
     detail = await client.get(
@@ -302,8 +306,8 @@ async def test_list_and_get_orders(
     assert body["id"] == order_id
     assert len(body["items"]) == 2
     assert {t["currency"]: t["amount"] for t in body["totals"]} == {
-        "cup": "8.00",
-        "usd": "9.00",
+        "cup": "20.00",
+        "usd": "25.00",
     }
 
 
@@ -321,7 +325,7 @@ async def test_seller_cannot_see_other_seller_order(
                 {
                     "product_id": seller_order_ctx["product_cup_id"],
                     "quantity": 1,
-                    "seller_provider_price": "1.00",
+                    "seller_provider_price": "10.00",
                 },
             ],
         },
@@ -504,7 +508,7 @@ async def test_preview_order_with_mixed_currencies(
     assert cup_item["provider_organization_id"] == seller_order_ctx["provider_cup_id"]
     assert cup_item["currency"] == "cup"
     assert cup_item["seller_commission"] == "1.50"
-    assert cup_item["unit_provider_price"] == "0.00"
+    assert cup_item["unit_provider_price"] == "8.00"
     assert cup_item["seller_provider_price"] == "10.00"
     assert cup_item["customer_change"] == "1.00"
     assert cup_item["quantity"] == 2
@@ -514,6 +518,7 @@ async def test_preview_order_with_mixed_currencies(
     assert usd_item["provider_organization_id"] == seller_order_ctx["provider_usd_id"]
     assert usd_item["currency"] == "usd"
     assert usd_item["seller_commission"] == "5.00"
+    assert usd_item["unit_provider_price"] == "20.00"
     assert usd_item["customer_change"] == "0.00"
 
     totals = {t["currency"]: t["amount"] for t in body["totals"]}
@@ -537,8 +542,9 @@ async def test_preview_order_defaults_seller_provider_price(
     )
     assert r.status_code == 200
     body = r.json()
-    assert body["items"][0]["seller_provider_price"] == "0.00"
-    assert body["totals"] == [{"currency": "cup", "amount": "0.00"}]
+    assert body["items"][0]["unit_provider_price"] == "8.00"
+    assert body["items"][0]["seller_provider_price"] == "8.00"
+    assert body["totals"] == [{"currency": "cup", "amount": "24.00"}]
 
 
 async def test_preview_order_rejects_unlinked_product(

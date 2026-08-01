@@ -5,6 +5,7 @@ import {
   BtnList,
   componentColumn,
   createdAtColumn,
+  currencyMoneyColumn,
   DeleteRowButton,
   EditRowButton,
   textColumn,
@@ -25,6 +26,8 @@ export function buildProductColumns({
 }: BuildProductColumnsOptions): ColumnDef<ProductPublic>[] {
   return [
     textColumn<ProductPublic>({ id: 'name', header: 'Nombre' }),
+    currencyMoneyColumn<ProductPublic>({ id: 'price', header: 'Precio' }),
+    currencyMoneyColumn<ProductPublic>({ id: 'commission', header: 'Comisión' }),
     componentColumn<ProductPublic>('tags', 'Etiquetas', (row) => (
       <BadgeList
         items={(row.tags ?? []).map((tag) => ({ id: tag.id, label: tag.name }))}

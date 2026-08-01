@@ -4351,6 +4351,38 @@
             },
             "type": "array",
             "title": "Tag Ids"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              }
+            ],
+            "title": "Price",
+            "default": "0"
+          },
+          "commission": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              }
+            ],
+            "title": "Commission",
+            "default": "0"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/Currency",
+            "default": "cup"
           }
         },
         "type": "object",
@@ -4374,6 +4406,19 @@
             "type": "string",
             "format": "uuid",
             "title": "Organization Id"
+          },
+          "price": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Price"
+          },
+          "commission": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Commission"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/Currency"
           },
           "created_at": {
             "type": "string",
@@ -4405,6 +4450,9 @@
           "id",
           "name",
           "organization_id",
+          "price",
+          "commission",
+          "currency",
           "created_at",
           "updated_at"
         ],
@@ -4438,6 +4486,48 @@
               }
             ],
             "title": "Tag Ids"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "commission": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commission"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Currency"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",

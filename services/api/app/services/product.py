@@ -70,6 +70,9 @@ async def create_product(
     product = Product(
         name=data.name,
         organization_id=organization_id,
+        price=data.price,
+        commission=data.commission,
+        currency=data.currency,
     )
     session.add(product)
     await session.flush()

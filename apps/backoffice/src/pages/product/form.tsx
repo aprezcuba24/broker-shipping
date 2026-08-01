@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
+import { Currency } from '@broker/api'
 
 import {
   Field,
@@ -8,11 +9,23 @@ import {
   FieldGroup,
   FieldLabel,
   Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   TagsField,
   useFormSubmitHandle,
   type EntityFormProps,
   type TagOption,
 } from '@broker/ui'
+
+const moneySchema = z
+  .string()
+  .trim()
+  .min(1, 'Obligatorio')
+  .refine((value) => /^\d+(\.\d{1,2})?$/.test(value), 'Formato inválido')
+  .refine((value) => Number(value) >= 0, 'Debe ser mayor o igual a 0')
 
 export const productFormSchema = z.object({
   name: z
@@ -21,6 +34,9 @@ export const productFormSchema = z.object({
     .min(1, 'El nombre es obligatorio')
     .max(255, 'Máximo 255 caracteres'),
   tag_ids: z.array(z.string().uuid()).default([]),
+  price: moneySchema,
+  commission: moneySchema,
+  currency: z.enum([Currency.cup, Currency.usd]),
 })
 
 export type ProductFormValues = z.infer<typeof productFormSchema>
@@ -28,6 +44,9 @@ export type ProductFormValues = z.infer<typeof productFormSchema>
 export const productFormDefaultValues: ProductFormValues = {
   name: '',
   tag_ids: [],
+  price: '0',
+  commission: '0',
+  currency: Currency.cup,
 }
 
 export type ProductFormProps = EntityFormProps<ProductFormValues> & {
@@ -66,6 +85,76 @@ export function ProductForm({
                 disabled={isSubmitting}
                 aria-invalid={fieldState.invalid}
               />
+              {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+            </Field>
+          )}
+        />
+
+        <Controller
+          name="price"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="product-price">Precio</FieldLabel>
+              <Input
+                {...field}
+                id="product-price"
+                type="number"
+                inputMode="decimal"
+                min={0}
+                step="0.01"
+                disabled={isSubmitting}
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+            </Field>
+          )}
+        />
+
+        <Controller
+          name="commission"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="product-commission">Comisión</FieldLabel>
+              <Input
+                {...field}
+                id="product-commission"
+                type="number"
+                inputMode="decimal"
+                min={0}
+                step="0.01"
+                disabled={isSubmitting}
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+            </Field>
+          )}
+        />
+
+        <Controller
+          name="currency"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="product-currency">Moneda</FieldLabel>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isSubmitting}
+              >
+                <SelectTrigger
+                  id="product-currency"
+                  className="w-full"
+                  aria-invalid={fieldState.invalid}
+                >
+                  <SelectValue placeholder="Seleccionar moneda" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={Currency.cup}>CUP</SelectItem>
+                  <SelectItem value={Currency.usd}>USD</SelectItem>
+                </SelectContent>
+              </Select>
               {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
             </Field>
           )}

@@ -6,6 +6,7 @@ import {
   Button,
   componentColumn,
   createdAtColumn,
+  currencyMoneyColumn,
   textColumn,
   updatedAtColumn,
   type ColumnDef,
@@ -28,6 +29,8 @@ export function buildProductColumns({
     componentColumn<ProductPublic>('provider', 'Proveedor', (row) => (
       <span>{providerNameById.get(row.organization_id) ?? '—'}</span>
     )),
+    currencyMoneyColumn<ProductPublic>({ id: 'price', header: 'Precio' }),
+    currencyMoneyColumn<ProductPublic>({ id: 'commission', header: 'Comisión' }),
     componentColumn<ProductPublic>('tags', 'Etiquetas', (row) => (
       <BadgeList
         items={(row.tags ?? []).map((tag) => ({ id: tag.id, label: tag.name }))}
