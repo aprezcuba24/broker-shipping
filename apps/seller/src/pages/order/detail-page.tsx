@@ -7,7 +7,6 @@ import {
 import {
   buildSellerOrderItemColumns,
   OrderDetailPage as OrderDetailView,
-  orderDetailCustomerFields,
   OrderItemsTable,
 } from '@broker/ui'
 import { useCallback } from 'react'
@@ -47,7 +46,6 @@ export function OrderDetailPage() {
       isLoading={!orderId || orderQuery.isLoading}
       isError={orderQuery.isError}
       order={orderQuery.data}
-      extraFields={orderDetailCustomerFields}
     >
       <div className="space-y-2">
         <h2 className="text-sm font-medium">Ítems</h2>

@@ -49,7 +49,7 @@ export const orderDetailBaseFields: DetailSectionField<OrderPublic>[] = [
 
 export const orderDetailCustomerFields: DetailSectionField<OrderPublic>[] = [
   {
-    title: 'Cliente',
+    title: 'Nombre',
     accessor: (order) => order.customer?.name,
   },
   {
@@ -63,6 +63,7 @@ export const orderDetailCustomerFields: DetailSectionField<OrderPublic>[] = [
   {
     title: 'Dirección',
     accessor: (order) => order.customer?.address?.address,
+    fullWidth: true,
   },
 ]
 
@@ -72,7 +73,6 @@ export type OrderDetailPageProps = {
   order: OrderPublic | undefined
   backTo?: string
   description?: string
-  extraFields?: DetailSectionField<OrderPublic>[]
   children?: ReactNode
 }
 
@@ -82,7 +82,6 @@ export function OrderDetailPage({
   order,
   backTo = '/orders',
   description = 'Detalle de la orden.',
-  extraFields = [],
   children,
 }: OrderDetailPageProps) {
   if (isLoading) {
@@ -100,8 +99,6 @@ export function OrderDetailPage({
     )
   }
 
-  const fields = [...orderDetailBaseFields, ...extraFields]
-
   return (
     <PageWrapper
       title={order.code}
@@ -118,7 +115,8 @@ export function OrderDetailPage({
       }
     >
       <div className="space-y-6">
-        <DetailSection title="Resumen" data={order} fields={fields} />
+        <DetailSection title="Resumen" data={order} fields={orderDetailBaseFields} />
+        <DetailSection title="Cliente" data={order} fields={orderDetailCustomerFields} />
         {children}
       </div>
     </PageWrapper>

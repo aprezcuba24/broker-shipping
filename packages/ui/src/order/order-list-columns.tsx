@@ -13,6 +13,20 @@ import {
 import { formatMoney } from '../lib/utils'
 import { OrderStatusBadge } from './status'
 
+function buildCustomerColumns(): ColumnDef<OrderPublic>[] {
+  return [
+    componentColumn<OrderPublic>('customer', 'Cliente', (row) => (
+      <span>{row.customer?.name ?? '—'}</span>
+    )),
+    componentColumn<OrderPublic>('ci', 'CI', (row) => (
+      <span>{row.customer?.ci ?? '—'}</span>
+    )),
+    componentColumn<OrderPublic>('phone', 'Teléfono', (row) => (
+      <span>{row.customer?.phone ?? '—'}</span>
+    )),
+  ]
+}
+
 function buildSharedOrderColumns(): ColumnDef<OrderPublic>[] {
   return [
     textColumn<OrderPublic>({ id: 'code', header: 'Código', accessor: 'code' }),
@@ -47,23 +61,16 @@ function buildSharedOrderColumns(): ColumnDef<OrderPublic>[] {
   ]
 }
 
-export function buildSellerOrderColumns(): ColumnDef<OrderPublic>[] {
+function buildOrderColumnsWithCustomer(): ColumnDef<OrderPublic>[] {
   const [code, status, totals, created, actions] = buildSharedOrderColumns()
-  return [
-    code,
-    componentColumn<OrderPublic>('customer', 'Cliente', (row) => (
-      <span>{row.customer?.name ?? '—'}</span>
-    )),
-    componentColumn<OrderPublic>('phone', 'Teléfono', (row) => (
-      <span>{row.customer?.phone ?? '—'}</span>
-    )),
-    status,
-    totals,
-    created,
-    actions,
-  ]
+  const [customer, ci, phone] = buildCustomerColumns()
+  return [code, customer, ci, phone, status, totals, created, actions]
+}
+
+export function buildSellerOrderColumns(): ColumnDef<OrderPublic>[] {
+  return buildOrderColumnsWithCustomer()
 }
 
 export function buildProviderOrderColumns(): ColumnDef<OrderPublic>[] {
-  return buildSharedOrderColumns()
+  return buildOrderColumnsWithCustomer()
 }

@@ -4,8 +4,11 @@
  * Broker API
  * OpenAPI spec version: 0.1.0
  */
+import type { OrderStatus } from './orderStatus';
 
 export type ListOrdersOrdersProviderGetParams = {
+search?: string | null;
+status?: OrderStatus | null;
 organization_id: string;
 /**
  * @minimum 1

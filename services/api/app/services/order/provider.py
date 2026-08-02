@@ -9,6 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.lib.persistence import get_entity
 from app.lib.persistence.pagination import paginate
 from app.lib.utils import utc_now
+from app.models.customer.customer import Customer
+from app.models.order.enums import OrderStatus
 from app.models.order.order import Order
 from app.models.order.order_item import OrderItem
 from app.models.organization.provider_seller_link import ProviderSellerLink
@@ -17,10 +19,12 @@ from app.schemas.pagination import PageResult, PaginationParams
 from app.services import provider_seller_link as link_service
 from app.services.order import item_status as item_status_service
 from app.services.order.helpers import (
+    attach_customers_to_orders,
     attach_items_and_totals,
     attach_order_view,
     derive_order_status,
     load_items_by_order_ids,
+    order_search_clause,
 )
 
 
@@ -39,18 +43,25 @@ async def list_orders_for_provider(
     provider_organization_id: UUID,
     *,
     pagination: PaginationParams,
+    search: str | None = None,
+    status: OrderStatus | None = None,
 ) -> PageResult[Order]:
-    stmt = (
-        select(Order)
-        .where(_provider_order_visibility_clause(provider_organization_id))
-        .order_by(Order.created_at.desc(), Order.id.desc())
+    stmt = select(Order).where(
+        _provider_order_visibility_clause(provider_organization_id)
     )
+    if status is not None:
+        stmt = stmt.where(Order.status == status)
+    clause = order_search_clause(search) if search else None
+    if clause is not None:
+        stmt = stmt.join(Customer, Customer.id == Order.customer_id).where(clause)
+    stmt = stmt.order_by(Order.created_at.desc(), Order.id.desc())
     result = await paginate(session, stmt, pagination)
     await attach_items_and_totals(
         session,
         result.items,
         provider_organization_id=provider_organization_id,
     )
+    await attach_customers_to_orders(session, result.items)
     return result
 
 
@@ -83,6 +94,7 @@ async def get_order_for_provider(
         [order],
         provider_organization_id=provider_organization_id,
     )
+    await attach_customers_to_orders(session, [order])
     return order
 
 
