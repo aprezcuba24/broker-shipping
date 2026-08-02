@@ -13,6 +13,7 @@ import { OnboardingPage } from './pages/onboarding'
 import { CartPage } from './pages/cart'
 import { OrderDetailPage, OrderPage } from './pages/order'
 import { ProductDetailPage, ProductPage } from './pages/product'
+import { ProvidersPage } from './pages/providers'
 import { RegisterPage } from './pages/register'
 import { InvitationsSettingsPage } from './pages/settings/invitations'
 import { OrganizationsSettingsPage } from './pages/settings/organizations'
@@ -62,6 +63,7 @@ export default function App() {
           <Route path="products/:productId" element={<ProductDetailPage />} />
           <Route path="orders" element={<OrderPage />} />
           <Route path="orders/:orderId" element={<OrderDetailPage />} />
+          <Route path="providers" element={<ProvidersPage />} />
           <Route path="cart" element={<CartPage />} />
           <Route path="settings/organizations" element={<OrganizationsSettingsPage />} />
           <Route path="settings/invitations" element={<InvitationsSettingsPage />} />

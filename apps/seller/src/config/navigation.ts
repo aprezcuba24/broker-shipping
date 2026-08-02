@@ -5,6 +5,7 @@ import {
   Mail,
   Package,
   Store,
+  Truck,
 } from 'lucide-react'
 import type { NavItem, SidebarBrand } from '@broker/ui'
 
@@ -18,6 +19,7 @@ export const sellerNavItems: NavItem[] = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { to: '/products', label: 'Productos', icon: Package },
   { to: '/orders', label: 'Órdenes', icon: ClipboardList },
+  { to: '/providers', label: 'Proveedores', icon: Truck },
   { to: '/settings/invitations', label: 'Invitaciones', icon: Mail },
   { to: '/settings/organizations', label: 'Organizaciones', icon: Building2 },
 ]
