@@ -13,9 +13,9 @@ import { OnboardingPage } from './pages/onboarding'
 import { CartPage } from './pages/cart'
 import { OrderDetailPage, OrderPage } from './pages/order'
 import { ProductDetailPage, ProductPage } from './pages/product'
+import { MembersPage } from './pages/members'
 import { ProvidersPage } from './pages/providers'
 import { RegisterPage } from './pages/register'
-import { InvitationsSettingsPage } from './pages/settings/invitations'
 import { OrganizationsSettingsPage } from './pages/settings/organizations'
 import { VerifyEmailPage } from './pages/verify-email'
 
@@ -64,9 +64,10 @@ export default function App() {
           <Route path="orders" element={<OrderPage />} />
           <Route path="orders/:orderId" element={<OrderDetailPage />} />
           <Route path="providers" element={<ProvidersPage />} />
+          <Route path="members" element={<MembersPage />} />
           <Route path="cart" element={<CartPage />} />
           <Route path="settings/organizations" element={<OrganizationsSettingsPage />} />
-          <Route path="settings/invitations" element={<InvitationsSettingsPage />} />
+          <Route path="settings/invitations" element={<Navigate to="/members" replace />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

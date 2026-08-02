@@ -2577,6 +2577,59 @@
       }
     },
     "/organizations/{organization_id}/member-invitations": {
+      "get": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "List Member Invitations",
+        "operationId": "list_member_invitations_organizations__organization_id__member_invitations_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InvitationPublic"
+                  },
+                  "title": "Response List Member Invitations Organizations  Organization Id  Member Invitations Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "organizations"
@@ -3980,6 +4033,15 @@
             "format": "uuid",
             "title": "Organization Id"
           },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
           "is_active": {
             "type": "boolean",
             "title": "Is Active"
@@ -3994,6 +4056,8 @@
         "required": [
           "user_id",
           "organization_id",
+          "name",
+          "email",
           "is_active",
           "joined_at"
         ],

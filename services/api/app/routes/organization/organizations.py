@@ -9,6 +9,7 @@ from app.models.organization.organization import Organization
 from app.schemas.invitation import (
     AcceptByTokenBody,
     InvitationCreatedResponse,
+    InvitationPublic,
     MemberInviteCreate,
     MemberIsActivePatch,
     MemberPublic,
@@ -54,6 +55,19 @@ async def accept_invitation_by_token(
     session: SessionDep,
 ) -> MemberPublic:
     return await invitation_service.accept_by_token(session, user, body.token)
+
+
+@router.get(
+    "/{organization_id}/member-invitations",
+    response_model=list[InvitationPublic],
+)
+async def list_member_invitations(
+    organization: AnyOrgDep,
+    session: SessionDep,
+) -> list[InvitationPublic]:
+    return await invitation_service.list_pending_member_invites(
+        session, organization.id
+    )
 
 
 @router.post(

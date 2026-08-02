@@ -287,5 +287,8 @@ export type {
 } from './organization/accept-invitation-card'
 export { MemberInviteForm } from './organization/member-invite-form'
 export type { MemberInviteFields, MemberInviteFormProps } from './organization/member-invite-form'
+export { OrganizationMembersPage } from './organization/organization-members-page'
+export type { OrganizationMembersPageProps } from './organization/organization-members-page'
+export { useOrganizationMembers } from './organization/use-organization-members'
 export { SellerLinkRequestsList } from './organization/seller-link-requests-list'
 export type { SellerLinkRequestsListProps } from './organization/seller-link-requests-list'

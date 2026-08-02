@@ -1,8 +1,6 @@
 import {
-  formatApiError,
   getListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGetQueryKey,
   useAcceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPost,
-  useCreateMemberInvitationOrganizationsOrganizationIdMemberInvitationsPost,
   useListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet,
   useRejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPost,
 } from '@broker/api'
@@ -14,14 +12,12 @@ export function useInvitationsSettings() {
   const { activeOrganization } = useActiveOrganization()
   const orgId = activeOrganization?.id ?? ''
   const queryClient = useQueryClient()
-  const [memberSuccess, setMemberSuccess] = useState<string | null>(null)
   const [pendingId, setPendingId] = useState<string | null>(null)
 
   const invitationsQuery =
     useListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet(orgId, {
       query: { enabled: Boolean(orgId) },
     })
-  const memberInvite = useCreateMemberInvitationOrganizationsOrganizationIdMemberInvitationsPost()
   const acceptRequest =
     useAcceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPost()
   const rejectRequest =
@@ -39,23 +35,6 @@ export function useInvitationsSettings() {
 
   return {
     hasActiveOrg: Boolean(activeOrganization),
-    memberInviteProps: {
-      isSubmitting: memberInvite.isPending,
-      successMessage: memberSuccess,
-      error: memberInvite.isError
-        ? formatApiError(memberInvite.error, 'No se pudo enviar la invitación.')
-        : null,
-      onSubmit: async ({ invitee_email }: { invitee_email: string }) => {
-        setMemberSuccess(null)
-        memberInvite.reset()
-        await memberInvite.mutateAsync({
-          organizationId: orgId,
-          data: { invitee_email },
-        })
-        setMemberSuccess(`Invitación enviada a ${invitee_email}.`)
-        await invalidate()
-      },
-    },
     sellerLinkRequestsProps: {
       invitations: invitationsQuery.data ?? [],
       isLoading: invitationsQuery.isPending,
