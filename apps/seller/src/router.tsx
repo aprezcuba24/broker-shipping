@@ -13,7 +13,6 @@ import { OnboardingPage } from './pages/onboarding'
 import { CartPage } from './pages/cart'
 import { OrderDetailPage, OrderPage } from './pages/order'
 import { ProductDetailPage, ProductPage } from './pages/product'
-import { ProviderLinkRequestPage } from './pages/providers/link-request'
 import { RegisterPage } from './pages/register'
 import { InvitationsSettingsPage } from './pages/settings/invitations'
 import { OrganizationsSettingsPage } from './pages/settings/organizations'
@@ -66,7 +65,6 @@ export default function App() {
           <Route path="cart" element={<CartPage />} />
           <Route path="settings/organizations" element={<OrganizationsSettingsPage />} />
           <Route path="settings/invitations" element={<InvitationsSettingsPage />} />
-          <Route path="providers/link-request" element={<ProviderLinkRequestPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

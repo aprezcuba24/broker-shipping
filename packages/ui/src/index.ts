@@ -287,10 +287,5 @@ export type {
 } from './organization/accept-invitation-card'
 export { MemberInviteForm } from './organization/member-invite-form'
 export type { MemberInviteFields, MemberInviteFormProps } from './organization/member-invite-form'
-export { ProviderLinkRequestForm } from './organization/provider-link-request-form'
-export type {
-  ProviderLinkRequestFields,
-  ProviderLinkRequestFormProps,
-} from './organization/provider-link-request-form'
 export { SellerLinkRequestsList } from './organization/seller-link-requests-list'
 export type { SellerLinkRequestsListProps } from './organization/seller-link-requests-list'
