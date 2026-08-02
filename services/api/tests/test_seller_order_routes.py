@@ -82,6 +82,7 @@ async def seller_order_ctx(
         "seller_org_id": seller_org["id"],
         "other_seller_user_id": other_seller_user["id"],
         "other_seller_org_id": other_seller_org["id"],
+        "provider_user_id": provider_user["id"],
         "provider_cup_id": provider_cup["id"],
         "provider_usd_id": provider_usd["id"],
         "product_cup_id": product_cup["id"],
@@ -93,8 +94,11 @@ async def seller_order_ctx(
         "other_customer_id": other_customer["id"],
         "seller_bearer": bearer_headers(user_id=seller_user["id"]),
         "other_seller_bearer": bearer_headers(user_id=other_seller_user["id"]),
+        "provider_bearer": bearer_headers(user_id=provider_user["id"]),
         "seller_params": {"organization_id": seller_org["id"]},
         "other_seller_params": {"organization_id": other_seller_org["id"]},
+        "provider_cup_params": {"organization_id": provider_cup["id"]},
+        "provider_usd_params": {"organization_id": provider_usd["id"]},
     }
 
 
@@ -706,3 +710,79 @@ async def test_list_orders_search_by_code_name_phone_ci(
     assert by_ci.status_code == 200
     assert by_ci.json()["total"] == 1
     assert by_ci.json()["items"][0]["customer"]["ci"] == "85010112345"
+
+
+async def test_list_orders_filter_by_status(
+    client: AsyncClient,
+    seller_order_ctx: dict,
+) -> None:
+    created_order = await client.post(
+        "/orders/seller/",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+        json={
+            "customer_id": seller_order_ctx["customer_id"],
+            "items": [
+                {
+                    "product_id": seller_order_ctx["product_cup_id"],
+                    "quantity": 1,
+                    "seller_provider_price": 1000,
+                },
+            ],
+        },
+    )
+    assert created_order.status_code == 201
+    created_id = created_order.json()["id"]
+
+    processing_order = await client.post(
+        "/orders/seller/",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+        json={
+            "customer_id": seller_order_ctx["customer_id"],
+            "items": [
+                {
+                    "product_id": seller_order_ctx["product_cup_id"],
+                    "quantity": 1,
+                    "seller_provider_price": 1000,
+                },
+            ],
+        },
+    )
+    assert processing_order.status_code == 201
+    processing_id = processing_order.json()["id"]
+
+    reviewed = await client.patch(
+        f"/orders/provider/{processing_id}/items",
+        params=seller_order_ctx["provider_cup_params"],
+        headers=seller_order_ctx["provider_bearer"],
+        json={"status": "reviewed"},
+    )
+    assert reviewed.status_code == 200
+    assert reviewed.json()["status"] == "processing"
+
+    by_created = await client.get(
+        "/orders/seller/",
+        params={**seller_order_ctx["seller_params"], "status": "created"},
+        headers=seller_order_ctx["seller_bearer"],
+    )
+    assert by_created.status_code == 200
+    assert by_created.json()["total"] == 1
+    assert by_created.json()["items"][0]["id"] == created_id
+
+    by_processing = await client.get(
+        "/orders/seller/",
+        params={**seller_order_ctx["seller_params"], "status": "processing"},
+        headers=seller_order_ctx["seller_bearer"],
+    )
+    assert by_processing.status_code == 200
+    assert by_processing.json()["total"] == 1
+    assert by_processing.json()["items"][0]["id"] == processing_id
+
+    all_orders = await client.get(
+        "/orders/seller/",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+    )
+    assert all_orders.status_code == 200
+    assert all_orders.json()["total"] == 2

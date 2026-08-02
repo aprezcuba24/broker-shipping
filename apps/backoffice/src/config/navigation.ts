@@ -1,4 +1,13 @@
-import { Building2, LayoutDashboard, Link2, Package, Store, Tag, Users } from 'lucide-react'
+import {
+  Building2,
+  ClipboardList,
+  LayoutDashboard,
+  Link2,
+  Package,
+  Store,
+  Tag,
+  Users,
+} from 'lucide-react'
 import type { NavItem, SidebarBrand } from '@broker/ui'
 
 export const backofficeBrand: SidebarBrand = {
@@ -9,6 +18,7 @@ export const backofficeBrand: SidebarBrand = {
 
 export const backofficeNavItems: NavItem[] = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+  { to: '/orders', label: 'Órdenes', icon: ClipboardList },
   { to: '/products', label: 'Productos', icon: Package },
   { to: '/tags', label: 'Etiquetas', icon: Tag },
   { to: '/members', label: 'Miembros', icon: Users },
