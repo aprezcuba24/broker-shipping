@@ -1470,6 +1470,22 @@
         ],
         "parameters": [
           {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
             "name": "organization_id",
             "in": "query",
             "required": true,
@@ -2100,6 +2116,67 @@
         }
       }
     },
+    "/customers/seller/register": {
+      "post": {
+        "tags": [
+          "customers"
+        ],
+        "summary": "Register Customer",
+        "operationId": "register_customer_customers_seller_register_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/customers/seller/{customer_id}": {
       "get": {
         "tags": [
@@ -2268,6 +2345,94 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/locations/provinces": {
+      "get": {
+        "tags": [
+          "locations"
+        ],
+        "summary": "List Provinces",
+        "operationId": "list_provinces_locations_provinces_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProvincePublic"
+                  },
+                  "type": "array",
+                  "title": "Response List Provinces Locations Provinces Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/locations/provinces/{province_id}/municipalities": {
+      "get": {
+        "tags": [
+          "locations"
+        ],
+        "summary": "List Municipalities",
+        "operationId": "list_municipalities_locations_provinces__province_id__municipalities_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "province_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Province Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MunicipalityPublic"
+                  },
+                  "title": "Response List Municipalities Locations Provinces  Province Id  Municipalities Get"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -3847,6 +4012,31 @@
         ],
         "title": "MessageResponse"
       },
+      "MunicipalityPublic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "province_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Province Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "province_id"
+        ],
+        "title": "MunicipalityPublic"
+      },
       "OrderCreate": {
         "properties": {
           "customer_id": {
@@ -4080,6 +4270,16 @@
             },
             "type": "array",
             "title": "Totals"
+          },
+          "customer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CustomerPublic"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -4485,6 +4685,25 @@
         },
         "type": "object",
         "title": "ProductUpdate"
+      },
+      "ProvincePublic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "ProvincePublic"
       },
       "ResendVerificationRequest": {
         "properties": {

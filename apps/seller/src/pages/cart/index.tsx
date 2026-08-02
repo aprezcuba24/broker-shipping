@@ -1,15 +1,23 @@
 import {
   BtnConfirm,
   BtnLink,
+  Button,
   DataTable,
+  EntityFormDialog,
   PageWrapper,
 } from '@broker/ui'
 import { Package, ShoppingCart } from 'lucide-react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import { useCart } from '@/hooks/use-cart'
 import { useCartPreview } from '@/hooks/use-cart-preview'
+import { useRegisterOrder } from '@/hooks/use-register-order'
 import { useLinkedProviders } from '@/hooks/use-linked-providers'
+import {
+  CustomerForm,
+  customerFormDefaultValues,
+  type CustomerFormValues,
+} from '@/pages/customer/form'
 
 import { CartOrderTotals } from './cart-order-totals'
 import { CartPreviewProvider } from './cart-preview-context'
@@ -26,16 +34,27 @@ export function CartPage() {
     isRefreshing,
     isError,
   } = useCartPreview()
+  const { registerOrder, isSubmitting, error, setError } =
+    useRegisterOrder(previewByProductId)
+
+  const [registerOpen, setRegisterOpen] = useState(false)
+
   const totals = useMemo(
     () => computeCartTotals(items, previewByProductId),
     [items, previewByProductId],
   )
   const hasItems = items.length > 0
+  const canRegister =
+    hasItems && Boolean(order) && !isError && !isInitialLoading && !isSubmitting
 
   const columns = useMemo(
     () => buildCartColumns({ getProviderName }),
     [getProviderName],
   )
+
+  const handleRegisterSubmit = async (values: CustomerFormValues) => {
+    await registerOrder(values)
+  }
 
   return (
     <PageWrapper
@@ -60,6 +79,17 @@ export function CartPage() {
                 confirmVariant="destructive"
                 onConfirm={clearCart}
               />,
+              <Button
+                key="register"
+                size="sm"
+                disabled={!canRegister}
+                onClick={() => {
+                  setError(null)
+                  setRegisterOpen(true)
+                }}
+              >
+                Registrar
+              </Button>,
             ]
           : null
       }
@@ -98,6 +128,22 @@ export function CartPage() {
           hasOrder={Boolean(order)}
         />
       </div>
+
+      <EntityFormDialog<CustomerFormValues>
+        Form={CustomerForm}
+        title="Registrar cliente"
+        acceptLabel="Crear orden"
+        open={registerOpen}
+        onOpenChange={(open) => {
+          setRegisterOpen(open)
+          if (!open) setError(null)
+        }}
+        defaultValues={customerFormDefaultValues}
+        onSubmit={handleRegisterSubmit}
+        isSubmitting={isSubmitting}
+        error={error}
+        formKey="register-customer"
+      />
     </PageWrapper>
   )
 }

@@ -6,6 +6,7 @@
  */
 
 export type ListOrdersOrdersSellerGetParams = {
+search?: string | null;
 organization_id: string;
 /**
  * @minimum 1

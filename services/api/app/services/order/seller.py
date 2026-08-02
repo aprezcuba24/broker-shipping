@@ -20,7 +20,12 @@ from app.schemas.order import OrderCreate, OrderItemCreate
 from app.schemas.pagination import PageResult, PaginationParams
 from app.services import provider_seller_link as link_service
 from app.services.order.code import generate_next_order_code
-from app.services.order.helpers import attach_items_and_totals, attach_order_view
+from app.services.order.helpers import (
+    attach_customers_to_orders,
+    attach_items_and_totals,
+    attach_order_view,
+    order_search_clause,
+)
 
 _NIL_UUID = UUID(int=0)
 
@@ -149,7 +154,9 @@ async def create_order(
     await session.refresh(order)
     for item in items:
         await session.refresh(item)
-    return attach_order_view(order, items)
+    attach_order_view(order, items)
+    await attach_customers_to_orders(session, [order])
+    return order
 
 
 async def list_orders_for_seller(
@@ -157,14 +164,18 @@ async def list_orders_for_seller(
     seller_organization_id: UUID,
     *,
     pagination: PaginationParams,
+    search: str | None = None,
 ) -> PageResult[Order]:
-    stmt = (
-        select(Order)
-        .where(Order.seller_organization_id == seller_organization_id)
-        .order_by(Order.created_at.desc(), Order.id.desc())
+    stmt = select(Order).where(
+        Order.seller_organization_id == seller_organization_id
     )
+    clause = order_search_clause(search) if search else None
+    if clause is not None:
+        stmt = stmt.join(Customer, Customer.id == Order.customer_id).where(clause)
+    stmt = stmt.order_by(Order.created_at.desc(), Order.id.desc())
     result = await paginate(session, stmt, pagination)
     await attach_items_and_totals(session, result.items)
+    await attach_customers_to_orders(session, result.items)
     return result
 
 
@@ -180,4 +191,5 @@ async def get_order_for_seller(
         seller_organization_id=seller_organization_id,
     )
     await attach_items_and_totals(session, [order])
+    await attach_customers_to_orders(session, [order])
     return order

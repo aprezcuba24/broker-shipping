@@ -67,7 +67,12 @@ async def seller_order_ctx(
         commission=500,
         price=2000,
     )
-    customer = await customer_factory.build(seller_organization_id=seller_org["id"])
+    customer = await customer_factory.build(
+        seller_organization_id=seller_org["id"],
+        name="Maria Garcia",
+        ci="85010112345",
+        phone="55123456",
+    )
     other_customer = await customer_factory.build(
         seller_organization_id=other_seller_org["id"],
     )
@@ -82,6 +87,9 @@ async def seller_order_ctx(
         "product_cup_id": product_cup["id"],
         "product_usd_id": product_usd["id"],
         "customer_id": customer["id"],
+        "customer_name": customer["name"],
+        "customer_ci": customer["ci"],
+        "customer_phone": customer["phone"],
         "other_customer_id": other_customer["id"],
         "seller_bearer": bearer_headers(user_id=seller_user["id"]),
         "other_seller_bearer": bearer_headers(user_id=other_seller_user["id"]),
@@ -308,6 +316,10 @@ async def test_list_and_get_orders(
         "cup": 2000,
         "usd": 2500,
     }
+    assert body["customer"] is not None
+    assert body["customer"]["id"] == seller_order_ctx["customer_id"]
+    assert body["customer"]["name"] == seller_order_ctx["customer_name"]
+    assert page["items"][0]["customer"]["name"] == seller_order_ctx["customer_name"]
 
 
 async def test_seller_cannot_see_other_seller_order(
@@ -611,3 +623,86 @@ async def test_preview_order_does_not_persist(
     )
     assert listed.status_code == 200
     assert listed.json()["total"] == 0
+
+
+async def test_list_orders_search_by_code_name_phone_ci(
+    client: AsyncClient,
+    seller_order_ctx: dict,
+    customer_factory: CustomerFactory,
+) -> None:
+    created = await client.post(
+        "/orders/seller/",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+        json={
+            "customer_id": seller_order_ctx["customer_id"],
+            "items": [
+                {
+                    "product_id": seller_order_ctx["product_cup_id"],
+                    "quantity": 1,
+                    "seller_provider_price": 1000,
+                },
+            ],
+        },
+    )
+    assert created.status_code == 201
+    order_code = created.json()["code"]
+
+    other_customer = await customer_factory.build(
+        seller_organization_id=seller_order_ctx["seller_org_id"],
+        name="Pedro Lopez",
+        ci="99010199999",
+        phone="55999999",
+    )
+    other_order = await client.post(
+        "/orders/seller/",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+        json={
+            "customer_id": other_customer["id"],
+            "items": [
+                {
+                    "product_id": seller_order_ctx["product_cup_id"],
+                    "quantity": 1,
+                    "seller_provider_price": 1000,
+                },
+            ],
+        },
+    )
+    assert other_order.status_code == 201
+
+    by_code = await client.get(
+        "/orders/seller/",
+        params={**seller_order_ctx["seller_params"], "search": order_code},
+        headers=seller_order_ctx["seller_bearer"],
+    )
+    assert by_code.status_code == 200
+    assert by_code.json()["total"] == 1
+    assert by_code.json()["items"][0]["code"] == order_code
+
+    by_name = await client.get(
+        "/orders/seller/",
+        params={**seller_order_ctx["seller_params"], "search": "Maria"},
+        headers=seller_order_ctx["seller_bearer"],
+    )
+    assert by_name.status_code == 200
+    assert by_name.json()["total"] == 1
+    assert by_name.json()["items"][0]["customer"]["name"] == "Maria Garcia"
+
+    by_phone = await client.get(
+        "/orders/seller/",
+        params={**seller_order_ctx["seller_params"], "search": "55123456"},
+        headers=seller_order_ctx["seller_bearer"],
+    )
+    assert by_phone.status_code == 200
+    assert by_phone.json()["total"] == 1
+    assert by_phone.json()["items"][0]["customer"]["phone"] == "55123456"
+
+    by_ci = await client.get(
+        "/orders/seller/",
+        params={**seller_order_ctx["seller_params"], "search": "85010112345"},
+        headers=seller_order_ctx["seller_bearer"],
+    )
+    assert by_ci.status_code == 200
+    assert by_ci.json()["total"] == 1
+    assert by_ci.json()["items"][0]["customer"]["ci"] == "85010112345"

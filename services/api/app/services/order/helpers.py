@@ -3,14 +3,18 @@ from __future__ import annotations
 from collections import defaultdict
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col
 
+from app.models.customer.customer import Customer
 from app.models.order.enums import Currency, OrderItemStatus, OrderStatus
 from app.models.order.order import Order
 from app.models.order.order_item import OrderItem
 from app.schemas.order import OrderCurrencyTotal
+from app.services.customer.helpers import attach_addresses_to_customers
+
+_NIL_UUID = UUID(int=0)
 
 
 def compute_order_totals(items: list[OrderItem]) -> list[OrderCurrencyTotal]:
@@ -79,3 +83,62 @@ async def attach_items_and_totals(
     )
     for order in orders:
         attach_order_view(order, items_by_order.get(order.id, []))
+
+
+async def attach_customers_to_orders(
+    session: AsyncSession,
+    orders: list[Order],
+) -> None:
+    customer_ids = list(
+        {
+            order.customer_id
+            for order in orders
+            if order.customer_id and order.customer_id != _NIL_UUID
+        }
+    )
+    customers_by_id: dict[UUID, Customer] = {}
+    if customer_ids:
+        result = await session.execute(
+            select(Customer).where(col(Customer.id).in_(customer_ids))
+        )
+        customers = list(result.scalars().all())
+        await attach_addresses_to_customers(session, customers)
+        customers_by_id = {customer.id: customer for customer in customers}
+
+    for order in orders:
+        object.__setattr__(
+            order,
+            "customer",
+            customers_by_id.get(order.customer_id),
+        )
+
+
+def order_search_clause(search: str):
+    term = search.strip()
+    if not term:
+        return None
+
+    digits_only = term.isdigit()
+    has_letter = any(c.isalpha() for c in term)
+    has_digit = any(c.isdigit() for c in term)
+
+    if digits_only:
+        if len(term) <= 11:
+            return or_(
+                Customer.ci == term,
+                col(Customer.phone).ilike(f"%{term}%"),
+            )
+        return col(Customer.phone).ilike(f"%{term}%")
+
+    if has_letter and has_digit:
+        return col(Order.code).ilike(f"%{term}%")
+
+    if has_letter and not has_digit:
+        return col(Customer.name).ilike(f"%{term}%")
+
+    return or_(
+        col(Order.code).ilike(f"%{term}%"),
+        col(Customer.name).ilike(f"%{term}%"),
+        col(Customer.phone).ilike(f"%{term}%"),
+        Customer.ci == term,
+    )

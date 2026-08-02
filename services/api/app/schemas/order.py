@@ -5,6 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.order.enums import Currency, OrderItemStatus, OrderStatus
+from app.schemas.customer import CustomerPublic
 
 
 class OrderItemCreate(BaseModel):
@@ -61,3 +62,4 @@ class OrderPublic(BaseModel):
     updated_at: datetime | None
     items: list[OrderItemPublic] = Field(default_factory=list)
     totals: list[OrderCurrencyTotal] = Field(default_factory=list)
+    customer: CustomerPublic | None = None

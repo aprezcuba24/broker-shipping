@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
+from fastapi import HTTPException
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
@@ -57,6 +58,46 @@ async def get_customer_for_seller(
     )
     await attach_addresses_to_customers(session, [customer])
     return customer
+
+
+async def register_customer(
+    session: AsyncSession,
+    seller_organization_id: UUID,
+    data: CustomerCreate,
+) -> Customer:
+    by_ci = await get_entity(
+        session,
+        Customer,
+        required=False,
+        seller_organization_id=seller_organization_id,
+        ci=data.ci,
+    )
+    by_phone = await get_entity(
+        session,
+        Customer,
+        required=False,
+        seller_organization_id=seller_organization_id,
+        phone=data.phone,
+    )
+    if by_ci is not None and by_phone is not None and by_ci.id != by_phone.id:
+        raise HTTPException(
+            status_code=409,
+            detail="CI and phone belong to different customers",
+        )
+    existing = by_ci or by_phone
+    if existing is not None:
+        return await update_customer(
+            session,
+            existing.id,
+            seller_organization_id,
+            CustomerUpdate(
+                name=data.name,
+                ci=data.ci,
+                phone=data.phone,
+                address=data.address,
+            ),
+        )
+    return await create_customer(session, seller_organization_id, data)
 
 
 async def create_customer(

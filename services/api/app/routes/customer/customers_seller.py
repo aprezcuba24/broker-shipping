@@ -32,16 +32,16 @@ async def list_customers(
     return Page.from_mapped(result, pagination, CustomerPublic.model_validate)
 
 
-@router.get("/{customer_id}", response_model=CustomerPublic)
-async def get_customer(
-    customer_id: UUID,
+@router.post("/register", response_model=CustomerPublic, status_code=201)
+async def register_customer(
+    body: CustomerCreate,
     organization: SellerOrgDep,
     session: SessionDep,
 ) -> CustomerPublic:
-    customer = await seller_customer_service.get_customer_for_seller(
+    customer = await seller_customer_service.register_customer(
         session,
-        customer_id,
         organization.id,
+        body,
     )
     return CustomerPublic.model_validate(customer)
 
@@ -56,6 +56,20 @@ async def create_customer(
         session,
         organization.id,
         body,
+    )
+    return CustomerPublic.model_validate(customer)
+
+
+@router.get("/{customer_id}", response_model=CustomerPublic)
+async def get_customer(
+    customer_id: UUID,
+    organization: SellerOrgDep,
+    session: SessionDep,
+) -> CustomerPublic:
+    customer = await seller_customer_service.get_customer_for_seller(
+        session,
+        customer_id,
+        organization.id,
     )
     return CustomerPublic.model_validate(customer)
 

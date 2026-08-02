@@ -369,3 +369,148 @@ async def test_customer_forbidden_and_validation(
         headers=seller_customer_ctx["seller_bearer"],
     )
     assert unknown.status_code == 404
+
+
+async def test_register_customer_creates_new(
+    client: AsyncClient,
+    seller_customer_ctx: dict,
+) -> None:
+    response = await client.post(
+        "/customers/seller/register",
+        params=seller_customer_ctx["seller_params"],
+        headers=seller_customer_ctx["seller_bearer"],
+        json=_customer_payload(
+            seller_customer_ctx,
+            name="Nuevo Cliente",
+            ci="30000000001",
+            phone="53000001",
+        ),
+    )
+    assert response.status_code == 201
+    body = response.json()
+    assert body["name"] == "Nuevo Cliente"
+    assert body["ci"] == "30000000001"
+    assert body["phone"] == "53000001"
+    assert body["address"]["address"] == "Calle 1 #100"
+
+
+async def test_register_customer_updates_by_ci(
+    client: AsyncClient,
+    seller_customer_ctx: dict,
+) -> None:
+    created = await client.post(
+        "/customers/seller/",
+        params=seller_customer_ctx["seller_params"],
+        headers=seller_customer_ctx["seller_bearer"],
+        json=_customer_payload(
+            seller_customer_ctx,
+            name="Original",
+            ci="30000000002",
+            phone="53000002",
+        ),
+    )
+    assert created.status_code == 201
+    customer_id = created.json()["id"]
+
+    updated = await client.post(
+        "/customers/seller/register",
+        params=seller_customer_ctx["seller_params"],
+        headers=seller_customer_ctx["seller_bearer"],
+        json=_customer_payload(
+            seller_customer_ctx,
+            name="Actualizado CI",
+            ci="30000000002",
+            phone="53000999",
+            address={
+                "address": "Nueva Calle 5",
+                "province_id": seller_customer_ctx["province_id"],
+                "municipality_id": seller_customer_ctx["municipality_id"],
+            },
+        ),
+    )
+    assert updated.status_code == 201
+    body = updated.json()
+    assert body["id"] == customer_id
+    assert body["name"] == "Actualizado CI"
+    assert body["phone"] == "53000999"
+    assert body["address"]["address"] == "Nueva Calle 5"
+
+
+async def test_register_customer_updates_by_phone(
+    client: AsyncClient,
+    seller_customer_ctx: dict,
+) -> None:
+    created = await client.post(
+        "/customers/seller/",
+        params=seller_customer_ctx["seller_params"],
+        headers=seller_customer_ctx["seller_bearer"],
+        json=_customer_payload(
+            seller_customer_ctx,
+            name="Original Phone",
+            ci="30000000003",
+            phone="53000003",
+        ),
+    )
+    assert created.status_code == 201
+    customer_id = created.json()["id"]
+
+    updated = await client.post(
+        "/customers/seller/register",
+        params=seller_customer_ctx["seller_params"],
+        headers=seller_customer_ctx["seller_bearer"],
+        json=_customer_payload(
+            seller_customer_ctx,
+            name="Actualizado Phone",
+            ci="30000999",
+            phone="53000003",
+        ),
+    )
+    assert updated.status_code == 201
+    body = updated.json()
+    assert body["id"] == customer_id
+    assert body["name"] == "Actualizado Phone"
+    assert body["ci"] == "30000999"
+
+
+async def test_register_customer_conflict_ci_and_phone(
+    client: AsyncClient,
+    seller_customer_ctx: dict,
+) -> None:
+    first = await client.post(
+        "/customers/seller/",
+        params=seller_customer_ctx["seller_params"],
+        headers=seller_customer_ctx["seller_bearer"],
+        json=_customer_payload(
+            seller_customer_ctx,
+            name="Cliente A",
+            ci="30000000004",
+            phone="53000004",
+        ),
+    )
+    assert first.status_code == 201
+
+    second = await client.post(
+        "/customers/seller/",
+        params=seller_customer_ctx["seller_params"],
+        headers=seller_customer_ctx["seller_bearer"],
+        json=_customer_payload(
+            seller_customer_ctx,
+            name="Cliente B",
+            ci="30000000005",
+            phone="53000005",
+        ),
+    )
+    assert second.status_code == 201
+
+    conflict = await client.post(
+        "/customers/seller/register",
+        params=seller_customer_ctx["seller_params"],
+        headers=seller_customer_ctx["seller_bearer"],
+        json=_customer_payload(
+            seller_customer_ctx,
+            name="Conflicto",
+            ci="30000000004",
+            phone="53000005",
+        ),
+    )
+    assert conflict.status_code == 409

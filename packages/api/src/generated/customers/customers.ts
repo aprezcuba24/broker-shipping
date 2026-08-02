@@ -33,7 +33,8 @@ import type {
   HTTPValidationError,
   ListCustomersCustomersSellerGetParams,
   PageCustomerPublic,
-  PatchCustomerCustomersSellerCustomerIdPatchParams
+  PatchCustomerCustomersSellerCustomerIdPatchParams,
+  RegisterCustomerCustomersSellerRegisterPostParams
 } from '.././models';
 
 import { brokerFetch } from '../../client';
@@ -199,6 +200,72 @@ export const useCreateCustomerCustomersSellerPost = <TError = HTTPValidationErro
       > => {
 
       const mutationOptions = getCreateCustomerCustomersSellerPostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Register Customer
+ */
+export const registerCustomerCustomersSellerRegisterPost = (
+    customerCreate: CustomerCreate,
+    params: RegisterCustomerCustomersSellerRegisterPostParams,
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<CustomerPublic>(
+      {url: `/customers/seller/register`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: customerCreate,
+        params, signal
+    },
+      options);
+    }
+  
+
+
+export const getRegisterCustomerCustomersSellerRegisterPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof registerCustomerCustomersSellerRegisterPost>>, TError,{data: CustomerCreate;params: RegisterCustomerCustomersSellerRegisterPostParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof registerCustomerCustomersSellerRegisterPost>>, TError,{data: CustomerCreate;params: RegisterCustomerCustomersSellerRegisterPostParams}, TContext> => {
+
+const mutationKey = ['registerCustomerCustomersSellerRegisterPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof registerCustomerCustomersSellerRegisterPost>>, {data: CustomerCreate;params: RegisterCustomerCustomersSellerRegisterPostParams}> = (props) => {
+          const {data,params} = props ?? {};
+
+          return  registerCustomerCustomersSellerRegisterPost(data,params,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RegisterCustomerCustomersSellerRegisterPostMutationResult = NonNullable<Awaited<ReturnType<typeof registerCustomerCustomersSellerRegisterPost>>>
+    export type RegisterCustomerCustomersSellerRegisterPostMutationBody = CustomerCreate
+    export type RegisterCustomerCustomersSellerRegisterPostMutationError = HTTPValidationError
+
+    /**
+ * @summary Register Customer
+ */
+export const useRegisterCustomerCustomersSellerRegisterPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof registerCustomerCustomersSellerRegisterPost>>, TError,{data: CustomerCreate;params: RegisterCustomerCustomersSellerRegisterPostParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof registerCustomerCustomersSellerRegisterPost>>,
+        TError,
+        {data: CustomerCreate;params: RegisterCustomerCustomersSellerRegisterPostParams},
+        TContext
+      > => {
+
+      const mutationOptions = getRegisterCustomerCustomersSellerRegisterPostMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

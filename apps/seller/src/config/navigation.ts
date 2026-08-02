@@ -1,5 +1,6 @@
 import {
   Building2,
+  ClipboardList,
   LayoutDashboard,
   Link2,
   Mail,
@@ -17,6 +18,7 @@ export const sellerBrand: SidebarBrand = {
 export const sellerNavItems: NavItem[] = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { to: '/products', label: 'Productos', icon: Package },
+  { to: '/orders', label: 'Órdenes', icon: ClipboardList },
   { to: '/providers/link-request', label: 'Proveedores', icon: Link2 },
   { to: '/settings/invitations', label: 'Invitaciones', icon: Mail },
   { to: '/settings/organizations', label: 'Organizaciones', icon: Building2 },

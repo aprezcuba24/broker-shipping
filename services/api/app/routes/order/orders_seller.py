@@ -17,11 +17,13 @@ async def list_orders(
     organization: SellerOrgDep,
     session: SessionDep,
     pagination: PaginationDep,
+    search: str | None = None,
 ) -> Page[OrderPublic]:
     result = await seller_order_service.list_orders_for_seller(
         session,
         organization.id,
         pagination=pagination,
+        search=search,
     )
     return Page.from_mapped(result, pagination, OrderPublic.model_validate)
 

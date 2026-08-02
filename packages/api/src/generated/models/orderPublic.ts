@@ -8,6 +8,7 @@ import type { OrderStatus } from './orderStatus';
 import type { OrderPublicUpdatedAt } from './orderPublicUpdatedAt';
 import type { OrderItemPublic } from './orderItemPublic';
 import type { OrderCurrencyTotal } from './orderCurrencyTotal';
+import type { OrderPublicCustomer } from './orderPublicCustomer';
 
 export interface OrderPublic {
   id: string;
@@ -19,4 +20,5 @@ export interface OrderPublic {
   updated_at: OrderPublicUpdatedAt;
   items?: OrderItemPublic[];
   totals?: OrderCurrencyTotal[];
+  customer?: OrderPublicCustomer;
 }
