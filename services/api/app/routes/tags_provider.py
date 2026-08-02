@@ -1,10 +1,8 @@
-from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Response
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Response
 
-from app.deps import get_db
+from app.deps import SessionDep
 from app.lib.persistence import get_entity
 from app.lib.persistence.pagination import PaginationDep
 from app.lib.security.deps import ProviderOrgDep
@@ -19,7 +17,7 @@ router = APIRouter(prefix="/tags/provider", tags=["tags"])
 @router.get("/", response_model=Page[TagPublic])
 async def list_tags(
     organization: ProviderOrgDep,
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
     pagination: PaginationDep,
     name: str | None = None,
     is_active: bool | None = None,
@@ -38,7 +36,7 @@ async def list_tags(
 async def get_tag(
     tag_id: UUID,
     organization: ProviderOrgDep,
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
 ) -> TagPublic:
     tag = await get_entity(
         session,
@@ -53,7 +51,7 @@ async def get_tag(
 async def create_tag(
     body: TagCreate,
     organization: ProviderOrgDep,
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
 ) -> TagPublic:
     tag = await tag_service.create_tag(session, organization.id, body)
     return TagPublic.model_validate(tag)
@@ -64,7 +62,7 @@ async def patch_tag(
     tag_id: UUID,
     body: TagUpdate,
     organization: ProviderOrgDep,
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
 ) -> TagPublic:
     tag = await tag_service.update_tag(
         session,
@@ -79,7 +77,7 @@ async def patch_tag(
 async def delete_tag(
     tag_id: UUID,
     organization: ProviderOrgDep,
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
 ) -> Response:
     await tag_service.delete_tag(session, tag_id, organization.id)
     return Response(status_code=204)

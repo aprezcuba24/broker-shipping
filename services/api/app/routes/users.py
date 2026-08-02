@@ -1,9 +1,6 @@
-from typing import Annotated
+from fastapi import APIRouter
 
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.deps import get_db
+from app.deps import SessionDep
 from app.lib.security.deps import CurrentUserDep
 from app.lib.security.tokens import create_access_token
 from app.schemas.auth import (
@@ -30,7 +27,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 @router.post("/register", response_model=UserPublic, status_code=201)
 async def register(
     body: UserRegister,
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
 ) -> UserPublic:
     user = await register_user(session, body)
     return UserPublic.model_validate(user)
@@ -39,7 +36,7 @@ async def register(
 @router.post("/verify-email", response_model=MessageResponse)
 async def verify_email_endpoint(
     body: VerifyEmailRequest,
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
 ) -> MessageResponse:
     await verify_email(session, body.token)
     return MessageResponse(message="Email verified successfully")
@@ -48,7 +45,7 @@ async def verify_email_endpoint(
 @router.post("/resend-verification", response_model=MessageResponse)
 async def resend_verification(
     body: ResendVerificationRequest,
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
 ) -> MessageResponse:
     message = await resend_verification_email(
         session,
@@ -61,7 +58,7 @@ async def resend_verification(
 @router.post("/login", response_model=TokenResponse)
 async def login(
     body: UserLogin,
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
 ) -> TokenResponse:
     user = await authenticate_user(session, body)
     return TokenResponse(access_token=create_access_token(user.id))
@@ -75,7 +72,7 @@ async def me(user: CurrentUserDep) -> UserPublic:
 @router.get("/my-organizations", response_model=list[OrganizationPublic])
 async def my_organizations(
     user: CurrentUserDep,
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
 ) -> list[OrganizationPublic]:
     organizations = await list_user_organizations(session, user.id)
     return [OrganizationPublic.model_validate(org) for org in organizations]

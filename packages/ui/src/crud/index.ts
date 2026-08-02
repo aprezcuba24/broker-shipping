@@ -34,6 +34,7 @@ export {
   updatedAtColumn,
   numberColumn,
   moneyColumn,
+  currencyMoneyColumn,
   booleanColumn,
   badgeColumn,
   componentColumn,

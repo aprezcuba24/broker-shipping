@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
-import { formatPriceCents } from '../../lib/utils'
+import { formatMoney } from '../../lib/utils'
 import { ColumnType, type ColumnDef } from '../../components/data-table/types'
 
 type BaseColumnOptions<TData> = Omit<ColumnDef<TData>, 'type' | 'cell'> & {
@@ -56,9 +56,11 @@ export function moneyColumn<TData>(
   options: BaseColumnOptions<TData> & {
     /** When true, accessor value is already in cents. Default true. */
     cents?: boolean
+    /** Currency code for display. Default `"USD"`. */
+    currency?: string
   },
 ): ColumnDef<TData> {
-  const { cents = true, cell, ...rest } = options
+  const { cents = true, currency = 'USD', cell, ...rest } = options
   return {
     type: ColumnType.Number,
     align: rest.align ?? 'right',
@@ -71,7 +73,45 @@ export function moneyColumn<TData>(
         if (value === null || value === undefined || value === '') return '—'
         const amount = Number(value)
         if (!Number.isFinite(amount)) return String(value)
-        return formatPriceCents(cents ? amount : Math.round(amount * 100))
+        const centsValue = cents ? amount : Math.round(amount * 100)
+        return formatMoney(centsValue, currency)
+      }),
+  }
+}
+
+export function currencyMoneyColumn<TData>(
+  options: BaseColumnOptions<TData> & {
+    /** Field that holds the currency code (e.g. `"cup"`, `"usd"`). Default `"currency"`. */
+    currencyAccessor?: keyof TData & string
+  },
+): ColumnDef<TData> {
+  const { currencyAccessor = 'currency' as keyof TData & string, cell, ...rest } = options
+  return {
+    type: ColumnType.Number,
+    align: rest.align ?? 'right',
+    ...rest,
+    cell:
+      cell ??
+      ((row) => {
+        const amountKey = rest.accessor ?? rest.id
+        const amount = (row as Record<string, unknown>)[amountKey]
+        const currency = (row as Record<string, unknown>)[currencyAccessor]
+        if (
+          amount === null ||
+          amount === undefined ||
+          amount === '' ||
+          typeof currency !== 'string' ||
+          !currency
+        ) {
+          return '—'
+        }
+        const cents = Number(amount)
+        if (!Number.isFinite(cents)) return '—'
+        return (
+          <span className="tabular-nums text-sm">
+            {formatMoney(cents, currency)}
+          </span>
+        )
       }),
   }
 }

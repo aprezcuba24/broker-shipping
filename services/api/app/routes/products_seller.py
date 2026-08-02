@@ -1,10 +1,8 @@
-from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter
 
-from app.deps import get_db
+from app.deps import SessionDep
 from app.lib.persistence.pagination import PaginationDep
 from app.lib.security.deps import CurrentUserDep, OptionalSellerOrgDep
 from app.schemas.pagination import Page
@@ -18,7 +16,7 @@ router = APIRouter(prefix="/products/seller", tags=["products"])
 async def list_products(
     user: CurrentUserDep,
     organization: OptionalSellerOrgDep,
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
     pagination: PaginationDep,
     name: str | None = None,
     provider_id: UUID | None = None,
@@ -40,7 +38,7 @@ async def get_product(
     product_id: UUID,
     user: CurrentUserDep,
     organization: OptionalSellerOrgDep,
-    session: Annotated[AsyncSession, Depends(get_db)],
+    session: SessionDep,
 ) -> ProductPublic:
     seller_org_id = organization.id if organization is not None else None
     product = await seller_product_service.get_accessible_product(

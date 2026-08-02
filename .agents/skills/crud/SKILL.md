@@ -106,7 +106,7 @@ No context file. Columns receive handlers via a factory — explicit and traceab
 | Export | Role |
 |--------|------|
 | `DataTable` | Configurable table + mobile cards + pagination |
-| `textColumn` / `dateColumn` / `dateTimeColumn` / `createdAtColumn` / `updatedAtColumn` / `numberColumn` / `moneyColumn` / `booleanColumn` / `badgeColumn` / `linkColumn` / `actionsColumn` | Column builders (or write `ColumnDef` by hand) |
+| `textColumn` / `dateColumn` / `dateTimeColumn` / `createdAtColumn` / `updatedAtColumn` / `numberColumn` / `moneyColumn` / `currencyMoneyColumn` / `booleanColumn` / `badgeColumn` / `linkColumn` / `actionsColumn` | Column builders (or write `ColumnDef` by hand) |
 | `FilterBar` / `FilterForm` / `ClearFiltersButton` | Filter layouts |
 | `DebouncedInput` / `EntitySelect` / `ListFilterBar` | Filter controls |
 | `EntityFormDialog` | Modal form shell (`Form` prop) |

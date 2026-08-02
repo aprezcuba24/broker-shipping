@@ -1,4 +1,4 @@
-"""Seed a demo provider organization with one user and one product."""
+"""Seed a demo provider organization with one user and two products."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.lib.security.passwords import hash_password
 from app.lib.utils import utc_now
+from app.models.order.enums import Currency
 from app.models.organization.enums import OrganizationType
 from app.models.organization.organization import Organization
 from app.models.organization.user_organization import UserOrganization
@@ -18,7 +19,8 @@ USER_EMAIL = "provider@example.com"
 USER_PASSWORD = "password123"
 USER_NAME = "Provider Demo"
 ORG_NAME = "Demo Provider"
-PRODUCT_NAME = "Producto demo"
+PRODUCT_NAME_CUP = "Producto demo CUP"
+PRODUCT_NAME_USD = "Producto demo USD"
 
 
 async def run(session: AsyncSession) -> None:
@@ -43,14 +45,26 @@ async def run(session: AsyncSession) -> None:
             is_active=True,
         ),
     )
-    session.add(
-        Product(
-            name=PRODUCT_NAME,
-            organization_id=org.id,
-        ),
+    session.add_all(
+        [
+            Product(
+                name=PRODUCT_NAME_CUP,
+                organization_id=org.id,
+                price=10000,
+                commission=500,
+                currency=Currency.cup,
+            ),
+            Product(
+                name=PRODUCT_NAME_USD,
+                organization_id=org.id,
+                price=2500,
+                commission=250,
+                currency=Currency.usd,
+            ),
+        ],
     )
     await session.flush()
 
     print(f"  [{NAME}] user={USER_EMAIL} password={USER_PASSWORD}")
     print(f"  [{NAME}] org={ORG_NAME} id={org.id}")
-    print(f"  [{NAME}] product={PRODUCT_NAME}")
+    print(f"  [{NAME}] products={PRODUCT_NAME_CUP}, {PRODUCT_NAME_USD}")
