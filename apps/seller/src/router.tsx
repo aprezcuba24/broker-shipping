@@ -11,6 +11,7 @@ import { HomePage } from './pages/home'
 import { LoginPage } from './pages/login'
 import { OnboardingPage } from './pages/onboarding'
 import { CartPage } from './pages/cart'
+import { CommissionDetailPage, CommissionPage } from './pages/commission'
 import { OrderDetailPage, OrderPage } from './pages/order'
 import { ProductDetailPage, ProductPage } from './pages/product'
 import { MembersPage } from './pages/members'
@@ -63,6 +64,8 @@ export default function App() {
           <Route path="products/:productId" element={<ProductDetailPage />} />
           <Route path="orders" element={<OrderPage />} />
           <Route path="orders/:orderId" element={<OrderDetailPage />} />
+          <Route path="commissions" element={<CommissionPage />} />
+          <Route path="commissions/:commissionId" element={<CommissionDetailPage />} />
           <Route path="providers" element={<ProvidersPage />} />
           <Route path="members" element={<MembersPage />} />
           <Route path="cart" element={<CartPage />} />

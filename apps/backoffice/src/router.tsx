@@ -12,6 +12,7 @@ import { LoginPage } from './pages/login'
 import { OnboardingPage } from './pages/onboarding'
 import { RegisterPage } from './pages/register'
 import { MembersPage } from './pages/members'
+import { CommissionDetailPage, CommissionPage } from './pages/commission'
 import { OrderDetailPage, OrderPage } from './pages/order'
 import { InvitationsSettingsPage } from './pages/settings/invitations'
 import { OrganizationsSettingsPage } from './pages/settings/organizations'
@@ -65,6 +66,8 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="orders" element={<OrderPage />} />
           <Route path="orders/:orderId" element={<OrderDetailPage />} />
+          <Route path="commissions" element={<CommissionPage />} />
+          <Route path="commissions/:commissionId" element={<CommissionDetailPage />} />
           <Route path="products" element={<ProductPage />} />
           <Route path="products/new" element={<ProductCreatePage />} />
           <Route path="products/:productId" element={<ProductEditPage />} />

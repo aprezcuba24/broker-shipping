@@ -17,7 +17,7 @@ async def list_commissions(
     organization: ProviderOrgDep,
     session: SessionDep,
     pagination: PaginationDep,
-    is_paid: bool | None = False,
+    is_paid: bool | None = None,
 ) -> Page[CommissionPublic]:
     result = await provider_commission_service.list_commissions_for_provider(
         session,

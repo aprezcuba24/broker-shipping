@@ -190,7 +190,7 @@ async def test_provider_mark_paid_removes_from_default_list(
 
     unpaid = await client.get(
         "/commissions/provider/",
-        params=commission_order_ctx["provider_params"],
+        params={**commission_order_ctx["provider_params"], "is_paid": False},
         headers=commission_order_ctx["provider_bearer"],
     )
     assert unpaid.status_code == 200

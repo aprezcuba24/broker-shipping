@@ -19,11 +19,11 @@ async def list_commissions_for_provider(
     provider_organization_id: UUID,
     *,
     pagination: PaginationParams,
-    is_paid: bool | None = False,
+    is_paid: bool | None = None,
 ) -> PageResult[Commission]:
-    """List commissions the provider must pay.
+    """List commissions for a provider organization.
 
-    Default ``is_paid=False`` shows unpaid commissions only.
+    When ``is_paid`` is ``None``, returns both paid and unpaid commissions.
     """
     stmt = select(Commission).where(
         Commission.provider_organization_id == provider_organization_id

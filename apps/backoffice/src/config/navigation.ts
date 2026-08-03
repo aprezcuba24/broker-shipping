@@ -1,5 +1,6 @@
 import {
   Building2,
+  CircleDollarSign,
   ClipboardList,
   LayoutDashboard,
   Link2,
@@ -19,6 +20,7 @@ export const backofficeBrand: SidebarBrand = {
 export const backofficeNavItems: NavItem[] = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { to: '/orders', label: 'Órdenes', icon: ClipboardList },
+  { to: '/commissions', label: 'Comisiones', icon: CircleDollarSign },
   { to: '/products', label: 'Productos', icon: Package },
   { to: '/tags', label: 'Etiquetas', icon: Tag },
   { to: '/members', label: 'Miembros', icon: Users },
