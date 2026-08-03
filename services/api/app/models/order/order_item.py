@@ -77,3 +77,11 @@ class OrderItem(EntityModel, table=True):
     seller_commission: int = Field(
         sa_column=Column(BigInteger, nullable=False),
     )
+    commission_id: UUID | None = Field(
+        default=None,
+        sa_column=Column(
+            ForeignKey("commission.id", ondelete="SET NULL"),
+            nullable=True,
+            index=True,
+        ),
+    )

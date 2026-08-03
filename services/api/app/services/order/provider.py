@@ -6,11 +6,13 @@ from fastapi import HTTPException
 from sqlalchemy import exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.events.types import OrderItemDeliveredEvent
+from app.lib.events import emit
 from app.lib.persistence import get_entity
 from app.lib.persistence.pagination import paginate
 from app.lib.utils import utc_now
 from app.models.customer.customer import Customer
-from app.models.order.enums import OrderStatus
+from app.models.order.enums import OrderItemStatus, OrderStatus
 from app.models.order.order import Order
 from app.models.order.order_item import OrderItem
 from app.models.organization.provider_seller_link import ProviderSellerLink
@@ -124,6 +126,8 @@ async def update_provider_items_status(
         raise HTTPException(status_code=404, detail="Not found")
 
     target = data.status
+    previous_statuses = {item.id: item.status for item in provider_items}
+
     for item in provider_items:
         item_status_service.assert_transition(item.status, target)
 
@@ -148,4 +152,13 @@ async def update_provider_items_status(
     await session.refresh(order)
     for item in provider_items:
         await session.refresh(item)
+
+    if target == OrderItemStatus.delivered:
+        for item in provider_items:
+            if previous_statuses[item.id] != OrderItemStatus.delivered:
+                await emit(
+                    OrderItemDeliveredEvent(order_item_id=item.id),
+                    background=False,
+                )
+
     return attach_order_view(order, provider_items)

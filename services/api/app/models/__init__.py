@@ -1,6 +1,14 @@
 from sqlmodel import SQLModel
 
-from app.models import customer, location, order, organization, product, user
+from app.models import (
+    commission,
+    customer,
+    location,
+    order,
+    organization,
+    product,
+    user,
+)
 
 
 def get_all_table_models() -> tuple[type[SQLModel], ...]:
@@ -12,6 +20,7 @@ def get_all_table_models() -> tuple[type[SQLModel], ...]:
         *location.DOMAIN_MODELS,
         *customer.DOMAIN_MODELS,
         *order.DOMAIN_MODELS,
+        *commission.DOMAIN_MODELS,
     )
 
 
