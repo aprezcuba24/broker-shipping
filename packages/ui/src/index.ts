@@ -8,6 +8,12 @@ export {
 } from './lib/utils'
 export { initialsFromName } from './lib/initials'
 
+export { AuthPageShell } from './components/auth/auth-page-shell'
+export type {
+  AuthPageShellProps,
+  AuthPortalBranding,
+  PortalVariant,
+} from './components/auth/auth-page-shell'
 export { LoginForm, AuthFormLink } from './components/auth/login-form'
 export type { LoginFields, LoginFormProps } from './components/auth/login-form'
 export { RegisterForm } from './components/auth/register-form'

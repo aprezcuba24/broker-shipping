@@ -3,10 +3,13 @@ import { X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { SidebarProps } from './types'
 
-const linkClassName =
-  'flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 text-on-surface-variant hover:bg-surface-container-highest/50 hover:translate-x-1'
+const linkBaseClassName =
+  'flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 hover:translate-x-1'
 
-const activeLinkClassName = 'bg-surface-container-lowest text-on-surface shadow-sm font-semibold'
+const linkInactiveClassName =
+  'text-on-surface-variant hover:bg-surface-container-highest/50'
+
+const linkActiveClassName = 'bg-ds-primary text-on-primary shadow-sm font-semibold'
 
 export function Sidebar({ isOpen, onClose, navItems, bottomItems = [], brand, cta }: SidebarProps) {
   const BrandIcon = brand.icon
@@ -20,6 +23,7 @@ export function Sidebar({ isOpen, onClose, navItems, bottomItems = [], brand, ct
       <aside
         className={[
           'h-screen w-64 bg-surface-container-low flex flex-col p-4 gap-2 text-sm font-medium text-on-surface',
+          'border-l-[3px] border-ds-primary',
           'fixed lg:static left-0 top-0 z-50',
           'transition-transform duration-300 ease-in-out',
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
@@ -32,7 +36,7 @@ export function Sidebar({ isOpen, onClose, navItems, bottomItems = [], brand, ct
             </div>
             <div>
               <div className="font-headline text-lg font-extrabold">{brand.title}</div>
-              <div className="text-[10px] uppercase tracking-widest text-on-surface-variant opacity-70">
+              <div className="text-[10px] uppercase tracking-widest text-ds-primary font-bold">
                 {brand.subtitle}
               </div>
             </div>
@@ -87,7 +91,9 @@ function SidebarNavLink({
       to={item.to}
       end={item.exact}
       onClick={() => onClose()}
-      className={({ isActive }) => [linkClassName, isActive ? activeLinkClassName : ''].join(' ')}
+      className={({ isActive }) =>
+        [linkBaseClassName, isActive ? linkActiveClassName : linkInactiveClassName].join(' ')
+      }
     >
       <Icon className="h-[18px] w-[18px]" />
       <span>{item.label}</span>

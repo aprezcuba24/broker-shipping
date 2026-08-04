@@ -3,6 +3,24 @@
 @source "../../../packages/ui/src";
 @import '@broker/ui/styles.css';
 
+/* Portal vendedores — teal / esmeralda */
+html[data-portal='seller'] {
+  --primary: 174 100% 21%;
+  --ring: 174 100% 21%;
+  --foreground: 170 35% 10%;
+  --muted-foreground: 170 22% 22%;
+  --color-ds-primary: #006b62;
+  --color-primary-dim: #005e56;
+  --color-primary-container: #9dd4cc;
+  --color-on-primary-container: #003d38;
+  --color-surface-container-low: #a8c5bf;
+  --color-surface-tint: #006b62;
+  /* Texto más oscuro sobre el chrome teal (sidebar / header) */
+  --color-on-surface: #0a1a17;
+  --color-on-surface-variant: #1a3530;
+  --color-on-background: #0a1a17;
+}
+
 @keyframes cart-pulse {
   0%,
   100% {

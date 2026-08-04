@@ -1,5 +1,6 @@
 import { AuthFormLink, Button, LoginForm } from '@broker/ui'
 import { useLoginPage } from '@/hooks/use-login-page'
+import { portalTheme } from '@/config/portal-theme'
 
 export function LoginPage() {
   const login = useLoginPage()
@@ -7,7 +8,8 @@ export function LoginPage() {
   return (
     <LoginForm
       title="Broker"
-      description="Portal de proveedores. Introduce tus credenciales para continuar."
+      description="Introduce tus credenciales para continuar."
+      portal={portalTheme}
       schema={login.schema}
       isSubmitting={login.isSubmitting}
       error={login.error}

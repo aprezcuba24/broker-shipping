@@ -1,5 +1,9 @@
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
+import {
+  AuthPageShell,
+  type AuthPortalBranding,
+} from '../components/auth/auth-page-shell'
 
 export type AcceptInvitationStatus = 'loading' | 'success' | 'error' | 'needs-auth' | 'needs-org'
 
@@ -10,6 +14,7 @@ export type AcceptInvitationCardProps = {
   onGoHome?: () => void
   onGoLogin?: () => void
   onGoOnboarding?: () => void
+  portal?: AuthPortalBranding
 }
 
 export function AcceptInvitationCard({
@@ -19,6 +24,7 @@ export function AcceptInvitationCard({
   onGoHome,
   onGoLogin,
   onGoOnboarding,
+  portal,
 }: AcceptInvitationCardProps) {
   const title =
     status === 'success'
@@ -41,36 +47,42 @@ export function AcceptInvitationCard({
           ? 'Para aceptar este enlace comercial necesitas una organización vendedora.'
           : null)
 
+  const card = (
+    <Card className="w-full max-w-md border-border shadow-lg">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-2xl font-headline">{title}</CardTitle>
+        {description ? <CardDescription>{description}</CardDescription> : null}
+      </CardHeader>
+      <CardContent className="flex flex-col gap-2">
+        {status === 'success' && onGoHome ? (
+          <Button type="button" onClick={onGoHome}>
+            Ir al inicio
+          </Button>
+        ) : null}
+        {status === 'error' && onRetry ? (
+          <Button type="button" onClick={onRetry}>
+            Reintentar
+          </Button>
+        ) : null}
+        {status === 'needs-auth' && onGoLogin ? (
+          <Button type="button" onClick={onGoLogin}>
+            Iniciar sesión
+          </Button>
+        ) : null}
+        {status === 'needs-org' && onGoOnboarding ? (
+          <Button type="button" onClick={onGoOnboarding}>
+            Crear organización
+          </Button>
+        ) : null}
+      </CardContent>
+    </Card>
+  )
+
+  if (portal) {
+    return <AuthPageShell {...portal}>{card}</AuthPageShell>
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md border-border shadow-lg">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-headline">{title}</CardTitle>
-          {description ? <CardDescription>{description}</CardDescription> : null}
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2">
-          {status === 'success' && onGoHome ? (
-            <Button type="button" onClick={onGoHome}>
-              Ir al inicio
-            </Button>
-          ) : null}
-          {status === 'error' && onRetry ? (
-            <Button type="button" onClick={onRetry}>
-              Reintentar
-            </Button>
-          ) : null}
-          {status === 'needs-auth' && onGoLogin ? (
-            <Button type="button" onClick={onGoLogin}>
-              Iniciar sesión
-            </Button>
-          ) : null}
-          {status === 'needs-org' && onGoOnboarding ? (
-            <Button type="button" onClick={onGoOnboarding}>
-              Crear organización
-            </Button>
-          ) : null}
-        </CardContent>
-      </Card>
-    </div>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">{card}</div>
   )
 }

@@ -14,7 +14,6 @@ export function BackofficeLayout() {
 
   return (
     <AppLayout
-      headerTitle="Portal proveedores"
       headerExtra={<OrganizationSelect />}
       navItems={backofficeNavItems}
       bottomItems={backofficeBottomItems}

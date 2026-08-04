@@ -16,7 +16,6 @@ export function SellerLayout() {
 
   return (
     <AppLayout
-      headerTitle="Portal vendedores"
       headerExtra={<OrganizationSelect />}
       headerActions={<CartHeaderButton />}
       navItems={sellerNavItems}

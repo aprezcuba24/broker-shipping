@@ -37,6 +37,7 @@ export type TopHeaderUser = {
 
 export type TopHeaderProps = {
   title?: string
+  portalBadge?: string
   onMenuClick?: () => void
   onLogout?: () => void
   user?: TopHeaderUser
@@ -46,6 +47,7 @@ export type TopHeaderProps = {
 
 export type AppLayoutProps = {
   headerTitle?: string
+  portalBadge?: string
   navItems: NavItem[]
   bottomItems?: NavItem[]
   brand: SidebarBrand

@@ -2,3 +2,15 @@
 @import 'tailwindcss';
 @source "../../../packages/ui/src";
 @import '@broker/ui/styles.css';
+
+/* Portal proveedores — índigo / slate */
+html[data-portal='provider'] {
+  --primary: 226 18% 42%;
+  --ring: 226 18% 42%;
+  --color-ds-primary: #4f5b8c;
+  --color-primary-dim: #434f7a;
+  --color-primary-container: #e8edfc;
+  --color-on-primary-container: #4a5167;
+  --color-surface-container-low: #eef1f8;
+  --color-surface-tint: #4f5b8c;
+}
