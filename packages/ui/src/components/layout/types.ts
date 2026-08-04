@@ -32,6 +32,7 @@ export type SidebarProps = {
 export type TopHeaderUser = {
   name: string
   role: string
+  organization?: string
   initials: string
 }
 
@@ -41,6 +42,7 @@ export type TopHeaderProps = {
   onMenuClick?: () => void
   onLogout?: () => void
   user?: TopHeaderUser
+  userMenuExtra?: ReactNode
   headerExtra?: ReactNode
   headerActions?: ReactNode
 }
@@ -54,6 +56,7 @@ export type AppLayoutProps = {
   cta?: SidebarCta
   onLogout?: () => void
   user?: TopHeaderUser
+  userMenuExtra?: ReactNode
   headerExtra?: ReactNode
   headerActions?: ReactNode
 }

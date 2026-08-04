@@ -13,6 +13,7 @@ export function AppLayout({
   cta,
   onLogout,
   user,
+  userMenuExtra,
   headerExtra,
   headerActions,
 }: AppLayoutProps) {
@@ -55,6 +56,7 @@ export function AppLayout({
           onMenuClick={() => setSidebarOpen(true)}
           onLogout={onLogout}
           user={user}
+          userMenuExtra={userMenuExtra}
           headerExtra={headerExtra}
           headerActions={headerActions}
         />

@@ -272,6 +272,7 @@ export type {
   ActiveOrganizationProviderProps,
 } from './organization/active-organization-context'
 export { OrganizationSelect } from './organization/organization-select'
+export { OrganizationMenuSection } from './organization/organization-menu-section'
 export { OrganizationScopedApiProvider } from './organization/organization-scoped-api-provider'
 export { RequireOrganization } from './organization/require-organization'
 export type { RequireOrganizationProps } from './organization/require-organization'

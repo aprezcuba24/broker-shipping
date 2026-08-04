@@ -21,6 +21,7 @@ export function TopHeader({
   onMenuClick,
   onLogout,
   user = defaultUser,
+  userMenuExtra,
   headerExtra,
   headerActions,
 }: TopHeaderProps) {
@@ -52,8 +53,6 @@ export function TopHeader({
           <div className="w-full min-w-0 sm:w-auto sm:max-w-[14rem] sm:shrink-0">{headerExtra}</div>
         ) : null}
 
-        <div className="hidden sm:block h-6 w-px bg-outline-variant/30 mx-2" />
-
         <div className="hidden sm:flex items-center bg-surface-container-highest px-3 py-1.5 rounded-full text-sm font-normal text-on-surface-variant flex-1 max-w-xs">
           <Search className="h-4 w-4 mr-2 shrink-0" />
           <input
@@ -80,13 +79,14 @@ export function TopHeader({
               <ChevronDown className="hidden sm:block h-4 w-4 text-on-surface-variant shrink-0" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" sideOffset={8} className="min-w-44">
+          <DropdownMenuContent align="end" sideOffset={8} className="min-w-52">
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col gap-0.5">
                 <span className="text-sm font-semibold text-on-surface">{user.name}</span>
                 <span className="text-xs text-muted-foreground">{user.role}</span>
               </div>
             </DropdownMenuLabel>
+            {userMenuExtra}
             {onLogout ? (
               <>
                 <DropdownMenuSeparator />
@@ -104,10 +104,12 @@ export function TopHeader({
 }
 
 function UserMeta({ user }: { user: NonNullable<TopHeaderProps['user']> }) {
+  const subtitle = user.organization ?? user.role
+
   return (
-    <div className="text-right hidden md:block">
-      <p className="text-sm font-bold leading-none text-on-surface">{user.name}</p>
-      <p className="text-[10px] text-on-surface-variant">{user.role}</p>
+    <div className="text-right hidden md:block min-w-0 max-w-[12rem]">
+      <p className="text-sm font-bold leading-none text-on-surface truncate">{user.name}</p>
+      <p className="text-[10px] text-on-surface-variant truncate">{subtitle}</p>
     </div>
   )
 }
