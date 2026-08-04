@@ -211,6 +211,60 @@ async def test_seller_link_request_reject(
     assert reject.json()["status"] == "rejected"
 
 
+async def test_list_pending_member_invitations(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    mock_invitation_emails: list[dict[str, str]],
+) -> None:
+    owner = await user_factory.build(email="owner@list.com")
+    org = await organization_factory.build(user_id=owner["id"])
+    headers = bearer_headers(user_id=owner["id"])
+
+    create = await client.post(
+        f"/organizations/{org['id']}/member-invitations",
+        json={"invitee_email": "pending@example.com"},
+        headers=headers,
+    )
+    assert create.status_code == 201
+    inv_id = create.json()["id"]
+
+    listed = await client.get(
+        f"/organizations/{org['id']}/member-invitations",
+        headers=headers,
+    )
+    assert listed.status_code == 200
+    body = listed.json()
+    assert len(body) == 1
+    assert body[0]["id"] == inv_id
+    assert body[0]["invitee_email"] == "pending@example.com"
+    assert body[0]["kind"] == "member_invite"
+    assert body[0]["status"] == "pending"
+
+    members = await client.get(
+        f"/organizations/{org['id']}/members",
+        headers=headers,
+    )
+    assert members.status_code == 200
+    member_body = members.json()
+    assert len(member_body) == 1
+    assert member_body[0]["email"] == "owner@list.com"
+    assert member_body[0]["name"]
+
+    cancel = await client.delete(
+        f"/organizations/{org['id']}/invitations/{inv_id}",
+        headers=headers,
+    )
+    assert cancel.status_code == 204
+
+    listed_after = await client.get(
+        f"/organizations/{org['id']}/member-invitations",
+        headers=headers,
+    )
+    assert listed_after.status_code == 200
+    assert listed_after.json() == []
+
+
 async def test_cancel_member_invite(
     client: AsyncClient,
     user_factory: UserFactory,

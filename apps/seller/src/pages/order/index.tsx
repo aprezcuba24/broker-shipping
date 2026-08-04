@@ -4,7 +4,9 @@ import {
   type ListOrdersOrdersSellerGetParams,
 } from '@broker/api'
 import {
+  buildSellerOrderColumns,
   DataTable,
+  OrderFilters,
   PageWrapper,
   useActiveOrganization,
   useListParams,
@@ -13,18 +15,18 @@ import {
 import { ClipboardList } from 'lucide-react'
 import { useMemo } from 'react'
 
-import { buildOrderColumns } from './columns'
-import { OrderFilters } from './filters'
-
 export function OrderPage() {
   const { activeOrganization } = useActiveOrganization()
   const list = useListParams({
-    filterKeys: ['search'] as const,
+    filterKeys: ['search', 'status'] as const,
     defaultPageSize: 20,
   })
 
   const query = useListOrdersOrdersSellerGet({
-    ...list.queryParams,
+    page: list.queryParams.page,
+    page_size: list.queryParams.page_size,
+    search: list.queryParams.search || undefined,
+    status: list.queryParams.status || undefined,
   } as ListOrdersOrdersSellerGetParams)
 
   useResetOnChange({
@@ -34,7 +36,7 @@ export function OrderPage() {
     setPage: list.setPage,
   })
 
-  const columns = useMemo(() => buildOrderColumns(), [])
+  const columns = useMemo(() => buildSellerOrderColumns(), [])
 
   const items = query.data?.items ?? []
   const total = query.data?.total ?? 0

@@ -21,6 +21,7 @@ from app.models.organization.organization_invitation import OrganizationInvitati
 from app.models.organization.user_organization import UserOrganization
 from app.models.user.user import User
 from app.schemas.invitation import InvitationCreatedResponse, InvitationPublic, MemberPublic
+from app.services import membership as membership_service
 from app.services import organization as org_service
 from app.services import provider_seller_link as link_service
 
@@ -170,7 +171,7 @@ async def accept_member_invite(
     session.add(invitation)
     await session.commit()
     await session.refresh(membership)
-    return MemberPublic.model_validate(membership)
+    return membership_service.to_member_public(membership, user)
 
 
 async def accept_seller_link_request(
@@ -212,7 +213,8 @@ async def accept_seller_link_request(
     session.add(invitation)
     await session.commit()
     await session.refresh(membership)
-    return MemberPublic.model_validate(membership)
+    user = await get_entity(session, User, id=invitation.user_id)
+    return membership_service.to_member_public(membership, user)
 
 
 async def reject_seller_link_request(
@@ -268,6 +270,22 @@ async def list_pending_for_organization(
         select(OrganizationInvitation)
         .where(
             OrganizationInvitation.organization_id == organization_id,
+            OrganizationInvitation.status == InvitationStatus.pending,
+        )
+        .order_by(OrganizationInvitation.created_at.desc())
+    )
+    return [InvitationPublic.model_validate(r) for r in result.scalars().all()]
+
+
+async def list_pending_member_invites(
+    session: AsyncSession,
+    organization_id: UUID,
+) -> list[InvitationPublic]:
+    result = await session.execute(
+        select(OrganizationInvitation)
+        .where(
+            OrganizationInvitation.organization_id == organization_id,
+            OrganizationInvitation.kind == InvitationKind.member_invite,
             OrganizationInvitation.status == InvitationStatus.pending,
         )
         .order_by(OrganizationInvitation.created_at.desc())

@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.models.organization.enums import InvitationKind, InvitationStatus
 from app.schemas.fields import NonEmptyStr, NormalizedEmail
@@ -24,6 +24,8 @@ class MemberPublic(BaseModel):
 
     user_id: UUID
     organization_id: UUID
+    name: str
+    email: EmailStr
     is_active: bool
     joined_at: datetime
 

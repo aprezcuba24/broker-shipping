@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from app.deps import SessionDep
 from app.lib.persistence.pagination import PaginationDep
 from app.lib.security.deps import CurrentUserDep, SellerOrgDep
+from app.models.order.enums import OrderStatus
 from app.schemas.order import OrderCreate, OrderPreviewItems, OrderPublic
 from app.schemas.pagination import Page
 from app.services.order import seller as seller_order_service
@@ -18,12 +19,14 @@ async def list_orders(
     session: SessionDep,
     pagination: PaginationDep,
     search: str | None = None,
+    status: OrderStatus | None = None,
 ) -> Page[OrderPublic]:
     result = await seller_order_service.list_orders_for_seller(
         session,
         organization.id,
         pagination=pagination,
         search=search,
+        status=status,
     )
     return Page.from_mapped(result, pagination, OrderPublic.model_validate)
 

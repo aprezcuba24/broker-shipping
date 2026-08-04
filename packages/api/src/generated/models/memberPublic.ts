@@ -8,6 +8,8 @@
 export interface MemberPublic {
   user_id: string;
   organization_id: string;
+  name: string;
+  email: string;
   is_active: boolean;
   joined_at: string;
 }

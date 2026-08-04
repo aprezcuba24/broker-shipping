@@ -6,6 +6,8 @@ export type DetailSectionField<TData> = {
   title: string
   accessor: (data: TData) => unknown
   format?: (value: unknown) => ReactNode
+  /** Span the full grid row (all columns). */
+  fullWidth?: boolean
 }
 
 export type DetailSectionProps<TData> = {
@@ -30,7 +32,10 @@ export function DetailSection<TData>({
       <h2 className="text-sm font-semibold text-foreground">{title}</h2>
       <dl className={cn('grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3')}>
         {fields.map((field) => (
-          <div key={field.title} className="space-y-1">
+          <div
+            key={field.title}
+            className={cn('space-y-1', field.fullWidth && 'col-span-full')}
+          >
             <dt className="text-xs font-medium text-muted-foreground">{field.title}</dt>
             <dd className="text-sm text-foreground">
               {renderFieldValue(field.accessor(data), field.format)}

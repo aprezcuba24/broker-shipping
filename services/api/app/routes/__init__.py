@@ -11,6 +11,7 @@ from app.routes import (
     tags_seller,
     users,
 )
+from app.routes.commission import commissions_provider, commissions_seller
 from app.routes.customer import customers_seller
 from app.routes.order import orders_provider, orders_seller
 from app.routes.organization import (
@@ -30,6 +31,8 @@ router.include_router(tags_provider.router)
 router.include_router(tags_seller.router)
 router.include_router(orders_seller.router)
 router.include_router(orders_provider.router)
+router.include_router(commissions_provider.router)
+router.include_router(commissions_seller.router)
 router.include_router(customers_seller.router)
 router.include_router(locations.router)
 router.include_router(organizations.router)

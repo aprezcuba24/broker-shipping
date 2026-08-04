@@ -7,7 +7,19 @@ from sqlmodel import select
 
 from app.lib.persistence import get_entity
 from app.models.organization.user_organization import UserOrganization
+from app.models.user.user import User
 from app.schemas.invitation import MemberPublic
+
+
+def to_member_public(membership: UserOrganization, user: User) -> MemberPublic:
+    return MemberPublic(
+        user_id=membership.user_id,
+        organization_id=membership.organization_id,
+        name=user.name,
+        email=user.email,
+        is_active=membership.is_active,
+        joined_at=membership.joined_at,
+    )
 
 
 async def list_members(
@@ -15,11 +27,12 @@ async def list_members(
     organization_id: UUID,
 ) -> list[MemberPublic]:
     result = await session.execute(
-        select(UserOrganization)
+        select(UserOrganization, User)
+        .join(User, User.id == UserOrganization.user_id)
         .where(UserOrganization.organization_id == organization_id)
         .order_by(UserOrganization.joined_at)
     )
-    return [MemberPublic.model_validate(row) for row in result.scalars().all()]
+    return [to_member_public(membership, user) for membership, user in result.all()]
 
 
 async def set_member_is_active(
@@ -39,4 +52,5 @@ async def set_member_is_active(
     session.add(membership)
     await session.commit()
     await session.refresh(membership)
-    return MemberPublic.model_validate(membership)
+    user = await get_entity(session, User, id=user_id)
+    return to_member_public(membership, user)

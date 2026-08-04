@@ -4,20 +4,18 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  MemberInviteForm,
   PageWrapper,
   SellerLinkRequestsList,
 } from '@broker/ui'
-import { Mail } from 'lucide-react'
+import { Link2 } from 'lucide-react'
 import { useInvitationsSettings } from '@/hooks/use-invitations-settings'
 
 export function InvitationsSettingsPage() {
-  const { hasActiveOrg, memberInviteProps, sellerLinkRequestsProps } =
-    useInvitationsSettings()
+  const { hasActiveOrg, sellerLinkRequestsProps } = useInvitationsSettings()
 
   if (!hasActiveOrg) {
     return (
-      <PageWrapper title="Invitaciones" description="Selecciona una organización.">
+      <PageWrapper title="Solicitudes de enlace" description="Selecciona una organización.">
         <p className="text-sm text-muted-foreground">No hay organización activa.</p>
       </PageWrapper>
     )
@@ -25,25 +23,13 @@ export function InvitationsSettingsPage() {
 
   return (
     <PageWrapper
-      title="Invitaciones"
-      description="Invita miembros a tu organización y gestiona solicitudes de enlace de vendedores."
-      icon={Mail}
+      title="Solicitudes de enlace"
+      description="Gestiona solicitudes de enlace de organizaciones vendedoras."
+      icon={Link2}
     >
       <Card>
         <CardHeader>
-          <CardTitle>Invitar miembro</CardTitle>
-          <CardDescription>
-            Se enviará un correo con un enlace de aceptación.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <MemberInviteForm {...memberInviteProps} />
-        </CardContent>
-      </Card>
-
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Solicitudes de enlace pendientes</CardTitle>
+          <CardTitle>Solicitudes pendientes</CardTitle>
           <CardDescription>
             Organizaciones vendedoras que solicitaron enlazarse contigo.
           </CardDescription>

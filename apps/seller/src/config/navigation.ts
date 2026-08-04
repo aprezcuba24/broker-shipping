@@ -1,11 +1,12 @@
 import {
   Building2,
+  CircleDollarSign,
   ClipboardList,
   LayoutDashboard,
-  Link2,
-  Mail,
   Package,
   Store,
+  Truck,
+  Users,
 } from 'lucide-react'
 import type { NavItem, SidebarBrand } from '@broker/ui'
 
@@ -19,8 +20,9 @@ export const sellerNavItems: NavItem[] = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { to: '/products', label: 'Productos', icon: Package },
   { to: '/orders', label: 'Órdenes', icon: ClipboardList },
-  { to: '/providers/link-request', label: 'Proveedores', icon: Link2 },
-  { to: '/settings/invitations', label: 'Invitaciones', icon: Mail },
+  { to: '/commissions', label: 'Comisiones', icon: CircleDollarSign },
+  { to: '/providers', label: 'Proveedores', icon: Truck },
+  { to: '/members', label: 'Miembros', icon: Users },
   { to: '/settings/organizations', label: 'Organizaciones', icon: Building2 },
 ]
 
