@@ -29,6 +29,7 @@ import type {
   HTTPValidationError,
   InvitationCreatedResponse,
   InvitationPublic,
+  LinkedSellerPublic,
   ListProvidersOrganizationsSellerProvidersGetParams,
   MemberInviteCreate,
   MemberIsActivePatch,
@@ -867,7 +868,7 @@ export const listLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGe
 ) => {
       
       
-      return brokerFetch<OrganizationPublic[]>(
+      return brokerFetch<LinkedSellerPublic[]>(
       {url: `/organizations/provider/${organizationId}/linked-sellers`, method: 'GET', signal
     },
       options);

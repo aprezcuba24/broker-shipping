@@ -1,4 +1,6 @@
 import {
+  getGetProviderDashboardDashboardProviderGetQueryKey,
+  getListLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGetQueryKey,
   getListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGetQueryKey,
   useAcceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPost,
   useListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet,
@@ -25,12 +27,21 @@ export function useInvitationsSettings() {
 
   const invalidate = async () => {
     if (!orgId) return
-    await queryClient.invalidateQueries({
-      queryKey:
-        getListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGetQueryKey(
-          orgId,
-        ),
-    })
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey:
+          getListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGetQueryKey(
+            orgId,
+          ),
+      }),
+      queryClient.invalidateQueries({
+        queryKey:
+          getListLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGetQueryKey(orgId),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: getGetProviderDashboardDashboardProviderGetQueryKey(),
+      }),
+    ])
   }
 
   return {

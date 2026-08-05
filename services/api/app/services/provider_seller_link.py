@@ -2,17 +2,24 @@ from __future__ import annotations
 
 from uuid import UUID
 
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.lib.persistence import get_entity
 from app.lib.security.access import is_super_admin, list_all_provider_organization_ids
 from app.lib.utils import utc_now
+from app.models.commission.commission import Commission
 from app.models.organization.enums import OrganizationType
 from app.models.organization.organization import Organization
 from app.models.organization.provider_seller_link import ProviderSellerLink
 from app.models.organization.user_organization import UserOrganization
 from app.models.user.user import User
+
+_UNLINK_PENDING_COMMISSIONS_DETAIL = (
+    "No se puede desvincular la organización mientras existan "
+    "comisiones pendientes de pago."
+)
 
 
 async def has_active_link(
@@ -57,6 +64,21 @@ async def link_provider_to_seller(
     return link
 
 
+async def has_pending_commissions(
+    session: AsyncSession,
+    provider_organization_id: UUID,
+    seller_organization_id: UUID,
+) -> bool:
+    result = await session.execute(
+        select(Commission.id).where(
+            Commission.provider_organization_id == provider_organization_id,
+            Commission.seller_organization_id == seller_organization_id,
+            Commission.is_paid.is_(False),
+        ).limit(1)
+    )
+    return result.scalar_one_or_none() is not None
+
+
 async def set_link_active(
     session: AsyncSession,
     provider_organization_id: UUID,
@@ -64,6 +86,15 @@ async def set_link_active(
     *,
     is_active: bool,
 ) -> None:
+    if not is_active and await has_pending_commissions(
+        session,
+        provider_organization_id,
+        seller_organization_id,
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail=_UNLINK_PENDING_COMMISSIONS_DETAIL,
+        )
     link = await get_entity(
         session,
         ProviderSellerLink,
@@ -92,6 +123,23 @@ async def list_linked_sellers(
         .order_by(Organization.name)
     )
     return list(result.scalars().all())
+
+
+async def seller_ids_with_pending_commissions(
+    session: AsyncSession,
+    provider_organization_id: UUID,
+    seller_organization_ids: list[UUID],
+) -> set[UUID]:
+    if not seller_organization_ids:
+        return set()
+    result = await session.execute(
+        select(Commission.seller_organization_id).where(
+            Commission.provider_organization_id == provider_organization_id,
+            Commission.seller_organization_id.in_(seller_organization_ids),
+            Commission.is_paid.is_(False),
+        ).distinct()
+    )
+    return set(result.scalars().all())
 
 
 async def list_active_provider_ids(
