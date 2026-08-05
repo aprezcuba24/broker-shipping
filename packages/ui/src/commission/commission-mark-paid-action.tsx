@@ -34,15 +34,20 @@ export function CommissionMarkPaidAction({
 
   const mutation = useMarkCommissionPaidCommissionsProviderCommissionIdPatch()
 
-  const markPaid = useAsyncAction(async () => {
-    const result = await mutation.mutateAsync({
-      commissionId: commission.id,
-      data: {},
-      params: {} as MarkCommissionPaidCommissionsProviderCommissionIdPatchParams,
-    })
-    await sync(result)
-    return result
-  })
+  const markPaid = useAsyncAction(
+    async () => {
+      const result = await mutation.mutateAsync({
+        commissionId: commission.id,
+        data: {},
+        params: {} as MarkCommissionPaidCommissionsProviderCommissionIdPatchParams,
+      })
+      await sync(result)
+      return result
+    },
+    undefined,
+    undefined,
+    { success: 'Comisión marcada como pagada' },
+  )
 
   if (commission.is_paid) {
     return (

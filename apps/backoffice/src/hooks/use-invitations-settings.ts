@@ -4,7 +4,7 @@ import {
   useListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet,
   useRejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPost,
 } from '@broker/api'
-import { useActiveOrganization } from '@broker/ui'
+import { notify, useActiveOrganization } from '@broker/ui'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
@@ -44,6 +44,7 @@ export function useInvitationsSettings() {
         try {
           await acceptRequest.mutateAsync({ organizationId: orgId, invitationId })
           await invalidate()
+          notify.success('Solicitud aceptada')
         } finally {
           setPendingId(null)
         }
@@ -53,6 +54,7 @@ export function useInvitationsSettings() {
         try {
           await rejectRequest.mutateAsync({ organizationId: orgId, invitationId })
           await invalidate()
+          notify.success('Solicitud rechazada')
         } finally {
           setPendingId(null)
         }

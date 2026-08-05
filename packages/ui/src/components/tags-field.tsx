@@ -9,6 +9,7 @@ import {
 } from '@broker/api'
 import { useQueryClient } from '@tanstack/react-query'
 
+import { notify } from '../lib/notify'
 import { TagMultiSelect, type TagOption } from './tag-multi-select'
 
 export type TagsFieldProps = {
@@ -130,6 +131,7 @@ export function TagsField({
         void queryClient.invalidateQueries({
           queryKey: getListTagsTagsProviderGetQueryKey(),
         })
+        notify.created('Etiqueta', 'f')
         return option
       } catch {
         const retry = await listQuery.refetch()

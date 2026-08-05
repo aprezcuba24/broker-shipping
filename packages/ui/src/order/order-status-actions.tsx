@@ -60,15 +60,25 @@ export function OrderStatusActions({ orderId, items }: OrderStatusActionsProps) 
 
   const mutation = useUpdateItemsStatusOrdersProviderOrderIdItemsPatch()
 
-  const update = useAsyncAction(async (status: OrderItemStatus) => {
-    const result = await mutation.mutateAsync({
-      orderId,
-      data: { status },
-      params: {} as UpdateItemsStatusOrdersProviderOrderIdItemsPatchParams,
-    })
-    await sync(result)
-    return result
-  })
+  const update = useAsyncAction(
+    async (status: OrderItemStatus) => {
+      const result = await mutation.mutateAsync({
+        orderId,
+        data: { status },
+        params: {} as UpdateItemsStatusOrdersProviderOrderIdItemsPatchParams,
+      })
+      await sync(result)
+      return result
+    },
+    undefined,
+    undefined,
+    {
+      success: (_result, status) =>
+        status === 'canceled'
+          ? 'Ítems cancelados'
+          : `Estado actualizado a «${orderItemStatusLabel(status)}»`,
+    },
+  )
 
   if (items.length === 0) return null
 

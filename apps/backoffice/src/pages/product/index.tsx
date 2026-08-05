@@ -62,6 +62,7 @@ export function ProductPage() {
       }),
     },
     resetOn: [activeOrganization?.id],
+    entityLabel: 'Producto',
   })
 
   const columns = useMemo(

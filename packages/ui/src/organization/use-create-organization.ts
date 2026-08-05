@@ -4,6 +4,7 @@ import {
   useCreateOrganizationOrganizationsPost,
 } from '@broker/api'
 import { useQueryClient } from '@tanstack/react-query'
+import { notify } from '../lib/notify'
 import { useActiveOrganization } from './active-organization-context'
 import type { CreateOrganizationFields } from './create-organization-form'
 
@@ -24,6 +25,7 @@ export function useCreateOrganization() {
       queryKey: getMyOrganizationsUsersMyOrganizationsGetQueryKey(),
     })
     setActiveOrganization(org.id)
+    notify.created('Organización', 'f')
   }
 
   return {

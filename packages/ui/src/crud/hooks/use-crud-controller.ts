@@ -3,6 +3,7 @@ import { useQueryClient, type QueryKey, type UseQueryResult } from '@tanstack/re
 import { useCallback, useMemo } from 'react'
 
 import { useResetOnChange } from '../../hooks/use-reset-on-change'
+import type { EntityGender } from '../../lib/notify'
 import { useAsyncAction, type AsyncAction } from './use-async-action'
 import type { CrudDialogs } from './use-crud-dialogs'
 import type { ListParams } from './use-list-params'
@@ -46,6 +47,11 @@ export type UseCrudControllerOptions<
   resetOn?: readonly unknown[]
   onSuccess?: (action: CrudAction, result: unknown) => void | Promise<void>
   onError?: (error: unknown, action: CrudAction) => void
+  /** Entity name for success toasts (e.g. "Producto", "Etiqueta"). */
+  entityLabel?: string
+  entityGender?: EntityGender
+  /** When false, skip success toasts even if entityLabel is set. Default: true when entityLabel is set. */
+  toast?: boolean
 }
 
 export type CrudController<TItem, TFormValues> = {
@@ -75,6 +81,20 @@ function defaultGetTotal<TItem, TListData>(data: TListData | undefined, items: T
   return items.length
 }
 
+function toastMessageForAction(
+  action: CrudAction,
+  entityLabel: string,
+  gender: EntityGender,
+): string {
+  if (action === 'create') {
+    return gender === 'f' ? `${entityLabel} creada` : `${entityLabel} creado`
+  }
+  if (action === 'update') {
+    return gender === 'f' ? `${entityLabel} actualizada` : `${entityLabel} actualizado`
+  }
+  return gender === 'f' ? `${entityLabel} eliminada` : `${entityLabel} eliminado`
+}
+
 export function useCrudController<
   TItem,
   TFormValues,
@@ -95,6 +115,9 @@ export function useCrudController<
   resetOn,
   onSuccess,
   onError,
+  entityLabel,
+  entityGender = 'm',
+  toast: toastEnabled,
 }: UseCrudControllerOptions<
   TItem,
   TFormValues,
@@ -104,6 +127,7 @@ export function useCrudController<
   TDeleteVariables
 >): CrudController<TItem, TFormValues> {
   const queryClient = useQueryClient()
+  const showToast = Boolean(entityLabel) && toastEnabled !== false
 
   useResetOnChange({
     resetOnChange: resetOn,
@@ -138,6 +162,9 @@ export function useCrudController<
       onError?.(error, 'create')
       return formatApiError(error)
     },
+    showToast && entityLabel
+      ? { success: toastMessageForAction('create', entityLabel, entityGender) }
+      : undefined,
   )
 
   const updateAction = useAsyncAction(
@@ -161,6 +188,9 @@ export function useCrudController<
       onError?.(error, 'update')
       return formatApiError(error)
     },
+    showToast && entityLabel
+      ? { success: toastMessageForAction('update', entityLabel, entityGender) }
+      : undefined,
   )
 
   const removeAction = useAsyncAction(
@@ -181,6 +211,9 @@ export function useCrudController<
       onError?.(error, 'remove')
       return formatApiError(error)
     },
+    showToast && entityLabel
+      ? { success: toastMessageForAction('remove', entityLabel, entityGender) }
+      : undefined,
   )
 
   return {

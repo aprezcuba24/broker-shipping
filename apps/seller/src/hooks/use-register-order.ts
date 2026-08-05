@@ -6,6 +6,7 @@ import {
   type OrderItemPublic,
   type RegisterCustomerCustomersSellerRegisterPostParams,
 } from '@broker/api'
+import { notify } from '@broker/ui'
 import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -66,6 +67,7 @@ export function useRegisterOrder(
         )
 
         clearCart()
+        notify.success('Pedido registrado correctamente')
         navigate(`/orders/${order.id}`)
       } catch (caught) {
         setError(formatApiError(caught))

@@ -67,6 +67,8 @@ export function ProductEditPage() {
       detailQueryKey,
     ],
     redirectTo: '/products',
+    entityLabel: 'Producto',
+    mode: 'update',
   })
 
   return (
