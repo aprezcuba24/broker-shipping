@@ -1,6 +1,7 @@
 import { useAuth } from '@broker/api'
 import {
   AppLayout,
+  CreateOrganizationDialogHost,
   initialsFromName,
   OrganizationMenuSection,
   useActiveOrganization,
@@ -19,22 +20,25 @@ export function BackofficeLayout() {
   }
 
   return (
-    <AppLayout
-      userMenuExtra={<OrganizationMenuSection />}
-      navItems={backofficeNavItems}
-      bottomItems={backofficeBottomItems}
-      brand={backofficeBrand}
-      user={
-        user
-          ? {
-              name: user.name,
-              role: 'Portal B2B',
-              organization: activeOrganization?.name,
-              initials: initialsFromName(user.name),
-            }
-          : undefined
-      }
-      onLogout={handleLogout}
-    />
+    <>
+      <AppLayout
+        userMenuExtra={<OrganizationMenuSection />}
+        navItems={backofficeNavItems}
+        bottomItems={backofficeBottomItems}
+        brand={backofficeBrand}
+        user={
+          user
+            ? {
+                name: user.name,
+                role: 'Portal B2B',
+                organization: activeOrganization?.name,
+                initials: initialsFromName(user.name),
+              }
+            : undefined
+        }
+        onLogout={handleLogout}
+      />
+      <CreateOrganizationDialogHost />
+    </>
   )
 }

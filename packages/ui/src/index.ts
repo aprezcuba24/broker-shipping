@@ -270,6 +270,7 @@ export {
 export type {
   ActiveOrganizationContextValue,
   ActiveOrganizationProviderProps,
+  OrganizationKind,
 } from './organization/active-organization-context'
 export { OrganizationSelect } from './organization/organization-select'
 export { OrganizationMenuSection } from './organization/organization-menu-section'
@@ -287,6 +288,10 @@ export type {
   CreateOrganizationFields,
   CreateOrganizationFormProps,
 } from './organization/create-organization-form'
+export { CreateOrganizationDialog } from './organization/create-organization-dialog'
+export type { CreateOrganizationDialogProps } from './organization/create-organization-dialog'
+export { CreateOrganizationDialogHost } from './organization/create-organization-dialog-host'
+export { useCreateOrganization } from './organization/use-create-organization'
 export { AcceptInvitationCard } from './organization/accept-invitation-card'
 export type {
   AcceptInvitationCardProps,

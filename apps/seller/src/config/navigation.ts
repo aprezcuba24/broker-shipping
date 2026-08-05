@@ -1,5 +1,4 @@
 import {
-  Building2,
   CircleDollarSign,
   ClipboardList,
   LayoutDashboard,
@@ -23,7 +22,6 @@ export const sellerNavItems: NavItem[] = [
   { to: '/commissions', label: 'Comisiones', icon: CircleDollarSign },
   { to: '/providers', label: 'Proveedores', icon: Truck },
   { to: '/members', label: 'Miembros', icon: Users },
-  { to: '/settings/organizations', label: 'Organizaciones', icon: Building2 },
 ]
 
 export const sellerBottomItems: NavItem[] = []

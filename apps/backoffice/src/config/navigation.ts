@@ -1,5 +1,4 @@
 import {
-  Building2,
   CircleDollarSign,
   ClipboardList,
   LayoutDashboard,
@@ -25,7 +24,6 @@ export const backofficeNavItems: NavItem[] = [
   { to: '/tags', label: 'Etiquetas', icon: Tag },
   { to: '/members', label: 'Miembros', icon: Users },
   { to: '/settings/invitations', label: 'Solicitudes de enlace', icon: Link2 },
-  { to: '/settings/organizations', label: 'Organizaciones', icon: Building2 },
 ]
 
 export const backofficeBottomItems: NavItem[] = []

@@ -1,6 +1,7 @@
 import { useAuth } from '@broker/api'
 import {
   AppLayout,
+  CreateOrganizationDialogHost,
   initialsFromName,
   OrganizationMenuSection,
   useActiveOrganization,
@@ -21,23 +22,26 @@ export function SellerLayout() {
   }
 
   return (
-    <AppLayout
-      userMenuExtra={<OrganizationMenuSection />}
-      headerActions={<CartHeaderButton />}
-      navItems={sellerNavItems}
-      bottomItems={sellerBottomItems}
-      brand={sellerBrand}
-      user={
-        user
-          ? {
-              name: user.name,
-              role: 'Portal vendedores',
-              organization: activeOrganization?.name,
-              initials: initialsFromName(user.name),
-            }
-          : undefined
-      }
-      onLogout={handleLogout}
-    />
+    <>
+      <AppLayout
+        userMenuExtra={<OrganizationMenuSection />}
+        headerActions={<CartHeaderButton />}
+        navItems={sellerNavItems}
+        bottomItems={sellerBottomItems}
+        brand={sellerBrand}
+        user={
+          user
+            ? {
+                name: user.name,
+                role: 'Portal vendedores',
+                organization: activeOrganization?.name,
+                initials: initialsFromName(user.name),
+              }
+            : undefined
+        }
+        onLogout={handleLogout}
+      />
+      <CreateOrganizationDialogHost />
+    </>
   )
 }
