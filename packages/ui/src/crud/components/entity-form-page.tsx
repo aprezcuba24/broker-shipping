@@ -79,7 +79,7 @@ export function EntityFormPage<TValues>({
       }
       buttons={headerButtons}
     >
-      <div className="mx-auto w-full max-w-2xl space-y-6">
+      <div className="w-full space-y-6">
         <Form
           ref={formRef}
           key={formKey}

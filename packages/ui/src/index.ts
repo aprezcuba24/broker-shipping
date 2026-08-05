@@ -39,6 +39,8 @@ export { PageLoading } from './components/page-loading'
 export type { PageLoadingProps } from './components/page-loading'
 export { DetailSection } from './components/detail-section'
 export type { DetailSectionField, DetailSectionProps } from './components/detail-section'
+export { FormSection, FormFieldCell } from './components/form-section'
+export type { FormSectionProps, FormFieldCellProps } from './components/form-section'
 
 export { Button } from './components/button'
 export type { ButtonProps } from './components/button'
@@ -123,7 +125,17 @@ export type { RowActionsProps } from './components/row-actions'
 export { EntitySelect } from './components/entity-select'
 export type { EntitySelectAllOption, EntitySelectProps } from './components/entity-select'
 export { ProvinceMunicipalityFields } from './components/province-municipality-fields'
-export type { ProvinceMunicipalityFieldsProps } from './components/province-municipality-fields'
+export {
+  MunicipalityFormField,
+  ProvinceFormField,
+  useProvinceMunicipalityFields,
+} from './components/province-municipality-fields'
+export type {
+  MunicipalityFormFieldProps,
+  ProvinceFormFieldProps,
+  ProvinceMunicipalityFieldsProps,
+  UseProvinceMunicipalityFieldsOptions,
+} from './components/province-municipality-fields'
 export { EntityAutocomplete } from './components/entity-autocomplete'
 export type { EntityAutocompleteProps } from './components/entity-autocomplete'
 export { TagMultiSelect } from './components/tag-multi-select'
