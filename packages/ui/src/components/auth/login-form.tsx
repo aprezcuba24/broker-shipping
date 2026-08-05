@@ -7,6 +7,7 @@ import { Button } from '../ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 import { Field, FieldError, FieldGroup, FieldLabel } from '../ui/field'
 import { Input } from '../ui/input'
+import { AuthPageShell, type AuthPortalBranding } from './auth-page-shell'
 
 export type LoginFields = {
   email: string
@@ -26,6 +27,7 @@ export type LoginFormProps = {
   submitLabel?: string
   successMessage?: string | null
   footer?: ReactNode
+  portal?: AuthPortalBranding
 }
 
 export function LoginForm({
@@ -38,75 +40,82 @@ export function LoginForm({
   submitLabel = 'Entrar',
   successMessage = null,
   footer = null,
+  portal,
 }: LoginFormProps) {
   const form = useForm<LoginFields>({
     resolver: zodResolver(schema),
     defaultValues: { email: '', password: '' },
   })
 
+  const card = (
+    <Card className="w-full max-w-md border-border shadow-lg">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-2xl font-headline">{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FieldGroup>
+            <Controller
+              name="email"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="email">Correo</FieldLabel>
+                  <Input
+                    {...field}
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+            <Controller
+              name="password"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="password">Contraseña</FieldLabel>
+                  <Input
+                    {...field}
+                    id="password"
+                    type="password"
+                    autoComplete="current-password"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+          </FieldGroup>
+          {successMessage ? (
+            <p className="text-sm text-muted-foreground" role="status">
+              {successMessage}
+            </p>
+          ) : null}
+          {error ? (
+            <p className="text-sm text-destructive" role="alert">
+              {error}
+            </p>
+          ) : null}
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? 'Entrando…' : submitLabel}
+          </Button>
+        </form>
+        {footer ? <div className="mt-4 text-center text-sm text-muted-foreground">{footer}</div> : null}
+      </CardContent>
+    </Card>
+  )
+
+  if (portal) {
+    return <AuthPageShell {...portal}>{card}</AuthPageShell>
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md border-border shadow-lg">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-headline">{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FieldGroup>
-              <Controller
-                name="email"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="email">Correo</FieldLabel>
-                    <Input
-                      {...field}
-                      id="email"
-                      type="email"
-                      autoComplete="email"
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )}
-              />
-              <Controller
-                name="password"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="password">Contraseña</FieldLabel>
-                    <Input
-                      {...field}
-                      id="password"
-                      type="password"
-                      autoComplete="current-password"
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )}
-              />
-            </FieldGroup>
-            {successMessage ? (
-              <p className="text-sm text-muted-foreground" role="status">
-                {successMessage}
-              </p>
-            ) : null}
-            {error ? (
-              <p className="text-sm text-destructive" role="alert">
-                {error}
-              </p>
-            ) : null}
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Entrando…' : submitLabel}
-            </Button>
-          </form>
-          {footer ? <div className="mt-4 text-center text-sm text-muted-foreground">{footer}</div> : null}
-        </CardContent>
-      </Card>
-    </div>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">{card}</div>
   )
 }
 

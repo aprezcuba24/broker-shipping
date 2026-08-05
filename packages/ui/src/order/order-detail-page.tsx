@@ -31,11 +31,12 @@ export const orderDetailBaseFields: DetailSectionField<OrderPublic>[] = [
   {
     title: 'Totales',
     accessor: (order) => order.totals,
+    fullWidth: true,
     format: (value) => {
       const totals = value as OrderPublic['totals']
       if (!totals || totals.length === 0) return '—'
       return (
-        <div className="space-y-0.5 font-medium tabular-nums">
+        <div className="flex flex-wrap gap-x-4 gap-y-1 font-medium tabular-nums">
           {totals.map((total) => (
             <div key={total.currency}>
               {formatMoney(total.amount, total.currency)}

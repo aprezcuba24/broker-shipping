@@ -6,12 +6,14 @@ import type { AppLayoutProps } from './types'
 
 export function AppLayout({
   headerTitle,
+  portalBadge,
   navItems,
   bottomItems,
   brand,
   cta,
   onLogout,
   user,
+  userMenuExtra,
   headerExtra,
   headerActions,
 }: AppLayoutProps) {
@@ -50,9 +52,11 @@ export function AppLayout({
       <main className="flex-1 flex flex-col h-screen relative overflow-hidden lg:ml-0">
         <TopHeader
           title={headerTitle}
+          portalBadge={portalBadge}
           onMenuClick={() => setSidebarOpen(true)}
           onLogout={onLogout}
           user={user}
+          userMenuExtra={userMenuExtra}
           headerExtra={headerExtra}
           headerActions={headerActions}
         />

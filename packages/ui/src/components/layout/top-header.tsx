@@ -1,4 +1,12 @@
-import { Bell, LogOut, Menu, Search, Settings } from 'lucide-react'
+import { ChevronDown, LogOut, Menu, Search } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../dropdown-menu'
 import type { TopHeaderProps } from './types'
 
 const defaultUser = {
@@ -8,10 +16,12 @@ const defaultUser = {
 }
 
 export function TopHeader({
-  title = 'Panel',
+  title,
+  portalBadge,
   onMenuClick,
   onLogout,
   user = defaultUser,
+  userMenuExtra,
   headerExtra,
   headerActions,
 }: TopHeaderProps) {
@@ -27,16 +37,21 @@ export function TopHeader({
             <Menu className="h-5 w-5 text-on-surface" />
           </button>
 
-          <span className="text-lg sm:text-xl font-bold tracking-tight font-headline text-on-surface truncate">
-            {title}
-          </span>
+          {title ? (
+            <span className="text-lg sm:text-xl font-bold tracking-tight font-headline text-on-surface truncate">
+              {title}
+            </span>
+          ) : null}
+          {portalBadge ? (
+            <span className="shrink-0 inline-flex items-center rounded-full bg-primary-container px-2.5 py-0.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-on-primary-container">
+              {portalBadge}
+            </span>
+          ) : null}
         </div>
 
         {headerExtra ? (
           <div className="w-full min-w-0 sm:w-auto sm:max-w-[14rem] sm:shrink-0">{headerExtra}</div>
         ) : null}
-
-        <div className="hidden sm:block h-6 w-px bg-outline-variant/30 mx-2" />
 
         <div className="hidden sm:flex items-center bg-surface-container-highest px-3 py-1.5 rounded-full text-sm font-normal text-on-surface-variant flex-1 max-w-xs">
           <Search className="h-4 w-4 mr-2 shrink-0" />
@@ -48,46 +63,53 @@ export function TopHeader({
         </div>
       </div>
 
-      <div className="flex items-center gap-1 sm:gap-4 shrink-0">
+      <div className="flex items-center gap-1 sm:gap-3 shrink-0">
         {headerActions}
-        <button
-          type="button"
-          className="p-2 rounded-full hover:bg-surface-container-highest/50 transition-colors"
-        >
-          <Bell className="h-[18px] w-[18px] text-on-surface-variant" />
-        </button>
-        {onLogout ? (
-          <button
-            type="button"
-            onClick={onLogout}
-            className="p-2 rounded-full hover:bg-surface-container-highest/50 transition-colors"
-            title="Cerrar sesión"
-          >
-            <LogOut className="h-[18px] w-[18px] text-on-surface-variant" />
-          </button>
-        ) : null}
-        <button
-          type="button"
-          className="hidden sm:block p-2 rounded-full hover:bg-surface-container-highest/50 transition-colors"
-        >
-          <Settings className="h-[18px] w-[18px] text-on-surface-variant" />
-        </button>
-        <div className="flex items-center gap-2 sm:gap-3 pl-2">
-          <UserMeta user={user} />
-          <div className="w-8 h-8 rounded-full bg-ds-primary text-on-primary flex items-center justify-center text-xs font-bold border-2 border-ds-primary/20 shrink-0">
-            {user.initials}
-          </div>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="flex items-center gap-2 sm:gap-3 rounded-full pl-2 pr-1 py-1 hover:bg-surface-container-highest/50 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label="Menú de usuario"
+            >
+              <UserMeta user={user} />
+              <div className="w-8 h-8 rounded-full bg-ds-primary text-on-primary flex items-center justify-center text-xs font-bold border-2 border-ds-primary/20 shrink-0">
+                {user.initials}
+              </div>
+              <ChevronDown className="hidden sm:block h-4 w-4 text-on-surface-variant shrink-0" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" sideOffset={8} className="min-w-52">
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-sm font-semibold text-on-surface">{user.name}</span>
+                <span className="text-xs text-muted-foreground">{user.role}</span>
+              </div>
+            </DropdownMenuLabel>
+            {userMenuExtra}
+            {onLogout ? (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => onLogout()}>
+                  <LogOut />
+                  Salir
+                </DropdownMenuItem>
+              </>
+            ) : null}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   )
 }
 
 function UserMeta({ user }: { user: NonNullable<TopHeaderProps['user']> }) {
+  const subtitle = user.organization ?? user.role
+
   return (
-    <div className="text-right hidden md:block">
-      <p className="text-sm font-bold leading-none text-on-surface">{user.name}</p>
-      <p className="text-[10px] text-on-surface-variant">{user.role}</p>
+    <div className="text-right hidden md:block min-w-0 max-w-[12rem]">
+      <p className="text-sm font-bold leading-none text-on-surface truncate">{user.name}</p>
+      <p className="text-[10px] text-on-surface-variant truncate">{subtitle}</p>
     </div>
   )
 }

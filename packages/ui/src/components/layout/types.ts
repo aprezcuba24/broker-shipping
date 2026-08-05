@@ -32,26 +32,31 @@ export type SidebarProps = {
 export type TopHeaderUser = {
   name: string
   role: string
+  organization?: string
   initials: string
 }
 
 export type TopHeaderProps = {
   title?: string
+  portalBadge?: string
   onMenuClick?: () => void
   onLogout?: () => void
   user?: TopHeaderUser
+  userMenuExtra?: ReactNode
   headerExtra?: ReactNode
   headerActions?: ReactNode
 }
 
 export type AppLayoutProps = {
   headerTitle?: string
+  portalBadge?: string
   navItems: NavItem[]
   bottomItems?: NavItem[]
   brand: SidebarBrand
   cta?: SidebarCta
   onLogout?: () => void
   user?: TopHeaderUser
+  userMenuExtra?: ReactNode
   headerExtra?: ReactNode
   headerActions?: ReactNode
 }

@@ -4,7 +4,7 @@ import {
   ClipboardList,
   LayoutDashboard,
   Package,
-  Store,
+  ShoppingBag,
   Truck,
   Users,
 } from 'lucide-react'
@@ -12,8 +12,8 @@ import type { NavItem, SidebarBrand } from '@broker/ui'
 
 export const sellerBrand: SidebarBrand = {
   title: 'Broker',
-  subtitle: 'Portal vendedores',
-  icon: Store,
+  subtitle: 'Vendedores',
+  icon: ShoppingBag,
 }
 
 export const sellerNavItems: NavItem[] = [

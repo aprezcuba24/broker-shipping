@@ -30,7 +30,7 @@ from app.services.order.helpers import (
 )
 
 
-def _provider_order_visibility_clause(provider_organization_id: UUID):
+def provider_order_visibility_clause(provider_organization_id: UUID):
     return exists().where(
         OrderItem.order_id == Order.id,
         OrderItem.provider_organization_id == provider_organization_id,
@@ -49,7 +49,7 @@ async def list_orders_for_provider(
     status: OrderStatus | None = None,
 ) -> PageResult[Order]:
     stmt = select(Order).where(
-        _provider_order_visibility_clause(provider_organization_id)
+        provider_order_visibility_clause(provider_organization_id)
     )
     if status is not None:
         stmt = stmt.where(Order.status == status)

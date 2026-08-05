@@ -5,16 +5,16 @@ import {
   LayoutDashboard,
   Link2,
   Package,
-  Store,
   Tag,
   Users,
+  Warehouse,
 } from 'lucide-react'
 import type { NavItem, SidebarBrand } from '@broker/ui'
 
 export const backofficeBrand: SidebarBrand = {
   title: 'Broker',
-  subtitle: 'Portal proveedores',
-  icon: Store,
+  subtitle: 'Proveedores',
+  icon: Warehouse,
 }
 
 export const backofficeNavItems: NavItem[] = [

@@ -2785,6 +2785,140 @@
         }
       }
     },
+    "/dashboard/seller/": {
+      "get": {
+        "tags": [
+          "dashboard"
+        ],
+        "summary": "Get Seller Dashboard",
+        "operationId": "get_seller_dashboard_dashboard_seller__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "7d",
+                "30d",
+                "90d",
+                "all"
+              ],
+              "type": "string",
+              "default": "30d",
+              "title": "Period"
+            }
+          },
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SellerDashboardPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dashboard/provider/": {
+      "get": {
+        "tags": [
+          "dashboard"
+        ],
+        "summary": "Get Provider Dashboard",
+        "operationId": "get_provider_dashboard_dashboard_provider__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "7d",
+                "30d",
+                "90d",
+                "all"
+              ],
+              "type": "string",
+              "default": "30d",
+              "title": "Period"
+            }
+          },
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderDashboardPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/locations/provinces": {
       "get": {
         "tags": [
@@ -4159,6 +4293,47 @@
         ],
         "title": "CommissionPublic"
       },
+      "CommissionSummaryPublic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "amount": {
+            "type": "integer",
+            "title": "Amount"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "provider_organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Provider Organization Id"
+          },
+          "seller_organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Seller Organization Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "amount",
+          "currency",
+          "provider_organization_id",
+          "seller_organization_id",
+          "created_at"
+        ],
+        "title": "CommissionSummaryPublic"
+      },
       "Currency": {
         "type": "string",
         "enum": [
@@ -4166,6 +4341,23 @@
           "usd"
         ],
         "title": "Currency"
+      },
+      "CurrencyAmount": {
+        "properties": {
+          "currency": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "amount": {
+            "type": "integer",
+            "title": "Amount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "currency",
+          "amount"
+        ],
+        "title": "CurrencyAmount"
       },
       "CustomerCreate": {
         "properties": {
@@ -4886,6 +5078,53 @@
         ],
         "title": "OrderStatus"
       },
+      "OrderSummaryPublic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "totals": {
+            "items": {
+              "$ref": "#/components/schemas/OrderCurrencyTotal"
+            },
+            "type": "array",
+            "title": "Totals"
+          },
+          "customer_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "code",
+          "status",
+          "created_at"
+        ],
+        "title": "OrderSummaryPublic"
+      },
       "OrganizationCreate": {
         "properties": {
           "name": {
@@ -5304,6 +5543,119 @@
         "type": "object",
         "title": "ProductUpdate"
       },
+      "ProviderDashboardPublic": {
+        "properties": {
+          "period": {
+            "type": "string",
+            "enum": [
+              "7d",
+              "30d",
+              "90d",
+              "all"
+            ],
+            "title": "Period"
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "orders_active": {
+            "type": "integer",
+            "title": "Orders Active"
+          },
+          "orders_by_status": {
+            "items": {
+              "$ref": "#/components/schemas/StatusCount"
+            },
+            "type": "array",
+            "title": "Orders By Status"
+          },
+          "items_by_status": {
+            "items": {
+              "$ref": "#/components/schemas/StatusCount"
+            },
+            "type": "array",
+            "title": "Items By Status"
+          },
+          "items_pending_action": {
+            "type": "integer",
+            "title": "Items Pending Action"
+          },
+          "products_total": {
+            "type": "integer",
+            "title": "Products Total"
+          },
+          "linked_sellers_total": {
+            "type": "integer",
+            "title": "Linked Sellers Total"
+          },
+          "pending_link_requests": {
+            "type": "integer",
+            "title": "Pending Link Requests"
+          },
+          "sales_by_currency": {
+            "items": {
+              "$ref": "#/components/schemas/CurrencyAmount"
+            },
+            "type": "array",
+            "title": "Sales By Currency"
+          },
+          "commissions_pending": {
+            "items": {
+              "$ref": "#/components/schemas/CurrencyAmount"
+            },
+            "type": "array",
+            "title": "Commissions Pending"
+          },
+          "commissions_paid": {
+            "items": {
+              "$ref": "#/components/schemas/CurrencyAmount"
+            },
+            "type": "array",
+            "title": "Commissions Paid"
+          },
+          "recent_orders": {
+            "items": {
+              "$ref": "#/components/schemas/OrderSummaryPublic"
+            },
+            "type": "array",
+            "title": "Recent Orders"
+          },
+          "recent_pending_commissions": {
+            "items": {
+              "$ref": "#/components/schemas/CommissionSummaryPublic"
+            },
+            "type": "array",
+            "title": "Recent Pending Commissions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "period",
+          "period_start",
+          "orders_active",
+          "orders_by_status",
+          "items_by_status",
+          "items_pending_action",
+          "products_total",
+          "linked_sellers_total",
+          "pending_link_requests",
+          "sales_by_currency",
+          "commissions_pending",
+          "commissions_paid",
+          "recent_orders",
+          "recent_pending_commissions"
+        ],
+        "title": "ProviderDashboardPublic"
+      },
       "ProvincePublic": {
         "properties": {
           "id": {
@@ -5345,6 +5697,137 @@
           "client_app"
         ],
         "title": "ResendVerificationRequest"
+      },
+      "SellerDashboardPublic": {
+        "properties": {
+          "period": {
+            "type": "string",
+            "enum": [
+              "7d",
+              "30d",
+              "90d",
+              "all"
+            ],
+            "title": "Period"
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "orders_active": {
+            "type": "integer",
+            "title": "Orders Active"
+          },
+          "orders_by_status": {
+            "items": {
+              "$ref": "#/components/schemas/StatusCount"
+            },
+            "type": "array",
+            "title": "Orders By Status"
+          },
+          "items_by_status": {
+            "items": {
+              "$ref": "#/components/schemas/StatusCount"
+            },
+            "type": "array",
+            "title": "Items By Status"
+          },
+          "customers_total": {
+            "type": "integer",
+            "title": "Customers Total"
+          },
+          "linked_providers_total": {
+            "type": "integer",
+            "title": "Linked Providers Total"
+          },
+          "products_available_total": {
+            "type": "integer",
+            "title": "Products Available Total"
+          },
+          "pending_link_requests": {
+            "type": "integer",
+            "title": "Pending Link Requests"
+          },
+          "sales_by_currency": {
+            "items": {
+              "$ref": "#/components/schemas/CurrencyAmount"
+            },
+            "type": "array",
+            "title": "Sales By Currency"
+          },
+          "commissions_pending": {
+            "items": {
+              "$ref": "#/components/schemas/CurrencyAmount"
+            },
+            "type": "array",
+            "title": "Commissions Pending"
+          },
+          "commissions_paid": {
+            "items": {
+              "$ref": "#/components/schemas/CurrencyAmount"
+            },
+            "type": "array",
+            "title": "Commissions Paid"
+          },
+          "recent_orders": {
+            "items": {
+              "$ref": "#/components/schemas/OrderSummaryPublic"
+            },
+            "type": "array",
+            "title": "Recent Orders"
+          },
+          "recent_pending_commissions": {
+            "items": {
+              "$ref": "#/components/schemas/CommissionSummaryPublic"
+            },
+            "type": "array",
+            "title": "Recent Pending Commissions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "period",
+          "period_start",
+          "orders_active",
+          "orders_by_status",
+          "items_by_status",
+          "customers_total",
+          "linked_providers_total",
+          "products_available_total",
+          "pending_link_requests",
+          "sales_by_currency",
+          "commissions_pending",
+          "commissions_paid",
+          "recent_orders",
+          "recent_pending_commissions"
+        ],
+        "title": "SellerDashboardPublic"
+      },
+      "StatusCount": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "count"
+        ],
+        "title": "StatusCount"
       },
       "TagCreate": {
         "properties": {

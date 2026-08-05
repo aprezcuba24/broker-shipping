@@ -1,6 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
+import {
+  AuthPageShell,
+  type AuthPortalBranding,
+} from '../components/auth/auth-page-shell'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Field, FieldError, FieldGroup, FieldLabel } from '../components/ui/field'
@@ -19,6 +23,7 @@ export type CreateOrganizationFormProps = {
   isSubmitting?: boolean
   error?: string | null
   embedded?: boolean
+  portal?: AuthPortalBranding
   onSubmit: (values: CreateOrganizationFields) => void | Promise<void>
 }
 
@@ -73,6 +78,7 @@ export function CreateOrganizationForm({
   isSubmitting = false,
   error = null,
   embedded = false,
+  portal,
   onSubmit,
 }: CreateOrganizationFormProps) {
   const form = useForm<CreateOrganizationFields>({
@@ -95,15 +101,21 @@ export function CreateOrganizationForm({
     return fields
   }
 
+  const card = (
+    <Card className="w-full max-w-md border-border shadow-lg">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-2xl font-headline">{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent>{fields}</CardContent>
+    </Card>
+  )
+
+  if (portal) {
+    return <AuthPageShell {...portal}>{card}</AuthPageShell>
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md border-border shadow-lg">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-headline">{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardContent>{fields}</CardContent>
-      </Card>
-    </div>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">{card}</div>
   )
 }

@@ -1,5 +1,10 @@
 import { useAuth } from '@broker/api'
-import { AppLayout, initialsFromName, OrganizationSelect } from '@broker/ui'
+import {
+  AppLayout,
+  initialsFromName,
+  OrganizationMenuSection,
+  useActiveOrganization,
+} from '@broker/ui'
 import { useNavigate } from 'react-router-dom'
 
 import { CartHeaderButton } from '../components/cart-header-button'
@@ -8,6 +13,7 @@ import { sellerBottomItems, sellerBrand, sellerNavItems } from '../config/naviga
 export function SellerLayout() {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
+  const { activeOrganization } = useActiveOrganization()
 
   const handleLogout = () => {
     logout()
@@ -16,8 +22,7 @@ export function SellerLayout() {
 
   return (
     <AppLayout
-      headerTitle="Portal vendedores"
-      headerExtra={<OrganizationSelect />}
+      userMenuExtra={<OrganizationMenuSection />}
       headerActions={<CartHeaderButton />}
       navItems={sellerNavItems}
       bottomItems={sellerBottomItems}
@@ -27,6 +32,7 @@ export function SellerLayout() {
           ? {
               name: user.name,
               role: 'Portal vendedores',
+              organization: activeOrganization?.name,
               initials: initialsFromName(user.name),
             }
           : undefined
