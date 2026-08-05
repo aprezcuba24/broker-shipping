@@ -358,3 +358,21 @@ export {
 export type { CommissionDetailPageProps } from './commission/commission-detail-page'
 export { CommissionMarkPaidAction } from './commission/commission-mark-paid-action'
 export type { CommissionMarkPaidActionProps } from './commission/commission-mark-paid-action'
+
+export {
+  DASHBOARD_PERIOD_OPTIONS,
+  DASHBOARD_ORDER_STATUS_LABELS,
+  DASHBOARD_ITEM_STATUS_LABELS,
+  DashboardPeriodSelector,
+  DashboardAlert,
+  KpiCard,
+  StatusBreakdownCard,
+  RecentOrdersCard,
+  RecentCommissionsCard,
+  formatCurrencyAmounts,
+} from './dashboard/dashboard-widgets'
+export type {
+  DashboardPeriodValue,
+  RecentOrderRow,
+  RecentCommissionRow,
+} from './dashboard/dashboard-widgets'
