@@ -1,6 +1,5 @@
 import {
   useGetSellerDashboardDashboardSellerGet,
-  type GetSellerDashboardDashboardSellerGetParams,
   type GetSellerDashboardDashboardSellerGetPeriod,
 } from '@broker/api'
 import {
@@ -31,9 +30,17 @@ export function HomePage() {
   const { activeOrganization } = useActiveOrganization()
   const [period, setPeriod] = useState<DashboardPeriodValue>('30d')
 
-  const query = useGetSellerDashboardDashboardSellerGet({
-    period: period as GetSellerDashboardDashboardSellerGetPeriod,
-  } as GetSellerDashboardDashboardSellerGetParams)
+  const query = useGetSellerDashboardDashboardSellerGet(
+    {
+      period: period as GetSellerDashboardDashboardSellerGetPeriod,
+      organization_id: activeOrganization?.id ?? '',
+    },
+    {
+      query: {
+        enabled: Boolean(activeOrganization?.id),
+      },
+    },
+  )
 
   const data = query.data
 
