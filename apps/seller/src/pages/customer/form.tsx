@@ -5,12 +5,15 @@ import { Controller, useForm } from 'react-hook-form'
 import {
   Field,
   FieldError,
-  FieldGroup,
   FieldLabel,
+  FormFieldCell,
+  FormSection,
   Input,
-  ProvinceMunicipalityFields,
+  MunicipalityFormField,
+  ProvinceFormField,
   Textarea,
   useFormSubmitHandle,
+  useProvinceMunicipalityFields,
   type EntityFormProps,
 } from '@broker/ui'
 
@@ -64,91 +67,116 @@ export function CustomerForm({
 
   useFormSubmitHandle(ref, form.handleSubmit, onSubmit)
 
+  const locationFields = useProvinceMunicipalityFields({
+    control: form.control,
+    setValue: form.setValue,
+    provinceName: 'province_id',
+    municipalityName: 'municipality_id',
+  })
+
   return (
     <form className="space-y-3" onSubmit={(event) => event.preventDefault()}>
-      <FieldGroup>
-        <Controller
-          name="name"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="customer-name">Nombre</FieldLabel>
-              <Input
-                {...field}
-                id="customer-name"
-                maxLength={255}
-                autoFocus
-                disabled={isSubmitting}
-                aria-invalid={fieldState.invalid}
-              />
-              {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
-            </Field>
-          )}
-        />
+      <FormSection title="Datos del cliente">
+        <FormFieldCell>
+          <Controller
+            name="name"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="customer-name">Nombre</FieldLabel>
+                <Input
+                  {...field}
+                  id="customer-name"
+                  maxLength={255}
+                  autoFocus
+                  disabled={isSubmitting}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+              </Field>
+            )}
+          />
+        </FormFieldCell>
 
-        <Controller
-          name="ci"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="customer-ci">CI</FieldLabel>
-              <Input
-                {...field}
-                id="customer-ci"
-                maxLength={50}
-                disabled={isSubmitting}
-                aria-invalid={fieldState.invalid}
-              />
-              {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
-            </Field>
-          )}
-        />
+        <FormFieldCell>
+          <Controller
+            name="ci"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="customer-ci">CI</FieldLabel>
+                <Input
+                  {...field}
+                  id="customer-ci"
+                  maxLength={50}
+                  disabled={isSubmitting}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+              </Field>
+            )}
+          />
+        </FormFieldCell>
 
-        <Controller
-          name="phone"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="customer-phone">Teléfono</FieldLabel>
-              <Input
-                {...field}
-                id="customer-phone"
-                maxLength={50}
-                disabled={isSubmitting}
-                aria-invalid={fieldState.invalid}
-              />
-              {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
-            </Field>
-          )}
-        />
+        <FormFieldCell>
+          <Controller
+            name="phone"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="customer-phone">Teléfono</FieldLabel>
+                <Input
+                  {...field}
+                  id="customer-phone"
+                  maxLength={50}
+                  disabled={isSubmitting}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+              </Field>
+            )}
+          />
+        </FormFieldCell>
 
-        <Controller
-          name="address"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="customer-address">Dirección</FieldLabel>
-              <Textarea
-                {...field}
-                id="customer-address"
-                maxLength={500}
-                rows={2}
-                disabled={isSubmitting}
-                aria-invalid={fieldState.invalid}
-              />
-              {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
-            </Field>
-          )}
-        />
+        <FormFieldCell fullWidth>
+          <Controller
+            name="address"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="customer-address">Dirección</FieldLabel>
+                <Textarea
+                  {...field}
+                  id="customer-address"
+                  maxLength={500}
+                  rows={2}
+                  disabled={isSubmitting}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+              </Field>
+            )}
+          />
+        </FormFieldCell>
 
-        <ProvinceMunicipalityFields
-          control={form.control}
-          setValue={form.setValue}
-          provinceName="province_id"
-          municipalityName="municipality_id"
-          disabled={isSubmitting}
-        />
-      </FieldGroup>
+        <FormFieldCell>
+          <ProvinceFormField
+            control={form.control}
+            name="province_id"
+            disabled={isSubmitting}
+            state={locationFields}
+          />
+        </FormFieldCell>
+
+        <FormFieldCell>
+          <MunicipalityFormField
+            control={form.control}
+            name="municipality_id"
+            disabled={isSubmitting}
+            state={locationFields}
+          />
+        </FormFieldCell>
+      </FormSection>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
     </form>

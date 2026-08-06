@@ -3642,7 +3642,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/OrganizationPublic"
+                    "$ref": "#/components/schemas/LinkedSellerPublic"
                   },
                   "title": "Response List Linked Sellers Organizations Provider  Organization Id  Linked Sellers Get"
                 }
@@ -4703,6 +4703,53 @@
           "cancelled"
         ],
         "title": "InvitationStatus"
+      },
+      "LinkedSellerPublic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "type": {
+            "$ref": "#/components/schemas/OrganizationType"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "has_pending_commissions": {
+            "type": "boolean",
+            "title": "Has Pending Commissions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "type",
+          "created_at",
+          "updated_at",
+          "has_pending_commissions"
+        ],
+        "title": "LinkedSellerPublic"
       },
       "MemberInviteCreate": {
         "properties": {

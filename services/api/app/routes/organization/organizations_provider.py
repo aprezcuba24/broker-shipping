@@ -8,7 +8,7 @@ from app.lib.security.deps import require_organization
 from app.models.organization.enums import OrganizationType
 from app.models.organization.organization import Organization
 from app.schemas.invitation import InvitationPublic, MemberIsActivePatch, MemberPublic
-from app.schemas.organization import OrganizationPublic
+from app.schemas.organization import LinkedSellerPublic, OrganizationPublic
 from app.services import invitation as invitation_service
 from app.services import provider_seller_link as link_service
 
@@ -63,14 +63,25 @@ async def reject_invitation(
 
 @router.get(
     "/{organization_id}/linked-sellers",
-    response_model=list[OrganizationPublic],
+    response_model=list[LinkedSellerPublic],
 )
 async def list_linked_sellers(
     organization: ProviderMemberOrgDep,
     session: SessionDep,
-) -> list[OrganizationPublic]:
+) -> list[LinkedSellerPublic]:
     sellers = await link_service.list_linked_sellers(session, organization.id)
-    return [OrganizationPublic.model_validate(s) for s in sellers]
+    pending_ids = await link_service.seller_ids_with_pending_commissions(
+        session,
+        organization.id,
+        [s.id for s in sellers],
+    )
+    return [
+        LinkedSellerPublic(
+            **OrganizationPublic.model_validate(s).model_dump(),
+            has_pending_commissions=s.id in pending_ids,
+        )
+        for s in sellers
+    ]
 
 
 @router.patch(

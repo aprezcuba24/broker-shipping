@@ -24,3 +24,7 @@ class OrganizationPublic(BaseModel):
     type: OrganizationType
     created_at: datetime
     updated_at: datetime | None
+
+
+class LinkedSellerPublic(OrganizationPublic):
+    has_pending_commissions: bool

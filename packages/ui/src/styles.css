@@ -296,3 +296,31 @@
     justify-content: flex-end;
   }
 }
+
+/* ── Sonner toasts ──────────────────────────────────────────── */
+.broker-toaster {
+  font-family: var(--font-body, inherit);
+  z-index: 100;
+}
+
+.broker-toast {
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.08),
+    0 2px 4px -2px rgb(0 0 0 / 0.06);
+}
+
+.broker-toast-title {
+  font-family: var(--font-headline, inherit);
+  font-weight: 600;
+}
+
+.broker-toast-description {
+  color: hsl(var(--muted-foreground));
+}
+
+.broker-toast-close {
+  color: hsl(var(--muted-foreground));
+}

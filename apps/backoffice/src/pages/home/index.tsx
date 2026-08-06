@@ -1,6 +1,5 @@
 import {
   useGetProviderDashboardDashboardProviderGet,
-  type GetProviderDashboardDashboardProviderGetParams,
   type GetProviderDashboardDashboardProviderGetPeriod,
 } from '@broker/api'
 import {
@@ -31,9 +30,17 @@ export function HomePage() {
   const { activeOrganization } = useActiveOrganization()
   const [period, setPeriod] = useState<DashboardPeriodValue>('30d')
 
-  const query = useGetProviderDashboardDashboardProviderGet({
-    period: period as GetProviderDashboardDashboardProviderGetPeriod,
-  } as GetProviderDashboardDashboardProviderGetParams)
+  const query = useGetProviderDashboardDashboardProviderGet(
+    {
+      period: period as GetProviderDashboardDashboardProviderGetPeriod,
+      organization_id: activeOrganization?.id ?? '',
+    },
+    {
+      query: {
+        enabled: Boolean(activeOrganization?.id),
+      },
+    },
+  )
 
   const data = query.data
 
@@ -57,12 +64,12 @@ export function HomePage() {
             data.linked_sellers_total === 0) && (
             <div className="space-y-2">
               {data.linked_sellers_total === 0 ? (
-                <DashboardAlert to="/settings/invitations" tone="warning">
+                <DashboardAlert to="/sellers" tone="warning">
                   No tienes vendedores vinculados. Revisa las solicitudes de enlace.
                 </DashboardAlert>
               ) : null}
               {data.pending_link_requests > 0 ? (
-                <DashboardAlert to="/settings/invitations">
+                <DashboardAlert to="/sellers?tab=pending">
                   Tienes {data.pending_link_requests} solicitud
                   {data.pending_link_requests === 1 ? '' : 'es'} de vínculo pendiente
                   {data.pending_link_requests === 1 ? '' : 's'}.
@@ -118,7 +125,7 @@ export function HomePage() {
               value={data.linked_sellers_total}
               hint={`${data.products_total} productos en catálogo`}
               icon={Users}
-              to="/settings/invitations"
+              to="/sellers"
             />
           </div>
 

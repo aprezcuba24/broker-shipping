@@ -6,8 +6,9 @@ import { Currency } from '@broker/api'
 import {
   Field,
   FieldError,
-  FieldGroup,
   FieldLabel,
+  FormFieldCell,
+  FormSection,
   Input,
   MoneyInput,
   Select,
@@ -65,113 +66,123 @@ export function ProductForm({
 
   return (
     <form className="space-y-3" onSubmit={(event) => event.preventDefault()}>
-      <FieldGroup>
-        <Controller
-          name="name"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="product-name">Nombre</FieldLabel>
-              <Input
-                {...field}
-                id="product-name"
-                maxLength={255}
-                autoFocus
-                disabled={isSubmitting}
-                aria-invalid={fieldState.invalid}
-              />
-              {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
-            </Field>
-          )}
-        />
-
-        <Controller
-          name="price"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="product-price">Precio</FieldLabel>
-              <MoneyInput
-                id="product-price"
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={isSubmitting}
-                aria-invalid={fieldState.invalid}
-              />
-              {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
-            </Field>
-          )}
-        />
-
-        <Controller
-          name="commission"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="product-commission">Comisión</FieldLabel>
-              <MoneyInput
-                id="product-commission"
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={isSubmitting}
-                aria-invalid={fieldState.invalid}
-              />
-              {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
-            </Field>
-          )}
-        />
-
-        <Controller
-          name="currency"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="product-currency">Moneda</FieldLabel>
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={isSubmitting}
-              >
-                <SelectTrigger
-                  id="product-currency"
-                  className="w-full"
+      <FormSection title="Datos del producto">
+        <FormFieldCell>
+          <Controller
+            name="name"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="product-name">Nombre</FieldLabel>
+                <Input
+                  {...field}
+                  id="product-name"
+                  maxLength={255}
+                  autoFocus
+                  disabled={isSubmitting}
                   aria-invalid={fieldState.invalid}
-                >
-                  <SelectValue placeholder="Seleccionar moneda" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={Currency.cup}>CUP</SelectItem>
-                  <SelectItem value={Currency.usd}>USD</SelectItem>
-                </SelectContent>
-              </Select>
-              {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
-            </Field>
-          )}
-        />
+                />
+                {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+              </Field>
+            )}
+          />
+        </FormFieldCell>
 
-        <Controller
-          name="tag_ids"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="product-tags">Etiquetas</FieldLabel>
-              <TagsField
-                id="product-tags"
-                value={field.value}
-                onValueChange={field.onChange}
-                initialTags={initialTags}
-                creatable
-                wrap
-                disabled={isSubmitting}
-                aria-invalid={fieldState.invalid}
-                placeholder="Añadir etiquetas…"
-                searchPlaceholder="Buscar o crear etiqueta…"
-              />
-              {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
-            </Field>
-          )}
-        />
-      </FieldGroup>
+        <FormFieldCell>
+          <Controller
+            name="price"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="product-price">Precio</FieldLabel>
+                <MoneyInput
+                  id="product-price"
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isSubmitting}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+              </Field>
+            )}
+          />
+        </FormFieldCell>
+
+        <FormFieldCell>
+          <Controller
+            name="commission"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="product-commission">Comisión</FieldLabel>
+                <MoneyInput
+                  id="product-commission"
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isSubmitting}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+              </Field>
+            )}
+          />
+        </FormFieldCell>
+
+        <FormFieldCell>
+          <Controller
+            name="currency"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="product-currency">Moneda</FieldLabel>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isSubmitting}
+                >
+                  <SelectTrigger
+                    id="product-currency"
+                    className="w-full"
+                    aria-invalid={fieldState.invalid}
+                  >
+                    <SelectValue placeholder="Seleccionar moneda" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={Currency.cup}>CUP</SelectItem>
+                    <SelectItem value={Currency.usd}>USD</SelectItem>
+                  </SelectContent>
+                </Select>
+                {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+              </Field>
+            )}
+          />
+        </FormFieldCell>
+
+        <FormFieldCell fullWidth>
+          <Controller
+            name="tag_ids"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="product-tags">Etiquetas</FieldLabel>
+                <TagsField
+                  id="product-tags"
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  initialTags={initialTags}
+                  creatable
+                  wrap
+                  disabled={isSubmitting}
+                  aria-invalid={fieldState.invalid}
+                  placeholder="Añadir etiquetas…"
+                  searchPlaceholder="Buscar o crear etiqueta…"
+                />
+                {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+              </Field>
+            )}
+          />
+        </FormFieldCell>
+      </FormSection>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
     </form>

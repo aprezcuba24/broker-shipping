@@ -71,6 +71,8 @@ export * from './invitationPublicCounterpartyOrganizationId';
 export * from './invitationPublicInviteeEmail';
 export * from './invitationPublicUserId';
 export * from './invitationStatus';
+export * from './linkedSellerPublic';
+export * from './linkedSellerPublicUpdatedAt';
 export * from './listCommissionsCommissionsProviderGetParams';
 export * from './listCommissionsCommissionsSellerGetParams';
 export * from './listCustomersCustomersSellerGetParams';

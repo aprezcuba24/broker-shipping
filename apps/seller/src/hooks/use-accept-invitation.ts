@@ -8,6 +8,7 @@ import {
   peekInviteToken,
   storeInviteToken,
   takeInviteToken,
+  notify,
   type AcceptInvitationStatus,
 } from '@broker/ui'
 import { useQueryClient } from '@tanstack/react-query'
@@ -56,6 +57,7 @@ export function useAcceptInvitation() {
       })
       setStatus('success')
       setMessage('Ya formas parte de la organización.')
+      notify.success('Invitación aceptada')
     } catch (error) {
       setStatus('error')
       setMessage(formatApiError(error, 'No se pudo aceptar la invitación.'))

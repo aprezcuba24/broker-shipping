@@ -25,6 +25,8 @@ export function ProductCreatePage() {
       }),
     invalidateKeys: [getListProductsProductsProviderGetQueryKey()],
     redirectTo: '/products',
+    entityLabel: 'Producto',
+    mode: 'create',
   })
 
   return (

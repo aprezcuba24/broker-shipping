@@ -1,10 +1,12 @@
 import {
+  getGetProviderDashboardDashboardProviderGetQueryKey,
+  getListLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGetQueryKey,
   getListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGetQueryKey,
   useAcceptInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdAcceptPost,
   useListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGet,
   useRejectInvitationOrganizationsProviderOrganizationIdInvitationsInvitationIdRejectPost,
 } from '@broker/api'
-import { useActiveOrganization } from '@broker/ui'
+import { notify, useActiveOrganization } from '@broker/ui'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
@@ -25,12 +27,21 @@ export function useInvitationsSettings() {
 
   const invalidate = async () => {
     if (!orgId) return
-    await queryClient.invalidateQueries({
-      queryKey:
-        getListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGetQueryKey(
-          orgId,
-        ),
-    })
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey:
+          getListOrganizationInvitationsOrganizationsProviderOrganizationIdInvitationsGetQueryKey(
+            orgId,
+          ),
+      }),
+      queryClient.invalidateQueries({
+        queryKey:
+          getListLinkedSellersOrganizationsProviderOrganizationIdLinkedSellersGetQueryKey(orgId),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: getGetProviderDashboardDashboardProviderGetQueryKey(),
+      }),
+    ])
   }
 
   return {
@@ -44,6 +55,7 @@ export function useInvitationsSettings() {
         try {
           await acceptRequest.mutateAsync({ organizationId: orgId, invitationId })
           await invalidate()
+          notify.success('Solicitud aceptada')
         } finally {
           setPendingId(null)
         }
@@ -53,6 +65,7 @@ export function useInvitationsSettings() {
         try {
           await rejectRequest.mutateAsync({ organizationId: orgId, invitationId })
           await invalidate()
+          notify.success('Solicitud rechazada')
         } finally {
           setPendingId(null)
         }

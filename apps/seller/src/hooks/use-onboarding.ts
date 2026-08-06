@@ -4,7 +4,7 @@ import {
   OrganizationType,
   useCreateOrganizationOrganizationsPost,
 } from '@broker/api'
-import { peekInviteToken } from '@broker/ui'
+import { notify, peekInviteToken } from '@broker/ui'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 
@@ -21,6 +21,7 @@ export function useOnboarding() {
     await queryClient.invalidateQueries({
       queryKey: getMyOrganizationsUsersMyOrganizationsGetQueryKey(),
     })
+    notify.created('Organización', 'f')
     if (peekInviteToken()) {
       void navigate('/accept-invitation')
       return

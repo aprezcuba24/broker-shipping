@@ -14,8 +14,7 @@ import { RegisterPage } from './pages/register'
 import { MembersPage } from './pages/members'
 import { CommissionDetailPage, CommissionPage } from './pages/commission'
 import { OrderDetailPage, OrderPage } from './pages/order'
-import { InvitationsSettingsPage } from './pages/settings/invitations'
-import { OrganizationsSettingsPage } from './pages/settings/organizations'
+import { SellersPage } from './pages/sellers'
 import {
   ProductCreatePage,
   ProductEditPage,
@@ -73,8 +72,11 @@ export default function App() {
           <Route path="products/:productId" element={<ProductEditPage />} />
           <Route path="tags" element={<TagPage />} />
           <Route path="members" element={<MembersPage />} />
-          <Route path="settings/organizations" element={<OrganizationsSettingsPage />} />
-          <Route path="settings/invitations" element={<InvitationsSettingsPage />} />
+          <Route path="sellers" element={<SellersPage />} />
+          <Route
+            path="settings/invitations"
+            element={<Navigate to="/sellers?tab=pending" replace />}
+          />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -29,5 +29,5 @@ class SellerLinkRequestedEvent:
     @property
     def review_url(self) -> str:
         return (
-            f"{settings.frontend_base_url('backoffice')}/settings/invitations"
+            f"{settings.frontend_base_url('backoffice')}/sellers?tab=pending"
         )

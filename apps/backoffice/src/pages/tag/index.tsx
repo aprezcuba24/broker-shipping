@@ -102,6 +102,8 @@ export function TagPage() {
       }),
     },
     resetOn: [activeOrganization?.id],
+    entityLabel: 'Etiqueta',
+    entityGender: 'f',
   })
 
   const columns = useMemo(

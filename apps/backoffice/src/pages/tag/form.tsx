@@ -5,8 +5,9 @@ import { Controller, useForm } from 'react-hook-form'
 import {
   Field,
   FieldError,
-  FieldGroup,
   FieldLabel,
+  FormFieldCell,
+  FormSection,
   Input,
   Switch,
   useFormSubmitHandle,
@@ -45,48 +46,52 @@ export function TagForm({
 
   return (
     <form className="space-y-3" onSubmit={(event) => event.preventDefault()}>
-      <FieldGroup>
-        <Controller
-          name="name"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="tag-name">Nombre</FieldLabel>
-              <Input
-                {...field}
-                id="tag-name"
-                maxLength={255}
-                autoFocus
-                disabled={isSubmitting}
-                aria-invalid={fieldState.invalid}
-              />
-              {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
-            </Field>
-          )}
-        />
+      <FormSection title="Datos de la etiqueta">
+        <FormFieldCell>
+          <Controller
+            name="name"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="tag-name">Nombre</FieldLabel>
+                <Input
+                  {...field}
+                  id="tag-name"
+                  maxLength={255}
+                  autoFocus
+                  disabled={isSubmitting}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+              </Field>
+            )}
+          />
+        </FormFieldCell>
 
-        <Controller
-          name="is_active"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field
-              orientation="horizontal"
-              data-invalid={fieldState.invalid}
-              className="items-center justify-between gap-3"
-            >
-              <FieldLabel htmlFor="tag-is-active">Activo</FieldLabel>
-              <Switch
-                id="tag-is-active"
-                checked={field.value}
-                onCheckedChange={field.onChange}
-                disabled={isSubmitting}
-                aria-invalid={fieldState.invalid}
-              />
-              {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
-            </Field>
-          )}
-        />
-      </FieldGroup>
+        <FormFieldCell>
+          <Controller
+            name="is_active"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field
+                orientation="horizontal"
+                data-invalid={fieldState.invalid}
+                className="h-full items-center justify-between gap-3 sm:items-center"
+              >
+                <FieldLabel htmlFor="tag-is-active">Activo</FieldLabel>
+                <Switch
+                  id="tag-is-active"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  disabled={isSubmitting}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+              </Field>
+            )}
+          />
+        </FormFieldCell>
+      </FormSection>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
     </form>

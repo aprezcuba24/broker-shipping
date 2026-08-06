@@ -12,6 +12,7 @@ import { useCallback, useState } from 'react'
 
 import { useActiveOrganization } from './active-organization-context'
 import { useResetOnChange } from '../hooks/use-reset-on-change'
+import { notify } from '../lib/notify'
 import type { MemberInviteFields } from './member-invite-form'
 
 export function useOrganizationMembers() {
@@ -70,6 +71,7 @@ export function useOrganizationMembers() {
           data: { invitee_email },
         })
         await invalidate()
+        notify.success('Invitación enviada')
       } catch (err) {
         setInviteError(formatApiError(err, 'No se pudo enviar la invitación.'))
         throw err
@@ -84,6 +86,7 @@ export function useOrganizationMembers() {
       try {
         await cancelInvite.mutateAsync({ organizationId: orgId, invitationId })
         await invalidate()
+        notify.success('Invitación cancelada')
       } finally {
         setCancellingId(null)
       }

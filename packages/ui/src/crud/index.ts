@@ -6,7 +6,7 @@ export { useCrudDialogs } from './hooks/use-crud-dialogs'
 export type { CrudDialogs, CreateDialogState, EditDialogState } from './hooks/use-crud-dialogs'
 
 export { useAsyncAction } from './hooks/use-async-action'
-export type { AsyncAction } from './hooks/use-async-action'
+export type { AsyncAction, AsyncActionToastOptions } from './hooks/use-async-action'
 
 export { useCrudController } from './hooks/use-crud-controller'
 export type {

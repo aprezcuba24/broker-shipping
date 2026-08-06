@@ -4,20 +4,39 @@ import {
   useMyOrganizationsUsersMyOrganizationsGet,
   type OrganizationPublic,
 } from '@broker/api'
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react'
+import {
+  CreateOrganizationUiProvider,
+  useOpenCreateOrganization,
+} from './create-organization-ui-context'
+
+export type OrganizationKind =
+  | typeof OrganizationType.provider
+  | typeof OrganizationType.seller
 
 export type ActiveOrganizationContextValue = {
   organizations: OrganizationPublic[]
   activeOrganization: OrganizationPublic | null
   setActiveOrganization: (organizationId: string) => void
+  organizationType: OrganizationKind | undefined
   isLoading: boolean
+  openCreateOrganization: () => void
 }
 
-const ActiveOrganizationContext = createContext<ActiveOrganizationContextValue | null>(null)
+type ActiveOrganizationState = Omit<ActiveOrganizationContextValue, 'openCreateOrganization'>
+
+const ActiveOrganizationContext = createContext<ActiveOrganizationState | null>(null)
 
 export type ActiveOrganizationProviderProps = {
   children: ReactNode
-  organizationType?: typeof OrganizationType.provider | typeof OrganizationType.seller
+  organizationType?: OrganizationKind
 }
 
 export function ActiveOrganizationProvider({
@@ -46,25 +65,26 @@ export function ActiveOrganizationProvider({
     return organizations[0] ?? null
   }, [organizations, selectedId])
 
-  const setActiveOrganization = useCallback(
-    (organizationId: string) => {
-      if (!organizations.some((org) => org.id === organizationId)) return
-      setSelectedId(organizationId)
-    },
-    [organizations],
-  )
+  const setActiveOrganization = useCallback((organizationId: string) => {
+    setSelectedId(organizationId)
+  }, [])
 
-  const value = useMemo<ActiveOrganizationContextValue>(
+  const value = useMemo<ActiveOrganizationState>(
     () => ({
       organizations,
       activeOrganization,
       setActiveOrganization,
+      organizationType,
       isLoading: Boolean(token) && isPending,
     }),
-    [organizations, activeOrganization, setActiveOrganization, isPending, token],
+    [organizations, activeOrganization, setActiveOrganization, organizationType, isPending, token],
   )
 
-  return <ActiveOrganizationContext value={value}>{children}</ActiveOrganizationContext>
+  return (
+    <ActiveOrganizationContext value={value}>
+      <CreateOrganizationUiProvider>{children}</CreateOrganizationUiProvider>
+    </ActiveOrganizationContext>
+  )
 }
 
 export function useActiveOrganization(): ActiveOrganizationContextValue {
@@ -72,5 +92,9 @@ export function useActiveOrganization(): ActiveOrganizationContextValue {
   if (!context) {
     throw new Error('useActiveOrganization must be used within ActiveOrganizationProvider')
   }
-  return context
+  const openCreateOrganization = useOpenCreateOrganization()
+  return {
+    ...context,
+    openCreateOrganization,
+  }
 }
