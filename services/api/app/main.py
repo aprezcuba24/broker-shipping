@@ -10,6 +10,7 @@ from app.db.session import create_async_engine_and_session_maker
 from app.lib.events import get_bus
 from app.lib.events.registry import register_handlers
 from app.lib.exceptions import register_exception_handlers
+from app.lib.storage.deps import get_object_storage
 from app.routes import router as routes_router
 
 
@@ -22,6 +23,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.session_maker = session_maker
     configure_session_maker(session_maker)
     register_handlers(get_bus())
+    if settings.aws_endpoint_url.strip() and settings.s3_bucket.strip():
+        await get_object_storage().ensure_bucket()
     try:
         yield
     finally:

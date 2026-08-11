@@ -9,6 +9,7 @@ from sqlmodel import col, select
 from app.lib.persistence import get_entity
 from app.lib.persistence.apply_update import apply_partial_update
 from app.lib.persistence.pagination import paginate
+from app.lib.storage.deps import get_object_storage
 from app.models.product.product import Product
 from app.models.product.product_tag import ProductTag
 from app.schemas.pagination import PageResult, PaginationParams
@@ -121,5 +122,7 @@ async def delete_product(
         id=product_id,
         organization_id=organization_id,
     )
+    if product.image_key:
+        await get_object_storage().delete_object(product.image_key)
     await session.delete(product)
     await session.commit()

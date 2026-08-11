@@ -7,7 +7,12 @@ from app.deps import SessionDep
 from app.lib.persistence.pagination import PaginationDep
 from app.lib.security.deps import ProviderOrgDep
 from app.schemas.pagination import Page
-from app.schemas.product import ProductCreate, ProductPublic, ProductUpdate
+from app.schemas.product import (
+    ProductCreate,
+    ProductPublic,
+    ProductUpdate,
+    product_to_public,
+)
 from app.services import product as product_service
 
 router = APIRouter(prefix="/products/provider", tags=["products"])
@@ -28,7 +33,7 @@ async def list_products(
         name=name,
         tag_ids=tag_ids,
     )
-    return Page.from_mapped(result, pagination, ProductPublic.model_validate)
+    return Page.from_mapped(result, pagination, product_to_public)
 
 
 @router.get("/{product_id}", response_model=ProductPublic)
@@ -42,7 +47,7 @@ async def get_product(
         product_id,
         organization.id,
     )
-    return ProductPublic.model_validate(product)
+    return product_to_public(product)
 
 
 @router.post("/", response_model=ProductPublic, status_code=201)
@@ -52,7 +57,7 @@ async def create_product(
     session: SessionDep,
 ) -> ProductPublic:
     product = await product_service.create_product(session, organization.id, body)
-    return ProductPublic.model_validate(product)
+    return product_to_public(product)
 
 
 @router.patch("/{product_id}", response_model=ProductPublic)
@@ -68,7 +73,7 @@ async def patch_product(
         organization.id,
         body,
     )
-    return ProductPublic.model_validate(product)
+    return product_to_public(product)
 
 
 @router.delete("/{product_id}", status_code=204)

@@ -41,6 +41,13 @@ class Settings(BaseSettings):
     frontend_backoffice_url: str = Field(default="http://localhost:5173")
     frontend_seller_url: str = Field(default="http://localhost:5174")
 
+    aws_access_key_id: str = Field(default="")
+    aws_secret_access_key: str = Field(default="")
+    aws_region: str = Field(default="us-east-1")
+    s3_bucket: str = Field(default="")
+    aws_endpoint_url: str = Field(default="")
+    s3_public_base_url: str = Field(default="")
+
     def frontend_base_url(self, client_app: ClientApp) -> str:
         if client_app == "backoffice":
             return self.frontend_backoffice_url.rstrip("/")
