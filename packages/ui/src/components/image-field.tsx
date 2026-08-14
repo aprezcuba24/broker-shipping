@@ -8,7 +8,7 @@ import {
 } from '../lib/image-field'
 import { Button } from './button'
 import { ConfirmDialog } from './confirm-dialog'
-import { Thumbnail } from './thumbnail'
+import { Thumbnail, type ThumbnailProps } from './thumbnail'
 
 export type ImageFieldProps = {
   value?: ImageFieldValue
@@ -17,6 +17,7 @@ export type ImageFieldProps = {
   alt?: string
   hint?: string
   id?: string
+  size?: ThumbnailProps['size']
   'aria-invalid'?: boolean
 }
 
@@ -34,6 +35,7 @@ export function ImageField({
   alt = 'Imagen',
   hint = 'JPEG, PNG o WebP. Máximo 5 MB.',
   id,
+  size = 'lg',
   'aria-invalid': ariaInvalid,
 }: ImageFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -121,7 +123,7 @@ export function ImageField({
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-      <Thumbnail src={displaySrc} alt={alt} size="lg" />
+      <Thumbnail src={displaySrc} alt={alt} size={size} />
 
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <p className="text-sm text-muted-foreground">{hint}</p>

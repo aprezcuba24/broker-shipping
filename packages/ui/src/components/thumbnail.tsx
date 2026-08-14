@@ -6,12 +6,14 @@ const sizeClass = {
   sm: 'size-10',
   md: 'size-16',
   lg: 'size-32',
+  xl: 'size-48',
 } as const
 
 const iconSizeClass = {
   sm: 'size-4',
   md: 'size-6',
   lg: 'size-10',
+  xl: 'size-14',
 } as const
 
 export type ThumbnailProps = {

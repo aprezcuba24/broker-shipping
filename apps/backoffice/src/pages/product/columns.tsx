@@ -29,6 +29,7 @@ export function buildProductColumns({
     imageColumn<ProductPublic>({
       src: (row) => row.image_url,
       alt: (row) => row.name,
+      size: 'md',
     }),
     textColumn<ProductPublic>({ id: 'name', header: 'Nombre' }),
     currencyMoneyColumn<ProductPublic>({ id: 'price', header: 'Precio' }),

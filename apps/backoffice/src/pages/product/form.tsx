@@ -68,6 +68,30 @@ export function ProductForm({
 
   return (
     <form className="space-y-3" onSubmit={(event) => event.preventDefault()}>
+      <FormSection title="Imagen">
+        <FormFieldCell fullWidth>
+          <Controller
+            name="image"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="product-image">Imagen del producto</FieldLabel>
+                <ImageField
+                  id="product-image"
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isSubmitting}
+                  alt="Imagen del producto"
+                  size="xl"
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+              </Field>
+            )}
+          />
+        </FormFieldCell>
+      </FormSection>
+
       <FormSection title="Datos del producto">
         <FormFieldCell>
           <Controller
@@ -171,29 +195,6 @@ export function ProductForm({
                   aria-invalid={fieldState.invalid}
                   placeholder="Añadir etiquetas…"
                   searchPlaceholder="Buscar o crear etiqueta…"
-                />
-                {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
-              </Field>
-            )}
-          />
-        </FormFieldCell>
-      </FormSection>
-
-      <FormSection title="Imagen">
-        <FormFieldCell fullWidth>
-          <Controller
-            name="image"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="product-image">Imagen del producto</FieldLabel>
-                <ImageField
-                  id="product-image"
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  disabled={isSubmitting}
-                  alt="Imagen del producto"
-                  aria-invalid={fieldState.invalid}
                 />
                 {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
               </Field>
