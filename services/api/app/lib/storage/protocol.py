@@ -12,8 +12,6 @@ class PresignedPut:
 
 
 class ObjectStorage(Protocol):
-    async def ensure_bucket(self) -> None: ...
-
     async def generate_presigned_put(
         self,
         *,

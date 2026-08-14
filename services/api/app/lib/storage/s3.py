@@ -16,14 +16,17 @@ class S3ObjectStorage:
         self._session = aioboto3.Session()
 
     def _client_kwargs(self) -> dict[str, Any]:
+        endpoint = self._settings.aws_endpoint_url.strip()
         kwargs: dict[str, Any] = {
             "service_name": "s3",
             "region_name": self._settings.aws_region,
             "aws_access_key_id": self._settings.aws_access_key_id or None,
             "aws_secret_access_key": self._settings.aws_secret_access_key or None,
-            "config": Config(signature_version="s3v4"),
+            "config": Config(
+                signature_version="s3v4",
+                s3={"addressing_style": "path"} if endpoint else {},
+            ),
         }
-        endpoint = self._settings.aws_endpoint_url.strip()
         if endpoint:
             kwargs["endpoint_url"] = endpoint
         return kwargs
@@ -40,22 +43,6 @@ class S3ObjectStorage:
             region = self._settings.aws_region
             return f"https://{bucket}.s3.{region}.amazonaws.com"
         return ""
-
-    async def ensure_bucket(self) -> None:
-        bucket = self._settings.s3_bucket
-        if not bucket:
-            return
-        async with self._session.client(**self._client_kwargs()) as client:
-            try:
-                await client.head_bucket(Bucket=bucket)
-            except ClientError:
-                create_kwargs: dict[str, Any] = {"Bucket": bucket}
-                region = self._settings.aws_region
-                if region and region != "us-east-1":
-                    create_kwargs["CreateBucketConfiguration"] = {
-                        "LocationConstraint": region,
-                    }
-                await client.create_bucket(**create_kwargs)
 
     async def generate_presigned_put(
         self,

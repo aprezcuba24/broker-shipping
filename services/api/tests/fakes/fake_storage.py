@@ -8,10 +8,6 @@ class FakeObjectStorage:
         self.public_base_url = public_base_url.rstrip("/")
         self.presigned_puts: list[dict[str, object]] = []
         self.deleted_keys: list[str] = []
-        self.ensure_bucket_calls = 0
-
-    async def ensure_bucket(self) -> None:
-        self.ensure_bucket_calls += 1
 
     async def generate_presigned_put(
         self,
