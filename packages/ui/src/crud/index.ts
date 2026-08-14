@@ -24,6 +24,13 @@ export type {
 export { useEntityFormMutation } from './hooks/use-entity-form-mutation'
 export type { UseEntityFormMutationOptions } from './hooks/use-entity-form-mutation'
 
+export { useResourceImagePersist } from './hooks/use-resource-image-persist'
+export type {
+  UseResourceImagePersistOptions,
+  ResourceImagePersist,
+  ResourceImagePresignResult,
+} from './hooks/use-resource-image-persist'
+
 export { entityFormKey } from './hooks/entity-form-key'
 
 export {
@@ -38,6 +45,7 @@ export {
   booleanColumn,
   badgeColumn,
   componentColumn,
+  imageColumn,
   linkColumn,
   actionsColumn,
 } from './components/columns'

@@ -1,4 +1,10 @@
-import { componentColumn, formatMoney, textColumn, type ColumnDef } from '@broker/ui'
+import {
+  componentColumn,
+  formatMoney,
+  imageColumn,
+  textColumn,
+  type ColumnDef,
+} from '@broker/ui'
 
 import { ProductCartControl } from '@/components/product-cart-control'
 import type { CartItem } from '@/stores/cart-store'
@@ -60,6 +66,10 @@ export function buildCartColumns({
   getProviderName,
 }: BuildCartColumnsOptions): ColumnDef<CartItem>[] {
   return [
+    imageColumn<CartItem>({
+      src: (row) => row.product.image_url,
+      alt: (row) => row.product.name,
+    }),
     textColumn<CartItem>({
       id: 'name',
       header: 'Producto',

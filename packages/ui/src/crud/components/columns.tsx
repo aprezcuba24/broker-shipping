@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
+import { Thumbnail, type ThumbnailProps } from '../../components/thumbnail'
 import { formatMoney } from '../../lib/utils'
 import { ColumnType, type ColumnDef } from '../../components/data-table/types'
 
@@ -143,6 +144,25 @@ export function componentColumn<TData>(
     header: name,
     cell: component,
     ...options,
+  }
+}
+
+export function imageColumn<TData>(
+  options: {
+    src: (row: TData) => string | null | undefined
+    alt: (row: TData) => string
+    size?: ThumbnailProps['size']
+  } & Partial<Omit<ColumnDef<TData>, 'id' | 'header' | 'cell'>> & {
+      id?: string
+      header?: string
+    },
+): ColumnDef<TData> {
+  const { src, alt, size = 'sm', id = 'image', header = 'Imagen', ...rest } = options
+  return {
+    id,
+    header,
+    cell: (row) => <Thumbnail src={src(row)} alt={alt(row)} size={size} />,
+    ...rest,
   }
 }
 

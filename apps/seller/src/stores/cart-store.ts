@@ -2,7 +2,10 @@ import type { ProductPublic } from '@broker/api'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-export type CartProductSnapshot = Pick<ProductPublic, 'id' | 'name' | 'organization_id'>
+export type CartProductSnapshot = Pick<
+  ProductPublic,
+  'id' | 'name' | 'organization_id' | 'image_url'
+>
 
 export type CartItem = {
   product: CartProductSnapshot

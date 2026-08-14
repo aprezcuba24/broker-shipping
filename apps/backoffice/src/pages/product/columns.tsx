@@ -8,6 +8,7 @@ import {
   currencyMoneyColumn,
   DeleteRowButton,
   EditRowButton,
+  imageColumn,
   textColumn,
   updatedAtColumn,
   type ColumnDef,
@@ -25,6 +26,10 @@ export function buildProductColumns({
   isDeleting = false,
 }: BuildProductColumnsOptions): ColumnDef<ProductPublic>[] {
   return [
+    imageColumn<ProductPublic>({
+      src: (row) => row.image_url,
+      alt: (row) => row.name,
+    }),
     textColumn<ProductPublic>({ id: 'name', header: 'Nombre' }),
     currencyMoneyColumn<ProductPublic>({ id: 'price', header: 'Precio' }),
     currencyMoneyColumn<ProductPublic>({ id: 'commission', header: 'Comisión' }),

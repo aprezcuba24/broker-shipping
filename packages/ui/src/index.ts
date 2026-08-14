@@ -6,6 +6,7 @@ export {
   isValidMoneyInput,
   moneyCentsSchema,
 } from './lib/utils'
+export { CURRENCY_OPTIONS } from './lib/currency'
 export { initialsFromName } from './lib/initials'
 export { notify } from './lib/notify'
 export type { EntityGender } from './lib/notify'
@@ -41,6 +42,20 @@ export { DetailSection } from './components/detail-section'
 export type { DetailSectionField, DetailSectionProps } from './components/detail-section'
 export { FormSection, FormFieldCell } from './components/form-section'
 export type { FormSectionProps, FormFieldCellProps } from './components/form-section'
+export { Thumbnail } from './components/thumbnail'
+export type { ThumbnailProps } from './components/thumbnail'
+export { ImageField } from './components/image-field'
+export type { ImageFieldProps } from './components/image-field'
+export {
+  IMAGE_ACCEPT,
+  IMAGE_MAX_BYTES,
+  ALLOWED_IMAGE_TYPES,
+  imageFieldDefaultValue,
+  imageFieldSchema,
+  validateImageFile,
+  imageFieldHasPendingChange,
+} from './lib/image-field'
+export type { ImageFieldValue } from './lib/image-field'
 
 export { Button } from './components/button'
 export type { ButtonProps } from './components/button'
@@ -59,6 +74,7 @@ export {
   useCrudController,
   useQueryCacheSync,
   useEntityFormMutation,
+  useResourceImagePersist,
   entityFormKey,
   textColumn,
   dateColumn,
@@ -71,6 +87,7 @@ export {
   booleanColumn,
   badgeColumn,
   componentColumn,
+  imageColumn,
   linkColumn,
   actionsColumn,
   FilterBar,
@@ -97,6 +114,9 @@ export type {
   QueryCacheSync,
   UseQueryCacheSyncOptions,
   UseEntityFormMutationOptions,
+  UseResourceImagePersistOptions,
+  ResourceImagePersist,
+  ResourceImagePresignResult,
   FilterBarProps,
   FilterFormProps,
   ClearFiltersButtonProps,
@@ -342,7 +362,10 @@ export {
 } from './order/order-detail-page'
 export type { OrderDetailPageProps } from './order/order-detail-page'
 export { OrderItemsTable } from './order/order-items-table'
-export type { OrderItemsTableProps } from './order/order-items-table'
+export type {
+  OrderItemsTableProps,
+  OrderItemProductInfo,
+} from './order/order-items-table'
 export {
   buildSellerOrderItemColumns,
   buildProviderOrderItemColumns,

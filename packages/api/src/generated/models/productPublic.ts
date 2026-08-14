@@ -7,6 +7,7 @@
 import type { Currency } from './currency';
 import type { ProductPublicUpdatedAt } from './productPublicUpdatedAt';
 import type { TagPublic } from './tagPublic';
+import type { ProductPublicImageUrl } from './productPublicImageUrl';
 
 export interface ProductPublic {
   id: string;
@@ -18,4 +19,5 @@ export interface ProductPublic {
   created_at: string;
   updated_at: ProductPublicUpdatedAt;
   tags?: TagPublic[];
+  image_url?: ProductPublicImageUrl;
 }

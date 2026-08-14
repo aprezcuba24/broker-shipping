@@ -7,6 +7,7 @@ import {
   componentColumn,
   createdAtColumn,
   currencyMoneyColumn,
+  imageColumn,
   textColumn,
   updatedAtColumn,
   type ColumnDef,
@@ -25,6 +26,10 @@ export function buildProductColumns({
   onView,
 }: BuildProductColumnsOptions): ColumnDef<ProductPublic>[] {
   return [
+    imageColumn<ProductPublic>({
+      src: (row) => row.image_url,
+      alt: (row) => row.name,
+    }),
     textColumn<ProductPublic>({ id: 'name', header: 'Nombre' }),
     componentColumn<ProductPublic>('provider', 'Proveedor', (row) => (
       <span>{providerNameById.get(row.organization_id) ?? '—'}</span>

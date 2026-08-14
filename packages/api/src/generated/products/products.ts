@@ -24,7 +24,9 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  ConfirmProductImageProductsProviderProductIdImagePutParams,
   CreateProductProductsProviderPostParams,
+  DeleteProductImageProductsProviderProductIdImageDeleteParams,
   DeleteProductProductsProviderProductIdDeleteParams,
   GetProductProductsProviderProductIdGetParams,
   GetProductProductsSellerProductIdGetParams,
@@ -33,7 +35,11 @@ import type {
   ListProductsProductsSellerGetParams,
   PageProductPublic,
   PatchProductProductsProviderProductIdPatchParams,
+  PresignProductImageProductsProviderProductIdImagePresignPostParams,
   ProductCreate,
+  ProductImageConfirmRequest,
+  ProductImagePresignRequest,
+  ProductImagePresignResponse,
   ProductPublic,
   ProductUpdate
 } from '.././models';
@@ -430,6 +436,202 @@ export const useDeleteProductProductsProviderProductIdDelete = <TError = HTTPVal
       > => {
 
       const mutationOptions = getDeleteProductProductsProviderProductIdDeleteMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Presign Product Image
+ */
+export const presignProductImageProductsProviderProductIdImagePresignPost = (
+    productId: string,
+    productImagePresignRequest: ProductImagePresignRequest,
+    params: PresignProductImageProductsProviderProductIdImagePresignPostParams,
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<ProductImagePresignResponse>(
+      {url: `/products/provider/${productId}/image/presign`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: productImagePresignRequest,
+        params, signal
+    },
+      options);
+    }
+  
+
+
+export const getPresignProductImageProductsProviderProductIdImagePresignPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof presignProductImageProductsProviderProductIdImagePresignPost>>, TError,{productId: string;data: ProductImagePresignRequest;params: PresignProductImageProductsProviderProductIdImagePresignPostParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof presignProductImageProductsProviderProductIdImagePresignPost>>, TError,{productId: string;data: ProductImagePresignRequest;params: PresignProductImageProductsProviderProductIdImagePresignPostParams}, TContext> => {
+
+const mutationKey = ['presignProductImageProductsProviderProductIdImagePresignPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof presignProductImageProductsProviderProductIdImagePresignPost>>, {productId: string;data: ProductImagePresignRequest;params: PresignProductImageProductsProviderProductIdImagePresignPostParams}> = (props) => {
+          const {productId,data,params} = props ?? {};
+
+          return  presignProductImageProductsProviderProductIdImagePresignPost(productId,data,params,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PresignProductImageProductsProviderProductIdImagePresignPostMutationResult = NonNullable<Awaited<ReturnType<typeof presignProductImageProductsProviderProductIdImagePresignPost>>>
+    export type PresignProductImageProductsProviderProductIdImagePresignPostMutationBody = ProductImagePresignRequest
+    export type PresignProductImageProductsProviderProductIdImagePresignPostMutationError = HTTPValidationError
+
+    /**
+ * @summary Presign Product Image
+ */
+export const usePresignProductImageProductsProviderProductIdImagePresignPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof presignProductImageProductsProviderProductIdImagePresignPost>>, TError,{productId: string;data: ProductImagePresignRequest;params: PresignProductImageProductsProviderProductIdImagePresignPostParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof presignProductImageProductsProviderProductIdImagePresignPost>>,
+        TError,
+        {productId: string;data: ProductImagePresignRequest;params: PresignProductImageProductsProviderProductIdImagePresignPostParams},
+        TContext
+      > => {
+
+      const mutationOptions = getPresignProductImageProductsProviderProductIdImagePresignPostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Confirm Product Image
+ */
+export const confirmProductImageProductsProviderProductIdImagePut = (
+    productId: string,
+    productImageConfirmRequest: ProductImageConfirmRequest,
+    params: ConfirmProductImageProductsProviderProductIdImagePutParams,
+ options?: SecondParameter<typeof brokerFetch>,) => {
+      
+      
+      return brokerFetch<ProductPublic>(
+      {url: `/products/provider/${productId}/image`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: productImageConfirmRequest,
+        params
+    },
+      options);
+    }
+  
+
+
+export const getConfirmProductImageProductsProviderProductIdImagePutMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmProductImageProductsProviderProductIdImagePut>>, TError,{productId: string;data: ProductImageConfirmRequest;params: ConfirmProductImageProductsProviderProductIdImagePutParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof confirmProductImageProductsProviderProductIdImagePut>>, TError,{productId: string;data: ProductImageConfirmRequest;params: ConfirmProductImageProductsProviderProductIdImagePutParams}, TContext> => {
+
+const mutationKey = ['confirmProductImageProductsProviderProductIdImagePut'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof confirmProductImageProductsProviderProductIdImagePut>>, {productId: string;data: ProductImageConfirmRequest;params: ConfirmProductImageProductsProviderProductIdImagePutParams}> = (props) => {
+          const {productId,data,params} = props ?? {};
+
+          return  confirmProductImageProductsProviderProductIdImagePut(productId,data,params,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ConfirmProductImageProductsProviderProductIdImagePutMutationResult = NonNullable<Awaited<ReturnType<typeof confirmProductImageProductsProviderProductIdImagePut>>>
+    export type ConfirmProductImageProductsProviderProductIdImagePutMutationBody = ProductImageConfirmRequest
+    export type ConfirmProductImageProductsProviderProductIdImagePutMutationError = HTTPValidationError
+
+    /**
+ * @summary Confirm Product Image
+ */
+export const useConfirmProductImageProductsProviderProductIdImagePut = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmProductImageProductsProviderProductIdImagePut>>, TError,{productId: string;data: ProductImageConfirmRequest;params: ConfirmProductImageProductsProviderProductIdImagePutParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof confirmProductImageProductsProviderProductIdImagePut>>,
+        TError,
+        {productId: string;data: ProductImageConfirmRequest;params: ConfirmProductImageProductsProviderProductIdImagePutParams},
+        TContext
+      > => {
+
+      const mutationOptions = getConfirmProductImageProductsProviderProductIdImagePutMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Delete Product Image
+ */
+export const deleteProductImageProductsProviderProductIdImageDelete = (
+    productId: string,
+    params: DeleteProductImageProductsProviderProductIdImageDeleteParams,
+ options?: SecondParameter<typeof brokerFetch>,) => {
+      
+      
+      return brokerFetch<void>(
+      {url: `/products/provider/${productId}/image`, method: 'DELETE',
+        params
+    },
+      options);
+    }
+  
+
+
+export const getDeleteProductImageProductsProviderProductIdImageDeleteMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductImageProductsProviderProductIdImageDelete>>, TError,{productId: string;params: DeleteProductImageProductsProviderProductIdImageDeleteParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteProductImageProductsProviderProductIdImageDelete>>, TError,{productId: string;params: DeleteProductImageProductsProviderProductIdImageDeleteParams}, TContext> => {
+
+const mutationKey = ['deleteProductImageProductsProviderProductIdImageDelete'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteProductImageProductsProviderProductIdImageDelete>>, {productId: string;params: DeleteProductImageProductsProviderProductIdImageDeleteParams}> = (props) => {
+          const {productId,params} = props ?? {};
+
+          return  deleteProductImageProductsProviderProductIdImageDelete(productId,params,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteProductImageProductsProviderProductIdImageDeleteMutationResult = NonNullable<Awaited<ReturnType<typeof deleteProductImageProductsProviderProductIdImageDelete>>>
+    
+    export type DeleteProductImageProductsProviderProductIdImageDeleteMutationError = HTTPValidationError
+
+    /**
+ * @summary Delete Product Image
+ */
+export const useDeleteProductImageProductsProviderProductIdImageDelete = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductImageProductsProviderProductIdImageDelete>>, TError,{productId: string;params: DeleteProductImageProductsProviderProductIdImageDeleteParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteProductImageProductsProviderProductIdImageDelete>>,
+        TError,
+        {productId: string;params: DeleteProductImageProductsProviderProductIdImageDeleteParams},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteProductImageProductsProviderProductIdImageDeleteMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
