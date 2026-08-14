@@ -17,6 +17,8 @@ export type DataTableSort = {
   direction: SortDirection
 }
 
+export type DataTableView = 'rows' | 'cards'
+
 export type ColumnDef<TData> = {
   id: string
   header: ReactNode
@@ -25,6 +27,8 @@ export type ColumnDef<TData> = {
   align?: 'left' | 'center' | 'right'
   /** Hidden below this breakpoint (mobile-first). */
   hideOn?: 'sm' | 'md' | 'lg'
+  /** Hidden in the catalog cards grid view. */
+  hideInCard?: boolean
   className?: string
   sortable?: boolean
   cell?: (row: TData) => ReactNode
@@ -51,4 +55,5 @@ export type DataTableProps<TData> = {
   renderRow?: (row: TData, context: { index: number; columns: ColumnDef<TData>[] }) => ReactNode
   sort?: DataTableSort | null
   onSortChange?: (sort: DataTableSort | null) => void
+  views?: DataTableView[]
 }

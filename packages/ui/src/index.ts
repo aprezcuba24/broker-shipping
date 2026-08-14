@@ -233,7 +233,9 @@ export {
   DataTableRow,
   DataTableCell,
   DataTableCards,
+  DataTableCardGrid,
   DataTablePaginationBar,
+  DataTableViewToggle,
   renderCellContent,
   resolveRowId,
 } from './components/data-table/data-table'
@@ -243,6 +245,7 @@ export type {
   DataTableProps,
   DataTablePagination,
   DataTableSort,
+  DataTableView,
   SortDirection,
 } from './components/data-table/types'
 export {

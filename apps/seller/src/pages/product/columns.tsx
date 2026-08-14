@@ -41,8 +41,8 @@ export function buildProductColumns({
         items={(row.tags ?? []).map((tag) => ({ id: tag.id, label: tag.name }))}
       />
     )),
-    createdAtColumn<ProductPublic>(),
-    updatedAtColumn<ProductPublic>(),
+    createdAtColumn<ProductPublic>({ hideInCard: true }),
+    updatedAtColumn<ProductPublic>({ hideInCard: true }),
     componentColumn<ProductPublic>('cart', 'Carrito', (row) => (
       <ProductCartControl product={row} />
     )),

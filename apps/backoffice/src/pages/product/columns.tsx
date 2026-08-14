@@ -29,7 +29,6 @@ export function buildProductColumns({
     imageColumn<ProductPublic>({
       src: (row) => row.image_url,
       alt: (row) => row.name,
-      size: 'md',
     }),
     textColumn<ProductPublic>({ id: 'name', header: 'Nombre' }),
     currencyMoneyColumn<ProductPublic>({ id: 'price', header: 'Precio' }),
@@ -39,8 +38,8 @@ export function buildProductColumns({
         items={(row.tags ?? []).map((tag) => ({ id: tag.id, label: tag.name }))}
       />
     )),
-    createdAtColumn<ProductPublic>(),
-    updatedAtColumn<ProductPublic>(),
+    createdAtColumn<ProductPublic>({ hideInCard: true }),
+    updatedAtColumn<ProductPublic>({ hideInCard: true }),
     actionsColumn<ProductPublic>((row) => (
       <BtnList>
         <EditRowButton aria-label={`Editar ${row.name}`} onEdit={() => onEdit(row)} />
