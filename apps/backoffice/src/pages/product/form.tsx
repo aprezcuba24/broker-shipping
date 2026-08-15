@@ -4,19 +4,19 @@ import { Controller, useForm } from 'react-hook-form'
 import { Currency } from '@broker/api'
 
 import {
+  CURRENCY_OPTIONS,
+  EntitySelect,
   Field,
   FieldError,
   FieldLabel,
   FormFieldCell,
   FormSection,
+  ImageField,
   Input,
   MoneyInput,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   TagsField,
+  imageFieldDefaultValue,
+  imageFieldSchema,
   moneyCentsSchema,
   useFormSubmitHandle,
   type EntityFormProps,
@@ -33,6 +33,7 @@ export const productFormSchema = z.object({
   price: moneyCentsSchema,
   commission: moneyCentsSchema,
   currency: z.enum([Currency.cup, Currency.usd]),
+  image: imageFieldSchema,
 })
 
 export type ProductFormValues = z.infer<typeof productFormSchema>
@@ -43,6 +44,7 @@ export const productFormDefaultValues: ProductFormValues = {
   price: 0,
   commission: 0,
   currency: Currency.cup,
+  image: imageFieldDefaultValue,
 }
 
 export type ProductFormProps = EntityFormProps<ProductFormValues> & {
@@ -66,6 +68,30 @@ export function ProductForm({
 
   return (
     <form className="space-y-3" onSubmit={(event) => event.preventDefault()}>
+      <FormSection title="Imagen">
+        <FormFieldCell fullWidth>
+          <Controller
+            name="image"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="product-image">Imagen del producto</FieldLabel>
+                <ImageField
+                  id="product-image"
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isSubmitting}
+                  alt="Imagen del producto"
+                  size="xl"
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+              </Field>
+            )}
+          />
+        </FormFieldCell>
+      </FormSection>
+
       <FormSection title="Datos del producto">
         <FormFieldCell>
           <Controller
@@ -135,23 +161,16 @@ export function ProductForm({
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor="product-currency">Moneda</FieldLabel>
-                <Select
+                <EntitySelect
+                  id="product-currency"
+                  items={CURRENCY_OPTIONS}
                   value={field.value}
                   onValueChange={field.onChange}
+                  placeholder="Seleccionar moneda"
                   disabled={isSubmitting}
-                >
-                  <SelectTrigger
-                    id="product-currency"
-                    className="w-full"
-                    aria-invalid={fieldState.invalid}
-                  >
-                    <SelectValue placeholder="Seleccionar moneda" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={Currency.cup}>CUP</SelectItem>
-                    <SelectItem value={Currency.usd}>USD</SelectItem>
-                  </SelectContent>
-                </Select>
+                  aria-invalid={fieldState.invalid}
+                  triggerClassName="w-full"
+                />
                 {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
               </Field>
             )}

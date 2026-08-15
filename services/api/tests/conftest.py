@@ -8,6 +8,8 @@ from collections.abc import AsyncIterator
 os.environ["POSTGRES_DB"] = os.environ.get("POSTGRES_DB_TEST", "broker_test")
 if len(os.environ.get("JWT_SECRET", "")) < 32:
     os.environ["JWT_SECRET"] = "pytest-jwt-secret-must-be-at-least-thirty-two-bytes"
+os.environ.setdefault("S3_PUBLIC_BASE_URL", "http://test-cdn.local/bucket")
+os.environ.setdefault("S3_BUCKET", "broker-test")
 
 import pytest
 import pytest_asyncio

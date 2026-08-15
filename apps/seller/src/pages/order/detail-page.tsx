@@ -36,8 +36,18 @@ export function OrderDetailPage() {
   )
 
   const buildColumns = useCallback(
-    ({ getProductName }: { getProductName: (id: string) => string }) =>
-      buildSellerOrderItemColumns({ getProductName, getProviderName }),
+    ({
+      getProductName,
+      getProductImageUrl,
+    }: {
+      getProductName: (id: string) => string
+      getProductImageUrl: (id: string) => string | null | undefined
+    }) =>
+      buildSellerOrderItemColumns({
+        getProductName,
+        getProductImageUrl,
+        getProviderName,
+      }),
     [getProviderName],
   )
 

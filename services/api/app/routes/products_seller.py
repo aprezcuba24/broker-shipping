@@ -6,7 +6,7 @@ from app.deps import SessionDep
 from app.lib.persistence.pagination import PaginationDep
 from app.lib.security.deps import CurrentUserDep, OptionalSellerOrgDep
 from app.schemas.pagination import Page
-from app.schemas.product import ProductPublic
+from app.schemas.product import ProductPublic, product_to_public
 from app.services import seller_product as seller_product_service
 
 router = APIRouter(prefix="/products/seller", tags=["products"])
@@ -30,7 +30,7 @@ async def list_products(
         name=name,
         provider_id=provider_id,
     )
-    return Page.from_mapped(result, pagination, ProductPublic.model_validate)
+    return Page.from_mapped(result, pagination, product_to_public)
 
 
 @router.get("/{product_id}", response_model=ProductPublic)
@@ -47,4 +47,4 @@ async def get_product(
         user,
         seller_organization_id=seller_org_id,
     )
-    return ProductPublic.model_validate(product)
+    return product_to_public(product)

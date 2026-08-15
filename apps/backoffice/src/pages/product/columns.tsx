@@ -8,6 +8,7 @@ import {
   currencyMoneyColumn,
   DeleteRowButton,
   EditRowButton,
+  imageColumn,
   textColumn,
   updatedAtColumn,
   type ColumnDef,
@@ -25,6 +26,10 @@ export function buildProductColumns({
   isDeleting = false,
 }: BuildProductColumnsOptions): ColumnDef<ProductPublic>[] {
   return [
+    imageColumn<ProductPublic>({
+      src: (row) => row.image_url,
+      alt: (row) => row.name,
+    }),
     textColumn<ProductPublic>({ id: 'name', header: 'Nombre' }),
     currencyMoneyColumn<ProductPublic>({ id: 'price', header: 'Precio' }),
     currencyMoneyColumn<ProductPublic>({ id: 'commission', header: 'Comisión' }),
@@ -33,8 +38,8 @@ export function buildProductColumns({
         items={(row.tags ?? []).map((tag) => ({ id: tag.id, label: tag.name }))}
       />
     )),
-    createdAtColumn<ProductPublic>(),
-    updatedAtColumn<ProductPublic>(),
+    createdAtColumn<ProductPublic>({ hideInCard: true }),
+    updatedAtColumn<ProductPublic>({ hideInCard: true }),
     actionsColumn<ProductPublic>((row) => (
       <BtnList>
         <EditRowButton aria-label={`Editar ${row.name}`} onEdit={() => onEdit(row)} />

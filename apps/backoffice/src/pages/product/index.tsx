@@ -99,6 +99,7 @@ export function ProductPage() {
           data={crud.items}
           isLoading={crud.isLoading}
           getRowId={(row) => row.id}
+          views={['rows', 'cards']}
           pagination={{
             page: list.page,
             pageSize: list.pageSize,

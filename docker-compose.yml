@@ -28,16 +28,48 @@ services:
       retries: 5
 
   minio:
-    image: minio/minio:latest
+    # Pin CE release: :latest may drop APIs; bucket CORS (mc cors set) is AIStor-only.
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minio}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minio_secret}
+      # Explicit Vite origins (avoid * + Allow-Credentials quirks on browser PUT).
+      MINIO_API_CORS_ALLOW_ORIGIN: "http://localhost:5173,http://localhost:5174,http://localhost:5175"
+      # Must match host-published ports (browser uses these for redirects / console).
+      MINIO_SERVER_URL: http://localhost:${MINIO_API_PORT:-9000}
+      MINIO_BROWSER_REDIRECT_URL: http://localhost:${MINIO_CONSOLE_PORT:-9001}
     ports:
       - "${MINIO_API_PORT:-9000}:9000"
       - "${MINIO_CONSOLE_PORT:-9001}:9001"
     volumes:
-      - minio_data:/data
+      - ./data/minio:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  minio-init:
+    image: minio/mc:RELEASE.2025-04-16T18-13-26Z
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minio_secret}
+      S3_BUCKET: ${S3_BUCKET:-broker-local}
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"
+        mc mb --ignore-existing "local/$$S3_BUCKET"
+        mc anonymous set download "local/$$S3_BUCKET"
+        # Global CORS (CE); do not use mc cors set (bucket CORS = AIStor only).
+        mc admin config set local api cors_allow_origin="http://localhost:5173,http://localhost:5174,http://localhost:5175"
+    restart: "no"
 
   mailhog:
     image: mailhog/mailhog:latest
@@ -48,4 +80,3 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  minio_data:

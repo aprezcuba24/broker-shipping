@@ -1,16 +1,21 @@
 import type { OrderItemPublic } from '@broker/api'
 
-import { componentColumn } from '../crud/components/columns'
+import { componentColumn, imageColumn } from '../crud/components/columns'
 import type { ColumnDef } from '../components/data-table/types'
 import { formatMoney } from '../lib/utils'
 import { OrderItemStatusBadge } from './status'
 
 export function buildSellerOrderItemColumns(options: {
   getProductName: (productId: string) => string
+  getProductImageUrl: (productId: string) => string | null | undefined
   getProviderName: (id: string | null | undefined) => string
 }): ColumnDef<OrderItemPublic>[] {
-  const { getProductName, getProviderName } = options
+  const { getProductName, getProductImageUrl, getProviderName } = options
   return [
+    imageColumn<OrderItemPublic>({
+      src: (row) => getProductImageUrl(row.product_id),
+      alt: (row) => getProductName(row.product_id),
+    }),
     componentColumn<OrderItemPublic>('product', 'Producto', (row) => (
       <span>{getProductName(row.product_id)}</span>
     )),

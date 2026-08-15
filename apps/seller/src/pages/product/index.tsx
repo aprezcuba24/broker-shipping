@@ -73,6 +73,7 @@ export function ProductPage() {
           data={items}
           isLoading={query.isLoading}
           getRowId={(row) => row.id}
+          views={['rows', 'cards']}
           pagination={{
             page: list.page,
             pageSize: list.pageSize,

@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Broker B2B API (FastAPI scaffold)"
 requires-python = ">=3.12"
 dependencies = [
+    "aioboto3>=15.5.0",
     "aiosmtplib>=4.0.0",
     "alembic>=1.18.4",
     "asyncpg>=0.31.0",
@@ -14,6 +15,7 @@ dependencies = [
     "psycopg2-binary>=2.9.12",
     "pydantic-settings>=2.14.1",
     "pyjwt>=2.10.0",
+    "python-multipart>=0.0.32",
     "sqlmodel>=0.0.38",
     "transitions>=0.9.3",
     "uvicorn>=0.46.0",

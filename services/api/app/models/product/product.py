@@ -29,3 +29,4 @@ class Product(OrganizationEntityModel, table=True):
         default=0,
         sa_column=Column(BigInteger, nullable=False, server_default="0"),
     )
+    image_key: str | None = Field(default=None, max_length=512)

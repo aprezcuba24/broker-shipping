@@ -16,6 +16,7 @@ import { Package } from 'lucide-react'
 import { useParams } from 'react-router-dom'
 
 import { ProductForm, type ProductFormValues } from './form'
+import { useProductImagePersist } from './persist-image'
 
 function productToFormValues(product: ProductPublic): ProductFormValues {
   return {
@@ -24,6 +25,11 @@ function productToFormValues(product: ProductPublic): ProductFormValues {
     price: product.price,
     commission: product.commission,
     currency: product.currency,
+    image: {
+      url: product.image_url ?? null,
+      file: null,
+      removed: false,
+    },
   }
 }
 
@@ -39,6 +45,7 @@ export function ProductEditPage() {
     productId,
     detailParams,
   )
+  const listQueryKey = getListProductsProductsProviderGetQueryKey()
 
   const productQuery = useGetProductProductsProviderProductIdGet(
     productId,
@@ -47,25 +54,26 @@ export function ProductEditPage() {
   )
 
   const patchMutation = usePatchProductProductsProviderProductIdPatch()
+  const { persist } = useProductImagePersist()
 
   const update = useEntityFormMutation({
-    mutate: (values: ProductFormValues) =>
-      patchMutation.mutateAsync({
+    mutate: async (values: ProductFormValues): Promise<ProductPublic> => {
+      const { image, ...data } = values
+      const product = await patchMutation.mutateAsync({
         productId,
         data: {
-          name: values.name,
-          tag_ids: values.tag_ids,
-          price: values.price,
-          commission: values.commission,
-          currency: values.currency,
+          name: data.name,
+          tag_ids: data.tag_ids,
+          price: data.price,
+          commission: data.commission,
+          currency: data.currency,
         },
         params: {} as PatchProductProductsProviderProductIdPatchParams,
-      }),
+      })
+      return persist(product, image)
+    },
     detailQueryKey,
-    invalidateKeys: [
-      getListProductsProductsProviderGetQueryKey(),
-      detailQueryKey,
-    ],
+    invalidateKeys: [listQueryKey, detailQueryKey],
     redirectTo: '/products',
     entityLabel: 'Producto',
     mode: 'update',

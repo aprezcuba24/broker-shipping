@@ -7,6 +7,7 @@ import {
   componentColumn,
   createdAtColumn,
   currencyMoneyColumn,
+  imageColumn,
   textColumn,
   updatedAtColumn,
   type ColumnDef,
@@ -25,6 +26,10 @@ export function buildProductColumns({
   onView,
 }: BuildProductColumnsOptions): ColumnDef<ProductPublic>[] {
   return [
+    imageColumn<ProductPublic>({
+      src: (row) => row.image_url,
+      alt: (row) => row.name,
+    }),
     textColumn<ProductPublic>({ id: 'name', header: 'Nombre' }),
     componentColumn<ProductPublic>('provider', 'Proveedor', (row) => (
       <span>{providerNameById.get(row.organization_id) ?? '—'}</span>
@@ -36,11 +41,14 @@ export function buildProductColumns({
         items={(row.tags ?? []).map((tag) => ({ id: tag.id, label: tag.name }))}
       />
     )),
-    createdAtColumn<ProductPublic>(),
-    updatedAtColumn<ProductPublic>(),
-    componentColumn<ProductPublic>('cart', 'Carrito', (row) => (
-      <ProductCartControl product={row} />
-    )),
+    createdAtColumn<ProductPublic>({ hideInCard: true }),
+    updatedAtColumn<ProductPublic>({ hideInCard: true }),
+    componentColumn<ProductPublic>(
+      'cart',
+      'Carrito',
+      (row) => <ProductCartControl product={row} />,
+      { cardFooter: true },
+    ),
     actionsColumn<ProductPublic>((row) => (
       <BtnList>
         <Button
