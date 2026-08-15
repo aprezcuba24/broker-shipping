@@ -89,6 +89,7 @@ export function ProvinceFormField<T extends FieldValues>({
             }
             disabled={disabled || state.provincesLoading}
             aria-invalid={fieldState.invalid}
+            triggerClassName="w-full"
           />
           {state.provincesError ? (
             <p className="text-sm text-destructive">No se pudieron cargar las provincias.</p>
@@ -120,7 +121,7 @@ export function MunicipalityFormField<T extends FieldValues>({
       name={name}
       control={control}
       render={({ field, fieldState }) => (
-        <Field data-invalid={fieldState.invalid}>
+        <Field className="w-full" data-invalid={fieldState.invalid}>
           <FieldLabel htmlFor="municipality-select">{label}</FieldLabel>
           <EntitySelect
             id="municipality-select"
@@ -136,6 +137,7 @@ export function MunicipalityFormField<T extends FieldValues>({
             }
             disabled={disabled || !state.provinceId || state.municipalitiesLoading}
             aria-invalid={fieldState.invalid}
+            triggerClassName="w-full"
           />
           {state.municipalitiesError ? (
             <p className="text-sm text-destructive">No se pudieron cargar los municipios.</p>

@@ -1,3 +1,4 @@
+import { cn } from '../lib/utils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 
 type EntityValue = string | number | null | undefined
@@ -57,7 +58,7 @@ export function EntitySelect<T extends object>({
         id={id}
         aria-label={ariaLabel}
         aria-invalid={ariaInvalid}
-        className={triggerClassName}
+        className={cn('w-full', triggerClassName)}
       >
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>

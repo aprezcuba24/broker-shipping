@@ -336,6 +336,27 @@
   font-family: var(--font-headline);
 }
 
+/* FormSection inside modals: no nested card chrome (dialog already has border/padding) */
+.broker-dialog [data-slot='form-section'] {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  overflow: visible;
+}
+
+.broker-dialog [data-slot='form-section-header'] {
+  padding-left: 0;
+  padding-right: 0;
+  background: transparent;
+}
+
+.broker-dialog [data-slot='form-field-cell'] {
+  padding-left: 0;
+  padding-right: 0;
+  background: transparent;
+}
+
 .broker-dialog [data-slot='dialog-footer'] {
   display: flex;
   flex-direction: column;
