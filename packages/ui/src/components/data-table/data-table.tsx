@@ -128,9 +128,51 @@ function DataField<TData>({ row, column }: { row: TData; column: ColumnDef<TData
   )
 }
 
+function CardFooter<TData>({
+  row,
+  footerColumns,
+  actionsColumn,
+  className,
+}: {
+  row: TData
+  footerColumns: ColumnDef<TData>[]
+  actionsColumn?: ColumnDef<TData>
+  className?: string
+}) {
+  const hasFooter = footerColumns.length > 0 || Boolean(actionsColumn)
+  if (!hasFooter) return null
+
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-2',
+        footerColumns.length > 0 ? 'justify-between' : 'justify-end',
+        className,
+      )}
+      onClick={(event) => event.stopPropagation()}
+    >
+      {footerColumns.length > 0 ? (
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          {footerColumns.map((column) => (
+            <div key={column.id} data-column={column.id} className="min-w-0">
+              {renderCellContent(row, column)}
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {actionsColumn ? (
+        <div data-column="actions" className="shrink-0">
+          {renderCellContent(row, actionsColumn)}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 export function DataTableCards<TData>({
   rows,
   columns,
+  footerColumns = [],
   actionsColumn,
   getRowId,
   onRowClick,
@@ -138,6 +180,7 @@ export function DataTableCards<TData>({
 }: {
   rows: TData[]
   columns: ColumnDef<TData>[]
+  footerColumns?: ColumnDef<TData>[]
   actionsColumn?: ColumnDef<TData>
   getRowId?: (row: TData) => string
   onRowClick?: (row: TData) => void
@@ -163,15 +206,12 @@ export function DataTableCards<TData>({
                 <DataField key={column.id} row={row} column={column} />
               ))}
             </div>
-            {actionsColumn ? (
-              <div
-                data-column="actions"
-                className="broker-data-table__card-actions flex justify-end"
-                onClick={(event) => event.stopPropagation()}
-              >
-                {renderCellContent(row, actionsColumn)}
-              </div>
-            ) : null}
+            <CardFooter
+              row={row}
+              footerColumns={footerColumns}
+              actionsColumn={actionsColumn}
+              className="broker-data-table__card-actions"
+            />
           </article>
         )
       })}
@@ -229,6 +269,7 @@ export function DataTableCardGrid<TData>({
   rows,
   columns,
   imageColumn,
+  footerColumns = [],
   actionsColumn,
   getRowId,
   onRowClick,
@@ -237,6 +278,7 @@ export function DataTableCardGrid<TData>({
   rows: TData[]
   columns: ColumnDef<TData>[]
   imageColumn?: ColumnDef<TData>
+  footerColumns?: ColumnDef<TData>[]
   actionsColumn?: ColumnDef<TData>
   getRowId?: (row: TData) => string
   onRowClick?: (row: TData) => void
@@ -263,15 +305,12 @@ export function DataTableCardGrid<TData>({
                 <GridCardField key={column.id} row={row} column={column} />
               ))}
             </div>
-            {actionsColumn ? (
-              <div
-                data-column="actions"
-                className="broker-data-table__grid-card-actions flex justify-end px-3 pb-3"
-                onClick={(event) => event.stopPropagation()}
-              >
-                {renderCellContent(row, actionsColumn)}
-              </div>
-            ) : null}
+            <CardFooter
+              row={row}
+              footerColumns={footerColumns}
+              actionsColumn={actionsColumn}
+              className="broker-data-table__grid-card-actions px-3 pb-3"
+            />
           </article>
         )
       })}
@@ -300,7 +339,9 @@ function LoadingRows<TData>({ columns }: { columns: ColumnDef<TData>[] }) {
 }
 
 function LoadingCards<TData>({ columns }: { columns: ColumnDef<TData>[] }) {
-  const dataColumns = columns.filter((column) => column.id !== 'actions')
+  const dataColumns = columns.filter(
+    (column) => column.id !== 'actions' && !column.cardFooter,
+  )
 
   return (
     <>
@@ -505,17 +546,21 @@ export function DataTable<TData>({
     return data.slice(start, start + pageSize)
   }, [data, isClientPagination, pageSize, safePage])
 
-  const { dataColumns, actionsColumn, imageColumn, gridFields } = useMemo(() => {
+  const { dataColumns, actionsColumn, imageColumn, footerColumns, gridFields } = useMemo(() => {
     const actions = columns.find((column) => column.id === 'actions')
     const image = columns.find((column) => column.id === 'image')
+    const footer = columns.filter(
+      (column) => column.cardFooter && column.id !== 'actions',
+    )
     const dataCols = columns.filter((column) => column.id !== 'actions')
     const fields = dataCols.filter(
-      (column) => column.id !== 'image' && !column.hideInCard,
+      (column) => column.id !== 'image' && !column.hideInCard && !column.cardFooter,
     )
     return {
-      dataColumns: dataCols,
+      dataColumns: dataCols.filter((column) => !column.cardFooter),
       actionsColumn: actions,
       imageColumn: image,
+      footerColumns: footer,
       gridFields: fields,
     }
   }, [columns])
@@ -542,6 +587,7 @@ export function DataTable<TData>({
               rows={pageData}
               columns={gridFields}
               imageColumn={imageColumn}
+              footerColumns={footerColumns}
               actionsColumn={actionsColumn}
               getRowId={getRowId}
               onRowClick={onRowClick}
@@ -576,6 +622,7 @@ export function DataTable<TData>({
               <DataTableCards
                 rows={pageData}
                 columns={dataColumns}
+                footerColumns={footerColumns}
                 actionsColumn={actionsColumn}
                 getRowId={getRowId}
                 onRowClick={onRowClick}

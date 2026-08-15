@@ -43,9 +43,12 @@ export function buildProductColumns({
     )),
     createdAtColumn<ProductPublic>({ hideInCard: true }),
     updatedAtColumn<ProductPublic>({ hideInCard: true }),
-    componentColumn<ProductPublic>('cart', 'Carrito', (row) => (
-      <ProductCartControl product={row} />
-    )),
+    componentColumn<ProductPublic>(
+      'cart',
+      'Carrito',
+      (row) => <ProductCartControl product={row} />,
+      { cardFooter: true },
+    ),
     actionsColumn<ProductPublic>((row) => (
       <BtnList>
         <Button

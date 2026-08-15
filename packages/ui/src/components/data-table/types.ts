@@ -29,6 +29,8 @@ export type ColumnDef<TData> = {
   hideOn?: 'sm' | 'md' | 'lg'
   /** Hidden in the catalog cards grid view. */
   hideInCard?: boolean
+  /** Rendered in the card footer instead of the card body. */
+  cardFooter?: boolean
   className?: string
   sortable?: boolean
   cell?: (row: TData) => ReactNode
