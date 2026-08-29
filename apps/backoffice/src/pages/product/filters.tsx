@@ -30,7 +30,7 @@ export function ProductFilters({
         aria-label="Buscar por nombre"
         className="min-w-0 flex-1"
       />
-      <div className="min-w-[220px] flex-1 sm:max-w-sm">
+      <div className="min-w-0 flex-1 sm:min-w-[220px] sm:max-w-sm">
         <TagsField
           value={filters.tag_ids}
           onValueChange={(ids) => setFilter('tag_ids', ids)}
