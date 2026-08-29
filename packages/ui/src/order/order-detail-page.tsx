@@ -74,6 +74,7 @@ export type OrderDetailPageProps = {
   order: OrderPublic | undefined
   backTo?: string
   description?: string
+  topContent?: ReactNode
   children?: ReactNode
 }
 
@@ -83,6 +84,7 @@ export function OrderDetailPage({
   order,
   backTo = '/orders',
   description = 'Detalle de la orden.',
+  topContent,
   children,
 }: OrderDetailPageProps) {
   if (isLoading) {
@@ -116,6 +118,7 @@ export function OrderDetailPage({
       }
     >
       <div className="space-y-6">
+        {topContent}
         <DetailSection title="Resumen" data={order} fields={orderDetailBaseFields} />
         <DetailSection title="Cliente" data={order} fields={orderDetailCustomerFields} />
         {children}
