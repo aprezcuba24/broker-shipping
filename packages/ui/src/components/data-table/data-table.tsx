@@ -237,6 +237,7 @@ function GridCardField<TData>({ row, column }: { row: TData; column: ColumnDef<T
       className={cn(
         'broker-data-table__grid-card-field',
         isTitle ? 'min-w-0' : 'flex items-start justify-between gap-2',
+        columnCardVisibilityClass(column),
         column.className,
       )}
     >
@@ -310,7 +311,7 @@ export function DataTableCardGrid<TData>({
             onClick={onRowClick ? () => onRowClick(row) : undefined}
           >
             {imageColumn ? <GridCardCover row={row} column={imageColumn} /> : null}
-            <div className="broker-data-table__grid-card-body space-y-1.5 p-3">
+            <div className="broker-data-table__grid-card-body space-y-1 p-2 sm:space-y-1.5 sm:p-3">
               {columns.map((column) => (
                 <GridCardField key={column.id} row={row} column={column} />
               ))}
@@ -319,7 +320,7 @@ export function DataTableCardGrid<TData>({
               row={row}
               footerColumns={footerColumns}
               actionsColumn={actionsColumn}
-              className="broker-data-table__grid-card-actions px-3 pb-3"
+              className="broker-data-table__grid-card-actions px-2 pb-2 sm:px-3 sm:pb-3"
             />
           </article>
         )
@@ -380,7 +381,7 @@ function LoadingCards<TData>({ columns }: { columns: ColumnDef<TData>[] }) {
 function LoadingCardGrid() {
   return (
     <div className="broker-data-table__grid">
-      {Array.from({ length: 8 }).map((_, cardIndex) => (
+      {Array.from({ length: 12 }).map((_, cardIndex) => (
         <article key={`loading-grid-${cardIndex}`} className="broker-data-table__grid-card">
           <div className="broker-data-table__grid-card-cover animate-pulse bg-muted" />
           <div className="space-y-2 p-3">
@@ -582,13 +583,9 @@ export function DataTable<TData>({
   }
   const showEmptyState = !isLoading && data.length === 0
   const resolvedEmptyMessage = emptyMessage
-  const activeView = hasViewToggle ? view : 'rows'
-  const showCatalogGrid = hasViewToggle && activeView === 'cards'
+  const showCatalogGrid = hasViewToggle && view === 'cards'
   const rowsViewProps = {
     columns,
-    dataColumns,
-    footerColumns,
-    actionsColumn,
     pageData,
     isLoading,
     showEmptyState,
@@ -620,8 +617,15 @@ export function DataTable<TData>({
             rowClassName={rowClassName}
           />
         )
+      ) : hasViewToggle ? (
+        <DataTableRowsView {...rowsViewProps} />
       ) : (
-        <DataTableResponsiveRows {...rowsViewProps} />
+        <DataTableResponsiveRows
+          {...rowsViewProps}
+          dataColumns={dataColumns}
+          footerColumns={footerColumns}
+          actionsColumn={actionsColumn}
+        />
       )}
 
       {pagination ? (

@@ -40,7 +40,7 @@ export function buildProductColumns({
       <BadgeList
         items={(row.tags ?? []).map((tag) => ({ id: tag.id, label: tag.name }))}
       />
-    )),
+    ), { hideOn: 'sm' }),
     createdAtColumn<ProductPublic>({ hideInCard: true }),
     updatedAtColumn<ProductPublic>({ hideInCard: true }),
     componentColumn<ProductPublic>(
