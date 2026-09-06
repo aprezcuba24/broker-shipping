@@ -61,6 +61,17 @@ export { Button } from './components/button'
 export type { ButtonProps } from './components/button'
 export { ButtonModal } from './components/button-modal'
 export type { ButtonModalProps } from './components/button-modal'
+export {
+  ShareActions,
+  copyShareChannel,
+  whatsappShareChannel,
+  defaultShareChannels,
+} from './components/share'
+export type {
+  ShareActionsProps,
+  SharePayload,
+  ShareChannel,
+} from './components/share'
 export { useFormSubmitHandle } from './hooks/use-form-submit-handle'
 export type { FormModalHandle } from './hooks/use-form-submit-handle'
 export { useResetOnChange } from './hooks/use-reset-on-change'

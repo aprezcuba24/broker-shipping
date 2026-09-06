@@ -21,6 +21,7 @@ import { useInvitationsSettings } from '@/hooks/use-invitations-settings'
 import { useLinkedSellers } from '@/hooks/use-linked-sellers'
 
 import { buildLinkedSellerColumns } from './columns'
+import { InviteSellersButton } from './invite-sellers-button'
 
 type SellersTab = 'linked' | 'pending'
 
@@ -96,6 +97,13 @@ export function SellersPage() {
       title="Organizaciones vendedoras"
       description="Gestiona las organizaciones vendedoras vinculadas y las solicitudes pendientes."
       icon={Store}
+      buttons={[
+        <InviteSellersButton
+          key="invite"
+          providerOrganizationId={orgId}
+          providerName={activeOrganization?.name}
+        />,
+      ]}
     >
       <Tabs value={activeTab} onValueChange={setTab} className="space-y-4">
         <TabsList variant="line">
