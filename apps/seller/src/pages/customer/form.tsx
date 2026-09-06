@@ -76,8 +76,8 @@ export function CustomerForm({
 
   return (
     <form className="space-y-3" onSubmit={(event) => event.preventDefault()}>
-      <FormSection title="Datos del cliente">
-        <FormFieldCell>
+      <FormSection>
+        <FormFieldCell fullWidth>
           <Controller
             name="name"
             control={form.control}
@@ -98,7 +98,7 @@ export function CustomerForm({
           />
         </FormFieldCell>
 
-        <FormFieldCell>
+        <FormFieldCell fullWidth>
           <Controller
             name="ci"
             control={form.control}
@@ -118,7 +118,7 @@ export function CustomerForm({
           />
         </FormFieldCell>
 
-        <FormFieldCell>
+        <FormFieldCell fullWidth>
           <Controller
             name="phone"
             control={form.control}
@@ -159,7 +159,7 @@ export function CustomerForm({
           />
         </FormFieldCell>
 
-        <FormFieldCell>
+        <FormFieldCell fullWidth>
           <ProvinceFormField
             control={form.control}
             name="province_id"
@@ -168,7 +168,7 @@ export function CustomerForm({
           />
         </FormFieldCell>
 
-        <FormFieldCell>
+        <FormFieldCell fullWidth>
           <MunicipalityFormField
             control={form.control}
             name="municipality_id"

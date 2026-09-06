@@ -46,24 +46,22 @@ export function OrderDetailPage() {
       isLoading={!orderId || orderQuery.isLoading}
       isError={orderQuery.isError}
       order={order}
+      topContent={
+        order ? (
+          <OrderStatusActions orderId={order.id} items={order.items ?? []} />
+        ) : null
+      }
     >
       {order ? (
-        <>
-          <div className="space-y-2">
-            <h2 className="text-sm font-medium">Acciones</h2>
-            <OrderStatusActions orderId={order.id} items={order.items ?? []} />
-          </div>
-
-          <div className="space-y-2">
-            <h2 className="text-sm font-medium">Ítems</h2>
-            <OrderItemsTable
-              items={order.items ?? []}
-              fetchProduct={fetchProduct}
-              productQueryKeyPrefix="provider-product-name"
-              buildColumns={buildColumns}
-            />
-          </div>
-        </>
+        <div className="space-y-2">
+          <h2 className="text-sm font-medium">Ítems</h2>
+          <OrderItemsTable
+            items={order.items ?? []}
+            fetchProduct={fetchProduct}
+            productQueryKeyPrefix="provider-product-name"
+            buildColumns={buildColumns}
+          />
+        </div>
       ) : null}
     </OrderDetailView>
   )

@@ -121,7 +121,7 @@ function DataField<TData>({ row, column }: { row: TData; column: ColumnDef<TData
       )}
     >
       <span className="shrink-0 text-xs text-on-surface-variant">{column.header}</span>
-      <span className="min-w-0 text-right text-sm text-on-surface">
+      <span className="min-w-0 flex-1 text-right text-sm break-words text-on-surface">
         {renderCellContent(row, column)}
       </span>
     </div>
@@ -186,6 +186,9 @@ export function DataTableCards<TData>({
   onRowClick?: (row: TData) => void
   rowClassName?: string | ((row: TData) => string | undefined)
 }) {
+  const imageColumn = columns.find((column) => column.id === 'image')
+  const fieldColumns = columns.filter((column) => column.id !== 'image')
+
   return (
     <div className="divide-y divide-surface-container-high">
       {rows.map((row, index) => {
@@ -201,10 +204,17 @@ export function DataTableCards<TData>({
             )}
             onClick={onRowClick ? () => onRowClick(row) : undefined}
           >
-            <div className="space-y-0.5">
-              {columns.map((column) => (
-                <DataField key={column.id} row={row} column={column} />
-              ))}
+            <div className={cn(imageColumn && 'flex items-start gap-3')}>
+              {imageColumn ? (
+                <div data-column={imageColumn.id} className="shrink-0">
+                  {renderCellContent(row, imageColumn)}
+                </div>
+              ) : null}
+              <div className="min-w-0 flex-1 space-y-0.5">
+                {fieldColumns.map((column) => (
+                  <DataField key={column.id} row={row} column={column} />
+                ))}
+              </div>
             </div>
             <CardFooter
               row={row}
@@ -227,6 +237,7 @@ function GridCardField<TData>({ row, column }: { row: TData; column: ColumnDef<T
       className={cn(
         'broker-data-table__grid-card-field',
         isTitle ? 'min-w-0' : 'flex items-start justify-between gap-2',
+        columnCardVisibilityClass(column),
         column.className,
       )}
     >
@@ -300,7 +311,7 @@ export function DataTableCardGrid<TData>({
             onClick={onRowClick ? () => onRowClick(row) : undefined}
           >
             {imageColumn ? <GridCardCover row={row} column={imageColumn} /> : null}
-            <div className="broker-data-table__grid-card-body space-y-1.5 p-3">
+            <div className="broker-data-table__grid-card-body space-y-1 p-2 sm:space-y-1.5 sm:p-3">
               {columns.map((column) => (
                 <GridCardField key={column.id} row={row} column={column} />
               ))}
@@ -309,7 +320,7 @@ export function DataTableCardGrid<TData>({
               row={row}
               footerColumns={footerColumns}
               actionsColumn={actionsColumn}
-              className="broker-data-table__grid-card-actions px-3 pb-3"
+              className="broker-data-table__grid-card-actions px-2 pb-2 sm:px-3 sm:pb-3"
             />
           </article>
         )
@@ -340,7 +351,7 @@ function LoadingRows<TData>({ columns }: { columns: ColumnDef<TData>[] }) {
 
 function LoadingCards<TData>({ columns }: { columns: ColumnDef<TData>[] }) {
   const dataColumns = columns.filter(
-    (column) => column.id !== 'actions' && !column.cardFooter,
+    (column) => column.id !== 'actions' && column.id !== 'image' && !column.cardFooter,
   )
 
   return (
@@ -370,7 +381,7 @@ function LoadingCards<TData>({ columns }: { columns: ColumnDef<TData>[] }) {
 function LoadingCardGrid() {
   return (
     <div className="broker-data-table__grid">
-      {Array.from({ length: 8 }).map((_, cardIndex) => (
+      {Array.from({ length: 12 }).map((_, cardIndex) => (
         <article key={`loading-grid-${cardIndex}`} className="broker-data-table__grid-card">
           <div className="broker-data-table__grid-card-cover animate-pulse bg-muted" />
           <div className="space-y-2 p-3">
@@ -572,81 +583,49 @@ export function DataTable<TData>({
   }
   const showEmptyState = !isLoading && data.length === 0
   const resolvedEmptyMessage = emptyMessage
-  const activeView = hasViewToggle ? view : 'rows'
+  const showCatalogGrid = hasViewToggle && view === 'cards'
+  const rowsViewProps = {
+    columns,
+    pageData,
+    isLoading,
+    showEmptyState,
+    emptyMessage: resolvedEmptyMessage,
+    getRowId,
+    onRowClick,
+    rowClassName,
+    renderRow,
+    sort,
+    onSortChange,
+  }
 
   const table = (
     <div className={cn('broker-data-table', className)}>
-      {hasViewToggle ? (
-        activeView === 'cards' ? (
-          isLoading ? (
-            <LoadingCardGrid />
-          ) : showEmptyState ? (
-            <EmptyCardState message={resolvedEmptyMessage} />
-          ) : (
-            <DataTableCardGrid
-              rows={pageData}
-              columns={gridFields}
-              imageColumn={imageColumn}
-              footerColumns={footerColumns}
-              actionsColumn={actionsColumn}
-              getRowId={getRowId}
-              onRowClick={onRowClick}
-              rowClassName={rowClassName}
-            />
-          )
+      {showCatalogGrid ? (
+        isLoading ? (
+          <LoadingCardGrid />
+        ) : showEmptyState ? (
+          <EmptyCardState message={resolvedEmptyMessage} />
         ) : (
-          <DataTableRowsView
-            columns={columns}
-            pageData={pageData}
-            isLoading={isLoading}
-            showEmptyState={showEmptyState}
-            emptyMessage={resolvedEmptyMessage}
+          <DataTableCardGrid
+            rows={pageData}
+            columns={gridFields}
+            imageColumn={imageColumn}
+            footerColumns={footerColumns}
+            actionsColumn={actionsColumn}
             getRowId={getRowId}
             onRowClick={onRowClick}
             rowClassName={rowClassName}
-            renderRow={renderRow}
-            sort={sort}
-            onSortChange={onSortChange}
           />
         )
+      ) : hasViewToggle ? (
+        <DataTableRowsView {...rowsViewProps} />
       ) : (
-        <>
-          <div className="sm:hidden">
-            {isLoading ? (
-              <div className="divide-y divide-surface-container-high">
-                <LoadingCards columns={columns} />
-              </div>
-            ) : showEmptyState ? (
-              <EmptyCardState message={resolvedEmptyMessage} />
-            ) : (
-              <DataTableCards
-                rows={pageData}
-                columns={dataColumns}
-                footerColumns={footerColumns}
-                actionsColumn={actionsColumn}
-                getRowId={getRowId}
-                onRowClick={onRowClick}
-                rowClassName={rowClassName}
-              />
-            )}
-          </div>
-
-          <div className="hidden sm:block">
-            <DataTableRowsView
-              columns={columns}
-              pageData={pageData}
-              isLoading={isLoading}
-              showEmptyState={showEmptyState}
-              emptyMessage={resolvedEmptyMessage}
-              getRowId={getRowId}
-              onRowClick={onRowClick}
-              rowClassName={rowClassName}
-              renderRow={renderRow}
-              sort={sort}
-              onSortChange={onSortChange}
-            />
-          </div>
-        </>
+        <DataTableResponsiveRows
+          {...rowsViewProps}
+          dataColumns={dataColumns}
+          footerColumns={footerColumns}
+          actionsColumn={actionsColumn}
+        />
       )}
 
       {pagination ? (
@@ -666,6 +645,78 @@ export function DataTable<TData>({
       </div>
       {table}
     </div>
+  )
+}
+
+function DataTableResponsiveRows<TData>({
+  columns,
+  dataColumns,
+  footerColumns,
+  actionsColumn,
+  pageData,
+  isLoading,
+  showEmptyState,
+  emptyMessage,
+  getRowId,
+  onRowClick,
+  rowClassName,
+  renderRow,
+  sort,
+  onSortChange,
+}: {
+  columns: ColumnDef<TData>[]
+  dataColumns: ColumnDef<TData>[]
+  footerColumns: ColumnDef<TData>[]
+  actionsColumn?: ColumnDef<TData>
+  pageData: TData[]
+  isLoading: boolean
+  showEmptyState: boolean
+  emptyMessage: ReactNode
+  getRowId?: (row: TData) => string
+  onRowClick?: (row: TData) => void
+  rowClassName?: string | ((row: TData) => string | undefined)
+  renderRow?: (row: TData, context: { index: number; columns: ColumnDef<TData>[] }) => ReactNode
+  sort?: DataTableSort | null
+  onSortChange?: (sort: DataTableSort | null) => void
+}) {
+  return (
+    <>
+      <div className="sm:hidden">
+        {isLoading ? (
+          <div className="divide-y divide-surface-container-high">
+            <LoadingCards columns={columns} />
+          </div>
+        ) : showEmptyState ? (
+          <EmptyCardState message={emptyMessage} />
+        ) : (
+          <DataTableCards
+            rows={pageData}
+            columns={dataColumns}
+            footerColumns={footerColumns}
+            actionsColumn={actionsColumn}
+            getRowId={getRowId}
+            onRowClick={onRowClick}
+            rowClassName={rowClassName}
+          />
+        )}
+      </div>
+
+      <div className="hidden sm:block">
+        <DataTableRowsView
+          columns={columns}
+          pageData={pageData}
+          isLoading={isLoading}
+          showEmptyState={showEmptyState}
+          emptyMessage={emptyMessage}
+          getRowId={getRowId}
+          onRowClick={onRowClick}
+          rowClassName={rowClassName}
+          renderRow={renderRow}
+          sort={sort}
+          onSortChange={onSortChange}
+        />
+      </div>
+    </>
   )
 }
 

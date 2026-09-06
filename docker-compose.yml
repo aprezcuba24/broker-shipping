@@ -36,8 +36,9 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minio_secret}
       # Explicit Vite origins (avoid * + Allow-Credentials quirks on browser PUT).
       MINIO_API_CORS_ALLOW_ORIGIN: "http://localhost:5173,http://localhost:5174,http://localhost:5175"
-      # Must match host-published ports (browser uses these for redirects / console).
-      MINIO_SERVER_URL: http://localhost:${MINIO_API_PORT:-9000}
+      # Do not set MINIO_SERVER_URL to the host-published API port (e.g. :19000): the
+      # console login runs inside the container and would get 503. Browser PUT uses
+      # AWS_ENDPOINT_URL; console redirects use MINIO_BROWSER_REDIRECT_URL.
       MINIO_BROWSER_REDIRECT_URL: http://localhost:${MINIO_CONSOLE_PORT:-9001}
     ports:
       - "${MINIO_API_PORT:-9000}:9000"

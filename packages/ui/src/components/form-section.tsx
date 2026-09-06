@@ -78,6 +78,7 @@ export function FormFieldCell({
 
   return (
     <div
+      data-slot="form-field-cell"
       className={cn(
         formFieldCellClassName,
         fullWidth && 'col-span-full sm:border-r-0',
@@ -120,6 +121,7 @@ export function FormSection({ title, children, className }: FormSectionProps) {
 
   return (
     <section
+      data-slot="form-section"
       className={cn(
         'rounded-xl border border-border/70 bg-surface-container-lowest',
         'shadow-[0_1px_2px_rgba(42,52,57,0.04)]',
@@ -129,6 +131,7 @@ export function FormSection({ title, children, className }: FormSectionProps) {
     >
       {title ? (
         <header
+          data-slot="form-section-header"
           className={cn(
             'flex items-center gap-3 border-b border-border/60',
             'bg-surface-container-low/60 px-4 py-3 sm:px-5',

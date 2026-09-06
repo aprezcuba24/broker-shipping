@@ -49,7 +49,7 @@ export function AppLayout({
         brand={brand}
         cta={cta}
       />
-      <main className="flex-1 flex flex-col h-screen relative overflow-hidden lg:ml-0">
+      <main className="relative flex h-screen min-w-0 flex-1 flex-col overflow-hidden lg:ml-0">
         <TopHeader
           title={headerTitle}
           portalBadge={portalBadge}
@@ -60,7 +60,7 @@ export function AppLayout({
           headerExtra={headerExtra}
           headerActions={headerActions}
         />
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 bg-background">
+        <div className="custom-scrollbar flex-1 overflow-y-auto bg-background p-4 min-w-0 sm:p-6">
           <Outlet />
         </div>
       </main>

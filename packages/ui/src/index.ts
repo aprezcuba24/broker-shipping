@@ -344,6 +344,14 @@ export { useOrganizationMembers } from './organization/use-organization-members'
 export { SellerLinkRequestsList } from './organization/seller-link-requests-list'
 export type { SellerLinkRequestsListProps } from './organization/seller-link-requests-list'
 
+export { StatusStepper } from './components/status-stepper'
+export type {
+  StatusStepperAlternateStep,
+  StatusStepperOutcome,
+  StatusStepperProps,
+  StatusStepperStep,
+} from './components/status-stepper'
+
 export {
   ORDER_STATUS_LABEL,
   ORDER_STATUS_VARIANT,

@@ -235,31 +235,27 @@
 
 .broker-data-table__grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.75rem;
-  padding: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding: 0.5rem;
 }
 
 @media (min-width: 640px) {
   .broker-data-table__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    padding: 0.75rem;
   }
 }
 
 @media (min-width: 1024px) {
   .broker-data-table__grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1280px) {
-  .broker-data-table__grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }
 
 .broker-data-table__grid-card {
   display: flex;
+  min-width: 0;
   flex-direction: column;
   overflow: hidden;
   border-radius: 0.625rem;
@@ -296,6 +292,7 @@
   margin-top: auto;
   padding-top: 0.5rem;
   border-top: 1px solid var(--color-surface-container-high);
+  flex-wrap: wrap;
 }
 
 /* ── Dialog: top-anchored on mobile, centered on desktop ────── */
@@ -334,6 +331,27 @@
 .broker-dialog [data-slot='dialog-title'],
 .broker-dialog > div:first-child > h2 {
   font-family: var(--font-headline);
+}
+
+/* FormSection inside modals: no nested card chrome (dialog already has border/padding) */
+.broker-dialog [data-slot='form-section'] {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  overflow: visible;
+}
+
+.broker-dialog [data-slot='form-section-header'] {
+  padding-left: 0;
+  padding-right: 0;
+  background: transparent;
+}
+
+.broker-dialog [data-slot='form-field-cell'] {
+  padding-left: 0;
+  padding-right: 0;
+  background: transparent;
 }
 
 .broker-dialog [data-slot='dialog-footer'] {
