@@ -9,6 +9,8 @@ import type { InvitationKind } from './invitationKind';
 import type { InvitationStatus } from './invitationStatus';
 import type { InvitationPublicInviteeEmail } from './invitationPublicInviteeEmail';
 import type { InvitationPublicUserId } from './invitationPublicUserId';
+import type { InvitationPublicOrganizationName } from './invitationPublicOrganizationName';
+import type { InvitationPublicCounterpartyOrganizationName } from './invitationPublicCounterpartyOrganizationName';
 
 export interface InvitationPublic {
   id: string;
@@ -20,4 +22,6 @@ export interface InvitationPublic {
   user_id: InvitationPublicUserId;
   created_by_user_id: string;
   created_at: string;
+  organization_name?: InvitationPublicOrganizationName;
+  counterparty_organization_name?: InvitationPublicCounterpartyOrganizationName;
 }

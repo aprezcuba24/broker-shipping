@@ -4818,6 +4818,28 @@
             "format": "date-time",
             "title": "Created At"
           },
+          "organization_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Name"
+          },
+          "counterparty_organization_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counterparty Organization Name"
+          },
           "token": {
             "anyOf": [
               {
@@ -4915,6 +4937,28 @@
             "type": "string",
             "format": "date-time",
             "title": "Created At"
+          },
+          "organization_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Name"
+          },
+          "counterparty_organization_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counterparty Organization Name"
           }
         },
         "type": "object",

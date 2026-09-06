@@ -5,6 +5,7 @@ from uuid import UUID
 
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import aliased
 from sqlmodel import select
 
 from app.events.types import MemberInvitedEvent, SellerLinkRequestedEvent
@@ -24,6 +25,30 @@ from app.schemas.invitation import InvitationCreatedResponse, InvitationPublic, 
 from app.services import membership as membership_service
 from app.services import organization as org_service
 from app.services import provider_seller_link as link_service
+
+OrgAlias = aliased(Organization)
+CounterpartyAlias = aliased(Organization)
+
+
+def to_invitation_public(
+    invitation: OrganizationInvitation,
+    *,
+    organization_name: str | None = None,
+    counterparty_organization_name: str | None = None,
+) -> InvitationPublic:
+    return InvitationPublic(
+        id=invitation.id,
+        organization_id=invitation.organization_id,
+        counterparty_organization_id=invitation.counterparty_organization_id,
+        kind=invitation.kind,
+        status=invitation.status,
+        invitee_email=invitation.invitee_email,
+        user_id=invitation.user_id,
+        created_by_user_id=invitation.created_by_user_id,
+        created_at=invitation.created_at,
+        organization_name=organization_name,
+        counterparty_organization_name=counterparty_organization_name,
+    )
 
 
 async def _require_provider_org(
@@ -79,7 +104,13 @@ async def create_member_invite(
         MemberInvitedEvent(invitation=invitation, organization=org),
         background=True,
     )
-    return InvitationCreatedResponse.model_validate(invitation)
+    return InvitationCreatedResponse(
+        **to_invitation_public(
+            invitation,
+            organization_name=org.name,
+        ).model_dump(),
+        token=invitation.token,
+    )
 
 
 async def create_seller_link_request(
@@ -128,7 +159,11 @@ async def create_seller_link_request(
         ),
         background=True,
     )
-    return InvitationPublic.model_validate(invitation)
+    return to_invitation_public(
+        invitation,
+        organization_name=provider.name,
+        counterparty_organization_name=seller.name,
+    )
 
 
 async def accept_by_token(
@@ -267,14 +302,30 @@ async def list_pending_for_organization(
     organization_id: UUID,
 ) -> list[InvitationPublic]:
     result = await session.execute(
-        select(OrganizationInvitation)
+        select(
+            OrganizationInvitation,
+            OrgAlias.name,
+            CounterpartyAlias.name,
+        )
+        .join(OrgAlias, OrgAlias.id == OrganizationInvitation.organization_id)
+        .outerjoin(
+            CounterpartyAlias,
+            CounterpartyAlias.id == OrganizationInvitation.counterparty_organization_id,
+        )
         .where(
             OrganizationInvitation.organization_id == organization_id,
             OrganizationInvitation.status == InvitationStatus.pending,
         )
         .order_by(OrganizationInvitation.created_at.desc())
     )
-    return [InvitationPublic.model_validate(r) for r in result.scalars().all()]
+    return [
+        to_invitation_public(
+            invitation,
+            organization_name=org_name,
+            counterparty_organization_name=counterparty_name,
+        )
+        for invitation, org_name, counterparty_name in result.all()
+    ]
 
 
 async def list_pending_member_invites(
@@ -282,7 +333,8 @@ async def list_pending_member_invites(
     organization_id: UUID,
 ) -> list[InvitationPublic]:
     result = await session.execute(
-        select(OrganizationInvitation)
+        select(OrganizationInvitation, OrgAlias.name)
+        .join(OrgAlias, OrgAlias.id == OrganizationInvitation.organization_id)
         .where(
             OrganizationInvitation.organization_id == organization_id,
             OrganizationInvitation.kind == InvitationKind.member_invite,
@@ -290,7 +342,10 @@ async def list_pending_member_invites(
         )
         .order_by(OrganizationInvitation.created_at.desc())
     )
-    return [InvitationPublic.model_validate(r) for r in result.scalars().all()]
+    return [
+        to_invitation_public(invitation, organization_name=org_name)
+        for invitation, org_name in result.all()
+    ]
 
 
 async def list_my_pending_seller_link_requests(
@@ -301,7 +356,16 @@ async def list_my_pending_seller_link_requests(
     if not seller_org_ids:
         return []
     result = await session.execute(
-        select(OrganizationInvitation)
+        select(
+            OrganizationInvitation,
+            OrgAlias.name,
+            CounterpartyAlias.name,
+        )
+        .join(OrgAlias, OrgAlias.id == OrganizationInvitation.organization_id)
+        .outerjoin(
+            CounterpartyAlias,
+            CounterpartyAlias.id == OrganizationInvitation.counterparty_organization_id,
+        )
         .where(
             OrganizationInvitation.counterparty_organization_id.in_(seller_org_ids),
             OrganizationInvitation.kind == InvitationKind.seller_link_request,
@@ -309,4 +373,11 @@ async def list_my_pending_seller_link_requests(
         )
         .order_by(OrganizationInvitation.created_at.desc())
     )
-    return [InvitationPublic.model_validate(r) for r in result.scalars().all()]
+    return [
+        to_invitation_public(
+            invitation,
+            organization_name=org_name,
+            counterparty_organization_name=counterparty_name,
+        )
+        for invitation, org_name, counterparty_name in result.all()
+    ]

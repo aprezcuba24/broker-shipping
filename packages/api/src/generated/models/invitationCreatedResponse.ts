@@ -9,6 +9,8 @@ import type { InvitationKind } from './invitationKind';
 import type { InvitationStatus } from './invitationStatus';
 import type { InvitationCreatedResponseInviteeEmail } from './invitationCreatedResponseInviteeEmail';
 import type { InvitationCreatedResponseUserId } from './invitationCreatedResponseUserId';
+import type { InvitationCreatedResponseOrganizationName } from './invitationCreatedResponseOrganizationName';
+import type { InvitationCreatedResponseCounterpartyOrganizationName } from './invitationCreatedResponseCounterpartyOrganizationName';
 import type { InvitationCreatedResponseToken } from './invitationCreatedResponseToken';
 
 /**
@@ -24,5 +26,7 @@ export interface InvitationCreatedResponse {
   user_id: InvitationCreatedResponseUserId;
   created_by_user_id: string;
   created_at: string;
+  organization_name?: InvitationCreatedResponseOrganizationName;
+  counterparty_organization_name?: InvitationCreatedResponseCounterpartyOrganizationName;
   token?: InvitationCreatedResponseToken;
 }

@@ -42,6 +42,8 @@ class InvitationPublic(BaseModel):
     user_id: UUID | None
     created_by_user_id: UUID
     created_at: datetime
+    organization_name: str | None = None
+    counterparty_organization_name: str | None = None
 
 
 class InvitationCreatedResponse(InvitationPublic):

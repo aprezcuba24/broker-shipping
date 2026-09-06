@@ -1,4 +1,4 @@
-import type { InvitationPublic } from '@broker/api'
+import { formatDateTime, type InvitationPublic } from '@broker/api'
 import { Button } from '../components/ui/button'
 import {
   Table,
@@ -39,17 +39,15 @@ export function SellerLinkRequestsList({
       <TableHeader>
         <TableRow>
           <TableHead>Org. vendedora</TableHead>
-          <TableHead>Tipo</TableHead>
+          <TableHead>Solicitado</TableHead>
           <TableHead className="text-right">Acciones</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {requests.map((inv) => (
           <TableRow key={inv.id}>
-            <TableCell className="font-mono text-xs">
-              {inv.counterparty_organization_id ?? '—'}
-            </TableCell>
-            <TableCell>{inv.kind}</TableCell>
+            <TableCell>{inv.counterparty_organization_name ?? '—'}</TableCell>
+            <TableCell>{formatDateTime(inv.created_at)}</TableCell>
             <TableCell className="text-right space-x-2">
               <Button
                 type="button"
