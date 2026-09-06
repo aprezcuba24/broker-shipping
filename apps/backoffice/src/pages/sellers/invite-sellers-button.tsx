@@ -13,11 +13,11 @@ import {
 import { Link2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
-function buildSellerLinkRequestUrl(providerId: string): string {
+function buildSellerInviteUrl(providerId: string): string {
   const base =
-    (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ||
-    'http://localhost:8000'
-  return `${base}/organizations/seller/${providerId}/seller-link-requests`
+    (import.meta.env.VITE_SELLER_APP_URL as string | undefined)?.replace(/\/$/, '') ||
+    'http://localhost:5174'
+  return `${base}/join-provider?provider_id=${encodeURIComponent(providerId)}`
 }
 
 export type InviteSellersButtonProps = {
@@ -31,7 +31,7 @@ export function InviteSellersButton({
 }: InviteSellersButtonProps) {
   const [open, setOpen] = useState(false)
   const inviteUrl = useMemo(
-    () => buildSellerLinkRequestUrl(providerOrganizationId),
+    () => buildSellerInviteUrl(providerOrganizationId),
     [providerOrganizationId],
   )
   const shareText = providerName

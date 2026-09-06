@@ -3953,6 +3953,49 @@
         ]
       }
     },
+    "/organizations/seller/invite-providers/{provider_organization_id}": {
+      "get": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "Get Invite Provider",
+        "operationId": "get_invite_provider_organizations_seller_invite_providers__provider_organization_id__get",
+        "parameters": [
+          {
+            "name": "provider_organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Provider Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/organizations/seller/{organization_id}/seller-link-requests": {
       "post": {
         "tags": [

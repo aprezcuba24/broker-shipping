@@ -6,11 +6,14 @@ import { type VerifyEmailStatus } from '@broker/ui'
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
+import { usePendingJoinProvider } from '@/hooks/use-pending-join-provider'
+
 export function useVerifyEmail() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')?.trim() ?? ''
   const verifyMutation = useVerifyEmailEndpointUsersVerifyEmailPost()
   const started = useRef(false)
+  const { providerName, loginPath } = usePendingJoinProvider()
   const [status, setStatus] = useState<VerifyEmailStatus>(() =>
     token ? 'loading' : 'missing',
   )
@@ -37,5 +40,10 @@ export function useVerifyEmail() {
       })
   }, [token, verifyMutation])
 
-  return { status, message }
+  const successMessage =
+    status === 'success' && providerName
+      ? `Correo confirmado. Inicia sesión para continuar la vinculación con ${providerName}.`
+      : message
+
+  return { status, message: successMessage, loginHref: loginPath }
 }

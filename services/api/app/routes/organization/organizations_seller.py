@@ -8,6 +8,7 @@ from app.lib.security.deps import CurrentUserDep, SellerOrgDep
 from app.schemas.invitation import InvitationPublic
 from app.schemas.organization import OrganizationPublic
 from app.services import invitation as invitation_service
+from app.services import organization as org_service
 from app.services import provider_seller_link as link_service
 
 router = APIRouter(prefix="/organizations/seller", tags=["organizations"])
@@ -21,6 +22,18 @@ async def list_my_seller_link_requests(
     return await invitation_service.list_my_pending_seller_link_requests(
         session, user.id
     )
+
+
+@router.get(
+    "/invite-providers/{provider_organization_id}",
+    response_model=OrganizationPublic,
+)
+async def get_invite_provider(
+    provider_organization_id: UUID,
+    session: SessionDep,
+) -> OrganizationPublic:
+    org = await org_service.get_invite_provider(session, provider_organization_id)
+    return OrganizationPublic.model_validate(org)
 
 
 @router.post(

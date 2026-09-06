@@ -311,3 +311,38 @@ async def test_non_member_cannot_invite(
         headers=bearer_headers(user_id=stranger["id"]),
     )
     assert response.status_code == 403
+
+
+async def test_get_invite_provider_public(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+) -> None:
+    from uuid import uuid4
+
+    provider_user = await user_factory.build(email="prov@invite-lookup.com")
+    seller_user = await user_factory.build(email="sell@invite-lookup.com")
+    provider_org = await organization_factory.build(
+        user_id=provider_user["id"],
+        name="Proveedor Público",
+    )
+    seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
+
+    ok = await client.get(
+        f"/organizations/seller/invite-providers/{provider_org['id']}",
+    )
+    assert ok.status_code == 200
+    body = ok.json()
+    assert body["id"] == provider_org["id"]
+    assert body["name"] == "Proveedor Público"
+    assert body["type"] == "provider"
+
+    seller_lookup = await client.get(
+        f"/organizations/seller/invite-providers/{seller_org['id']}",
+    )
+    assert seller_lookup.status_code == 404
+
+    missing = await client.get(
+        f"/organizations/seller/invite-providers/{uuid4()}",
+    )
+    assert missing.status_code == 404

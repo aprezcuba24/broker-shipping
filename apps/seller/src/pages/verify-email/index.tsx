@@ -3,6 +3,13 @@ import { useVerifyEmail } from '@/hooks/use-verify-email'
 import { portalTheme } from '@/config/portal-theme'
 
 export function VerifyEmailPage() {
-  const { status, message } = useVerifyEmail()
-  return <VerifyEmailCard status={status} message={message} portal={portalTheme} />
+  const { status, message, loginHref } = useVerifyEmail()
+  return (
+    <VerifyEmailCard
+      status={status}
+      message={message}
+      loginHref={loginHref}
+      portal={portalTheme}
+    />
+  )
 }

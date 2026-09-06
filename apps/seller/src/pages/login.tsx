@@ -8,7 +8,7 @@ export function LoginPage() {
   return (
     <LoginForm
       title="Broker"
-      description="Introduce tus credenciales para continuar."
+      description={login.description}
       portal={portalTheme}
       schema={login.schema}
       isSubmitting={login.isSubmitting}
@@ -28,7 +28,8 @@ export function LoginPage() {
             </Button>
           ) : null}
           <p>
-            ¿No tienes cuenta? <AuthFormLink to="/register">Crear cuenta</AuthFormLink>
+            ¿No tienes cuenta?{' '}
+            <AuthFormLink to={login.registerPath}>Crear cuenta</AuthFormLink>
           </p>
         </div>
       }

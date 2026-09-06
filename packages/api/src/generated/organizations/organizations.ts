@@ -1109,6 +1109,98 @@ export function useListMySellerLinkRequestsOrganizationsSellerSellerLinkRequests
 
 
 /**
+ * @summary Get Invite Provider
+ */
+export const getInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet = (
+    providerOrganizationId: string,
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<OrganizationPublic>(
+      {url: `/organizations/seller/invite-providers/${providerOrganizationId}`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getGetInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGetQueryKey = (providerOrganizationId?: string,) => {
+    return [
+    `/organizations/seller/invite-providers/${providerOrganizationId}`
+    ] as const;
+    }
+
+    
+export const getGetInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet>>, TError = HTTPValidationError>(providerOrganizationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGetQueryKey(providerOrganizationId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet>>> = ({ signal }) => getInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet(providerOrganizationId, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(providerOrganizationId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGetQueryResult = NonNullable<Awaited<ReturnType<typeof getInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet>>>
+export type GetInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGetQueryError = HTTPValidationError
+
+
+export function useGetInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet<TData = Awaited<ReturnType<typeof getInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet>>, TError = HTTPValidationError>(
+ providerOrganizationId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet>>,
+          TError,
+          Awaited<ReturnType<typeof getInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet<TData = Awaited<ReturnType<typeof getInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet>>, TError = HTTPValidationError>(
+ providerOrganizationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet>>,
+          TError,
+          Awaited<ReturnType<typeof getInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet<TData = Awaited<ReturnType<typeof getInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet>>, TError = HTTPValidationError>(
+ providerOrganizationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get Invite Provider
+ */
+
+export function useGetInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet<TData = Awaited<ReturnType<typeof getInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet>>, TError = HTTPValidationError>(
+ providerOrganizationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetInviteProviderOrganizationsSellerInviteProvidersProviderOrganizationIdGetQueryOptions(providerOrganizationId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
  * @summary Create Seller Link Request
  */
 export const createSellerLinkRequestOrganizationsSellerOrganizationIdSellerLinkRequestsPost = (

@@ -15,6 +15,14 @@ export type VerifyEmailCardProps = {
   portal?: AuthPortalBranding
 }
 
+function withVerifiedParam(href: string): string {
+  const [path, query = ''] = href.split('?')
+  const params = new URLSearchParams(query)
+  params.set('verified', '1')
+  const q = params.toString()
+  return q ? `${path}?${q}` : path
+}
+
 export function VerifyEmailCard({
   title = 'Confirmación de correo',
   status,
@@ -31,6 +39,8 @@ export function VerifyEmailCard({
         : status === 'missing'
           ? 'Falta el enlace de confirmación.'
           : 'No se pudo confirmar el correo.'
+
+  const loginTo = status === 'success' ? withVerifiedParam(loginHref) : loginHref
 
   const card = (
     <Card className="w-full max-w-md border-border shadow-lg">
@@ -51,9 +61,7 @@ export function VerifyEmailCard({
         </p>
         {status !== 'loading' ? (
           <Button asChild className="w-full">
-            <Link to={status === 'success' ? `${loginHref}?verified=1` : loginHref}>
-              Ir al inicio de sesión
-            </Link>
+            <Link to={loginTo}>Ir al inicio de sesión</Link>
           </Button>
         ) : null}
         {footer}
