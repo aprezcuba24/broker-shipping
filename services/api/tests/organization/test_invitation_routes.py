@@ -211,6 +211,54 @@ async def test_seller_link_request_reject(
     assert reject.json()["status"] == "rejected"
 
 
+async def test_list_pending_seller_link_requests_include_org_names(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    mock_invitation_emails: list[dict[str, str]],
+) -> None:
+    provider_user = await user_factory.build(email="prov@names.com")
+    seller_user = await user_factory.build(email="sell@names.com")
+    provider_org = await organization_factory.build(
+        user_id=provider_user["id"],
+        name="Proveedor Nombres",
+    )
+    seller_org = await organization_factory.build_seller(
+        user_id=seller_user["id"],
+        name="Vendedor Nombres",
+    )
+
+    request = await client.post(
+        f"/organizations/seller/{provider_org['id']}/seller-link-requests",
+        params={"seller_organization_id": seller_org["id"]},
+        headers=bearer_headers(user_id=seller_user["id"]),
+    )
+    assert request.status_code == 201
+    created = request.json()
+    assert created["organization_name"] == "Proveedor Nombres"
+    assert created["counterparty_organization_name"] == "Vendedor Nombres"
+
+    mine = await client.get(
+        "/organizations/seller/seller-link-requests/mine",
+        headers=bearer_headers(user_id=seller_user["id"]),
+    )
+    assert mine.status_code == 200
+    mine_body = mine.json()
+    assert len(mine_body) == 1
+    assert mine_body[0]["organization_name"] == "Proveedor Nombres"
+    assert mine_body[0]["counterparty_organization_name"] == "Vendedor Nombres"
+
+    provider_list = await client.get(
+        f"/organizations/provider/{provider_org['id']}/invitations",
+        headers=bearer_headers(user_id=provider_user["id"]),
+    )
+    assert provider_list.status_code == 200
+    provider_body = provider_list.json()
+    assert len(provider_body) == 1
+    assert provider_body[0]["organization_name"] == "Proveedor Nombres"
+    assert provider_body[0]["counterparty_organization_name"] == "Vendedor Nombres"
+
+
 async def test_list_pending_member_invitations(
     client: AsyncClient,
     user_factory: UserFactory,
@@ -311,3 +359,38 @@ async def test_non_member_cannot_invite(
         headers=bearer_headers(user_id=stranger["id"]),
     )
     assert response.status_code == 403
+
+
+async def test_get_invite_provider_public(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+) -> None:
+    from uuid import uuid4
+
+    provider_user = await user_factory.build(email="prov@invite-lookup.com")
+    seller_user = await user_factory.build(email="sell@invite-lookup.com")
+    provider_org = await organization_factory.build(
+        user_id=provider_user["id"],
+        name="Proveedor Público",
+    )
+    seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
+
+    ok = await client.get(
+        f"/organizations/seller/invite-providers/{provider_org['id']}",
+    )
+    assert ok.status_code == 200
+    body = ok.json()
+    assert body["id"] == provider_org["id"]
+    assert body["name"] == "Proveedor Público"
+    assert body["type"] == "provider"
+
+    seller_lookup = await client.get(
+        f"/organizations/seller/invite-providers/{seller_org['id']}",
+    )
+    assert seller_lookup.status_code == 404
+
+    missing = await client.get(
+        f"/organizations/seller/invite-providers/{uuid4()}",
+    )
+    assert missing.status_code == 404

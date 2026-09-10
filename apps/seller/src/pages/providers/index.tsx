@@ -15,14 +15,23 @@ import {
 } from '@broker/ui'
 import { Truck } from 'lucide-react'
 import { useMemo } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import { useLinkedProviders } from '@/hooks/use-linked-providers'
 
 import { buildLinkedProviderColumns, buildPendingRequestColumns } from './columns'
 
+type ProvidersTab = 'linked' | 'pending'
+
+function resolveTab(value: string | null): ProvidersTab {
+  return value === 'pending' ? 'pending' : 'linked'
+}
+
 export function ProvidersPage() {
   const { activeOrganization } = useActiveOrganization()
   const activeOrgId = activeOrganization?.id
+  const [searchParams, setSearchParams] = useSearchParams()
+  const activeTab = resolveTab(searchParams.get('tab'))
 
   const { providers, isLoading: providersLoading } = useLinkedProviders()
 
@@ -49,13 +58,29 @@ export function ProvidersPage() {
   const linkedColumns = useMemo(() => buildLinkedProviderColumns(), [])
   const pendingColumns = useMemo(() => buildPendingRequestColumns(), [])
 
+  const setTab = (value: string) => {
+    const tab = resolveTab(value)
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (tab === 'linked') {
+          next.delete('tab')
+        } else {
+          next.set('tab', tab)
+        }
+        return next
+      },
+      { replace: true },
+    )
+  }
+
   return (
     <PageWrapper
       title="Proveedores"
       description="Proveedores vinculados a tu organización y solicitudes pendientes de aprobación."
       icon={Truck}
     >
-      <Tabs defaultValue="linked" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setTab} className="space-y-4">
         <TabsList variant="line">
           <TabsTrigger value="linked">Vinculados</TabsTrigger>
           <TabsTrigger value="pending">Pendientes</TabsTrigger>

@@ -8,6 +8,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { SellerLayout } from './layouts/seller-layout'
 import { AcceptInvitationPage } from './pages/accept-invitation'
 import { HomePage } from './pages/home'
+import { JoinProviderPage } from './pages/join-provider'
 import { LoginPage } from './pages/login'
 import { OnboardingPage } from './pages/onboarding'
 import { CartPage } from './pages/cart'
@@ -24,23 +25,23 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route
-          path="/register"
-          element={
-            <RegisterPage description="Crea tu cuenta de vendedor. Te enviaremos un correo para confirmarla." />
-          }
-        />
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
+        <Route
+          path="/join-provider"
+          element={
+            <ActiveOrganizationProvider organizationType={OrganizationType.seller}>
+              <JoinProviderPage />
+            </ActiveOrganizationProvider>
+          }
+        />
         <Route
           path="/onboarding"
           element={
             <RequireAuth loginPath="/login">
               <ActiveOrganizationProvider organizationType={OrganizationType.seller}>
-                <OnboardingPage
-                  title="Configura tu organización"
-                  description="Como vendedor, crea la organización con la que trabajarás en Broker."
-                />
+                <OnboardingPage title="Configura tu organización" />
               </ActiveOrganizationProvider>
             </RequireAuth>
           }

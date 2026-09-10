@@ -112,6 +112,22 @@ async def require_seller_org_membership(
     return org
 
 
+async def get_invite_provider(
+    session: AsyncSession,
+    provider_organization_id: UUID,
+) -> Organization:
+    """Public lookup for seller invite links; only provider orgs are exposed."""
+    org = await get_entity(
+        session,
+        Organization,
+        id=provider_organization_id,
+        required=False,
+    )
+    if org is None or org.type != OrganizationType.provider:
+        raise HTTPException(status_code=404, detail="Not found")
+    return org
+
+
 async def list_active_member_users(
     session: AsyncSession,
     organization_id: UUID,

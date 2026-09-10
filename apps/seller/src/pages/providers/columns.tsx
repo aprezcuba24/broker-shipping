@@ -16,9 +16,11 @@ export function buildLinkedProviderColumns(): ColumnDef<OrganizationPublic>[] {
 
 export function buildPendingRequestColumns(): ColumnDef<InvitationPublic>[] {
   return [
-    componentColumn<InvitationPublic>('provider', 'Proveedor', (row) => (
-      <span className="font-mono text-xs">{row.organization_id}</span>
-    )),
+    textColumn<InvitationPublic>({
+      id: 'organization_name',
+      header: 'Proveedor',
+      cell: (row) => row.organization_name ?? '—',
+    }),
     createdAtColumn<InvitationPublic>({ header: 'Solicitado' }),
     componentColumn<InvitationPublic>('status', 'Estado', () => (
       <Badge variant="secondary">Pendiente</Badge>

@@ -13,7 +13,7 @@ export function OnboardingPage({ title, description }: OnboardingPageProps) {
   return (
     <CreateOrganizationForm
       title={title}
-      description={description}
+      description={description ?? onboarding.description}
       portal={portalTheme}
       isSubmitting={onboarding.isSubmitting}
       error={onboarding.error}
