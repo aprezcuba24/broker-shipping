@@ -101,7 +101,6 @@ export function SellersPage() {
         <InviteSellersButton
           key="invite"
           providerOrganizationId={orgId}
-          providerName={activeOrganization?.name}
         />,
       ]}
     >

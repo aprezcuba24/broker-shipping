@@ -22,21 +22,17 @@ function buildSellerInviteUrl(providerId: string): string {
 
 export type InviteSellersButtonProps = {
   providerOrganizationId: string
-  providerName?: string
 }
 
 export function InviteSellersButton({
   providerOrganizationId,
-  providerName,
 }: InviteSellersButtonProps) {
   const [open, setOpen] = useState(false)
   const inviteUrl = useMemo(
     () => buildSellerInviteUrl(providerOrganizationId),
     [providerOrganizationId],
   )
-  const shareText = providerName
-    ? `Únete como vendedor de ${providerName} en Broker:`
-    : 'Únete como vendedor en Broker:'
+  const shareText = '';
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
