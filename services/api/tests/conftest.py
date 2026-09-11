@@ -4,8 +4,23 @@ from __future__ import annotations
 
 import os
 from collections.abc import AsyncIterator
+from urllib.parse import urlparse, urlunparse
 
-os.environ["POSTGRES_DB"] = os.environ.get("POSTGRES_DB_TEST", "broker_test")
+
+def _with_database_name(url: str, db_name: str) -> str:
+    parsed = urlparse(url)
+    return urlunparse(parsed._replace(path=f"/{db_name}"))
+
+
+# Point Settings at the test database before importing app modules.
+_default_dsn = "postgresql://broker:broker@localhost:6432/broker"
+_base_dsn = os.environ.get("DATABASE_URL", _default_dsn).strip() or _default_dsn
+_test_db = os.environ.get("POSTGRES_DB_TEST", "broker_test").strip() or "broker_test"
+if os.environ.get("DATABASE_URL_TEST", "").strip():
+    os.environ["DATABASE_URL"] = os.environ["DATABASE_URL_TEST"].strip()
+else:
+    os.environ["DATABASE_URL"] = _with_database_name(_base_dsn, _test_db)
+
 if len(os.environ.get("JWT_SECRET", "")) < 32:
     os.environ["JWT_SECRET"] = "pytest-jwt-secret-must-be-at-least-thirty-two-bytes"
 os.environ.setdefault("S3_PUBLIC_BASE_URL", "http://test-cdn.local/bucket")

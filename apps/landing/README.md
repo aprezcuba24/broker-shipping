@@ -29,4 +29,10 @@ Abre [http://localhost:5176](http://localhost:5176).
 pnpm --filter @broker/landing build
 ```
 
-Salida: `dist/`. En Cloudflare Pages: build `pnpm install && pnpm --filter @broker/landing build`, output `apps/landing/dist`, dominio apex (`vendeya.app`). Detalle: [`docs/deploy_railway.md`](../../docs/deploy_railway.md).
+Salida: `dist/`. En Cloudflare (Workers & Pages → Static Assets):
+
+- Build: `pnpm install && pnpm --filter @broker/landing build`
+- Deploy: `npx wrangler deploy --config apps/landing/wrangler.jsonc`
+- Dominio apex: `vendeya.app`
+
+Detalle: [`docs/deploy_railway.md`](../../docs/deploy_railway.md).

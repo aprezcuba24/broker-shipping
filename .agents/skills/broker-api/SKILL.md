@@ -167,7 +167,7 @@ Authorization: Bearer <jwt>
 
 ## Tests
 
-- DB: `POSTGRES_DB_TEST` / default `broker_test` (see `tests/conftest.py`).
+- DB: `DATABASE_URL` pointing at `broker_test` (see `tests/conftest.py`; optional `POSTGRES_DB_TEST` / `DATABASE_URL_TEST`).
 - Run from `services/api`: `uv sync --extra dev` then `uv run pytest`.
 - Prefer HTTP tests via `AsyncClient` + factories (`tests/factories/`).
 - Cover: happy path, missing `organization_id` → 422, non-member → 403, wrong org type → 403, cross-tenant get → 404, seller without link → 404, unauthorized `provider_id` → 403.

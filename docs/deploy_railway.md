@@ -4,9 +4,9 @@ Guía operativa para producción. Arquitectura:
 
 | Pieza | Dónde | URL |
 |-------|--------|-----|
-| Landing (Astro) | Cloudflare Pages | `https://vendeya.app` (apex) |
-| Portal proveedores | Cloudflare Pages | `https://proveedores.vendeya.app` |
-| Portal gestores | Cloudflare Pages | `https://gestores.vendeya.app` |
+| Landing (Astro) | Cloudflare Workers (static assets) | `https://vendeya.app` (apex) |
+| Portal proveedores | Cloudflare Workers (static assets) | `https://proveedores.vendeya.app` |
+| Portal gestores | Cloudflare Workers (static assets) | `https://gestores.vendeya.app` |
 | API FastAPI | Railway | `https://api.vendeya.app` |
 | Postgres | Railway (plugin) | red privada |
 | Imágenes | AWS S3 | `S3_PUBLIC_BASE_URL` |
@@ -29,21 +29,21 @@ Dominio de referencia: **vendeya.app** (canónico en [`apps/landing`](../apps/la
 
 | Tipo | Nombre | Contenido / destino | Notas |
 |------|--------|---------------------|--------|
-| CNAME / apex | `@` | Target que da Cloudflare Pages (landing) | Cloudflare aplana el CNAME del apex |
-| CNAME / redirect | `www` | Redirect 301 → `https://vendeya.app` | En Pages o regla Redirect Rules |
-| CNAME | `proveedores` | Target Pages (proyecto backoffice) | Tras crear el custom domain en Pages |
-| CNAME | `gestores` | Target Pages (proyecto seller) | Idem |
+| CNAME / apex | `@` | Target del Worker landing (custom domain) | Cloudflare CNAME flattening |
+| CNAME / redirect | `www` | Redirect 301 → `https://vendeya.app` | Redirect Rules o custom domain |
+| CNAME | `proveedores` | Target del Worker backoffice | Tras añadir custom domain al Worker |
+| CNAME | `gestores` | Target del Worker seller | Idem |
 | CNAME | `api` | Target que da Railway (`xxx.up.railway.app`) | + TXT de verificación si Railway lo pide |
 | CNAME ×3 | DKIM de SES | Valores de la consola SES | Easy DKIM |
 | TXT | `_dmarc` | `v=DMARC1; p=none; rua=mailto:tu@email` | Endurecer a `p=quarantine` más adelante |
 | MX + TXT | `mail` | Custom MAIL FROM de SES | Ver sección 5 |
-| MX | `@` | Cloudflare Email Routing | Convive con Pages en el apex |
+| MX | `@` | Cloudflare Email Routing | Convive con el Worker en el apex |
 
 `admin.` se deja para más adelante.
 
-El apex puede tener **CNAME/A de Pages y MX de Email Routing a la vez**: Pages no usa MX.
+El apex puede tener **CNAME del Worker y MX de Email Routing a la vez**: el Worker de assets no usa MX.
 
-SSL: lo emiten Cloudflare Pages y Railway; no hace falta certificado comprado.
+SSL: lo emiten Cloudflare y Railway; no hace falta certificado comprado.
 
 ### 1.3 Checklist DNS
 
@@ -69,19 +69,9 @@ SSL: lo emiten Cloudflare Pages y Railway; no hace falta certificado comprado.
 Copia / adapta (valores de ejemplo para `vendeya.app`):
 
 ```bash
-# Postgres: referencia la DB de Railway (Variables → Add Reference)
-# Opción A (recomendada): DATABASE_URL pública/privada del plugin Postgres
+# Postgres: Variable Reference del plugin en ESTE servicio API (no solo en Postgres).
+# Si ves localhost:6432, DATABASE_URL no está ligada aquí.
 DATABASE_URL=${{Postgres.DATABASE_URL}}
-
-# Opción B: piezas sueltas (si no usas DATABASE_URL)
-# POSTGRES_USER=
-# POSTGRES_PASSWORD=
-# POSTGRES_HOST=
-# POSTGRES_PORT=5432
-# POSTGRES_DB=
-
-# SSL hacia Postgres (necesario en la URL pública de Railway)
-POSTGRES_SSL=true
 
 JWT_SECRET=<genera-al-menos-32-caracteres-aleatorios>
 JWT_ALGORITHM=HS256
@@ -129,40 +119,38 @@ Comprueba `https://api.vendeya.app/docs` y `GET /`.
 
 ---
 
-## 3. Cloudflare Pages: tres sitios
+## 3. Cloudflare Workers & Pages: tres sitios estáticos
 
-Tres proyectos Pages, mismo monorepo. Build desde la **raíz** del repo (pnpm workspaces).
+Cloudflare unificó el dashboard en **Workers & Pages**. Para sitios nuevos recomienda **Workers con Static Assets** (no el flujo Pages antiguo con solo “Build output directory”). Doc oficial: [Astro → Cloudflare](https://docs.astro.build/en/guides/deploy/cloudflare/), [Migrate Pages → Workers](https://developers.cloudflare.com/workers/static-assets/migration-guides/migrate-from-pages/).
 
-| Proyecto Pages | Filtro | Build command | Output dir | Custom domain |
-|----------------|--------|---------------|------------|---------------|
-| `vendeya-landing` | `@broker/landing` | ver abajo | `apps/landing/dist` | `vendeya.app` + `www` → apex |
-| `vendeya-proveedores` | `@broker/backoffice` | ver abajo | `apps/backoffice/dist` | `proveedores.vendeya.app` |
-| `vendeya-gestores` | `@broker/seller` | ver abajo | `apps/seller/dist` | `gestores.vendeya.app` |
+Si el deploy muestra **“Hello world”**, Cloudflare desplegó el Worker de plantilla y **no** subió el `dist` de Astro/Vite. Hace falta un `wrangler.jsonc` con `assets.directory` (sin `main`) y un **Deploy command** que apunte a ese config.
 
-### 3.1 Ajustes comunes de build
+Tres Workers (assets-only), mismo monorepo:
 
-- **Framework preset:** None (o Astro solo en landing).
-- **Root directory:** `/` (raíz del monorepo).
-- **Node:** 20+.
-- **Install:** `pnpm install` (activa Corepack o instala pnpm en el build).
+| Worker (`name` en wrangler) | App | Build | Deploy | Custom domain |
+|-----------------------------|-----|-------|--------|---------------|
+| `vendeya-landing` | [`apps/landing`](../apps/landing) | ver abajo | `npx wrangler deploy --config apps/landing/wrangler.jsonc` | `vendeya.app` + `www` → apex |
+| `vendeya-proveedores` | [`apps/backoffice`](../apps/backoffice) | ver abajo | `npx wrangler deploy --config apps/backoffice/wrangler.jsonc` | `proveedores.vendeya.app` |
+| `vendeya-gestores` | [`apps/seller`](../apps/seller) | ver abajo | `npx wrangler deploy --config apps/seller/wrangler.jsonc` | `gestores.vendeya.app` |
 
-Ejemplo de **Build command** (landing):
+Cada app tiene su [`wrangler.jsonc`](../apps/landing/wrangler.jsonc): solo `assets.directory = "./dist"` (relativo al fichero). **No** pongas `main` (eso es código Worker; sin assets solo servirías Hello World).
 
-```bash
-pnpm install && pnpm --filter @broker/landing build
-```
+### 3.1 Crear el proyecto en el dashboard
 
-Proveedores:
+1. [Workers & Pages](https://dash.cloudflare.com/) → **Create** / **Create application**.
+2. **Import a repository** (GitHub) → el monorepo.
+3. Ajustes (landing de ejemplo):
 
-```bash
-pnpm install && pnpm --filter @broker/backoffice build
-```
+| Campo | Valor |
+|-------|--------|
+| Root directory | vacío / `/` (raíz del monorepo; pnpm workspaces) |
+| Build command | `pnpm install && pnpm --filter @broker/landing build` |
+| Deploy command | `npx wrangler deploy --config apps/landing/wrangler.jsonc` |
+| Non-production deploy (si aparece) | `npx wrangler versions upload --config apps/landing/wrangler.jsonc` |
 
-Gestores:
+`--config apps/.../wrangler.jsonc` es **obligatorio** en monorepos: sin él, `npx wrangler deploy` falla con *“run in the root of a workspace instead of targeting a specific project”*.
 
-```bash
-pnpm install && pnpm --filter @broker/seller build
-```
+Proveedores / gestores: mismos campos cambiando el filtro pnpm y la ruta del `--config`.
 
 ### 3.2 Variables de build
 
@@ -173,17 +161,18 @@ pnpm install && pnpm --filter @broker/seller build
 | Proveedores | `VITE_SELLER_APP_URL` | `https://gestores.vendeya.app` |
 | Gestores | `VITE_API_URL` | `https://api.vendeya.app` |
 
-### 3.3 SPA fallback (React Router)
+### 3.3 SPA / 404
 
-Los portales incluyen `public/_redirects` (Cloudflare Pages):
+- Landing (Astro multipágina): `not_found_handling: "404-page"` en su wrangler.
+- Portales React Router: `not_found_handling: "single-page-application"` en wrangler (no uses `public/_redirects`: en Workers Static Assets provoca error *Infinite loop detected*).
 
-```
-/*    /index.html   200
-```
+### 3.4 Si ya desplegaste y ves Hello World
 
-La landing Astro es HTML estático; no necesita ese fallback.
+1. Confirma que el commit en Git incluye `apps/landing/wrangler.jsonc`.
+2. En Settings del Worker: Deploy command = `npx wrangler deploy --config apps/landing/wrangler.jsonc`.
+3. Redeploy. El log **no** debe desplegar un script `main`; debe subir assets desde `apps/landing/dist`.
 
-### 3.4 Orden de publicación
+### 3.5 Orden de publicación
 
 1. Landing en el apex (prelanzamiento; no depende de la API).
 2. Email Routing.
@@ -298,7 +287,7 @@ Hasta salir del sandbox solo puedes enviar a direcciones verificadas.
 3. Direcciones: `info@vendeya.app`, `hola@vendeya.app` (y las que necesites).
 4. No configures un buzón IMAP de pago hasta que haga falta.
 
-Convive con Pages en el apex (MX + CNAME flattening).
+Convive con el Worker de la landing en el apex (MX + CNAME flattening).
 
 ### 5.3 Checklist correo
 
@@ -316,7 +305,7 @@ Convive con Pages en el apex (MX + CNAME flattening).
 | Pieza | Coste |
 |-------|--------|
 | Dominio (Cloudflare Registrar) | ~10–12 USD/año |
-| Pages + DNS + Email Routing | 0 |
+| Workers (static assets) + DNS + Email Routing | 0 |
 | Railway Hobby (API + Postgres) | ~5–15 USD/mes |
 | S3 | céntimos al inicio |
 | SES | ~0.10 USD / 1000 emails |
@@ -329,7 +318,7 @@ Convive con Pages en el apex (MX + CNAME flattening).
 - MinIO o Redis en Railway (la API aún no usa Redis en prod).
 - Servir landing/SPAs con contenedor Node 24/7.
 - Servidor SMTP propio.
-- Subir a Pro de Railway solo por dominios (Pages cubre los sitios).
+- Subir a Pro de Railway solo por dominios: los frontends van en Cloudflare Workers (assets).
 
 ---
 
@@ -339,6 +328,7 @@ Convive con Pages en el apex (MX + CNAME flattening).
 |------|------|
 | Settings / `DATABASE_URL` | [`services/api/app/config.py`](../services/api/app/config.py) |
 | CORS (`allow_origins=["*"]`) | [`services/api/app/main.py`](../services/api/app/main.py) |
+| Landing Worker (assets) | [`apps/landing/wrangler.jsonc`](../apps/landing/wrangler.jsonc) |
 | Dockerfile + arranque | [`services/api/Dockerfile`](../services/api/Dockerfile), [`services/api/railway.toml`](../services/api/railway.toml) |
 | S3 presign | [`services/api/app/lib/storage/s3.py`](../services/api/app/lib/storage/s3.py) |
 | SMTP | [`services/api/app/services/email/transport.py`](../services/api/app/services/email/transport.py) |

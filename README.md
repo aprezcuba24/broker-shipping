@@ -22,9 +22,10 @@ Plataforma API-first: **FastAPI** + **PostgreSQL** / **Redis** / **S3** (MinIO l
 docker compose up -d
 ```
 
-Copia [`.env.example`](.env.example) a `.env` en la **raíz del monorepo** (junto a `docker-compose.yml`). Ahí se definen Postgres, Redis, MinIO y S3; Compose sustituye las mismas variables al levantar contenedores.
+Copia [`.env.example`](.env.example) a `.env` en la **raíz del monorepo** (junto a `docker-compose.yml`).
 
-- **Postgres (host):** `POSTGRES_HOST` / `POSTGRES_PORT` (por defecto `localhost:6432`), usuario/clave/db con `POSTGRES_*`.
+- **API → Postgres:** solo `DATABASE_URL` (p. ej. `postgresql://broker:broker@localhost:6432/broker`).
+- **Compose → contenedor Postgres:** `POSTGRES_USER` / `PASSWORD` / `DB` / `PORT` (la API no las lee).
 - **Redis:** `REDIS_HOST` / `REDIS_PORT`.
 - **MinIO:** API `MINIO_API_PORT`, consola `MINIO_CONSOLE_PORT`, credenciales `MINIO_ROOT_*`.
 
@@ -77,7 +78,7 @@ En desarrollo puedes apuntar `AWS_ENDPOINT_URL` a MinIO (el host/puerto debe coi
 
 ## Producción (Railway + AWS + Cloudflare)
 
-Guía completa (DNS, Pages, S3, SES, variables): [`docs/deploy_railway.md`](docs/deploy_railway.md).
+Guía completa (DNS, Workers static assets, S3, SES, variables): [`docs/deploy_railway.md`](docs/deploy_railway.md).
 
 ## Construir todos los frontends
 

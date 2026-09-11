@@ -1,10 +1,11 @@
-"""Tests for production-oriented Settings (DATABASE_URL, SSL)."""
+"""Tests for Settings DATABASE_URL handling."""
 
 from __future__ import annotations
 
 import pytest
+from pydantic import ValidationError
 
-from app.config import Settings, _normalize_database_url, _with_ssl_query
+from app.config import Settings, _adapt_ssl_query, _normalize_database_url
 
 
 @pytest.mark.parametrize(
@@ -30,24 +31,35 @@ def test_ssl_query_asyncpg_from_sslmode() -> None:
         "postgresql://u:p@h:5432/db?sslmode=require",
         async_driver=True,
     )
-    out = _with_ssl_query(url, enabled=False)
-    assert "ssl=require" in out
-    assert "sslmode" not in out
+    assert "ssl=require" in url
+    assert "sslmode" not in url
 
 
-def test_ssl_query_sync_when_enabled() -> None:
-    url = _normalize_database_url("postgresql://u:p@h:5432/db", async_driver=False)
-    out = _with_ssl_query(url, enabled=True)
-    assert "sslmode=require" in out
+def test_ssl_query_sync_keeps_sslmode() -> None:
+    url = _normalize_database_url(
+        "postgresql://u:p@h:5432/db?sslmode=require",
+        async_driver=False,
+    )
+    assert "sslmode=require" in url
 
 
-def test_settings_database_url_override(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_adapt_ssl_noop_without_ssl() -> None:
+    url = "postgresql://u:p@h:5432/db"
+    assert _adapt_ssl_query(url) == url
+
+
+def test_settings_requires_database_url(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    with pytest.raises((ValidationError, ValueError)):
+        Settings(_env_file=None)  # type: ignore[call-arg]
+
+
+def test_settings_database_url(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv(
         "DATABASE_URL",
         "postgres://rail:secret@pg.railway.internal:5432/railway?sslmode=require",
     )
-    monkeypatch.delenv("POSTGRES_SSL", raising=False)
-    s = Settings()
+    s = Settings(_env_file=None)  # type: ignore[call-arg]
     assert s.database_url.startswith("postgresql+asyncpg://")
     assert "ssl=require" in s.database_url
     assert s.database_url_sync.startswith("postgresql://")

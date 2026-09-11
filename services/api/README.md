@@ -11,7 +11,7 @@ uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 ## Migraciones
 
-Requisito: Postgres accesible (variables `POSTGRES_*` en el `.env` de la raíz del monorepo).
+Requisito: Postgres accesible vía `DATABASE_URL` en el `.env` de la raíz del monorepo.
 
 ```bash
 uv run alembic upgrade head
@@ -33,7 +33,7 @@ docker build -t broker-api .
 
 ## Reset + seeds
 
-Desde la raíz del monorepo (destruye datos en `POSTGRES_DB`, reaplica migraciones y seeds):
+Desde la raíz del monorepo (destruye datos en `DATABASE_URL`, reaplica migraciones y seeds):
 
 ```bash
 pnpm db:reset

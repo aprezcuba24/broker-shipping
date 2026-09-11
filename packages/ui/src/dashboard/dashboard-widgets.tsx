@@ -175,7 +175,7 @@ export type RecentOrderRow = {
   status: OrderStatus
   created_at: string
   customer_name?: string | null
-  totals: CurrencyAmount[]
+  totals?: CurrencyAmount[]
 }
 
 export function RecentOrdersCard({
@@ -214,7 +214,7 @@ export function RecentOrdersCard({
                     </p>
                   </div>
                   <span className="shrink-0 text-right text-xs font-medium tabular-nums">
-                    {formatCurrencyAmounts(order.totals)}
+                    {formatCurrencyAmounts(order.totals ?? [])}
                   </span>
                 </Link>
               </li>

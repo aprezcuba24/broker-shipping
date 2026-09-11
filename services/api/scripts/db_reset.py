@@ -13,6 +13,7 @@ import asyncio
 import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
@@ -27,7 +28,7 @@ from scripts.seed.runner import run_all  # noqa: E402
 
 
 def reset_schema() -> None:
-    """Drop and recreate the public schema on POSTGRES_DB."""
+    """Drop and recreate the public schema on DATABASE_URL."""
     conn = psycopg2.connect(settings.database_url_sync)
     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
     try:
@@ -44,7 +45,7 @@ def reset_schema() -> None:
             cur.execute("CREATE SCHEMA public")
             cur.execute("GRANT ALL ON SCHEMA public TO CURRENT_USER")
             cur.execute("GRANT ALL ON SCHEMA public TO public")
-        print(f"Reset schema on database {settings.postgres_db!r}.")
+        print(f"Reset schema on database {urlparse(settings.database_url_sync).path.lstrip('/')!r}.")
     finally:
         conn.close()
 
