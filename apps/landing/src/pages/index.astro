@@ -1,0 +1,1026 @@
+---
+import Layout from '../layouts/Layout.astro'
+import {
+  productName,
+  title,
+  description,
+  siteUrl,
+  email,
+  whatsappHref,
+  mailtoHref,
+  registerHref,
+  ogImage,
+  todaySteps,
+  brokerFlow,
+  comparison,
+  actors,
+  providerBenefits,
+  sellerBenefits,
+  providerScreens,
+  sellerScreens,
+} from '../data/site'
+---
+
+<Layout title={title} description={description} image={ogImage} pagePath="/" siteUrl={siteUrl}>
+  <main>
+    <!-- ═══════════ 1 · HERO ═══════════ -->
+    <section class="relative overflow-hidden pt-32 pb-20 sm:pt-40 sm:pb-28">
+      <div
+        class="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(16,185,129,0.14),transparent_70%)]"
+      >
+      </div>
+      <div
+        class="pointer-events-none absolute inset-0 opacity-[0.05]"
+        style="background-image: linear-gradient(rgba(148,163,184,.6) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.6) 1px, transparent 1px); background-size: 56px 56px;"
+      >
+      </div>
+
+      <div class="relative mx-auto max-w-6xl px-5">
+        <div class="mx-auto max-w-3xl text-center">
+          <p
+            class="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/[0.08] px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-300 animate-rise"
+          >
+            <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400"></span>
+            Prelanzamiento · lista de interesados
+          </p>
+          <h1
+            class="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-[4.25rem] animate-rise"
+          >
+            <span class="block text-white">{productName}</span>
+            <span class="mt-2 block text-[0.72em] font-bold tracking-tight sm:mt-3">
+              Del grupo de WhatsApp<br />
+              <span
+                class="bg-gradient-to-r from-emerald-300 via-teal-300 to-cyan-300 bg-clip-text text-transparent"
+              >
+                a un negocio automatizado
+              </span>
+            </span>
+          </h1>
+          <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-400 sm:text-xl animate-rise-2">
+            {productName} conectará proveedores, gestores de venta y compradores: catálogo al día,
+            ventas registradas y comisiones calculadas solas.
+            <strong class="font-semibold text-slate-200">
+              Estamos en prelanzamiento: deja tus datos si te interesa ser de los primeros en usarla.
+            </strong>
+          </p>
+          <div class="mt-10 flex flex-wrap justify-center gap-3 animate-rise-3">
+            <a
+              href={registerHref}
+              class="inline-flex items-center gap-2 rounded-full bg-emerald-400 px-7 py-3.5 text-sm font-bold text-emerald-950 shadow-[0_8px_32px_-8px_rgba(16,185,129,0.5)] transition hover:bg-emerald-300 hover:shadow-[0_8px_36px_-6px_rgba(16,185,129,0.6)]"
+            >
+              Quiero enterarme
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"
+                ><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5-5 5M6 12h12"></path></svg
+              >
+            </a>
+            <a
+              href="#hoy"
+              class="inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-7 py-3.5 text-sm font-semibold text-white transition hover:border-white/20 hover:bg-white/[0.08]"
+            >
+              Ver cómo funciona
+            </a>
+          </div>
+        </div>
+
+        <div class="relative mx-auto mt-16 max-w-5xl animate-rise-3">
+          <div
+            class="absolute -inset-6 rounded-3xl bg-gradient-to-br from-emerald-500/15 via-teal-500/5 to-transparent blur-2xl"
+          >
+          </div>
+          <div
+            class="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-2xl shadow-black/60 ring-1 ring-white/10"
+          >
+            <div class="flex items-center gap-2 border-b border-white/10 bg-[#0B0F1A] px-4 py-2.5">
+              <span class="h-2.5 w-2.5 rounded-full bg-red-400/70"></span>
+              <span class="h-2.5 w-2.5 rounded-full bg-amber-400/70"></span>
+              <span class="h-2.5 w-2.5 rounded-full bg-emerald-400/70"></span>
+              <span class="ml-3 truncate rounded-md bg-white/5 px-3 py-1 text-[11px] text-slate-500"
+                >vendeya · panel del proveedor</span
+              >
+            </div>
+            <img
+              src="/screenshots/01-backoffice-dashboard.png"
+              alt="Vista previa del dashboard del proveedor en VendeYa"
+              class="block w-full"
+              loading="eager"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ 2 · ASÍ FUNCIONA HOY ═══════════ -->
+    <section id="hoy" class="relative border-t border-white/[0.06] py-20 sm:py-28">
+      <div
+        class="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_40%_at_80%_10%,rgba(245,158,11,0.06),transparent_70%)]"
+      >
+      </div>
+      <div class="relative mx-auto max-w-6xl px-5">
+        <div class="max-w-2xl reveal">
+          <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-400">El problema</p>
+          <h2 class="mt-3 font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">
+            Así funciona hoy
+          </h2>
+          <p class="mt-4 text-lg text-slate-400">
+            El negocio ya existe y funciona. Pero todo depende de chats, libretas y memoria.
+          </p>
+        </div>
+
+        <div class="mt-14 grid gap-x-10 gap-y-0 lg:grid-cols-2">
+          {
+            todaySteps.map((s, i) => (
+              <div class="reveal relative flex gap-5 pb-10" style={`transition-delay: ${i * 60}ms`}>
+                {i < todaySteps.length - 1 && (
+                  <span
+                    class="absolute left-[19px] top-12 bottom-0 w-px bg-gradient-to-b from-amber-500/40 to-amber-500/10 lg:hidden"
+                    aria-hidden="true"
+                  />
+                )}
+                <span
+                  class="absolute left-[19px] top-12 bottom-0 hidden w-px bg-gradient-to-b from-amber-500/40 to-amber-500/10 lg:block"
+                  aria-hidden="true"
+                  style={i >= todaySteps.length - 2 ? 'display:none' : ''}
+                />
+                <div class="relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-full border border-amber-500/30 bg-[#0D0B06] font-display text-sm font-bold text-amber-400">
+                  {i + 1}
+                </div>
+                <div class="min-w-0">
+                  <h3 class="font-display text-lg font-bold text-white">{s.title}</h3>
+                  <p class="mt-1.5 text-sm leading-relaxed text-slate-400">{s.text}</p>
+                  {s.pain && (
+                    <span class="mt-3 inline-flex items-center gap-1.5 rounded-full border border-amber-500/25 bg-amber-500/[0.08] px-3 py-1 text-xs font-semibold text-amber-300">
+                      <svg
+                        class="h-3 w-3"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"
+                        />
+                        <path stroke-linecap="round" d="M12 9v4m0 4h.01" />
+                      </svg>
+                      {s.pain}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))
+          }
+        </div>
+
+        <div
+          class="reveal mx-auto mt-4 max-w-3xl rounded-2xl border border-amber-500/20 bg-amber-500/[0.05] p-6 text-center sm:p-8"
+        >
+          <p class="text-lg font-medium leading-relaxed text-amber-100/90">
+            Cada paso funciona… hasta que crece.
+            <span class="text-amber-300"
+              >Más gestores, más ventas, más errores y más horas cuadrando números.</span
+            >
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ 3 · CON VENDEYA ═══════════ -->
+    <section id="con-vendeya" class="relative border-t border-white/[0.06] bg-[#080D12] py-20 sm:py-28">
+      <div
+        class="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_40%_at_20%_0%,rgba(16,185,129,0.08),transparent_70%)]"
+      >
+      </div>
+      <div class="relative mx-auto max-w-6xl px-5">
+        <div class="max-w-2xl reveal">
+          <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-400">La solución</p>
+          <h2 class="mt-3 font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">
+            Con {productName}
+          </h2>
+          <p class="mt-4 text-lg text-slate-400">
+            El mismo negocio, el mismo flujo. Pero el registro, las comisiones y el catálogo se gestionan
+            solos.
+          </p>
+        </div>
+
+        <div class="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {
+            brokerFlow.map((s, i) => (
+              <div
+                class="reveal relative rounded-2xl border border-emerald-500/15 bg-emerald-500/[0.04] p-6 transition hover:border-emerald-400/30 hover:bg-emerald-500/[0.07]"
+                style={`transition-delay: ${i * 80}ms`}
+              >
+                <span class="font-display text-xs font-bold tracking-widest text-emerald-500/70">
+                  PASO {i + 1}
+                </span>
+                <h3 class="mt-2 font-display text-lg font-bold leading-snug text-white">{s.title}</h3>
+                <p class="mt-2 text-sm leading-relaxed text-slate-400">{s.text}</p>
+                {i < brokerFlow.length - 1 && (
+                  <svg
+                    class="absolute -right-4 top-1/2 hidden h-5 w-5 -translate-y-1/2 text-emerald-500/60 lg:block"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5-5 5M6 12h12" />
+                  </svg>
+                )}
+              </div>
+            ))
+          }
+        </div>
+
+        <div class="reveal mt-16 overflow-hidden rounded-3xl border border-white/[0.08] bg-[#070A0F]">
+          <div class="grid grid-cols-[1fr_1fr] border-b border-white/[0.08] sm:grid-cols-[160px_1fr_1fr]">
+            <p class="hidden px-6 py-4 text-[11px] font-bold uppercase tracking-widest text-slate-600 sm:block"
+            ></p>
+            <p class="px-5 py-4 text-[11px] font-bold uppercase tracking-widest text-amber-400 sm:px-6"
+              >Hoy</p
+            >
+            <p class="px-5 py-4 text-[11px] font-bold uppercase tracking-widest text-emerald-400 sm:px-6">
+              Con {productName}
+            </p>
+          </div>
+          {
+            comparison.map((row, i) => (
+              <div
+                class:list={[
+                  'grid grid-cols-[1fr_1fr] sm:grid-cols-[160px_1fr_1fr]',
+                  i < comparison.length - 1 && 'border-b border-white/[0.06]',
+                ]}
+              >
+                <p class="col-span-2 px-5 pt-4 text-xs font-bold uppercase tracking-wider text-slate-500 sm:col-span-1 sm:px-6 sm:py-5 sm:text-[13px] sm:normal-case sm:tracking-normal sm:text-slate-300">
+                  {row.label}
+                </p>
+                <p class="px-5 pb-4 pt-1 text-sm leading-relaxed text-slate-500 sm:px-6 sm:py-5">
+                  <span class="mr-2 text-amber-500/70">✕</span>
+                  {row.before}
+                </p>
+                <p class="px-5 pb-4 pt-1 text-sm leading-relaxed text-slate-300 sm:px-6 sm:py-5">
+                  <span class="mr-2 text-emerald-400">✓</span>
+                  {row.after}
+                </p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ 4 · LOS TRES ACTORES ═══════════ -->
+    <section class="border-t border-white/[0.06] py-20 sm:py-28">
+      <div class="mx-auto max-w-6xl px-5">
+        <div class="mx-auto max-w-2xl text-center reveal">
+          <h2 class="font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+            Tres actores, un solo flujo
+          </h2>
+          <p class="mt-4 text-lg text-slate-400">
+            Cada uno hace lo suyo. {productName} conecta todo por detrás.
+          </p>
+        </div>
+
+        <div class="mt-14 grid gap-5 md:grid-cols-3">
+          {
+            actors.map((a, i) => (
+              <div
+                class:list={[
+                  'reveal rounded-3xl border p-7 transition',
+                  a.accent === 'emerald' &&
+                    'border-emerald-500/20 bg-emerald-500/[0.04] hover:border-emerald-400/40',
+                  a.accent === 'cyan' &&
+                    'border-cyan-500/20 bg-cyan-500/[0.04] hover:border-cyan-400/40',
+                  a.accent === 'amber' &&
+                    'border-amber-500/20 bg-amber-500/[0.04] hover:border-amber-400/40',
+                ]}
+                style={`transition-delay: ${i * 90}ms`}
+              >
+                <div
+                  class:list={[
+                    'mb-4 grid h-12 w-12 place-items-center rounded-2xl',
+                    a.accent === 'emerald' && 'bg-emerald-400/15 text-emerald-300',
+                    a.accent === 'cyan' && 'bg-cyan-400/15 text-cyan-300',
+                    a.accent === 'amber' && 'bg-amber-400/15 text-amber-300',
+                  ]}
+                >
+                  {a.name === 'Proveedor' && (
+                    <svg
+                      class="h-6 w-6"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.7"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M3 9l1-4h16l1 4M3 9v10a1 1 0 001 1h16a1 1 0 001-1V9M3 9h18M9 14h6"
+                      />
+                    </svg>
+                  )}
+                  {a.name === 'Gestor de venta' && (
+                    <svg
+                      class="h-6 w-6"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.7"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M11 5.9L4 9v4l7 3.1V5.9zM4 13l-1 6M11 8h4a5 5 0 000-2M15 16a5 5 0 000-2h-4M19 7v10"
+                      />
+                    </svg>
+                  )}
+                  {a.name === 'Comprador' && (
+                    <svg
+                      class="h-6 w-6"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.7"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M16 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M10 11a4 4 0 100-8 4 4 0 000 8zM20 8v6M23 11h-6"
+                      />
+                    </svg>
+                  )}
+                </div>
+                <h3 class="font-display text-xl font-bold text-white">{a.name}</h3>
+                <p class="mt-1 text-sm text-slate-500">{a.role}</p>
+                <ul class="mt-4 space-y-2.5">
+                  {a.points.map((p) => (
+                    <li class="flex gap-2.5 text-sm leading-relaxed text-slate-300">
+                      <svg
+                        class:list={[
+                          'mt-1 h-3.5 w-3.5 shrink-0',
+                          a.accent === 'emerald' && 'text-emerald-400',
+                          a.accent === 'cyan' && 'text-cyan-400',
+                          a.accent === 'amber' && 'text-amber-400',
+                        ]}
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        viewBox="0 0 24 24"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                      {p}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ 5 · ECOSISTEMA / INTEGRACIONES ═══════════ -->
+    <section class="relative border-t border-white/[0.06] bg-[#080D12] py-20 sm:py-28">
+      <div
+        class="pointer-events-none absolute inset-0 bg-[radial-gradient(45%_40%_at_50%_100%,rgba(6,182,212,0.07),transparent_70%)]"
+      >
+      </div>
+      <div class="relative mx-auto max-w-6xl px-5">
+        <div class="mx-auto max-w-2xl text-center reveal">
+          <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-400">Más que una app</p>
+          <h2 class="mt-3 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+            Un ecosistema conectado
+          </h2>
+          <p class="mt-4 text-lg text-slate-400">
+            {productName} es el centro: tu sistema por un lado, los canales de venta por el otro.
+          </p>
+        </div>
+
+        <div class="reveal mt-14 overflow-x-auto rounded-3xl border border-white/[0.08] bg-[#070A0F] p-6 sm:p-10">
+          <svg
+            viewBox="0 0 960 460"
+            class="w-full min-w-[640px]"
+            role="img"
+            aria-label="Diagrama del ecosistema VendeYa: el sistema del proveedor se conecta por API y recibe webhooks; los gestores publican en sitios web y redes sociales con datos en tiempo real; las órdenes de los compradores entran a VendeYa."
+          >
+            <defs>
+              <linearGradient id="hubGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#059669"></stop>
+                <stop offset="100%" stop-color="#0e7490"></stop>
+              </linearGradient>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="7"
+                markerHeight="7"
+                orient="auto-start-reverse"
+              >
+                <path d="M0,0 L10,5 L0,10 z" fill="#475569"></path>
+              </marker>
+              <marker
+                id="arrowGreen"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="7"
+                markerHeight="7"
+                orient="auto-start-reverse"
+              >
+                <path d="M0,0 L10,5 L0,10 z" fill="#34d399"></path>
+              </marker>
+              <marker
+                id="arrowCyan"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="7"
+                markerHeight="7"
+                orient="auto-start-reverse"
+              >
+                <path d="M0,0 L10,5 L0,10 z" fill="#22d3ee"></path>
+              </marker>
+            </defs>
+
+            <path
+              d="M225 175 L 385 205"
+              stroke="#34d399"
+              stroke-width="2"
+              fill="none"
+              marker-end="url(#arrowGreen)"
+              stroke-dasharray="6 5"
+              class="flow-line"></path>
+            <path
+              d="M385 245 L 225 275"
+              stroke="#475569"
+              stroke-width="2"
+              fill="none"
+              marker-end="url(#arrow)"
+              stroke-dasharray="6 5"
+              class="flow-line-slow"></path>
+            <path
+              d="M575 205 L 735 155"
+              stroke="#22d3ee"
+              stroke-width="2"
+              fill="none"
+              marker-end="url(#arrowCyan)"
+              stroke-dasharray="6 5"
+              class="flow-line"></path>
+            <path
+              d="M575 235 L 735 285"
+              stroke="#22d3ee"
+              stroke-width="2"
+              fill="none"
+              marker-end="url(#arrowCyan)"
+              stroke-dasharray="6 5"
+              class="flow-line-slow"></path>
+            <path
+              d="M480 300 L 480 375"
+              stroke="#f59e0b"
+              stroke-width="2"
+              fill="none"
+              marker-start="url(#arrow)"
+              stroke-dasharray="6 5"
+              class="flow-line"></path>
+
+            <g font-family="Instrument Sans, sans-serif" font-size="13" font-weight="600">
+              <text x="290" y="172" fill="#34d399">API</text>
+              <text x="268" y="278" fill="#94a3b8">Webhooks</text>
+              <text x="630" y="160" fill="#22d3ee">Tiempo real</text>
+              <text x="630" y="292" fill="#22d3ee">Tiempo real</text>
+              <text x="495" y="348" fill="#fbbf24">Órdenes</text>
+            </g>
+
+            <g>
+              <rect
+                x="35"
+                y="145"
+                width="190"
+                height="150"
+                rx="18"
+                fill="#0B0F1A"
+                stroke="#334155"
+                stroke-width="1.5"></rect>
+              <text
+                x="130"
+                y="185"
+                text-anchor="middle"
+                fill="#e2e8f0"
+                font-family="Bricolage Grotesque, sans-serif"
+                font-size="17"
+                font-weight="700">Tu sistema</text
+              >
+              <text
+                x="130"
+                y="210"
+                text-anchor="middle"
+                fill="#64748b"
+                font-family="Instrument Sans, sans-serif"
+                font-size="13">ERP · Inventario</text
+              >
+              <text
+                x="130"
+                y="245"
+                text-anchor="middle"
+                fill="#94a3b8"
+                font-family="Instrument Sans, sans-serif"
+                font-size="12">Actualiza productos</text
+              >
+              <text
+                x="130"
+                y="263"
+                text-anchor="middle"
+                fill="#94a3b8"
+                font-family="Instrument Sans, sans-serif"
+                font-size="12">y recibe cada venta</text
+              >
+            </g>
+
+            <g>
+              <rect x="385" y="150" width="190" height="150" rx="24" fill="url(#hubGrad)"></rect>
+              <rect
+                x="385"
+                y="150"
+                width="190"
+                height="150"
+                rx="24"
+                fill="none"
+                stroke="#34d399"
+                stroke-opacity="0.5"
+                stroke-width="1.5"></rect>
+              <text
+                x="480"
+                y="215"
+                text-anchor="middle"
+                fill="#ffffff"
+                font-family="Bricolage Grotesque, sans-serif"
+                font-size="28"
+                font-weight="800">VendeYa</text
+              >
+              <text
+                x="480"
+                y="245"
+                text-anchor="middle"
+                fill="#a7f3d0"
+                font-family="Instrument Sans, sans-serif"
+                font-size="13">Catálogo · Órdenes · Comisiones</text
+              >
+            </g>
+
+            <g>
+              <rect
+                x="735"
+                y="90"
+                width="190"
+                height="115"
+                rx="18"
+                fill="#0B0F1A"
+                stroke="#334155"
+                stroke-width="1.5"></rect>
+              <text
+                x="830"
+                y="130"
+                text-anchor="middle"
+                fill="#e2e8f0"
+                font-family="Bricolage Grotesque, sans-serif"
+                font-size="16"
+                font-weight="700">Sitio web del gestor</text
+              >
+              <text
+                x="830"
+                y="155"
+                text-anchor="middle"
+                fill="#64748b"
+                font-family="Instrument Sans, sans-serif"
+                font-size="12">VendeYa como backend</text
+              >
+              <text
+                x="830"
+                y="178"
+                text-anchor="middle"
+                fill="#94a3b8"
+                font-family="Instrument Sans, sans-serif"
+                font-size="12">Stock siempre al día</text
+              >
+            </g>
+
+            <g>
+              <rect
+                x="735"
+                y="250"
+                width="190"
+                height="115"
+                rx="18"
+                fill="#0B0F1A"
+                stroke="#334155"
+                stroke-width="1.5"></rect>
+              <text
+                x="830"
+                y="290"
+                text-anchor="middle"
+                fill="#e2e8f0"
+                font-family="Bricolage Grotesque, sans-serif"
+                font-size="16"
+                font-weight="700">Redes sociales</text
+              >
+              <text
+                x="830"
+                y="315"
+                text-anchor="middle"
+                fill="#64748b"
+                font-family="Instrument Sans, sans-serif"
+                font-size="12">Publicación en un clic</text
+              >
+              <text
+                x="830"
+                y="338"
+                text-anchor="middle"
+                fill="#94a3b8"
+                font-family="Instrument Sans, sans-serif"
+                font-size="12">Canales de difusión</text
+              >
+            </g>
+
+            <g>
+              <rect
+                x="385"
+                y="375"
+                width="190"
+                height="70"
+                rx="18"
+                fill="#0B0F1A"
+                stroke="#78552b"
+                stroke-width="1.5"></rect>
+              <text
+                x="480"
+                y="405"
+                text-anchor="middle"
+                fill="#fcd34d"
+                font-family="Bricolage Grotesque, sans-serif"
+                font-size="16"
+                font-weight="700">Compradores</text
+              >
+              <text
+                x="480"
+                y="428"
+                text-anchor="middle"
+                fill="#94a3b8"
+                font-family="Instrument Sans, sans-serif"
+                font-size="12">Sus datos viajan en la orden</text
+              >
+            </g>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ 6 · BENEFICIOS PROVEEDOR ═══════════ -->
+    <section id="proveedores" class="border-t border-white/[0.06] py-20 sm:py-28">
+      <div class="mx-auto max-w-6xl px-5">
+        <div class="max-w-2xl reveal">
+          <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-400">Para proveedores</p>
+          <h2 class="mt-3 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+            Tu negocio, con números claros
+          </h2>
+        </div>
+        <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {
+            providerBenefits.map((f, i) => (
+              <div
+                class="reveal rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 transition hover:border-emerald-400/30 hover:bg-white/[0.04]"
+                style={`transition-delay: ${i * 70}ms`}
+              >
+                <div class="mb-4 grid h-11 w-11 place-items-center rounded-xl bg-emerald-400/12 text-emerald-300">
+                  {f.icon === 'ledger' && (
+                    <svg
+                      class="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 12h6M9 16h4"
+                      />
+                    </svg>
+                  )}
+                  {f.icon === 'commission' && (
+                    <svg
+                      class="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M12 8c-1.7 0-3 .9-3 2s1.3 2 3 2 3 .9 3 2-1.3 2-3 2m0-8c1.3 0 2.4.5 2.8 1.3M12 8V6m0 10c-1.3 0-2.4-.5-2.8-1.3M12 16v2m9-6a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  )}
+                  {f.icon === 'api' && (
+                    <svg
+                      class="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M8 9l-4 3 4 3M16 9l4 3-4 3M14 4l-4 16"
+                      />
+                    </svg>
+                  )}
+                  {f.icon === 'webhook' && (
+                    <svg
+                      class="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      viewBox="0 0 24 24"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  )}
+                </div>
+                <h3 class="font-display font-bold text-white">{f.title}</h3>
+                <p class="mt-2 text-sm leading-relaxed text-slate-400">{f.text}</p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ 7 · BENEFICIOS GESTOR ═══════════ -->
+    <section class="border-t border-white/[0.06] bg-[#080D12] py-20 sm:py-28">
+      <div class="mx-auto max-w-6xl px-5">
+        <div class="max-w-2xl reveal">
+          <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-400"
+            >Para tus gestores de venta</p
+          >
+          <h2 class="mt-3 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+            Herramientas para vender más
+          </h2>
+          <p class="mt-4 text-lg text-slate-400">
+            Mientras más fácil sea para ellos, más venden. Y más vendes tú.
+          </p>
+        </div>
+        <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {
+            sellerBenefits.map((f, i) => (
+              <div
+                class="reveal rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 transition hover:border-cyan-400/30 hover:bg-white/[0.04]"
+                style={`transition-delay: ${i * 70}ms`}
+              >
+                <div class="mb-4 grid h-11 w-11 place-items-center rounded-xl bg-cyan-400/12 text-cyan-300">
+                  {f.icon === 'megaphone' && (
+                    <svg
+                      class="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M11 5.9L4 9v4l7 3.1V5.9zM4 13l-1 6M15 8.5a4 4 0 010 5M18 6a8 8 0 010 10"
+                      />
+                    </svg>
+                  )}
+                  {f.icon === 'realtime' && (
+                    <svg
+                      class="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  )}
+                  {f.icon === 'website' && (
+                    <svg
+                      class="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5zM3 9h18M7 6h.01M10 6h.01"
+                      />
+                    </svg>
+                  )}
+                  {f.icon === 'share' && (
+                    <svg
+                      class="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle cx="18" cy="5" r="3" />
+                      <circle cx="6" cy="12" r="3" />
+                      <circle cx="18" cy="19" r="3" />
+                      <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" />
+                    </svg>
+                  )}
+                </div>
+                <h3 class="font-display font-bold text-white">{f.title}</h3>
+                <p class="mt-2 text-sm leading-relaxed text-slate-400">{f.text}</p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ 8 · VISTA PREVIA ═══════════ -->
+    <section id="vista-previa" class="border-t border-white/[0.06] py-20 sm:py-28">
+      <div class="mx-auto max-w-6xl px-5">
+        <div class="mx-auto max-w-2xl text-center reveal">
+          <h2 class="font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+            Así se verá {productName}
+          </h2>
+          <p class="mt-4 text-lg text-slate-400">
+            Vista previa del producto en desarrollo. Déjanos tu interés y te avisamos cuando esté listo.
+          </p>
+        </div>
+
+        <div class="mt-14 reveal">
+          <p class="mb-6 text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-400"
+            >Portal del proveedor</p
+          >
+          <div class="grid gap-8 lg:grid-cols-3">
+            {
+              providerScreens.map((s) => (
+                <figure class="group">
+                  <div class="overflow-hidden rounded-xl border border-white/10 bg-[#0B0F1A] shadow-xl shadow-black/50 ring-1 ring-white/5 transition duration-300 group-hover:-translate-y-1.5 group-hover:border-emerald-500/30 group-hover:shadow-emerald-950/40">
+                    <div class="flex items-center gap-1.5 border-b border-white/10 bg-[#0D1220] px-3 py-2">
+                      <span class="h-2 w-2 rounded-full bg-white/15" />
+                      <span class="h-2 w-2 rounded-full bg-white/15" />
+                      <span class="h-2 w-2 rounded-full bg-white/15" />
+                    </div>
+                    <img src={s.src} alt={s.title} class="block w-full" loading="lazy" />
+                  </div>
+                  <figcaption class="mt-4">
+                    <p class="font-display font-bold text-white">{s.title}</p>
+                    <p class="mt-1 text-sm text-slate-400">{s.text}</p>
+                  </figcaption>
+                </figure>
+              ))
+            }
+          </div>
+        </div>
+
+        <div class="mt-16 reveal">
+          <p class="mb-6 text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-400"
+            >Lo que ven tus gestores</p
+          >
+          <div class="grid gap-8 md:grid-cols-2">
+            {
+              sellerScreens.map((s) => (
+                <figure class="group">
+                  <div class="overflow-hidden rounded-xl border border-white/10 bg-[#0B0F1A] shadow-xl shadow-black/50 ring-1 ring-white/5 transition duration-300 group-hover:-translate-y-1.5 group-hover:border-cyan-500/30 group-hover:shadow-cyan-950/40">
+                    <div class="flex items-center gap-1.5 border-b border-white/10 bg-[#0D1220] px-3 py-2">
+                      <span class="h-2 w-2 rounded-full bg-white/15" />
+                      <span class="h-2 w-2 rounded-full bg-white/15" />
+                      <span class="h-2 w-2 rounded-full bg-white/15" />
+                    </div>
+                    <img src={s.src} alt={s.title} class="block w-full" loading="lazy" />
+                  </div>
+                  <figcaption class="mt-4">
+                    <p class="font-display font-bold text-white">{s.title}</p>
+                    <p class="mt-1 text-sm text-slate-400">{s.text}</p>
+                  </figcaption>
+                </figure>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ 9 · POR QUÉ AHORA + MODELO ═══════════ -->
+    <section class="border-t border-white/[0.06] bg-[#080D12] py-20 sm:py-24">
+      <div class="mx-auto grid max-w-6xl gap-6 px-5 lg:grid-cols-2">
+        <div
+          class="reveal rounded-3xl border border-emerald-500/20 bg-gradient-to-b from-emerald-500/[0.08] to-transparent p-8 sm:p-10"
+        >
+          <h2 class="font-display text-2xl font-extrabold tracking-tight text-white sm:text-3xl"
+            >Por qué ahora</h2
+          >
+          <p class="mt-4 leading-relaxed text-slate-300">
+            {productName} está en prelanzamiento. El objetivo de esta página es captar proveedores
+            interesados en la plataforma. Si dejas tus datos, te contactamos cuando abramos el acceso y
+            tendrás prioridad como futuro cliente.
+          </p>
+        </div>
+        <div
+          class="reveal rounded-3xl border border-white/[0.08] bg-white/[0.02] p-8 sm:p-10"
+          style="transition-delay: 100ms"
+        >
+          <h2 class="font-display text-2xl font-extrabold tracking-tight text-white sm:text-3xl"
+            >Sin compromiso</h2
+          >
+          <p class="mt-4 leading-relaxed text-slate-300">
+            Registrarte ahora solo expresa interés. No hay pago ni contrato: queremos conocer a quién le
+            encaja el producto y avisarles primero al lanzar.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ 10 · CTA FINAL ═══════════ -->
+    <section class="py-20 sm:py-24">
+      <div class="mx-auto max-w-4xl px-5">
+        <div
+          class="reveal relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-600 via-teal-700 to-cyan-900 p-8 text-center shadow-2xl shadow-emerald-950/50 sm:p-14"
+        >
+          <div
+            class="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-3xl"
+          >
+          </div>
+          <div
+            class="pointer-events-none absolute -bottom-12 -left-12 h-44 w-44 rounded-full bg-cyan-400/20 blur-3xl"
+          >
+          </div>
+          <div
+            class="pointer-events-none absolute inset-0 opacity-[0.07]"
+            style="background-image: radial-gradient(rgba(255,255,255,0.8) 1px, transparent 1px); background-size: 22px 22px;"
+          >
+          </div>
+          <h2 class="relative font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">
+            ¿Te interesa {productName}?
+          </h2>
+          <p class="relative mx-auto mt-5 max-w-lg text-lg text-emerald-50/90">
+            Estamos en prelanzamiento. Déjanos tus datos y te avisamos cuando la plataforma esté lista
+            para los primeros clientes.
+          </p>
+          <div class="relative mt-9 flex flex-wrap justify-center gap-3">
+            <a
+              href={registerHref}
+              class="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-bold text-emerald-900 shadow-lg transition hover:bg-emerald-50"
+            >
+              Quiero enterarme
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"
+                ><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5-5 5M6 12h12"></path></svg
+              >
+            </a>
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-7 py-3.5 text-sm font-bold text-[#053b1a] shadow-[0_8px_28px_-6px_rgba(37,211,102,0.65)] ring-2 ring-white/40 transition hover:bg-[#2fe574] hover:shadow-[0_8px_32px_-4px_rgba(37,211,102,0.8)]"
+            >
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path
+                  d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"
+                ></path>
+              </svg>
+              Escribir por WhatsApp
+            </a>
+          </div>
+          <p class="relative mt-5 text-sm text-emerald-100/80">
+            O por email:
+            <a
+              href={mailtoHref}
+              class="font-semibold underline decoration-white/40 underline-offset-2 transition hover:text-white hover:decoration-white"
+            >
+              {email}
+            </a>
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add('in')
+            io.unobserve(e.target)
+          }
+        }
+      },
+      { threshold: 0.12 },
+    )
+    document.querySelectorAll('.reveal').forEach((el) => io.observe(el))
+  </script>
+</Layout>

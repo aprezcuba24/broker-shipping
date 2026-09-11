@@ -22,6 +22,15 @@ uv run alembic history
 
 Revisa siempre el fichero en `alembic/versions/` antes de commitear.
 
+## Producción (Railway)
+
+Docker + `railway.toml` en este directorio. Variables (`DATABASE_URL`, S3, SES): ver [`docs/deploy_railway.md`](../../docs/deploy_railway.md). CORS está fijo a `*` en el código (multi-cliente).
+
+```bash
+# Local smoke del contenedor (con .env de la raíz montado / pasado)
+docker build -t broker-api .
+```
+
 ## Reset + seeds
 
 Desde la raíz del monorepo (destruye datos en `POSTGRES_DB`, reaplica migraciones y seeds):

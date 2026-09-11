@@ -49,10 +49,12 @@ celerybeat-schedule
 celerybeat.pid
 
 # -----------------------------------------------------------------------------
-# Build / bundlers (Vite, etc.)
+# Build / bundlers (Vite, Astro, etc.)
 # -----------------------------------------------------------------------------
 dist
 **/dist
+.astro
+**/.astro
 .turbo
 *.tsbuildinfo
 .next
@@ -62,6 +64,8 @@ dist
 .eslintcache
 .stylelintcache
 *.local
+node_modules.broken/
+node_modules.broken.*/
 
 # -----------------------------------------------------------------------------
 # Tests / E2E
