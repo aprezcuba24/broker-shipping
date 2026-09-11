@@ -28,3 +28,5 @@ Abre [http://localhost:5176](http://localhost:5176).
 ```bash
 pnpm --filter @broker/landing build
 ```
+
+Salida: `dist/`. En Cloudflare Pages: build `pnpm install && pnpm --filter @broker/landing build`, output `apps/landing/dist`, dominio apex (`vendeya.app`). Detalle: [`docs/deploy_railway.md`](../../docs/deploy_railway.md).

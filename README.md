@@ -75,6 +75,10 @@ Las entidades SQLModel viven en `app/models/{dominio}/` (carpeta obligatoria por
 
 En desarrollo puedes apuntar `AWS_ENDPOINT_URL` a MinIO (el host/puerto debe coincidir con `MINIO_API_PORT`, p. ej. `http://localhost:9000`) y alinear `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` con `MINIO_ROOT_*`. En producción con **AWS S3**, deja `AWS_ENDPOINT_URL` vacío y configura bucket y credenciales IAM.
 
+## Producción (Railway + AWS + Cloudflare)
+
+Guía completa (DNS, Pages, S3, SES, variables): [`docs/deploy_railway.md`](docs/deploy_railway.md).
+
 ## Construir todos los frontends
 
 ```bash
