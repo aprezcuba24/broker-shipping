@@ -6,7 +6,7 @@ cd "$ROOT_DIR"
 
 usage() {
   cat <<EOF
-Usage: pnpm dev [-- backoffice] [admin] [seller] [all]
+Usage: pnpm dev [-- backoffice] [admin] [seller] [landing] [all]
 
 Always starts dev:api. Optionally start frontends:
 
@@ -14,6 +14,7 @@ Always starts dev:api. Optionally start frontends:
   pnpm dev backoffice
   pnpm dev admin
   pnpm dev seller
+  pnpm dev landing
   pnpm dev backoffice admin
   pnpm dev all
 EOF
@@ -28,6 +29,7 @@ PIDS=()
 START_BACKOFFICE=false
 START_ADMIN=false
 START_SELLER=false
+START_LANDING=false
 
 for arg in "$@"; do
   case "$arg" in
@@ -40,10 +42,14 @@ for arg in "$@"; do
     seller)
       START_SELLER=true
       ;;
+    landing)
+      START_LANDING=true
+      ;;
     all|apps)
       START_BACKOFFICE=true
       START_ADMIN=true
       START_SELLER=true
+      START_LANDING=true
       ;;
     *)
       echo "Unknown app: $arg" >&2
@@ -82,6 +88,10 @@ fi
 
 if [[ "$START_SELLER" == true ]]; then
   start "seller" pnpm run dev:seller
+fi
+
+if [[ "$START_LANDING" == true ]]; then
+  start "landing" pnpm run dev:landing
 fi
 
 wait

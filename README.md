@@ -1,12 +1,13 @@
 # Broker B2B — monorepo (scaffold)
 
-Plataforma API-first: **FastAPI** + **PostgreSQL** / **Redis** / **S3** (MinIO local o AWS), tres frontends **Vite + React + TypeScript** ([TanStack Query](https://tanstack.com/query/latest), [React Router](https://reactrouter.com/), **Zustand**, **Tailwind CSS v4**), paquetes compartidos `@broker/api` y `@broker/ui`.
+Plataforma API-first: **FastAPI** + **PostgreSQL** / **Redis** / **S3** (MinIO local o AWS), tres frontends **Vite + React + TypeScript** ([TanStack Query](https://tanstack.com/query/latest), [React Router](https://reactrouter.com/), **Zustand**, **Tailwind CSS v4**), landing **Astro**, paquetes compartidos `@broker/api` y `@broker/ui`.
 
 | Ruta | Descripción |
 |------|-------------|
 | [`apps/backoffice`](apps/backoffice) | Portal **proveedores** |
 | [`apps/admin`](apps/admin) | **Administración** global |
 | [`apps/seller`](apps/seller) | Portal **vendedores** |
+| [`apps/landing`](apps/landing) | Landing de **prelanzamiento** (Astro) |
 | [`services/api`](services/api) | API **FastAPI** ([uv](https://docs.astral.sh/uv/) para dependencias) |
 
 ## Requisitos
@@ -42,6 +43,7 @@ pnpm install
 | `pnpm dev:backoffice` | Portal proveedores (Vite) |
 | `pnpm dev:admin` | Admin (Vite) |
 | `pnpm dev:seller` | Portal vendedores (Vite) |
+| `pnpm dev:landing` | Landing prelanzamiento (Astro, puerto 5176) |
 | `pnpm dev:api` | API FastAPI (`uvicorn` vía `uv run`) |
 
 **API (desde `services/api`):**

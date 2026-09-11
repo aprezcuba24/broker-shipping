@@ -10,6 +10,7 @@
     "dev:backoffice": "pnpm --filter @broker/backoffice dev",
     "dev:admin": "pnpm --filter @broker/admin dev",
     "dev:seller": "pnpm --filter @broker/seller dev",
+    "dev:landing": "pnpm --filter @broker/landing dev",
     "dev:api": "cd services/api && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
     "db:reset": "cd services/api && uv run python scripts/db_reset.py",
     "rpc:schema": "cd services/api && uv run python scripts/export_openapi.py",
@@ -17,8 +18,8 @@
     "build": "pnpm -r --filter './apps/*' run build",
     "format": "pnpm format:ts",
     "format:check": "pnpm format:ts:check",
-    "format:ts": "prettier --write \"apps/**/*.{ts,tsx,js,jsx,json,css,md}\" \"packages/**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "format:ts:check": "prettier --check \"apps/**/*.{ts,tsx,js,jsx,json,css,md}\" \"packages/**/*.{ts,tsx,js,jsx,json,css,md}\""
+    "format:ts": "prettier --write \"apps/**/*.{ts,tsx,js,jsx,json,css,md,astro}\" \"packages/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "format:ts:check": "prettier --check \"apps/**/*.{ts,tsx,js,jsx,json,css,md,astro}\" \"packages/**/*.{ts,tsx,js,jsx,json,css,md}\""
   },
   "engines": {
     "node": ">=20"
@@ -30,6 +31,7 @@
     }
   },
   "devDependencies": {
-    "prettier": "^3.8.4"
+    "prettier": "^3.8.4",
+    "prettier-plugin-astro": "^1.0.0"
   }
 }
