@@ -1,3 +1,5 @@
+import { BROKER_DIALOG_CLASSNAME } from '../lib/broker-dialog'
+import { cn } from '../lib/utils'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,7 +11,6 @@ import {
   AlertDialogTitle,
 } from './ui/alert-dialog'
 import { buttonVariants } from './ui/button'
-import { cn } from '../lib/utils'
 
 export type ConfirmDialogProps = {
   open: boolean
@@ -36,7 +37,7 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="broker-dialog">
+      <AlertDialogContent className={BROKER_DIALOG_CLASSNAME}>
         <AlertDialogHeader>
           <AlertDialogTitle className="font-headline">{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>

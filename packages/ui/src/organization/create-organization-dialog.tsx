@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../components/ui/dialog'
+import { BROKER_DIALOG_CLASSNAME } from '../lib/broker-dialog'
 import { CreateOrganizationForm } from './create-organization-form'
 import { useCreateOrganization } from './use-create-organization'
 
@@ -43,7 +44,7 @@ export function CreateOrganizationDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="broker-dialog sm:max-w-md">
+      <DialogContent className={BROKER_DIALOG_CLASSNAME}>
         <DialogHeader>
           <DialogTitle className="font-headline">Nueva organización</DialogTitle>
           <DialogDescription>{description}</DialogDescription>

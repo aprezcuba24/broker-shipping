@@ -282,6 +282,7 @@ export {
   DialogTitle,
   DialogDescription,
 } from './components/ui/dialog'
+export { BROKER_DIALOG_CLASSNAME } from './lib/broker-dialog'
 export {
   AlertDialog,
   AlertDialogPortal,

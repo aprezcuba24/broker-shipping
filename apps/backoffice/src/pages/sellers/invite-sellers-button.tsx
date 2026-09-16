@@ -1,4 +1,5 @@
 import {
+  BROKER_DIALOG_CLASSNAME,
   Button,
   Dialog,
   DialogContent,
@@ -39,7 +40,7 @@ export function InviteSellersButton({
       <DialogTrigger asChild>
         <Button type="button" size="sm" icon={Link2} label="Invitar vendedores" />
       </DialogTrigger>
-      <DialogContent className="broker-dialog sm:max-w-md">
+      <DialogContent className={BROKER_DIALOG_CLASSNAME}>
         <DialogHeader>
           <DialogTitle className="font-headline">Invitar vendedores</DialogTitle>
           <DialogDescription>

@@ -1,5 +1,6 @@
 import * as React from 'react'
 
+import { BROKER_DIALOG_CLASSNAME } from '../lib/broker-dialog'
 import { Button, type ButtonProps } from './button'
 import {
   Dialog,
@@ -73,7 +74,7 @@ export function ButtonModal({
         </DialogTrigger>
       ) : null}
 
-      <DialogContent className="broker-dialog">
+      <DialogContent className={BROKER_DIALOG_CLASSNAME}>
         <DialogHeader>
           <DialogTitle className="font-headline">{title}</DialogTitle>
         </DialogHeader>
