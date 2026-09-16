@@ -35,7 +35,12 @@ const DEFAULT_BASE_URL = 'http://localhost:8000'
 let authConfig: ApiAuthConfig = { baseUrl: DEFAULT_BASE_URL }
 
 export function configureApi(config: ApiAuthConfig): void {
-  authConfig = { baseUrl: DEFAULT_BASE_URL, ...authConfig, ...config }
+  authConfig = {
+    ...authConfig,
+    ...config,
+    // Keep an existing baseUrl when callers omit it (undefined must not wipe prod URL).
+    baseUrl: config.baseUrl ?? authConfig.baseUrl ?? DEFAULT_BASE_URL,
+  }
 }
 
 function getBaseUrl(): string {

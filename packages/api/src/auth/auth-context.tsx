@@ -18,16 +18,13 @@ export function AuthProvider({ storage, baseUrl, children }: AuthProviderProps) 
   const tokenRef = useRef<string | null>(storage.getToken())
   const [token, setToken] = useState<string | null>(() => storage.getToken())
 
-  const syncApiConfig = useCallback(() => {
-    configureApi({
-      baseUrl,
-      getToken: () => tokenRef.current,
-    })
-  }, [baseUrl])
-
-  useEffect(() => {
-    syncApiConfig()
-  }, [syncApiConfig, token])
+  // Sync before children render so React Query fetches use the correct baseUrl
+  // (useEffect runs child→parent and would race the first join-provider request).
+  tokenRef.current = token
+  configureApi({
+    baseUrl,
+    getToken: () => tokenRef.current,
+  })
 
   const meQuery = useMeUsersMeGet({
     query: {
