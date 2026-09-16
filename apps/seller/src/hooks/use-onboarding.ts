@@ -4,7 +4,7 @@ import {
   OrganizationType,
   useCreateOrganizationOrganizationsPost,
 } from '@broker/api'
-import { notify, peekInviteToken } from '@broker/ui'
+import { notify, peekInviteToken, PRODUCT_NAME } from '@broker/ui'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 
@@ -20,7 +20,7 @@ export function useOnboarding() {
     ? `Crea tu organización para solicitar el vínculo con ${providerName}.`
     : providerId
       ? 'Crea tu organización para continuar con la solicitud de vínculo.'
-      : 'Como vendedor, crea la organización con la que trabajarás en Broker.'
+      : `Como vendedor, crea la organización con la que trabajarás en ${PRODUCT_NAME}.`
 
   const onSubmit = async ({ name }: { name: string }) => {
     createMutation.reset()

@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { PRODUCT_NAME } from '../../lib/brand'
 
 export type PortalVariant = 'provider' | 'seller'
 
@@ -22,7 +23,9 @@ export function AuthPageShell({
   children,
 }: AuthPageShellProps) {
   const ariaLabel =
-    variant === 'provider' ? 'Portal de proveedores de Broker' : 'Portal de vendedores de Broker'
+    variant === 'provider'
+      ? `Portal de proveedores de ${PRODUCT_NAME}`
+      : `Portal de vendedores de ${PRODUCT_NAME}`
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background">
@@ -44,7 +47,9 @@ export function AuthPageShell({
           <div className="w-14 h-14 rounded-2xl bg-white/15 flex items-center justify-center mb-8">
             <Icon className="h-7 w-7" aria-hidden />
           </div>
-          <p className="font-headline text-3xl lg:text-4xl font-extrabold tracking-tight">Broker</p>
+          <p className="font-headline text-3xl lg:text-4xl font-extrabold tracking-tight">
+            {PRODUCT_NAME}
+          </p>
           <p className="mt-2 text-sm uppercase tracking-widest text-on-primary/70 font-medium">
             {badge}
           </p>
@@ -63,7 +68,7 @@ export function AuthPageShell({
           <Icon className="h-4 w-4" aria-hidden />
         </div>
         <div className="min-w-0">
-          <p className="font-headline font-extrabold text-base leading-tight">Broker</p>
+          <p className="font-headline font-extrabold text-base leading-tight">{PRODUCT_NAME}</p>
           <p className="text-[10px] uppercase tracking-widest text-on-primary/70 truncate">{badge}</p>
         </div>
       </div>

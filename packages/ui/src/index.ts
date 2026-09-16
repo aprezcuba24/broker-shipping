@@ -7,6 +7,7 @@ export {
   moneyCentsSchema,
 } from './lib/utils'
 export { CURRENCY_OPTIONS } from './lib/currency'
+export { PRODUCT_NAME } from './lib/brand'
 export { initialsFromName } from './lib/initials'
 export { notify } from './lib/notify'
 export type { EntityGender } from './lib/notify'

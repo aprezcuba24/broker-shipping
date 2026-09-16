@@ -60,7 +60,14 @@ def test_local_smtp_wins_even_with_minio_aws_keys() -> None:
     assert not email_transport._use_ses(cfg)
 
 
-def test_ses_client_kwargs_omit_endpoint_url() -> None:
+def test_from_address_adds_product_display_name() -> None:
+    cfg = _settings(mail_from="noreply@vendelo360.app")
+    assert email_transport._from_address(cfg) == "vendelo360 <noreply@vendelo360.app>"
+
+
+def test_from_address_keeps_existing_display_name() -> None:
+    cfg = _settings(mail_from="Soporte <hola@vendelo360.app>")
+    assert email_transport._from_address(cfg) == "Soporte <hola@vendelo360.app>"
     cfg = _settings(
         aws_access_key_id="AKIAEXAMPLE",
         aws_secret_access_key="secret",
@@ -131,7 +138,7 @@ async def test_send_uses_ses_for_production(
     assert "endpoint_url" not in call_kwargs
     send_email.assert_awaited_once()
     payload = send_email.await_args.kwargs
-    assert payload["FromEmailAddress"] == "noreply@vendelo360.app"
+    assert payload["FromEmailAddress"] == "vendelo360 <noreply@vendelo360.app>"
     assert payload["Destination"] == {"ToAddresses": ["user@example.com"]}
     assert payload["Content"]["Simple"]["Subject"]["Data"] == "Verify"
     assert payload["Content"]["Simple"]["Body"]["Text"]["Data"] == "Click"

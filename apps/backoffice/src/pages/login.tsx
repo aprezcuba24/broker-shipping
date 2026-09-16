@@ -1,4 +1,4 @@
-import { AuthFormLink, Button, LoginForm } from '@broker/ui'
+import { AuthFormLink, Button, LoginForm, PRODUCT_NAME } from '@broker/ui'
 import { useLoginPage } from '@/hooks/use-login-page'
 import { portalTheme } from '@/config/portal-theme'
 
@@ -7,7 +7,7 @@ export function LoginPage() {
 
   return (
     <LoginForm
-      title="Broker"
+      title={PRODUCT_NAME}
       description="Introduce tus credenciales para continuar."
       portal={portalTheme}
       schema={login.schema}

@@ -7,10 +7,10 @@ import {
   Truck,
   Users,
 } from 'lucide-react'
-import type { NavItem, SidebarBrand } from '@broker/ui'
+import { PRODUCT_NAME, type NavItem, type SidebarBrand } from '@broker/ui'
 
 export const sellerBrand: SidebarBrand = {
-  title: 'Broker',
+  title: PRODUCT_NAME,
   subtitle: 'Vendedores',
   icon: ShoppingBag,
 }

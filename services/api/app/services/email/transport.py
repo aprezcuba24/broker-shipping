@@ -9,6 +9,7 @@ from typing import Any
 import aioboto3
 import aiosmtplib
 
+from app.branding import PRODUCT_NAME
 from app.config import Settings, settings
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,13 @@ def _use_local_smtp(cfg: Settings) -> bool:
 
 def _use_ses(cfg: Settings) -> bool:
     return bool(cfg.aws_access_key_id.strip()) and not _use_local_smtp(cfg)
+
+
+def _from_address(cfg: Settings) -> str:
+    mail_from = cfg.mail_from.strip()
+    if "<" in mail_from:
+        return mail_from
+    return f"{PRODUCT_NAME} <{mail_from}>"
 
 
 async def _send(*, to: str, subject: str, body: str) -> None:
@@ -40,7 +48,7 @@ async def _send_smtp(
     cfg: Settings,
 ) -> None:
     message = EmailMessage()
-    message["From"] = cfg.mail_from
+    message["From"] = _from_address(cfg)
     message["To"] = to
     message["Subject"] = subject
     message.set_content(body)
@@ -78,7 +86,7 @@ async def _send_ses(
     session = aioboto3.Session()
     async with session.client(**_ses_client_kwargs(cfg)) as client:
         await client.send_email(
-            FromEmailAddress=cfg.mail_from,
+            FromEmailAddress=_from_address(cfg),
             Destination={"ToAddresses": [to]},
             Content={
                 "Simple": {

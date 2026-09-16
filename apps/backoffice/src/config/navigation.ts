@@ -8,10 +8,10 @@ import {
   Users,
   Warehouse,
 } from 'lucide-react'
-import type { NavItem, SidebarBrand } from '@broker/ui'
+import { PRODUCT_NAME, type NavItem, type SidebarBrand } from '@broker/ui'
 
 export const backofficeBrand: SidebarBrand = {
-  title: 'Broker',
+  title: PRODUCT_NAME,
   subtitle: 'Proveedores',
   icon: Warehouse,
 }

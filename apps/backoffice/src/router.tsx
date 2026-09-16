@@ -2,6 +2,7 @@ import { OrganizationType, RequireAuth } from '@broker/api'
 import {
   ActiveOrganizationProvider,
   OrganizationScopedApiProvider,
+  PRODUCT_NAME,
   RequireOrganization,
 } from '@broker/ui'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
@@ -43,7 +44,7 @@ export default function App() {
               <ActiveOrganizationProvider organizationType={OrganizationType.provider}>
                 <OnboardingPage
                   title="Configura tu organización"
-                  description="Como proveedor, crea la organización con la que trabajarás en Broker."
+                  description={`Como proveedor, crea la organización con la que trabajarás en ${PRODUCT_NAME}.`}
                 />
               </ActiveOrganizationProvider>
             </RequireAuth>

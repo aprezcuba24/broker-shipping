@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.branding import PRODUCT_NAME
 from app.config import settings
 from app.db.context import configure_session_maker
 from app.db.session import create_async_engine_and_session_maker
@@ -28,7 +29,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await engine.dispose()
 
 
-app = FastAPI(title="Broker API", lifespan=lifespan)
+app = FastAPI(title=f"{PRODUCT_NAME} API", lifespan=lifespan)
 register_exception_handlers(app)
 
 app.add_middleware(
@@ -44,4 +45,4 @@ app.include_router(routes_router)
 
 @app.get("/")
 def root() -> dict[str, str]:
-    return {"message": "Broker API"}
+    return {"message": f"{PRODUCT_NAME} API"}

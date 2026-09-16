@@ -1,4 +1,4 @@
-import { LoginForm } from '@broker/ui'
+import { LoginForm, PRODUCT_NAME } from '@broker/ui'
 import { useLoginPage } from '@/hooks/use-login-page'
 
 export function LoginPage() {
@@ -6,7 +6,7 @@ export function LoginPage() {
 
   return (
     <LoginForm
-      title="Broker"
+      title={PRODUCT_NAME}
       description="Administración global. Introduce tus credenciales para continuar."
       schema={login.schema}
       isSubmitting={login.isSubmitting}
