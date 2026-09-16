@@ -63,7 +63,7 @@ Los tres portales React y cualquier aplicación de terceros hablan con la **mism
 - **Alembic** para migraciones.
 - **PostgreSQL** vía **asyncpg**.
 - Almacenamiento de imágenes compatible con **S3** (**aioboto3**; MinIO en local, AWS S3 en producción).
-- Correo transaccional por **SMTP** (**aiosmtplib**; Amazon SES en producción).
+- Correo transaccional: **SMTP** (**aiosmtplib** → MailHog) en local; **Amazon SES API v2** (HTTPS / **aioboto3**) en producción.
 - Máquina de estados de ítems de pedido con **transitions**.
 - Bus de eventos interno para efectos secundarios (email, comisiones, webhooks).
 
@@ -158,7 +158,7 @@ La producción prioriza **coste bajo**, piezas managed y frontends estáticos en
 | Landing + tres SPAs | **Cloudflare Workers** (static assets) | HTML/JS estático, CDN global, coste ~0; no hace falta un Node 24/7. Subdominios: apex, `proveedores.`, `gestores.`, `admin.` |
 | API + PostgreSQL | **Railway** (Docker; Alembic al arrancar, luego Uvicorn) | PaaS simple, Postgres en red privada, plan Hobby suficiente al inicio |
 | Imágenes | **AWS S3** (MinIO compatible en local) | Presign; el mismo cliente S3 sirve en desarrollo y producción |
-| Correo de salida | **Amazon SES** (SMTP) | Transaccional (verificación, invitaciones) sin montar un servidor de correo |
+| Correo de salida | **Amazon SES** (API HTTPS) | Transaccional vía HTTPS (Railway Hobby bloquea SMTP); MailHog por SMTP en local |
 | Correo de entrada | **Cloudflare Email Routing** | `info@` / `hola@` hacia un buzón existente, sin IMAP de pago |
 | DNS | **Cloudflare** | Apex con Workers + MX de Email Routing a la vez; SSL gestionado |
 

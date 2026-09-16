@@ -10,7 +10,7 @@ Guía operativa para producción. Arquitectura:
 | API FastAPI | Railway | `https://api.vendelo360.app` |
 | Postgres | Railway (plugin) | red privada |
 | Imágenes | AWS S3 | `S3_PUBLIC_BASE_URL` |
-| Envío de correo | AWS SES (SMTP) | — |
+| Envío de correo | AWS SES (API HTTPS) | — |
 | Recepción de correo | Cloudflare Email Routing | `info@` / `hola@` → Gmail |
 
 Dominio de referencia: **vendelo360.app** (canónico en [`apps/landing`](../apps/landing)). Sustituye si usas otro.
@@ -83,11 +83,8 @@ JWT_EXPIRE_MINUTES=1440
 FRONTEND_BACKOFFICE_URL=https://proveedores.vendelo360.app
 FRONTEND_SELLER_URL=https://gestores.vendelo360.app
 
-SMTP_HOST=email-smtp.us-east-1.amazonaws.com
-SMTP_PORT=587
-SMTP_USER=<ses-smtp-username>
-SMTP_PASSWORD=<ses-smtp-password>
-SMTP_USE_TLS=true
+# Correo: SES API v2 sobre HTTPS (Hobby bloquea SMTP de salida).
+# No hace falta SMTP_HOST / SMTP_USER / SMTP_PASSWORD en producción.
 MAIL_FROM=noreply@vendelo360.app
 EMAIL_VERIFICATION_TOKEN_HOURS=24
 
@@ -223,12 +220,13 @@ Ejemplo de política de lectura pública de objetos:
 
 ### 4.2 IAM
 
-Usuario (o rol) con política mínima sobre ese bucket:
+Usuario (o rol) con política mínima sobre ese bucket **y** sobre SES (mismo usuario; el correo de producción usa la API HTTPS, no SMTP):
 
 - `s3:PutObject`
 - `s3:GetObject`
 - `s3:DeleteObject`
 - `s3:ListBucket` (opcional)
+- `ses:SendEmail` / `ses:SendRawEmail` sobre la identidad `noreply@vendelo360.app` (o el dominio)
 
 Access key → `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` en Railway.
 
@@ -257,23 +255,27 @@ No uses CloudFront al inicio. Si el egreso crece, valora Cloudflare R2 (compatib
 
 **No** montes Postfix/Mailcow en Railway.
 
-### 5.1 Envío (SES SMTP)
+### 5.1 Envío (SES API HTTPS)
 
-1. Consola AWS → **Amazon SES** → misma región (`us-east-1`).
+Railway **Hobby/Trial bloquea SMTP de salida** (puertos 25/465/587). Por eso la API envía con **SES API v2** (`sesv2.send_email`) sobre HTTPS (443), reutilizando `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_REGION`. En local sigue SMTP → MailHog.
+
+**No** uses un hostname de **SES Mail Manager** (`*.mail-manager-smtp.amazonaws.com`): es un ingress distinto y suele dar timeout desde Railway.
+
+1. Consola AWS → **Amazon SES** → misma región que `AWS_REGION` (p. ej. `us-east-1`).
 2. **Identities → Create → Domain** → `vendelo360.app`.
 3. Publica en Cloudflare los CNAME de **Easy DKIM**.
 4. **Custom MAIL FROM:** `mail.vendelo360.app` → añade MX + TXT SPF que indique SES.
 5. TXT `_dmarc` en el apex (ver mapa DNS).
-6. **SMTP settings** → Create SMTP credentials → guarda usuario/clave.
+6. Asegura en el IAM (mismo usuario que S3) `ses:SendEmail` y `ses:SendRawEmail` sobre la identidad.
 7. En Railway:
 
 ```bash
-SMTP_HOST=email-smtp.us-east-1.amazonaws.com
-SMTP_PORT=587
-SMTP_USE_TLS=true
-SMTP_USER=...
-SMTP_PASSWORD=...
 MAIL_FROM=noreply@vendelo360.app
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+AWS_REGION=us-east-1
+AWS_ENDPOINT_URL=
+# SMTP_* no hacen falta en producción (solo MailHog en local).
 ```
 
 8. **Salida del sandbox:** SES → Account dashboard → Request production access. AWS pide sitio público (la landing en el apex sirve), política de uso y tipo de correo (transaccional: verificación, invitaciones).
@@ -294,7 +296,8 @@ Convive con el Worker de la landing en el apex (MX + CNAME flattening).
 - [ ] Dominio verificado en SES + DKIM
 - [ ] Custom MAIL FROM `mail.`
 - [ ] DMARC básico
-- [ ] Credenciales SMTP en Railway
+- [ ] IAM con `ses:SendEmail` / `ses:SendRawEmail` + keys AWS en Railway
+- [ ] `MAIL_FROM` = identidad verificada; sin host Mail Manager / SMTP en prod
 - [ ] Production access (o emails de prueba verificados)
 - [ ] Email Routing `info@` / `hola@`
 
@@ -318,6 +321,7 @@ Convive con el Worker de la landing en el apex (MX + CNAME flattening).
 - MinIO o Redis en Railway (la API aún no usa Redis en prod).
 - Servir landing/SPAs con contenedor Node 24/7.
 - Servidor SMTP propio.
+- SMTP desde Railway Hobby (está bloqueado); no subas a Pro solo por correo — usa SES API HTTPS.
 - Subir a Pro de Railway solo por dominios: los frontends van en Cloudflare Workers (assets).
 
 ---
@@ -331,5 +335,5 @@ Convive con el Worker de la landing en el apex (MX + CNAME flattening).
 | Landing Worker (assets) | [`apps/landing/wrangler.jsonc`](../apps/landing/wrangler.jsonc) |
 | Dockerfile + arranque | [`services/api/Dockerfile`](../services/api/Dockerfile), [`services/api/railway.toml`](../services/api/railway.toml) |
 | S3 presign | [`services/api/app/lib/storage/s3.py`](../services/api/app/lib/storage/s3.py) |
-| SMTP | [`services/api/app/services/email/transport.py`](../services/api/app/services/email/transport.py) |
+| Email (SMTP local / SES API) | [`services/api/app/services/email/transport.py`](../services/api/app/services/email/transport.py) |
 | Env de ejemplo | [`.env.example`](../.env.example) |
