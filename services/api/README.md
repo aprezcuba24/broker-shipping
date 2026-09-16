@@ -9,6 +9,11 @@ uv sync
 uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+Documentación interactiva (con el servidor en marcha):
+
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
 ## Migraciones
 
 Requisito: Postgres accesible vía `DATABASE_URL` en el `.env` de la raíz del monorepo.

@@ -4,16 +4,16 @@ Guía operativa para producción. Arquitectura:
 
 | Pieza | Dónde | URL |
 |-------|--------|-----|
-| Landing (Astro) | Cloudflare Workers (static assets) | `https://vendeya.app` (apex) |
-| Portal proveedores | Cloudflare Workers (static assets) | `https://proveedores.vendeya.app` |
-| Portal gestores | Cloudflare Workers (static assets) | `https://gestores.vendeya.app` |
-| API FastAPI | Railway | `https://api.vendeya.app` |
+| Landing (Astro) | Cloudflare Workers (static assets) | `https://vendelo360.app` (apex) |
+| Portal proveedores | Cloudflare Workers (static assets) | `https://proveedores.vendelo360.app` |
+| Portal gestores | Cloudflare Workers (static assets) | `https://gestores.vendelo360.app` |
+| API FastAPI | Railway | `https://api.vendelo360.app` |
 | Postgres | Railway (plugin) | red privada |
 | Imágenes | AWS S3 | `S3_PUBLIC_BASE_URL` |
-| Envío de correo | AWS SES (SMTP) | — |
+| Envío de correo | AWS SES (API HTTPS) | — |
 | Recepción de correo | Cloudflare Email Routing | `info@` / `hola@` → Gmail |
 
-Dominio de referencia: **vendeya.app** (canónico en [`apps/landing`](../apps/landing)). Sustituye si usas otro.
+Dominio de referencia: **vendelo360.app** (canónico en [`apps/landing`](../apps/landing)). Sustituye si usas otro.
 
 ---
 
@@ -30,7 +30,7 @@ Dominio de referencia: **vendeya.app** (canónico en [`apps/landing`](../apps/la
 | Tipo | Nombre | Contenido / destino | Notas |
 |------|--------|---------------------|--------|
 | CNAME / apex | `@` | Target del Worker landing (custom domain) | Cloudflare CNAME flattening |
-| CNAME / redirect | `www` | Redirect 301 → `https://vendeya.app` | Redirect Rules o custom domain |
+| CNAME / redirect | `www` | Redirect 301 → `https://vendelo360.app` | Redirect Rules o custom domain |
 | CNAME | `proveedores` | Target del Worker backoffice | Tras añadir custom domain al Worker |
 | CNAME | `gestores` | Target del Worker seller | Idem |
 | CNAME | `api` | Target que da Railway (`xxx.up.railway.app`) | + TXT de verificación si Railway lo pide |
@@ -66,7 +66,7 @@ SSL: lo emiten Cloudflare y Railway; no hace falta certificado comprado.
 
 ### 2.2 Variables de entorno (servicio API)
 
-Copia / adapta (valores de ejemplo para `vendeya.app`):
+Copia / adapta (valores de ejemplo para `vendelo360.app`):
 
 ```bash
 # Postgres: Variable Reference del plugin en ESTE servicio API (no solo en Postgres).
@@ -80,15 +80,12 @@ JWT_EXPIRE_MINUTES=1440
 # CORS: fijo en código a allow_origins=["*"] (backend multi-cliente; auth = JWT / API keys).
 # No hace falta CORS_ORIGINS en Railway.
 
-FRONTEND_BACKOFFICE_URL=https://proveedores.vendeya.app
-FRONTEND_SELLER_URL=https://gestores.vendeya.app
+FRONTEND_BACKOFFICE_URL=https://proveedores.vendelo360.app
+FRONTEND_SELLER_URL=https://gestores.vendelo360.app
 
-SMTP_HOST=email-smtp.us-east-1.amazonaws.com
-SMTP_PORT=587
-SMTP_USER=<ses-smtp-username>
-SMTP_PASSWORD=<ses-smtp-password>
-SMTP_USE_TLS=true
-MAIL_FROM=noreply@vendeya.app
+# Correo: SES API v2 sobre HTTPS (Hobby bloquea SMTP de salida).
+# No hace falta SMTP_HOST / SMTP_USER / SMTP_PASSWORD en producción.
+MAIL_FROM=noreply@vendelo360.app
 EMAIL_VERIFICATION_TOKEN_HOURS=24
 
 AWS_ACCESS_KEY_ID=<iam>
@@ -102,7 +99,7 @@ S3_PUBLIC_BASE_URL=https://vendeya-prod.s3.us-east-1.amazonaws.com
 
 ### 2.3 Dominio custom de la API
 
-En el servicio API → **Settings → Networking → Custom Domain** → `api.vendeya.app`. Añade el CNAME (+ TXT) que indique Railway.
+En el servicio API → **Settings → Networking → Custom Domain** → `api.vendelo360.app`. Añade el CNAME (+ TXT) que indique Railway.
 
 Hobby: máximo **2 dominios custom por servicio**; con solo `api.` basta.
 
@@ -113,7 +110,7 @@ Hobby: máximo **2 dominios custom por servicio**; con solo `api.` basta.
 uv run python scripts/create_super_admin.py
 ```
 
-Comprueba `https://api.vendeya.app/docs` y `GET /`.
+Comprueba `https://api.vendelo360.app/docs` y `GET /`.
 
 **No** despliegues Redis ni MinIO en Railway.
 
@@ -129,9 +126,9 @@ Tres Workers (assets-only), mismo monorepo:
 
 | Worker (`name` en wrangler) | App | Build | Deploy | Custom domain |
 |-----------------------------|-----|-------|--------|---------------|
-| `vendeya-landing` | [`apps/landing`](../apps/landing) | ver abajo | `npx wrangler deploy --config apps/landing/wrangler.jsonc` | `vendeya.app` + `www` → apex |
-| `vendeya-proveedores` | [`apps/backoffice`](../apps/backoffice) | ver abajo | `npx wrangler deploy --config apps/backoffice/wrangler.jsonc` | `proveedores.vendeya.app` |
-| `vendeya-gestores` | [`apps/seller`](../apps/seller) | ver abajo | `npx wrangler deploy --config apps/seller/wrangler.jsonc` | `gestores.vendeya.app` |
+| `vendeya-landing` | [`apps/landing`](../apps/landing) | ver abajo | `npx wrangler deploy --config apps/landing/wrangler.jsonc` | `vendelo360.app` + `www` → apex |
+| `vendeya-proveedores` | [`apps/backoffice`](../apps/backoffice) | ver abajo | `npx wrangler deploy --config apps/backoffice/wrangler.jsonc` | `proveedores.vendelo360.app` |
+| `vendeya-gestores` | [`apps/seller`](../apps/seller) | ver abajo | `npx wrangler deploy --config apps/seller/wrangler.jsonc` | `gestores.vendelo360.app` |
 
 Cada app tiene su [`wrangler.jsonc`](../apps/landing/wrangler.jsonc): solo `assets.directory = "./dist"` (relativo al fichero). **No** pongas `main` (eso es código Worker; sin assets solo servirías Hello World).
 
@@ -156,10 +153,10 @@ Proveedores / gestores: mismos campos cambiando el filtro pnpm y la ruta del `--
 
 | Proyecto | Variable | Valor |
 |----------|----------|--------|
-| Landing | `PUBLIC_SITE_URL` | `https://vendeya.app` |
-| Proveedores | `VITE_API_URL` | `https://api.vendeya.app` |
-| Proveedores | `VITE_SELLER_APP_URL` | `https://gestores.vendeya.app` |
-| Gestores | `VITE_API_URL` | `https://api.vendeya.app` |
+| Landing | `PUBLIC_SITE_URL` | `https://vendelo360.app` |
+| Proveedores | `VITE_API_URL` | `https://api.vendelo360.app` |
+| Proveedores | `VITE_SELLER_APP_URL` | `https://gestores.vendelo360.app` |
+| Gestores | `VITE_API_URL` | `https://api.vendelo360.app` |
 
 ### 3.3 SPA / 404
 
@@ -223,12 +220,13 @@ Ejemplo de política de lectura pública de objetos:
 
 ### 4.2 IAM
 
-Usuario (o rol) con política mínima sobre ese bucket:
+Usuario (o rol) con política mínima sobre ese bucket **y** sobre SES (mismo usuario; el correo de producción usa la API HTTPS, no SMTP):
 
 - `s3:PutObject`
 - `s3:GetObject`
 - `s3:DeleteObject`
 - `s3:ListBucket` (opcional)
+- `ses:SendEmail` / `ses:SendRawEmail` sobre la identidad `noreply@vendelo360.app` (o el dominio)
 
 Access key → `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` en Railway.
 
@@ -257,23 +255,27 @@ No uses CloudFront al inicio. Si el egreso crece, valora Cloudflare R2 (compatib
 
 **No** montes Postfix/Mailcow en Railway.
 
-### 5.1 Envío (SES SMTP)
+### 5.1 Envío (SES API HTTPS)
 
-1. Consola AWS → **Amazon SES** → misma región (`us-east-1`).
-2. **Identities → Create → Domain** → `vendeya.app`.
+Railway **Hobby/Trial bloquea SMTP de salida** (puertos 25/465/587). Por eso la API envía con **SES API v2** (`sesv2.send_email`) sobre HTTPS (443), reutilizando `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_REGION`. En local sigue SMTP → MailHog.
+
+**No** uses un hostname de **SES Mail Manager** (`*.mail-manager-smtp.amazonaws.com`): es un ingress distinto y suele dar timeout desde Railway.
+
+1. Consola AWS → **Amazon SES** → misma región que `AWS_REGION` (p. ej. `us-east-1`).
+2. **Identities → Create → Domain** → `vendelo360.app`.
 3. Publica en Cloudflare los CNAME de **Easy DKIM**.
-4. **Custom MAIL FROM:** `mail.vendeya.app` → añade MX + TXT SPF que indique SES.
+4. **Custom MAIL FROM:** `mail.vendelo360.app` → añade MX + TXT SPF que indique SES.
 5. TXT `_dmarc` en el apex (ver mapa DNS).
-6. **SMTP settings** → Create SMTP credentials → guarda usuario/clave.
+6. Asegura en el IAM (mismo usuario que S3) `ses:SendEmail` y `ses:SendRawEmail` sobre la identidad.
 7. En Railway:
 
 ```bash
-SMTP_HOST=email-smtp.us-east-1.amazonaws.com
-SMTP_PORT=587
-SMTP_USE_TLS=true
-SMTP_USER=...
-SMTP_PASSWORD=...
-MAIL_FROM=noreply@vendeya.app
+MAIL_FROM=noreply@vendelo360.app
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+AWS_REGION=us-east-1
+AWS_ENDPOINT_URL=
+# SMTP_* no hacen falta en producción (solo MailHog en local).
 ```
 
 8. **Salida del sandbox:** SES → Account dashboard → Request production access. AWS pide sitio público (la landing en el apex sirve), política de uso y tipo de correo (transaccional: verificación, invitaciones).
@@ -284,7 +286,7 @@ Hasta salir del sandbox solo puedes enviar a direcciones verificadas.
 
 1. Cloudflare → dominio → **Email → Email Routing** → Enable.
 2. Destino: tu Gmail (o similar).
-3. Direcciones: `info@vendeya.app`, `hola@vendeya.app` (y las que necesites).
+3. Direcciones: `info@vendelo360.app`, `hola@vendelo360.app` (y las que necesites).
 4. No configures un buzón IMAP de pago hasta que haga falta.
 
 Convive con el Worker de la landing en el apex (MX + CNAME flattening).
@@ -294,7 +296,8 @@ Convive con el Worker de la landing en el apex (MX + CNAME flattening).
 - [ ] Dominio verificado en SES + DKIM
 - [ ] Custom MAIL FROM `mail.`
 - [ ] DMARC básico
-- [ ] Credenciales SMTP en Railway
+- [ ] IAM con `ses:SendEmail` / `ses:SendRawEmail` + keys AWS en Railway
+- [ ] `MAIL_FROM` = identidad verificada; sin host Mail Manager / SMTP en prod
 - [ ] Production access (o emails de prueba verificados)
 - [ ] Email Routing `info@` / `hola@`
 
@@ -318,6 +321,7 @@ Convive con el Worker de la landing en el apex (MX + CNAME flattening).
 - MinIO o Redis en Railway (la API aún no usa Redis en prod).
 - Servir landing/SPAs con contenedor Node 24/7.
 - Servidor SMTP propio.
+- SMTP desde Railway Hobby (está bloqueado); no subas a Pro solo por correo — usa SES API HTTPS.
 - Subir a Pro de Railway solo por dominios: los frontends van en Cloudflare Workers (assets).
 
 ---
@@ -331,5 +335,5 @@ Convive con el Worker de la landing en el apex (MX + CNAME flattening).
 | Landing Worker (assets) | [`apps/landing/wrangler.jsonc`](../apps/landing/wrangler.jsonc) |
 | Dockerfile + arranque | [`services/api/Dockerfile`](../services/api/Dockerfile), [`services/api/railway.toml`](../services/api/railway.toml) |
 | S3 presign | [`services/api/app/lib/storage/s3.py`](../services/api/app/lib/storage/s3.py) |
-| SMTP | [`services/api/app/services/email/transport.py`](../services/api/app/services/email/transport.py) |
+| Email (SMTP local / SES API) | [`services/api/app/services/email/transport.py`](../services/api/app/services/email/transport.py) |
 | Env de ejemplo | [`.env.example`](../.env.example) |

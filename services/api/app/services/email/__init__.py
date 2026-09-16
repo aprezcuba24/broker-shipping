@@ -1,4 +1,4 @@
-"""Outbound email via SMTP (MailHog in local development)."""
+"""Outbound email (SMTP/MailHog locally; SES API v2 in production)."""
 
 from app.services.email.member_invitation import send_member_invitation_email
 from app.services.email.seller_link_request import send_seller_link_request_email
