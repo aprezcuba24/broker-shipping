@@ -23,6 +23,16 @@ export { LoginForm, AuthFormLink } from './components/auth/login-form'
 export type { LoginFields, LoginFormProps } from './components/auth/login-form'
 export { RegisterForm } from './components/auth/register-form'
 export type { RegisterFields, RegisterFormProps } from './components/auth/register-form'
+export { ForgotPasswordForm } from './components/auth/forgot-password-form'
+export type {
+  ForgotPasswordFields,
+  ForgotPasswordFormProps,
+} from './components/auth/forgot-password-form'
+export { ResetPasswordForm } from './components/auth/reset-password-form'
+export type {
+  ResetPasswordFields,
+  ResetPasswordFormProps,
+} from './components/auth/reset-password-form'
 export { VerifyEmailCard } from './components/auth/verify-email-card'
 export type { VerifyEmailCardProps, VerifyEmailStatus } from './components/auth/verify-email-card'
 

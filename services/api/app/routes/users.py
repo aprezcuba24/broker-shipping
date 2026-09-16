@@ -4,8 +4,10 @@ from app.deps import SessionDep
 from app.lib.security.deps import CurrentUserDep
 from app.lib.security.tokens import create_access_token
 from app.schemas.auth import (
+    ForgotPasswordRequest,
     MessageResponse,
     ResendVerificationRequest,
+    ResetPasswordRequest,
     TokenResponse,
     UserLogin,
     UserPublic,
@@ -17,7 +19,9 @@ from app.services.auth import (
     authenticate_user,
     list_user_organizations,
     register_user,
+    request_password_reset,
     resend_verification_email,
+    reset_password,
     verify_email,
 )
 
@@ -53,6 +57,28 @@ async def resend_verification(
         body.client_app,
     )
     return MessageResponse(message=message)
+
+
+@router.post("/forgot-password", response_model=MessageResponse)
+async def forgot_password(
+    body: ForgotPasswordRequest,
+    session: SessionDep,
+) -> MessageResponse:
+    message = await request_password_reset(
+        session,
+        body.email,
+        body.client_app,
+    )
+    return MessageResponse(message=message)
+
+
+@router.post("/reset-password", response_model=MessageResponse)
+async def reset_password_endpoint(
+    body: ResetPasswordRequest,
+    session: SessionDep,
+) -> MessageResponse:
+    await reset_password(session, body.token, body.password)
+    return MessageResponse(message="Password updated successfully")
 
 
 @router.post("/login", response_model=TokenResponse)

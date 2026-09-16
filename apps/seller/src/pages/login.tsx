@@ -33,6 +33,7 @@ export function LoginPage() {
           </p>
         </div>
       }
+      forgotPasswordHref={login.forgotPasswordHref}
       onSubmit={login.onSubmit}
     />
   )

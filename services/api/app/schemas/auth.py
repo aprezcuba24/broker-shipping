@@ -44,5 +44,15 @@ class ResendVerificationRequest(BaseModel):
     client_app: ClientApp
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: NormalizedEmail
+    client_app: ClientApp
+
+
+class ResetPasswordRequest(BaseModel):
+    token: NonEmptyStr = Field(max_length=512)
+    password: str = Field(min_length=8, max_length=128)
+
+
 class MessageResponse(BaseModel):
     message: str

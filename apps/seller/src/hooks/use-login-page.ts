@@ -18,10 +18,11 @@ export function useLoginPage() {
   const resendMutation = useResendVerificationUsersResendVerificationPost()
   const [lastEmail, setLastEmail] = useState('')
   const [resendMessage, setResendMessage] = useState<string | null>(null)
-  const { providerId, providerName, joinProviderPath, registerPath } =
+  const { providerId, providerName, joinProviderPath, registerPath, withProviderQuery } =
     usePendingJoinProvider()
 
   const verified = searchParams.get('verified') === '1'
+  const reset = searchParams.get('reset') === '1'
   const showResend = Boolean(isEmailNotVerified && lastEmail)
 
   const description = providerName
@@ -69,10 +70,17 @@ export function useLoginPage() {
     error: loginError,
     successMessage:
       resendMessage ??
-      (verified ? 'Correo confirmado. Ya puedes iniciar sesión.' : null),
+      (verified
+        ? 'Correo confirmado. Ya puedes iniciar sesión.'
+        : reset
+          ? 'Contraseña actualizada. Ya puedes iniciar sesión.'
+          : null),
     onSubmit,
     showResend,
     resendPending: resendMutation.isPending,
     onResend,
+    forgotPasswordHref: withProviderQuery
+      ? `/forgot-password?${withProviderQuery}`
+      : '/forgot-password',
   }
 }

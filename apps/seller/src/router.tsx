@@ -19,6 +19,8 @@ import { MembersPage } from './pages/members'
 import { ProvidersPage } from './pages/providers'
 import { RegisterPage } from './pages/register'
 import { VerifyEmailPage } from './pages/verify-email'
+import { ForgotPasswordPage } from './pages/forgot-password'
+import { ResetPasswordPage } from './pages/reset-password'
 
 export default function App() {
   return (
@@ -27,6 +29,8 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
         <Route
           path="/join-provider"

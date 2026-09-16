@@ -27,6 +27,7 @@ export type LoginFormProps = {
   submitLabel?: string
   successMessage?: string | null
   footer?: ReactNode
+  forgotPasswordHref?: string
   portal?: AuthPortalBranding
 }
 
@@ -40,6 +41,7 @@ export function LoginForm({
   submitLabel = 'Entrar',
   successMessage = null,
   footer = null,
+  forgotPasswordHref,
   portal,
 }: LoginFormProps) {
   const form = useForm<LoginFields>({
@@ -78,7 +80,17 @@ export function LoginForm({
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="password">Contraseña</FieldLabel>
+                  <div className="flex items-center justify-between gap-3">
+                    <FieldLabel htmlFor="password">Contraseña</FieldLabel>
+                    {forgotPasswordHref ? (
+                      <Link
+                        to={forgotPasswordHref}
+                        className="text-xs font-medium text-muted-foreground underline-offset-4 hover:underline hover:text-foreground shrink-0"
+                      >
+                        ¿Olvidaste tu contraseña?
+                      </Link>
+                    ) : null}
+                  </div>
                   <Input
                     {...field}
                     id="password"

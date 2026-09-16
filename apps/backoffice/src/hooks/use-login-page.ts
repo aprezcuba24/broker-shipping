@@ -18,6 +18,7 @@ export function useLoginPage() {
   const [resendMessage, setResendMessage] = useState<string | null>(null)
 
   const verified = searchParams.get('verified') === '1'
+  const reset = searchParams.get('reset') === '1'
   const showResend = Boolean(isEmailNotVerified && lastEmail)
 
   const onSubmit = async (values: LoginFormValues) => {
@@ -53,10 +54,15 @@ export function useLoginPage() {
     error: loginError,
     successMessage:
       resendMessage ??
-      (verified ? 'Correo confirmado. Ya puedes iniciar sesión.' : null),
+      (verified
+        ? 'Correo confirmado. Ya puedes iniciar sesión.'
+        : reset
+          ? 'Contraseña actualizada. Ya puedes iniciar sesión.'
+          : null),
     onSubmit,
     showResend,
     resendPending: resendMutation.isPending,
     onResend,
+    forgotPasswordHref: '/forgot-password',
   }
 }

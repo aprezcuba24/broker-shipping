@@ -17,6 +17,8 @@ class User(SQLModel, table=True):
     email_verified_at: datetime | None = Field(default=None)
     email_verification_token_hash: str | None = Field(default=None, max_length=64)
     email_verification_expires_at: datetime | None = Field(default=None)
+    password_reset_token_hash: str | None = Field(default=None, max_length=64)
+    password_reset_expires_at: datetime | None = Field(default=None)
     created_at: datetime = Field(default_factory=utc_now)
 
     @property

@@ -84,6 +84,7 @@ class Settings(BaseSettings):
     smtp_use_tls: bool = Field(default=False)
     mail_from: str = Field(default="noreply@broker.local")
     email_verification_token_hours: int = Field(default=24)
+    password_reset_token_hours: int = Field(default=1)
     frontend_backoffice_url: str = Field(default="http://localhost:5173")
     frontend_seller_url: str = Field(default="http://localhost:5174")
 

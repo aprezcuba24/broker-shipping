@@ -4,12 +4,14 @@ from app.db.context import AppContext
 from app.events.types import (
     EmailVerificationRequestedEvent,
     MemberInvitedEvent,
+    PasswordResetRequestedEvent,
     SellerLinkRequestedEvent,
 )
 from app.lib.events.registry import listener
 from app.services import organization as org_service
 from app.services.email import (
     send_member_invitation_email,
+    send_password_reset_email,
     send_seller_link_request_email,
     send_verification_email,
 )
@@ -50,4 +52,15 @@ async def on_email_verification_requested(
         to=event.email,
         name=event.name,
         verify_url=event.verify_url,
+    )
+
+
+@listener(PasswordResetRequestedEvent)
+async def on_password_reset_requested(
+    event: PasswordResetRequestedEvent,
+) -> None:
+    await send_password_reset_email(
+        to=event.email,
+        name=event.name,
+        reset_url=event.reset_url,
     )

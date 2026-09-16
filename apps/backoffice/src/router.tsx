@@ -23,6 +23,8 @@ import {
 } from './pages/product'
 import { TagPage } from './pages/tag'
 import { VerifyEmailPage } from './pages/verify-email'
+import { ForgotPasswordPage } from './pages/forgot-password'
+import { ResetPasswordPage } from './pages/reset-password'
 
 export default function App() {
   return (
@@ -36,6 +38,8 @@ export default function App() {
           }
         />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
         <Route
           path="/onboarding"

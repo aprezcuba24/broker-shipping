@@ -9,6 +9,12 @@ export { formatDateTime } from './lib/utils'
 
 export { loginSchema, type LoginFormValues } from './auth/login-schema'
 export {
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  type ForgotPasswordFormValues,
+  type ResetPasswordFormValues,
+} from './auth/password-reset-schema'
+export {
   registerSchema,
   clientAppSchema,
   EMAIL_NOT_VERIFIED_DETAIL,
