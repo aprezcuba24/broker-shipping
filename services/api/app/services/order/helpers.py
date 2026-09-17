@@ -11,6 +11,7 @@ from app.models.customer.customer import Customer
 from app.models.order.enums import Currency, OrderItemStatus, OrderStatus
 from app.models.order.order import Order
 from app.models.order.order_item import OrderItem
+from app.models.organization.organization import Organization
 from app.schemas.order import OrderCurrencyTotal
 from app.services.customer.helpers import attach_addresses_to_customers
 
@@ -110,6 +111,28 @@ async def attach_customers_to_orders(
             order,
             "customer",
             customers_by_id.get(order.customer_id),
+        )
+
+
+async def attach_seller_organizations_to_orders(
+    session: AsyncSession,
+    orders: list[Order],
+) -> None:
+    seller_org_ids = list(
+        {order.seller_organization_id for order in orders if order.seller_organization_id}
+    )
+    orgs_by_id: dict[UUID, Organization] = {}
+    if seller_org_ids:
+        result = await session.execute(
+            select(Organization).where(col(Organization.id).in_(seller_org_ids))
+        )
+        orgs_by_id = {org.id: org for org in result.scalars().all()}
+
+    for order in orders:
+        object.__setattr__(
+            order,
+            "seller_organization",
+            orgs_by_id.get(order.seller_organization_id),
         )
 
 

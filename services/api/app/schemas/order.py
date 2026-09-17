@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.order.enums import Currency, OrderItemStatus, OrderStatus
 from app.schemas.customer import CustomerPublic
+from app.schemas.organization import OrganizationPublic
 
 
 class OrderItemCreate(BaseModel):
@@ -63,3 +64,4 @@ class OrderPublic(BaseModel):
     items: list[OrderItemPublic] = Field(default_factory=list)
     totals: list[OrderCurrencyTotal] = Field(default_factory=list)
     customer: CustomerPublic | None = None
+    seller_organization: OrganizationPublic | None = None

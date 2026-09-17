@@ -24,6 +24,7 @@ from app.services.order.helpers import (
     attach_customers_to_orders,
     attach_items_and_totals,
     attach_order_view,
+    attach_seller_organizations_to_orders,
     derive_order_status,
     load_items_by_order_ids,
     order_search_clause,
@@ -97,6 +98,7 @@ async def get_order_for_provider(
         provider_organization_id=provider_organization_id,
     )
     await attach_customers_to_orders(session, [order])
+    await attach_seller_organizations_to_orders(session, [order])
     return order
 
 
