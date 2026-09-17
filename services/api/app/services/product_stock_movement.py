@@ -9,7 +9,7 @@ from sqlmodel import col
 
 from app.lib.persistence import get_entity
 from app.lib.persistence.pagination import paginate
-from app.lib.utils import utc_now
+from app.lib.utils import as_naive_utc, utc_now
 from app.models.product.product import Product
 from app.models.product_stock_movement.enums import (
     StockMovementDirection,
@@ -110,7 +110,9 @@ async def create_movement(
         organization_id=organization_id,
         kind=data.kind,
         direction=direction,
-        moved_at=data.moved_at if data.moved_at is not None else utc_now(),
+        moved_at=(
+            as_naive_utc(data.moved_at) if data.moved_at is not None else utc_now()
+        ),
         notes=data.notes,
     )
     items = [

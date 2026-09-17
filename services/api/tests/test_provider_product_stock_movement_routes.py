@@ -143,6 +143,26 @@ async def test_create_movement_defaults_moved_at(
     assert moved_at >= before
 
 
+async def test_create_movement_accepts_timezone_aware_moved_at(
+    client: AsyncClient,
+    movement_ctx: dict,
+) -> None:
+    r = await client.post(
+        "/product-stock-movements/provider/",
+        params=movement_ctx["params"],
+        headers=movement_ctx["headers"],
+        json={
+            "kind": "reception",
+            "moved_at": "2026-09-17T17:06:00.000Z",
+            "items": [
+                {"product_id": movement_ctx["product_a_id"], "quantity": 1},
+            ],
+        },
+    )
+    assert r.status_code == 201
+    assert r.json()["moved_at"].startswith("2026-09-17T17:06:00")
+
+
 async def test_shrinkage_decreases_stock(
     client: AsyncClient,
     movement_ctx: dict,
