@@ -2,26 +2,25 @@ import type { ProductPublic } from '@broker/api'
 import {
   actionsColumn,
   BadgeList,
+  BtnLink,
   BtnList,
   componentColumn,
   createdAtColumn,
   currencyMoneyColumn,
   DeleteRowButton,
-  EditRowButton,
   imageColumn,
   textColumn,
   updatedAtColumn,
   type ColumnDef,
 } from '@broker/ui'
+import { Eye } from 'lucide-react'
 
 export type BuildProductColumnsOptions = {
-  onEdit: (item: ProductPublic) => void
   onDelete: (item: ProductPublic) => unknown | Promise<unknown>
   isDeleting?: boolean
 }
 
 export function buildProductColumns({
-  onEdit,
   onDelete,
   isDeleting = false,
 }: BuildProductColumnsOptions): ColumnDef<ProductPublic>[] {
@@ -42,7 +41,15 @@ export function buildProductColumns({
     updatedAtColumn<ProductPublic>({ hideInCard: true }),
     actionsColumn<ProductPublic>((row) => (
       <BtnList>
-        <EditRowButton aria-label={`Editar ${row.name}`} onEdit={() => onEdit(row)} />
+        <BtnLink
+          to={`/products/${row.id}`}
+          variant="ghost"
+          size="sm"
+          icon={Eye}
+          aria-label={`Ver ${row.name}`}
+        >
+          Ver
+        </BtnLink>
         <DeleteRowButton
           aria-label={`Eliminar ${row.name}`}
           title="Eliminar producto"

@@ -427,6 +427,16 @@ export { OrderStatusActions } from './order/order-status-actions'
 export type { OrderStatusActionsProps } from './order/order-status-actions'
 
 export {
+  ProductDetailPage,
+  SellerProductDetailPage,
+  productDetailBaseFields,
+} from './product/product-detail-page'
+export type {
+  ProductDetailPageProps,
+  SellerProductDetailPageProps,
+} from './product/product-detail-page'
+
+export {
   COMMISSION_PAID_FILTER_OPTIONS,
   commissionPaidLabel,
   commissionPaidVariant,

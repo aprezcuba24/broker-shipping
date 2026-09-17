@@ -16,7 +16,6 @@ import {
   useListParams,
 } from '@broker/ui'
 import { Package, Plus } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
 import { useMemo } from 'react'
 
 import { buildProductColumns } from './columns'
@@ -24,7 +23,6 @@ import { ProductFilters } from './filters'
 import type { ProductFormValues } from './form'
 
 export function ProductPage() {
-  const navigate = useNavigate()
   const { activeOrganization } = useActiveOrganization()
   const list = useListParams({
     filterKeys: ['name'],
@@ -68,11 +66,10 @@ export function ProductPage() {
   const columns = useMemo(
     () =>
       buildProductColumns({
-        onEdit: (row) => navigate(`/products/${row.id}`),
         onDelete: crud.remove.run,
         isDeleting: crud.remove.isPending,
       }),
-    [crud.remove.isPending, crud.remove.run, navigate],
+    [crud.remove.isPending, crud.remove.run],
   )
 
   return (
@@ -113,4 +110,5 @@ export function ProductPage() {
 }
 
 export { ProductCreatePage } from './create-page'
+export { ProductDetailPage } from './detail-page'
 export { ProductEditPage } from './edit-page'

@@ -18,6 +18,7 @@ import { OrderDetailPage, OrderPage } from './pages/order'
 import { SellersPage } from './pages/sellers'
 import {
   ProductCreatePage,
+  ProductDetailPage,
   ProductEditPage,
   ProductPage,
 } from './pages/product'
@@ -74,7 +75,8 @@ export default function App() {
           <Route path="commissions/:commissionId" element={<CommissionDetailPage />} />
           <Route path="products" element={<ProductPage />} />
           <Route path="products/new" element={<ProductCreatePage />} />
-          <Route path="products/:productId" element={<ProductEditPage />} />
+          <Route path="products/:productId" element={<ProductDetailPage />} />
+          <Route path="products/:productId/edit" element={<ProductEditPage />} />
           <Route path="tags" element={<TagPage />} />
           <Route path="members" element={<MembersPage />} />
           <Route path="sellers" element={<SellersPage />} />
