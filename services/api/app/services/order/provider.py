@@ -6,7 +6,11 @@ from fastapi import HTTPException
 from sqlalchemy import exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.events.types import OrderItemDeliveredEvent
+from app.events.types import (
+    OrderItemCanceledEvent,
+    OrderItemConsumedEvent,
+    OrderItemDeliveredEvent,
+)
 from app.lib.events import emit
 from app.lib.persistence import get_entity
 from app.lib.persistence.pagination import paginate
@@ -19,7 +23,6 @@ from app.models.organization.provider_seller_link import ProviderSellerLink
 from app.schemas.order import OrderItemStatusUpdate
 from app.schemas.pagination import PageResult, PaginationParams
 from app.services import provider_seller_link as link_service
-from app.services import stock as stock_service
 from app.services.order import item_status as item_status_service
 from app.services.order.helpers import (
     attach_customers_to_orders,
@@ -139,33 +142,18 @@ async def update_provider_items_status(
         raise HTTPException(status_code=404, detail="Not found")
 
     target = data.status
-    previous_statuses = {item.id: item.status for item in provider_items}
 
     for item in provider_items:
         item_status_service.assert_transition(item.status, target)
 
-    release_quantities: dict[UUID, int] = {}
-    consume_quantities: dict[UUID, int] = {}
-    for item in provider_items:
-        previous = previous_statuses[item.id]
-        if previous == target:
-            continue
-        if target == OrderItemStatus.canceled:
-            release_quantities[item.product_id] = item.quantity
-        elif target == OrderItemStatus.delivered:
-            consume_quantities[item.product_id] = item.quantity
-
-    if release_quantities:
-        await stock_service.release_products_stock(session, release_quantities)
-    if consume_quantities:
-        await stock_service.consume_products_stock(session, consume_quantities)
-
     now = utc_now()
+    newly_transitioned: list[OrderItem] = []
     for item in provider_items:
         if item.status != target:
             item.status = target
             item.updated_at = now
             session.add(item)
+            newly_transitioned.append(item)
 
     all_items_by_order = await load_items_by_order_ids(session, [order.id])
     all_items = all_items_by_order.get(order.id, [])
@@ -177,17 +165,26 @@ async def update_provider_items_status(
     order.updated_at = now
     session.add(order)
 
+    await session.flush()
+
+    for item in newly_transitioned:
+        event = OrderItemCanceledEvent(order_item_id=item.id) if target == OrderItemStatus.canceled else OrderItemConsumedEvent(order_item_id=item.id)
+        await emit(
+            event,
+            session=session,
+            propagate_errors=True,
+        )
+
     await session.commit()
     await session.refresh(order)
     for item in provider_items:
         await session.refresh(item)
 
     if target == OrderItemStatus.delivered:
-        for item in provider_items:
-            if previous_statuses[item.id] != OrderItemStatus.delivered:
-                await emit(
-                    OrderItemDeliveredEvent(order_item_id=item.id),
-                    background=False,
-                )
+        for item in newly_transitioned:
+            await emit(
+                OrderItemDeliveredEvent(order_item_id=item.id),
+                background=False,
+            )
 
     return attach_order_view(order, provider_items)

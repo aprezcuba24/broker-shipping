@@ -18,6 +18,8 @@ from app.models.product.product import Product
 from app.models.user.user import User
 from app.schemas.order import OrderCreate, OrderItemCreate
 from app.schemas.pagination import PageResult, PaginationParams
+from app.events.types import OrderCreatedEvent
+from app.lib.events import emit
 from app.services import provider_seller_link as link_service
 from app.services import stock as stock_service
 from app.services.order.code import generate_next_order_code
@@ -157,12 +159,14 @@ async def create_order(
         customer_id=data.customer_id,
         code=code,
     )
-    await stock_service.reserve_products_stock(
-        session,
-        _quantities_by_product(data.items),
-    )
     session.add(order)
     session.add_all(items)
+    await session.flush()
+    await emit(
+        OrderCreatedEvent(order_id=order.id),
+        session=session,
+        propagate_errors=True,
+    )
     await session.commit()
     await session.refresh(order)
     for item in items:

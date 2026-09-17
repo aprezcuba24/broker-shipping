@@ -6,6 +6,7 @@ from typing import Any, TypeVar
 
 from app.db.inject import inject_app_context
 from app.lib.events.bus import EventBus, EventHandler
+from app.lib.events.emit_context import get_emit_propagate_errors
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +36,8 @@ def _wrap_handler(
         try:
             await fn(event)
         except Exception:
+            if get_emit_propagate_errors():
+                raise
             logger.exception(
                 "Event listener %s failed for %s",
                 name,

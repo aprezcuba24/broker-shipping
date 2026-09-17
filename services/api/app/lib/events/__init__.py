@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TypeVar
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.lib.events.bus import EventBus, get_bus
 
 T = TypeVar("T")
@@ -13,5 +15,16 @@ __all__ = [
 ]
 
 
-async def emit(event: T, *, background: bool = False) -> None:
-    await get_bus().emit(event, background=background)
+async def emit(
+    event: T,
+    *,
+    background: bool = False,
+    session: AsyncSession | None = None,
+    propagate_errors: bool = False,
+) -> None:
+    await get_bus().emit(
+        event,
+        background=background,
+        session=session,
+        propagate_errors=propagate_errors,
+    )
