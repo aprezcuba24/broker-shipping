@@ -5,9 +5,11 @@ import {
   StockMovementKind,
   useListProductsProductsProviderGet,
   type ListProductsProductsProviderGetParams,
+  type ProductPublic,
 } from '@broker/api'
 import {
   Button,
+  EntityAutocomplete,
   EntitySelect,
   Field,
   FieldError,
@@ -20,6 +22,7 @@ import {
   type EntityFormProps,
 } from '@broker/ui'
 import { Plus, Trash2 } from 'lucide-react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form'
 
 import {
@@ -81,6 +84,91 @@ export const stockMovementFormDefaultValues: StockMovementFormValues = {
   items: [{ product_id: '', quantity: 1 }],
 }
 
+type ProductLabel = { id: string; name: string }
+
+type MovementProductFieldProps = {
+  index: number
+  value: string
+  onValueChange: (productId: string) => void
+  excludedProductIds: Set<string>
+  labelCache: Map<string, ProductLabel>
+  onLabelCache: (product: ProductLabel) => void
+  disabled?: boolean
+  invalid?: boolean
+  error?: unknown
+}
+
+function MovementProductField({
+  index,
+  value,
+  onValueChange,
+  excludedProductIds,
+  labelCache,
+  onLabelCache,
+  disabled = false,
+  invalid = false,
+  error,
+}: MovementProductFieldProps) {
+  const [search, setSearch] = useState('')
+  const trimmedSearch = search.trim()
+
+  const productsQuery = useListProductsProductsProviderGet(
+    {
+      page: 1,
+      page_size: 20,
+      name: trimmedSearch || undefined,
+    } as ListProductsProductsProviderGetParams,
+    {
+      query: {
+        enabled: trimmedSearch.length >= 1,
+      },
+    },
+  )
+
+  const items = useMemo(() => {
+    const results = productsQuery.data?.items ?? []
+    return results.filter(
+      (product) =>
+        !excludedProductIds.has(product.id) || product.id === value,
+    )
+  }, [excludedProductIds, productsQuery.data?.items, value])
+
+  const selectedLabel = value ? labelCache.get(value)?.name : undefined
+
+  const handleSearchChange = useCallback((query: string) => {
+    setSearch(query)
+  }, [])
+
+  const handleItemSelect = useCallback(
+    (product: ProductPublic) => {
+      onLabelCache({ id: product.id, name: product.name })
+    },
+    [onLabelCache],
+  )
+
+  return (
+    <Field data-invalid={invalid}>
+      <FieldLabel htmlFor={`movement-product-${index}`}>Producto</FieldLabel>
+      <EntityAutocomplete
+        id={`movement-product-${index}`}
+        items={items}
+        value={value || undefined}
+        selectedLabel={selectedLabel}
+        onValueChange={onValueChange}
+        onItemSelect={handleItemSelect}
+        onSearchChange={handleSearchChange}
+        isLoading={productsQuery.isFetching}
+        placeholder="Buscar producto…"
+        minQueryMessage="Escribe para buscar"
+        emptyMessage="No se encontraron productos."
+        disabled={disabled}
+        aria-invalid={invalid}
+      />
+      {invalid ? <FieldError errors={[error as { message?: string }]} /> : null}
+    </Field>
+  )
+}
+
 export function StockMovementForm({
   ref,
   defaultValues = stockMovementFormDefaultValues,
@@ -101,12 +189,13 @@ export function StockMovementForm({
   const kind = useWatch({ control: form.control, name: 'kind' })
   const items = useWatch({ control: form.control, name: 'items' })
 
-  const productsQuery = useListProductsProductsProviderGet({
-    page: 1,
-    page_size: 100,
-  } as ListProductsProductsProviderGetParams)
+  const labelCacheRef = useRef(new Map<string, ProductLabel>())
+  const [, bumpLabels] = useState(0)
 
-  const products = productsQuery.data?.items ?? []
+  const onLabelCache = useCallback((product: ProductLabel) => {
+    labelCacheRef.current.set(product.id, product)
+    bumpLabels((n) => n + 1)
+  }, [])
 
   useFormSubmitHandle(ref, form.handleSubmit, onSubmit)
 
@@ -214,17 +303,12 @@ export function StockMovementForm({
         <FormFieldCell key="items" fullWidth>
           <div className="space-y-3">
             {fields.map((field, index) => {
-              const selectedIds = new Set(
+              const excludedProductIds = new Set(
                 (items ?? [])
                   .map((item, itemIndex) =>
                     itemIndex === index ? null : item.product_id,
                   )
-                  .filter(Boolean),
-              )
-              const availableProducts = products.filter(
-                (product) =>
-                  !selectedIds.has(product.id) ||
-                  product.id === items?.[index]?.product_id,
+                  .filter((id): id is string => Boolean(id)),
               )
 
               return (
@@ -236,28 +320,17 @@ export function StockMovementForm({
                     name={`items.${index}.product_id`}
                     control={form.control}
                     render={({ field: itemField, fieldState }) => (
-                      <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel htmlFor={`movement-product-${index}`}>
-                          Producto
-                        </FieldLabel>
-                        <EntitySelect
-                          id={`movement-product-${index}`}
-                          items={availableProducts}
-                          value={itemField.value || undefined}
-                          onValueChange={itemField.onChange}
-                          placeholder={
-                            productsQuery.isLoading
-                              ? 'Cargando…'
-                              : 'Seleccionar producto'
-                          }
-                          disabled={isSubmitting || productsQuery.isLoading}
-                          aria-invalid={fieldState.invalid}
-                          triggerClassName="w-full"
-                        />
-                        {fieldState.invalid ? (
-                          <FieldError errors={[fieldState.error]} />
-                        ) : null}
-                      </Field>
+                      <MovementProductField
+                        index={index}
+                        value={itemField.value}
+                        onValueChange={itemField.onChange}
+                        excludedProductIds={excludedProductIds}
+                        labelCache={labelCacheRef.current}
+                        onLabelCache={onLabelCache}
+                        disabled={isSubmitting}
+                        invalid={fieldState.invalid}
+                        error={fieldState.error}
+                      />
                     )}
                   />
 

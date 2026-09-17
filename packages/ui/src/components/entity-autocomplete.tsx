@@ -7,6 +7,7 @@ type EntityValue = string | number | null | undefined
 export type EntityAutocompleteProps<T extends object> = {
   items: T[]
   value?: string
+  selectedLabel?: string
   onValueChange: (value: string) => void
   onItemSelect?: (item: T) => void
   valueKey?: keyof T
@@ -36,6 +37,8 @@ export type EntityAutocompleteProps<T extends object> = {
 
 export function EntityAutocomplete<T extends object>({
   items,
+  value,
+  selectedLabel,
   onValueChange,
   onItemSelect,
   valueKey = 'id' as keyof T,
@@ -60,15 +63,21 @@ export function EntityAutocomplete<T extends object>({
   listClassName,
 }: EntityAutocompleteProps<T>) {
   const [isOpen, setIsOpen] = useState(false)
-  const [inputValue, setInputValue] = useState('')
+  const [inputValue, setInputValue] = useState(selectedLabel ?? '')
   const containerRef = useRef<HTMLDivElement>(null)
   const onSearchChangeRef = useRef(onSearchChange)
+  const onValueChangeRef = useRef(onValueChange)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const listboxId = useId()
+  const committedLabelRef = useRef(selectedLabel ?? '')
 
   useEffect(() => {
     onSearchChangeRef.current = onSearchChange
   }, [onSearchChange])
+
+  useEffect(() => {
+    onValueChangeRef.current = onValueChange
+  }, [onValueChange])
 
   useEffect(() => {
     return () => {
@@ -77,6 +86,17 @@ export function EntityAutocomplete<T extends object>({
       }
     }
   }, [])
+
+  useEffect(() => {
+    if (selectedLabel !== undefined && selectedLabel !== committedLabelRef.current) {
+      committedLabelRef.current = selectedLabel
+      setInputValue(selectedLabel)
+    }
+    if (!value && !selectedLabel) {
+      committedLabelRef.current = ''
+      setInputValue('')
+    }
+  }, [selectedLabel, value])
 
   useEffect(() => {
     const handleMouseDown = (event: MouseEvent) => {
@@ -104,6 +124,12 @@ export function EntityAutocomplete<T extends object>({
     setInputValue(next)
     setIsOpen(true)
     scheduleSearchChange(next)
+
+    // Typing away from the committed selection clears the bound value.
+    if (value && next.trim() !== committedLabelRef.current.trim()) {
+      onValueChangeRef.current('')
+      committedLabelRef.current = ''
+    }
   }
 
   const selectItem = (item: T) => {
@@ -112,9 +138,11 @@ export function EntityAutocomplete<T extends object>({
       return
     }
 
+    const label = String(item[labelKey as keyof T] ?? '')
     onValueChange(String(itemValue))
     onItemSelect?.(item)
-    setInputValue(String(item[labelKey as keyof T] ?? ''))
+    committedLabelRef.current = label
+    setInputValue(label)
     setIsOpen(false)
   }
 
