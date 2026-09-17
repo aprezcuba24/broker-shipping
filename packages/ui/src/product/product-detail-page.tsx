@@ -61,6 +61,22 @@ const productDetailCommissionField: DetailSectionField<ProductPublic> = {
   },
 }
 
+const productDetailStockField: DetailSectionField<ProductPublic> = {
+  title: 'Stock',
+  accessor: (product) => product.stock,
+  format: (value) => (
+    <span className="tabular-nums">{Number(value)}</span>
+  ),
+}
+
+const productDetailReservedField: DetailSectionField<ProductPublic> = {
+  title: 'Reservado',
+  accessor: (product) => product.reserved,
+  format: (value) => (
+    <span className="tabular-nums">{Number(value)}</span>
+  ),
+}
+
 const productDetailTagsField: DetailSectionField<ProductPublic> = {
   title: 'Etiquetas',
   accessor: (product) => product.tags,
@@ -97,6 +113,8 @@ export const productDetailBaseFields: DetailSectionField<ProductPublic>[] = [
   productDetailNameField,
   productDetailPriceField,
   productDetailCommissionField,
+  productDetailStockField,
+  productDetailReservedField,
   productDetailTagsField,
   productDetailCreatedField,
   productDetailUpdatedField,
@@ -184,6 +202,8 @@ function buildSellerProductDetailFields(
     providerField,
     productDetailPriceField,
     productDetailCommissionField,
+    productDetailStockField,
+    productDetailReservedField,
     productDetailTagsField,
     productDetailCreatedField,
     productDetailUpdatedField,

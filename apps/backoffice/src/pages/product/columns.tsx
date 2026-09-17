@@ -9,6 +9,7 @@ import {
   currencyMoneyColumn,
   DeleteRowButton,
   imageColumn,
+  numberColumn,
   textColumn,
   updatedAtColumn,
   type ColumnDef,
@@ -32,6 +33,8 @@ export function buildProductColumns({
     textColumn<ProductPublic>({ id: 'name', header: 'Nombre' }),
     currencyMoneyColumn<ProductPublic>({ id: 'price', header: 'Precio' }),
     currencyMoneyColumn<ProductPublic>({ id: 'commission', header: 'Comisión' }),
+    numberColumn<ProductPublic>({ id: 'stock', header: 'Stock' }),
+    numberColumn<ProductPublic>({ id: 'reserved', header: 'Reservado' }),
     componentColumn<ProductPublic>('tags', 'Etiquetas', (row) => (
       <BadgeList
         items={(row.tags ?? []).map((tag) => ({ id: tag.id, label: tag.name }))}

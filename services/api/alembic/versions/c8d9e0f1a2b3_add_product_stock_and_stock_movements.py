@@ -10,22 +10,25 @@ from collections.abc import Sequence
 
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy.dialects import postgresql
 
 revision: str = "c8d9e0f1a2b3"
 down_revision: str | Sequence[str] | None = "b7e8f9a0c1d2"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
-stockmovementkind = sa.Enum(
+stockmovementkind = postgresql.ENUM(
     "reception",
     "shrinkage",
     "correction",
     name="stockmovementkind",
+    create_type=False,
 )
-stockmovementdirection = sa.Enum(
+stockmovementdirection = postgresql.ENUM(
     "in",
     "out",
     name="stockmovementdirection",
+    create_type=False,
 )
 
 
@@ -55,8 +58,17 @@ def upgrade() -> None:
         ["order_id", "product_id"],
     )
 
-    stockmovementkind.create(op.get_bind(), checkfirst=True)
-    stockmovementdirection.create(op.get_bind(), checkfirst=True)
+    op.execute(
+        "DO $$ BEGIN "
+        "CREATE TYPE stockmovementkind AS ENUM "
+        "('reception', 'shrinkage', 'correction'); "
+        "EXCEPTION WHEN duplicate_object THEN null; END $$;"
+    )
+    op.execute(
+        "DO $$ BEGIN "
+        "CREATE TYPE stockmovementdirection AS ENUM ('in', 'out'); "
+        "EXCEPTION WHEN duplicate_object THEN null; END $$;"
+    )
 
     op.create_table(
         "product_stock_movement",
@@ -153,8 +165,8 @@ def downgrade() -> None:
         table_name="product_stock_movement",
     )
     op.drop_table("product_stock_movement")
-    stockmovementdirection.drop(op.get_bind(), checkfirst=True)
-    stockmovementkind.drop(op.get_bind(), checkfirst=True)
+    op.execute("DROP TYPE IF EXISTS stockmovementdirection")
+    op.execute("DROP TYPE IF EXISTS stockmovementkind")
     op.drop_constraint(
         "uq_order_item_order_product",
         "order_item",

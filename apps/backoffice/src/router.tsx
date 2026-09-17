@@ -22,6 +22,11 @@ import {
   ProductEditPage,
   ProductPage,
 } from './pages/product'
+import {
+  StockMovementCreatePage,
+  StockMovementDetailPage,
+  StockMovementPage,
+} from './pages/product-stock-movement'
 import { TagPage } from './pages/tag'
 import { VerifyEmailPage } from './pages/verify-email'
 import { ForgotPasswordPage } from './pages/forgot-password'
@@ -77,6 +82,9 @@ export default function App() {
           <Route path="products/new" element={<ProductCreatePage />} />
           <Route path="products/:productId" element={<ProductDetailPage />} />
           <Route path="products/:productId/edit" element={<ProductEditPage />} />
+          <Route path="inventory" element={<StockMovementPage />} />
+          <Route path="inventory/new" element={<StockMovementCreatePage />} />
+          <Route path="inventory/:movementId" element={<StockMovementDetailPage />} />
           <Route path="tags" element={<TagPage />} />
           <Route path="members" element={<MembersPage />} />
           <Route path="sellers" element={<SellersPage />} />
