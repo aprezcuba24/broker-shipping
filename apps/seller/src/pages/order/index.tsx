@@ -18,7 +18,7 @@ import { useMemo } from 'react'
 export function OrderPage() {
   const { activeOrganization } = useActiveOrganization()
   const list = useListParams({
-    filterKeys: ['search', 'status'] as const,
+    filterKeys: ['search', 'status', 'seller_organization_id'] as const,
     defaultPageSize: 20,
   })
 

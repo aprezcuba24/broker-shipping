@@ -15,10 +15,13 @@ import {
 import { ClipboardList } from 'lucide-react'
 import { useMemo } from 'react'
 
+import { useLinkedSellers } from '@/hooks/use-linked-sellers'
+
 export function OrderPage() {
   const { activeOrganization } = useActiveOrganization()
+  const { sellers, isLoading: sellersLoading, getSellerName } = useLinkedSellers()
   const list = useListParams({
-    filterKeys: ['search', 'status'] as const,
+    filterKeys: ['search', 'status', 'seller_organization_id'] as const,
     defaultPageSize: 20,
   })
 
@@ -27,6 +30,8 @@ export function OrderPage() {
     page_size: list.queryParams.page_size,
     search: list.queryParams.search || undefined,
     status: list.queryParams.status || undefined,
+    seller_organization_id:
+      list.queryParams.seller_organization_id || undefined,
   } as ListOrdersOrdersProviderGetParams)
 
   useResetOnChange({
@@ -36,7 +41,10 @@ export function OrderPage() {
     setPage: list.setPage,
   })
 
-  const columns = useMemo(() => buildProviderOrderColumns(), [])
+  const columns = useMemo(
+    () => buildProviderOrderColumns({ getSellerName }),
+    [getSellerName],
+  )
 
   const items = query.data?.items ?? []
   const total = query.data?.total ?? 0
@@ -53,6 +61,8 @@ export function OrderPage() {
           setFilter={list.setFilter}
           onClear={list.resetFilters}
           hasActiveFilters={list.hasActiveFilters}
+          sellers={sellers}
+          sellersLoading={sellersLoading}
         />
 
         <DataTable

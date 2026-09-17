@@ -87,7 +87,7 @@ export function ProductEditPage() {
       loadingTitle="Editar producto"
       notFoundTitle="Producto no encontrado"
       notFoundMessage="No se pudo cargar el producto solicitado."
-      backTo="/products"
+      backTo={productId ? `/products/${productId}` : '/products'}
       title="Editar producto"
       description={(product) => `Edita «${product.name}».`}
       icon={Package}

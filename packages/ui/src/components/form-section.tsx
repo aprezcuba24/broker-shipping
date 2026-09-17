@@ -154,7 +154,11 @@ export function FormSection({ title, children, className }: FormSectionProps) {
         )}
       >
         {cells.map((cell, index) =>
-          cloneElement(cell, { _index: index, _meta: meta }),
+          cloneElement(cell, {
+            key: cell.key ?? `form-field-cell-${index}`,
+            _index: index,
+            _meta: meta,
+          }),
         )}
       </div>
     </section>

@@ -2,26 +2,26 @@ import type { ProductPublic } from '@broker/api'
 import {
   actionsColumn,
   BadgeList,
+  BtnLink,
   BtnList,
   componentColumn,
   createdAtColumn,
   currencyMoneyColumn,
   DeleteRowButton,
-  EditRowButton,
   imageColumn,
+  numberColumn,
   textColumn,
   updatedAtColumn,
   type ColumnDef,
 } from '@broker/ui'
+import { Eye } from 'lucide-react'
 
 export type BuildProductColumnsOptions = {
-  onEdit: (item: ProductPublic) => void
   onDelete: (item: ProductPublic) => unknown | Promise<unknown>
   isDeleting?: boolean
 }
 
 export function buildProductColumns({
-  onEdit,
   onDelete,
   isDeleting = false,
 }: BuildProductColumnsOptions): ColumnDef<ProductPublic>[] {
@@ -33,6 +33,8 @@ export function buildProductColumns({
     textColumn<ProductPublic>({ id: 'name', header: 'Nombre' }),
     currencyMoneyColumn<ProductPublic>({ id: 'price', header: 'Precio' }),
     currencyMoneyColumn<ProductPublic>({ id: 'commission', header: 'Comisión' }),
+    numberColumn<ProductPublic>({ id: 'stock', header: 'Stock' }),
+    numberColumn<ProductPublic>({ id: 'reserved', header: 'Reservado' }),
     componentColumn<ProductPublic>('tags', 'Etiquetas', (row) => (
       <BadgeList
         items={(row.tags ?? []).map((tag) => ({ id: tag.id, label: tag.name }))}
@@ -42,7 +44,15 @@ export function buildProductColumns({
     updatedAtColumn<ProductPublic>({ hideInCard: true }),
     actionsColumn<ProductPublic>((row) => (
       <BtnList>
-        <EditRowButton aria-label={`Editar ${row.name}`} onEdit={() => onEdit(row)} />
+        <BtnLink
+          to={`/products/${row.id}`}
+          variant="ghost"
+          size="sm"
+          icon={Eye}
+          aria-label={`Ver ${row.name}`}
+        >
+          Ver
+        </BtnLink>
         <DeleteRowButton
           aria-label={`Eliminar ${row.name}`}
           title="Eliminar producto"

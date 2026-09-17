@@ -7,6 +7,7 @@ from sqlalchemy import (
     Enum as SAEnum,
     ForeignKey,
     Index,
+    UniqueConstraint,
 )
 from sqlmodel import Field
 
@@ -25,6 +26,11 @@ class OrderItem(EntityModel, table=True):
         CheckConstraint(
             "customer_change >= 0",
             name="ck_order_item_customer_change_non_negative",
+        ),
+        UniqueConstraint(
+            "order_id",
+            "product_id",
+            name="uq_order_item_order_product",
         ),
         Index(
             "ix_order_item_provider_organization_id_status",

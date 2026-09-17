@@ -16,6 +16,8 @@ export interface ProductPublic {
   price: number;
   commission: number;
   currency: Currency;
+  stock: number;
+  reserved: number;
   created_at: string;
   updated_at: ProductPublicUpdatedAt;
   tags?: TagPublic[];

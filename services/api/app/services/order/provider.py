@@ -6,7 +6,11 @@ from fastapi import HTTPException
 from sqlalchemy import exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.events.types import OrderItemDeliveredEvent
+from app.events.types import (
+    OrderItemCanceledEvent,
+    OrderItemConsumedEvent,
+    OrderItemDeliveredEvent,
+)
 from app.lib.events import emit
 from app.lib.persistence import get_entity
 from app.lib.persistence.pagination import paginate
@@ -24,6 +28,7 @@ from app.services.order.helpers import (
     attach_customers_to_orders,
     attach_items_and_totals,
     attach_order_view,
+    attach_seller_organizations_to_orders,
     derive_order_status,
     load_items_by_order_ids,
     order_search_clause,
@@ -47,10 +52,20 @@ async def list_orders_for_provider(
     pagination: PaginationParams,
     search: str | None = None,
     status: OrderStatus | None = None,
+    seller_organization_id: UUID | None = None,
 ) -> PageResult[Order]:
+    if seller_organization_id is not None and not await link_service.has_active_link(
+        session,
+        provider_organization_id,
+        seller_organization_id,
+    ):
+        raise HTTPException(status_code=403, detail="Forbidden")
+
     stmt = select(Order).where(
         provider_order_visibility_clause(provider_organization_id)
     )
+    if seller_organization_id is not None:
+        stmt = stmt.where(Order.seller_organization_id == seller_organization_id)
     if status is not None:
         stmt = stmt.where(Order.status == status)
     clause = order_search_clause(search) if search else None
@@ -97,6 +112,7 @@ async def get_order_for_provider(
         provider_organization_id=provider_organization_id,
     )
     await attach_customers_to_orders(session, [order])
+    await attach_seller_organizations_to_orders(session, [order])
     return order
 
 
@@ -126,17 +142,18 @@ async def update_provider_items_status(
         raise HTTPException(status_code=404, detail="Not found")
 
     target = data.status
-    previous_statuses = {item.id: item.status for item in provider_items}
 
     for item in provider_items:
         item_status_service.assert_transition(item.status, target)
 
     now = utc_now()
+    newly_transitioned: list[OrderItem] = []
     for item in provider_items:
         if item.status != target:
             item.status = target
             item.updated_at = now
             session.add(item)
+            newly_transitioned.append(item)
 
     all_items_by_order = await load_items_by_order_ids(session, [order.id])
     all_items = all_items_by_order.get(order.id, [])
@@ -148,17 +165,32 @@ async def update_provider_items_status(
     order.updated_at = now
     session.add(order)
 
+    await session.flush()
+
+    for item in newly_transitioned:
+        if target == OrderItemStatus.canceled:
+            await emit(
+                OrderItemCanceledEvent(order_item_id=item.id),
+                session=session,
+                propagate_errors=True,
+            )
+        elif target == OrderItemStatus.delivered:
+            await emit(
+                OrderItemConsumedEvent(order_item_id=item.id),
+                session=session,
+                propagate_errors=True,
+            )
+
     await session.commit()
     await session.refresh(order)
     for item in provider_items:
         await session.refresh(item)
 
     if target == OrderItemStatus.delivered:
-        for item in provider_items:
-            if previous_statuses[item.id] != OrderItemStatus.delivered:
-                await emit(
-                    OrderItemDeliveredEvent(order_item_id=item.id),
-                    background=False,
-                )
+        for item in newly_transitioned:
+            await emit(
+                OrderItemDeliveredEvent(order_item_id=item.id),
+                background=False,
+            )
 
     return attach_order_view(order, provider_items)

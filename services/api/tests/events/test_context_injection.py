@@ -149,6 +149,44 @@ async def test_wrapped_injected_handler_failure_is_swallowed(
     assert seen == ["ok"]
 
 
+async def test_emit_shared_session_is_injected(
+    configured_session_maker: async_sessionmaker[AsyncSession],
+) -> None:
+    bus = EventBus()
+    seen_sessions: list[AsyncSession] = []
+
+    async def handler(_event: _SampleEvent, ctx: AppContext) -> None:
+        seen_sessions.append(ctx.session)
+
+    bus.subscribe(_SampleEvent, inject_app_context(handler))
+    async with configured_session_maker() as session:
+        await bus.emit(_SampleEvent("shared"), session=session)
+        assert seen_sessions == [session]
+
+
+async def test_emit_shared_session_does_not_close_request_session(
+    configured_session_maker: async_sessionmaker[AsyncSession],
+) -> None:
+    bus = EventBus()
+    closed = False
+
+    async def handler(_event: _SampleEvent, ctx: AppContext) -> None:
+        assert ctx.session is not None
+
+    bus.subscribe(_SampleEvent, inject_app_context(handler))
+    async with configured_session_maker() as session:
+        real_close = session.close
+
+        async def tracking_close() -> None:
+            nonlocal closed
+            await real_close()
+            closed = True
+
+        session.close = tracking_close  # type: ignore[method-assign]
+        await bus.emit(_SampleEvent("shared"), session=session)
+        assert closed is False
+
+
 async def test_app_context_accepts_organization_id(
     configured_session_maker: async_sessionmaker[AsyncSession],
 ) -> None:

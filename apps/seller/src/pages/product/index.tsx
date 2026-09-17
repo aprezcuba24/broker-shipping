@@ -12,14 +12,12 @@ import {
 } from '@broker/ui'
 import { Package } from 'lucide-react'
 import { useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import { useLinkedProviders } from '@/hooks/use-linked-providers'
 import { buildProductColumns } from './columns'
 import { ProductFilters } from './filters'
 
 export function ProductPage() {
-  const navigate = useNavigate()
   const { activeOrganization } = useActiveOrganization()
   const list = useListParams({
     filterKeys: ['name', 'provider_id'] as const,
@@ -41,12 +39,8 @@ export function ProductPage() {
   })
 
   const columns = useMemo(
-    () =>
-      buildProductColumns({
-        providerNameById,
-        onView: (row) => navigate(`/products/${row.id}`),
-      }),
-    [navigate, providerNameById],
+    () => buildProductColumns({ providerNameById }),
+    [providerNameById],
   )
 
   const items = query.data?.items ?? []

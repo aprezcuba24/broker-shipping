@@ -71,6 +71,15 @@ export function buildSellerOrderColumns(): ColumnDef<OrderPublic>[] {
   return buildOrderColumnsWithCustomer()
 }
 
-export function buildProviderOrderColumns(): ColumnDef<OrderPublic>[] {
-  return buildOrderColumnsWithCustomer()
+export function buildProviderOrderColumns({
+  getSellerName,
+}: {
+  getSellerName: (organizationId: string) => string
+}): ColumnDef<OrderPublic>[] {
+  const [code, status, totals, created, actions] = buildSharedOrderColumns()
+  const [customer, ci, phone] = buildCustomerColumns()
+  const seller = componentColumn<OrderPublic>('seller', 'Vendedor', (row) => (
+    <span>{getSellerName(row.seller_organization_id)}</span>
+  ))
+  return [code, seller, customer, ci, phone, status, totals, created, actions]
 }

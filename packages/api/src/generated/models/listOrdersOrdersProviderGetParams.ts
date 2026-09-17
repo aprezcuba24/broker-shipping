@@ -9,6 +9,7 @@ import type { OrderStatus } from './orderStatus';
 export type ListOrdersOrdersProviderGetParams = {
 search?: string | null;
 status?: OrderStatus | null;
+seller_organization_id?: string | null;
 organization_id: string;
 /**
  * @minimum 1

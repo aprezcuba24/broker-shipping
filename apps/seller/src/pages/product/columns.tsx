@@ -2,8 +2,8 @@ import type { ProductPublic } from '@broker/api'
 import {
   actionsColumn,
   BadgeList,
+  BtnLink,
   BtnList,
-  Button,
   componentColumn,
   createdAtColumn,
   currencyMoneyColumn,
@@ -18,12 +18,10 @@ import { ProductCartControl } from '@/components/product-cart-control'
 
 export type BuildProductColumnsOptions = {
   providerNameById: Map<string, string>
-  onView: (item: ProductPublic) => void
 }
 
 export function buildProductColumns({
   providerNameById,
-  onView,
 }: BuildProductColumnsOptions): ColumnDef<ProductPublic>[] {
   return [
     imageColumn<ProductPublic>({
@@ -51,14 +49,15 @@ export function buildProductColumns({
     ),
     actionsColumn<ProductPublic>((row) => (
       <BtnList>
-        <Button
-          type="button"
+        <BtnLink
+          to={`/products/${row.id}`}
           variant="ghost"
-          size="icon"
+          size="sm"
           icon={Eye}
           aria-label={`Ver ${row.name}`}
-          onClick={() => onView(row)}
-        />
+        >
+          Ver
+        </BtnLink>
       </BtnList>
     )),
   ]

@@ -61,3 +61,30 @@ async def test_background_emit_dispatches() -> None:
     await bus.emit(_SampleEvent("bg"), background=True)
     await asyncio.wait_for(done.wait(), timeout=1.0)
     assert seen == ["bg"]
+
+
+async def test_propagate_errors_reraises() -> None:
+    bus = EventBus()
+
+    async def boom(_event: _SampleEvent) -> None:
+        raise RuntimeError("boom")
+
+    bus.subscribe(_SampleEvent, _wrap_handler(boom, _SampleEvent, "boom"))
+    with pytest.raises(RuntimeError, match="boom"):
+        await bus.emit(_SampleEvent("x"), propagate_errors=True)
+
+
+async def test_propagate_errors_false_still_swallows() -> None:
+    bus = EventBus()
+    seen: list[str] = []
+
+    async def boom(_event: _SampleEvent) -> None:
+        raise RuntimeError("boom")
+
+    async def ok(event: _SampleEvent) -> None:
+        seen.append(event.value)
+
+    bus.subscribe(_SampleEvent, _wrap_handler(boom, _SampleEvent, "boom"))
+    bus.subscribe(_SampleEvent, _wrap_handler(ok, _SampleEvent, "ok"))
+    await bus.emit(_SampleEvent("ok"), propagate_errors=False)
+    assert seen == ["ok"]

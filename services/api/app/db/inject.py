@@ -6,6 +6,7 @@ from functools import wraps
 from typing import Any, TypeVar, get_args, get_origin, get_type_hints
 
 from app.db.context import AppContext, app_context
+from app.lib.events.emit_context import get_emit_session
 
 F = TypeVar("F", bound=Callable[..., Awaitable[Any]])
 
@@ -38,6 +39,8 @@ def inject_app_context(fn: F) -> F:
     """Inject ``AppContext`` when the callable declares a matching parameter.
 
     Handlers without an ``AppContext`` parameter are returned unchanged.
+    When ``emit(..., session=...)`` sets a shared session, that session is
+    injected without opening or closing a new one.
     """
     param_name = _find_app_context_param(fn)
     if param_name is None:
@@ -46,6 +49,10 @@ def inject_app_context(fn: F) -> F:
     @wraps(fn)
     async def wrapper(*args: Any, **kwargs: Any) -> Any:
         if param_name in kwargs:
+            return await fn(*args, **kwargs)
+        shared = get_emit_session()
+        if shared is not None:
+            kwargs[param_name] = AppContext(session=shared)
             return await fn(*args, **kwargs)
         async with app_context() as ctx:
             kwargs[param_name] = ctx

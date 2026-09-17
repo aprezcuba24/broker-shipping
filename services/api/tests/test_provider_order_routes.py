@@ -41,7 +41,10 @@ async def provider_order_ctx(
         user_id=provider_b_user["id"],
         name="Provider B",
     )
-    seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
+    seller_org = await organization_factory.build_seller(
+        user_id=seller_user["id"],
+        name="Seller Org",
+    )
     other_seller_org = await organization_factory.build_seller(
         user_id=other_seller_user["id"],
     )
@@ -106,6 +109,7 @@ async def provider_order_ctx(
         "provider_b_id": provider_b["id"],
         "seller_user_id": seller_user["id"],
         "seller_org_id": seller_org["id"],
+        "seller_org_name": seller_org["name"],
         "other_seller_user_id": other_seller_user["id"],
         "other_seller_org_id": other_seller_org["id"],
         "product_a_id": product_a["id"],
@@ -189,6 +193,7 @@ async def test_provider_list_and_get_filters_own_items(
     assert page["items"][0]["customer"]["name"] == provider_order_ctx["customer_name"]
     assert page["items"][0]["customer"]["ci"] == provider_order_ctx["customer_ci"]
     assert page["items"][0]["customer"]["phone"] == provider_order_ctx["customer_phone"]
+    assert page["items"][0]["seller_organization"] is None
 
     detail = await client.get(
         f"/orders/provider/{provider_order_ctx['order_id']}",
@@ -205,6 +210,10 @@ async def test_provider_list_and_get_filters_own_items(
     assert body["customer"]["name"] == provider_order_ctx["customer_name"]
     assert body["customer"]["ci"] == provider_order_ctx["customer_ci"]
     assert body["customer"]["phone"] == provider_order_ctx["customer_phone"]
+    assert body["seller_organization"] is not None
+    assert body["seller_organization"]["id"] == provider_order_ctx["seller_org_id"]
+    assert body["seller_organization"]["name"] == provider_order_ctx["seller_org_name"]
+    assert body["seller_organization"]["type"] == "seller"
 
 
 async def test_provider_list_orders_search_by_code_name_phone_ci(
@@ -333,6 +342,38 @@ async def test_provider_list_orders_filter_by_status(
     )
     assert all_orders.status_code == 200
     assert all_orders.json()["total"] == 2
+
+
+async def test_provider_list_orders_filter_by_seller_organization(
+    client: AsyncClient,
+    provider_order_ctx: dict,
+) -> None:
+    by_seller = await client.get(
+        "/orders/provider/",
+        params={
+            **provider_order_ctx["provider_a_params"],
+            "seller_organization_id": provider_order_ctx["seller_org_id"],
+        },
+        headers=provider_order_ctx["provider_a_bearer"],
+    )
+    assert by_seller.status_code == 200
+    page = by_seller.json()
+    assert page["total"] == 1
+    assert page["items"][0]["id"] == provider_order_ctx["order_id"]
+    assert (
+        page["items"][0]["seller_organization_id"]
+        == provider_order_ctx["seller_org_id"]
+    )
+
+    forbidden = await client.get(
+        "/orders/provider/",
+        params={
+            **provider_order_ctx["provider_a_params"],
+            "seller_organization_id": provider_order_ctx["other_seller_org_id"],
+        },
+        headers=provider_order_ctx["provider_a_bearer"],
+    )
+    assert forbidden.status_code == 403
 
 
 async def test_provider_without_items_cannot_see_order(

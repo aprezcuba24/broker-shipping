@@ -402,7 +402,9 @@ export {
 export type { OrderBadgeVariant } from './order/status'
 export {
   OrderDetailPage,
+  SellerOrderDetailPage,
   orderDetailBaseFields,
+  orderDetailSellerBaseFields,
   orderDetailCustomerFields,
 } from './order/order-detail-page'
 export type { OrderDetailPageProps } from './order/order-detail-page'
@@ -423,6 +425,16 @@ export { OrderFilters } from './order/order-filters'
 export type { OrderFiltersProps, OrderListParams } from './order/order-filters'
 export { OrderStatusActions } from './order/order-status-actions'
 export type { OrderStatusActionsProps } from './order/order-status-actions'
+
+export {
+  ProductDetailPage,
+  SellerProductDetailPage,
+  productDetailBaseFields,
+} from './product/product-detail-page'
+export type {
+  ProductDetailPageProps,
+  SellerProductDetailPageProps,
+} from './product/product-detail-page'
 
 export {
   COMMISSION_PAID_FILTER_OPTIONS,

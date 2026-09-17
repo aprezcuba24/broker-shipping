@@ -1214,6 +1214,216 @@
         }
       }
     },
+    "/product-stock-movements/provider/": {
+      "get": {
+        "tags": [
+          "product-stock-movements"
+        ],
+        "summary": "List Movements",
+        "operationId": "list_movements_product_stock_movements_provider__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/StockMovementKind"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ProductStockMovementPublic_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "product-stock-movements"
+        ],
+        "summary": "Create Movement",
+        "operationId": "create_movement_product_stock_movements_provider__post",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductStockMovementCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductStockMovementPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/product-stock-movements/provider/{movement_id}": {
+      "get": {
+        "tags": [
+          "product-stock-movements"
+        ],
+        "summary": "Get Movement",
+        "operationId": "get_movement_product_stock_movements_provider__movement_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "movement_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Movement Id"
+            }
+          },
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductStockMovementPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/tags/provider/": {
       "get": {
         "tags": [
@@ -2067,6 +2277,23 @@
                 }
               ],
               "title": "Status"
+            }
+          },
+          {
+            "name": "seller_organization_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Seller Organization Id"
             }
           },
           {
@@ -5487,6 +5714,16 @@
                 "type": "null"
               }
             ]
+          },
+          "seller_organization": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OrganizationPublic"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -5770,6 +6007,42 @@
         ],
         "title": "Page[ProductPublic]"
       },
+      "Page_ProductStockMovementPublic_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProductStockMovementPublic"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size",
+          "pages"
+        ],
+        "title": "Page[ProductStockMovementPublic]"
+      },
       "Page_TagPublic_": {
         "properties": {
           "items": {
@@ -5934,6 +6207,14 @@
           "currency": {
             "$ref": "#/components/schemas/Currency"
           },
+          "stock": {
+            "type": "integer",
+            "title": "Stock"
+          },
+          "reserved": {
+            "type": "integer",
+            "title": "Reserved"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -5978,10 +6259,208 @@
           "price",
           "commission",
           "currency",
+          "stock",
+          "reserved",
           "created_at",
           "updated_at"
         ],
         "title": "ProductPublic"
+      },
+      "ProductStockMovementCreate": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/StockMovementKind"
+          },
+          "direction": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StockMovementDirection"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "moved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Moved At"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProductStockMovementItemCreate"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "items"
+        ],
+        "title": "ProductStockMovementCreate"
+      },
+      "ProductStockMovementItemCreate": {
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
+          },
+          "quantity": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Quantity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "quantity"
+        ],
+        "title": "ProductStockMovementItemCreate"
+      },
+      "ProductStockMovementItemPublic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "movement_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Movement Id"
+          },
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "movement_id",
+          "product_id",
+          "quantity",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ProductStockMovementItemPublic"
+      },
+      "ProductStockMovementPublic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/StockMovementKind"
+          },
+          "direction": {
+            "$ref": "#/components/schemas/StockMovementDirection"
+          },
+          "moved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Moved At"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProductStockMovementItemPublic"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "organization_id",
+          "kind",
+          "direction",
+          "moved_at",
+          "notes",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ProductStockMovementPublic"
       },
       "ProductUpdate": {
         "properties": {
@@ -6356,6 +6835,23 @@
           "count"
         ],
         "title": "StatusCount"
+      },
+      "StockMovementDirection": {
+        "type": "string",
+        "enum": [
+          "in",
+          "out"
+        ],
+        "title": "StockMovementDirection"
+      },
+      "StockMovementKind": {
+        "type": "string",
+        "enum": [
+          "reception",
+          "shrinkage",
+          "correction"
+        ],
+        "title": "StockMovementKind"
       },
       "TagCreate": {
         "properties": {
