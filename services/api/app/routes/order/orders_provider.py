@@ -20,6 +20,7 @@ async def list_orders(
     pagination: PaginationDep,
     search: str | None = None,
     status: OrderStatus | None = None,
+    seller_organization_id: UUID | None = None,
 ) -> Page[OrderPublic]:
     result = await provider_order_service.list_orders_for_provider(
         session,
@@ -27,6 +28,7 @@ async def list_orders(
         pagination=pagination,
         search=search,
         status=status,
+        seller_organization_id=seller_organization_id,
     )
     return Page.from_mapped(result, pagination, OrderPublic.model_validate)
 

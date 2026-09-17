@@ -48,10 +48,20 @@ async def list_orders_for_provider(
     pagination: PaginationParams,
     search: str | None = None,
     status: OrderStatus | None = None,
+    seller_organization_id: UUID | None = None,
 ) -> PageResult[Order]:
+    if seller_organization_id is not None and not await link_service.has_active_link(
+        session,
+        provider_organization_id,
+        seller_organization_id,
+    ):
+        raise HTTPException(status_code=403, detail="Forbidden")
+
     stmt = select(Order).where(
         provider_order_visibility_clause(provider_organization_id)
     )
+    if seller_organization_id is not None:
+        stmt = stmt.where(Order.seller_organization_id == seller_organization_id)
     if status is not None:
         stmt = stmt.where(Order.status == status)
     clause = order_search_clause(search) if search else None

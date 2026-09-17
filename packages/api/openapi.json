@@ -2070,6 +2070,23 @@
             }
           },
           {
+            "name": "seller_organization_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Seller Organization Id"
+            }
+          },
+          {
             "name": "organization_id",
             "in": "query",
             "required": true,
@@ -5482,6 +5499,16 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/CustomerPublic"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "seller_organization": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OrganizationPublic"
               },
               {
                 "type": "null"

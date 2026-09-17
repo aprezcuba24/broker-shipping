@@ -13,39 +13,62 @@ import { PageWrapper } from '../components/page-wrapper'
 import { formatMoney } from '../lib/utils'
 import { OrderStatusBadge } from './status'
 
+const orderDetailCodeField: DetailSectionField<OrderPublic> = {
+  title: 'Código',
+  accessor: (order) => order.code,
+}
+
+const orderDetailStatusField: DetailSectionField<OrderPublic> = {
+  title: 'Estado',
+  accessor: (order) => order.status,
+  format: (value) => <OrderStatusBadge status={value as OrderPublic['status']} />,
+}
+
+const orderDetailCreatedField: DetailSectionField<OrderPublic> = {
+  title: 'Creada',
+  accessor: (order) => order.created_at,
+  format: (value) => formatDateTime(value as string),
+}
+
+const orderDetailSellerField: DetailSectionField<OrderPublic> = {
+  title: 'Vendedor',
+  accessor: (order) => order.seller_organization?.name,
+}
+
+const orderDetailTotalsField: DetailSectionField<OrderPublic> = {
+  title: 'Totales',
+  accessor: (order) => order.totals,
+  fullWidth: true,
+  format: (value) => {
+    const totals = value as OrderPublic['totals']
+    if (!totals || totals.length === 0) return '—'
+    return (
+      <div className="flex flex-wrap gap-x-4 gap-y-1 font-medium tabular-nums">
+        {totals.map((total) => (
+          <div key={total.currency}>
+            {formatMoney(total.amount, total.currency)}
+          </div>
+        ))}
+      </div>
+    )
+  },
+}
+
+/** Provider (backoffice) summary fields — includes seller. */
 export const orderDetailBaseFields: DetailSectionField<OrderPublic>[] = [
-  {
-    title: 'Código',
-    accessor: (order) => order.code,
-  },
-  {
-    title: 'Estado',
-    accessor: (order) => order.status,
-    format: (value) => <OrderStatusBadge status={value as OrderPublic['status']} />,
-  },
-  {
-    title: 'Creada',
-    accessor: (order) => order.created_at,
-    format: (value) => formatDateTime(value as string),
-  },
-  {
-    title: 'Totales',
-    accessor: (order) => order.totals,
-    fullWidth: true,
-    format: (value) => {
-      const totals = value as OrderPublic['totals']
-      if (!totals || totals.length === 0) return '—'
-      return (
-        <div className="flex flex-wrap gap-x-4 gap-y-1 font-medium tabular-nums">
-          {totals.map((total) => (
-            <div key={total.currency}>
-              {formatMoney(total.amount, total.currency)}
-            </div>
-          ))}
-        </div>
-      )
-    },
-  },
+  orderDetailCodeField,
+  orderDetailStatusField,
+  orderDetailCreatedField,
+  orderDetailSellerField,
+  orderDetailTotalsField,
+]
+
+/** Seller summary fields — no seller column (viewer is the seller). */
+export const orderDetailSellerBaseFields: DetailSectionField<OrderPublic>[] = [
+  orderDetailCodeField,
+  orderDetailStatusField,
+  orderDetailCreatedField,
+  orderDetailTotalsField,
 ]
 
 export const orderDetailCustomerFields: DetailSectionField<OrderPublic>[] = [
@@ -78,7 +101,11 @@ export type OrderDetailPageProps = {
   children?: ReactNode
 }
 
-export function OrderDetailPage({
+type OrderDetailLayoutProps = OrderDetailPageProps & {
+  summaryFields: DetailSectionField<OrderPublic>[]
+}
+
+function OrderDetailLayout({
   isLoading,
   isError,
   order,
@@ -86,7 +113,8 @@ export function OrderDetailPage({
   description = 'Detalle de la orden.',
   topContent,
   children,
-}: OrderDetailPageProps) {
+  summaryFields,
+}: OrderDetailLayoutProps) {
   if (isLoading) {
     return <PageLoading title="Orden" />
   }
@@ -119,10 +147,22 @@ export function OrderDetailPage({
     >
       <div className="space-y-6">
         {topContent}
-        <DetailSection title="Resumen" data={order} fields={orderDetailBaseFields} />
+        <DetailSection title="Resumen" data={order} fields={summaryFields} />
         <DetailSection title="Cliente" data={order} fields={orderDetailCustomerFields} />
         {children}
       </div>
     </PageWrapper>
+  )
+}
+
+/** Provider order detail — Resumen includes Vendedor. */
+export function OrderDetailPage(props: OrderDetailPageProps) {
+  return <OrderDetailLayout {...props} summaryFields={orderDetailBaseFields} />
+}
+
+/** Seller order detail — Resumen omits Vendedor. */
+export function SellerOrderDetailPage(props: OrderDetailPageProps) {
+  return (
+    <OrderDetailLayout {...props} summaryFields={orderDetailSellerBaseFields} />
   )
 }

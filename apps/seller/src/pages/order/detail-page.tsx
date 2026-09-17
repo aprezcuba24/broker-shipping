@@ -6,8 +6,8 @@ import {
 } from '@broker/api'
 import {
   buildSellerOrderItemColumns,
-  OrderDetailPage as OrderDetailView,
   OrderItemsTable,
+  SellerOrderDetailPage as OrderDetailView,
 } from '@broker/ui'
 import { useCallback } from 'react'
 import { useParams } from 'react-router-dom'

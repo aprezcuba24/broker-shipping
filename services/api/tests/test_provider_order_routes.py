@@ -344,6 +344,38 @@ async def test_provider_list_orders_filter_by_status(
     assert all_orders.json()["total"] == 2
 
 
+async def test_provider_list_orders_filter_by_seller_organization(
+    client: AsyncClient,
+    provider_order_ctx: dict,
+) -> None:
+    by_seller = await client.get(
+        "/orders/provider/",
+        params={
+            **provider_order_ctx["provider_a_params"],
+            "seller_organization_id": provider_order_ctx["seller_org_id"],
+        },
+        headers=provider_order_ctx["provider_a_bearer"],
+    )
+    assert by_seller.status_code == 200
+    page = by_seller.json()
+    assert page["total"] == 1
+    assert page["items"][0]["id"] == provider_order_ctx["order_id"]
+    assert (
+        page["items"][0]["seller_organization_id"]
+        == provider_order_ctx["seller_org_id"]
+    )
+
+    forbidden = await client.get(
+        "/orders/provider/",
+        params={
+            **provider_order_ctx["provider_a_params"],
+            "seller_organization_id": provider_order_ctx["other_seller_org_id"],
+        },
+        headers=provider_order_ctx["provider_a_bearer"],
+    )
+    assert forbidden.status_code == 403
+
+
 async def test_provider_without_items_cannot_see_order(
     client: AsyncClient,
     provider_order_ctx: dict,

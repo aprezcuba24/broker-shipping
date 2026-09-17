@@ -109,6 +109,7 @@ export * from './orderItemStatus';
 export * from './orderItemStatusUpdate';
 export * from './orderPublic';
 export * from './orderPublicCustomer';
+export * from './orderPublicSellerOrganization';
 export * from './orderPublicUpdatedAt';
 export * from './orderStatus';
 export * from './orderSummaryPublic';

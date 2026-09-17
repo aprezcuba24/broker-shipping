@@ -402,7 +402,9 @@ export {
 export type { OrderBadgeVariant } from './order/status'
 export {
   OrderDetailPage,
+  SellerOrderDetailPage,
   orderDetailBaseFields,
+  orderDetailSellerBaseFields,
   orderDetailCustomerFields,
 } from './order/order-detail-page'
 export type { OrderDetailPageProps } from './order/order-detail-page'
