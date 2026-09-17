@@ -168,12 +168,18 @@ async def update_provider_items_status(
     await session.flush()
 
     for item in newly_transitioned:
-        event = OrderItemCanceledEvent(order_item_id=item.id) if target == OrderItemStatus.canceled else OrderItemConsumedEvent(order_item_id=item.id)
-        await emit(
-            event,
-            session=session,
-            propagate_errors=True,
-        )
+        if target == OrderItemStatus.canceled:
+            await emit(
+                OrderItemCanceledEvent(order_item_id=item.id),
+                session=session,
+                propagate_errors=True,
+            )
+        elif target == OrderItemStatus.delivered:
+            await emit(
+                OrderItemConsumedEvent(order_item_id=item.id),
+                session=session,
+                propagate_errors=True,
+            )
 
     await session.commit()
     await session.refresh(order)

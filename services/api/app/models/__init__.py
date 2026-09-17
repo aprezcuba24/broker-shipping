@@ -7,7 +7,7 @@ from app.models import (
     order,
     organization,
     product,
-    product_reception,
+    product_stock_movement,
     user,
 )
 
@@ -22,7 +22,7 @@ def get_all_table_models() -> tuple[type[SQLModel], ...]:
         *customer.DOMAIN_MODELS,
         *order.DOMAIN_MODELS,
         *commission.DOMAIN_MODELS,
-        *product_reception.DOMAIN_MODELS,
+        *product_stock_movement.DOMAIN_MODELS,
     )
 
 

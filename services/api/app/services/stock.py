@@ -42,6 +42,18 @@ def increase_stock(product: Product, quantity: int) -> None:
     _touch(product)
 
 
+def decrease_stock(product: Product, quantity: int) -> None:
+    if quantity <= 0:
+        raise HTTPException(status_code=422, detail="Quantity must be positive")
+    if product.stock < quantity:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Insufficient stock for product {product.id}",
+        )
+    product.stock -= quantity
+    _touch(product)
+
+
 def reserve_stock(product: Product, quantity: int) -> None:
     if quantity <= 0:
         raise HTTPException(status_code=422, detail="Quantity must be positive")
@@ -87,6 +99,17 @@ async def increase_products_stock(
     products = await lock_products(session, list(quantities.keys()))
     for product_id, quantity in quantities.items():
         increase_stock(products[product_id], quantity)
+        session.add(products[product_id])
+    return products
+
+
+async def decrease_products_stock(
+    session: AsyncSession,
+    quantities: dict[UUID, int],
+) -> dict[UUID, Product]:
+    products = await lock_products(session, list(quantities.keys()))
+    for product_id, quantity in quantities.items():
+        decrease_stock(products[product_id], quantity)
         session.add(products[product_id])
     return products
 
