@@ -19,6 +19,7 @@ from app.models.user.user import User
 from app.schemas.order import OrderCreate, OrderItemCreate
 from app.schemas.pagination import PageResult, PaginationParams
 from app.services import provider_seller_link as link_service
+from app.services import stock as stock_service
 from app.services.order.code import generate_next_order_code
 from app.services.order.helpers import (
     attach_customers_to_orders,
@@ -54,6 +55,10 @@ async def _resolve_linked_products(
     if len(products) != len(product_ids):
         raise HTTPException(status_code=404, detail="Not found")
     return products
+
+
+def _quantities_by_product(items_data: list[OrderItemCreate]) -> dict[UUID, int]:
+    return {item.product_id: item.quantity for item in items_data}
 
 
 async def _build_order(
@@ -117,6 +122,10 @@ async def preview_order(
         seller_organization_id,
         items_data,
     )
+    await stock_service.assert_products_available(
+        session,
+        _quantities_by_product(items_data),
+    )
     return attach_order_view(order, items)
 
 
@@ -147,6 +156,10 @@ async def create_order(
         data.items,
         customer_id=data.customer_id,
         code=code,
+    )
+    await stock_service.reserve_products_stock(
+        session,
+        _quantities_by_product(data.items),
     )
     session.add(order)
     session.add_all(items)

@@ -19,6 +19,7 @@ from app.models.organization.provider_seller_link import ProviderSellerLink
 from app.schemas.order import OrderItemStatusUpdate
 from app.schemas.pagination import PageResult, PaginationParams
 from app.services import provider_seller_link as link_service
+from app.services import stock as stock_service
 from app.services.order import item_status as item_status_service
 from app.services.order.helpers import (
     attach_customers_to_orders,
@@ -142,6 +143,22 @@ async def update_provider_items_status(
 
     for item in provider_items:
         item_status_service.assert_transition(item.status, target)
+
+    release_quantities: dict[UUID, int] = {}
+    consume_quantities: dict[UUID, int] = {}
+    for item in provider_items:
+        previous = previous_statuses[item.id]
+        if previous == target:
+            continue
+        if target == OrderItemStatus.canceled:
+            release_quantities[item.product_id] = item.quantity
+        elif target == OrderItemStatus.delivered:
+            consume_quantities[item.product_id] = item.quantity
+
+    if release_quantities:
+        await stock_service.release_products_stock(session, release_quantities)
+    if consume_quantities:
+        await stock_service.consume_products_stock(session, consume_quantities)
 
     now = utc_now()
     for item in provider_items:

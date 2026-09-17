@@ -5,6 +5,7 @@ from app.routes import (
     demo,
     health,
     locations,
+    product_receptions_provider,
     products_provider,
     products_seller,
     tags_provider,
@@ -28,6 +29,7 @@ router.include_router(users.router)
 router.include_router(api_keys.router)
 router.include_router(products_provider.router)
 router.include_router(products_seller.router)
+router.include_router(product_receptions_provider.router)
 router.include_router(tags_provider.router)
 router.include_router(tags_seller.router)
 router.include_router(orders_seller.router)

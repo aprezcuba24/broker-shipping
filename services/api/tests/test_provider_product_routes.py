@@ -53,6 +53,8 @@ async def test_create_list_get_patch_delete_product(
     assert body["price"] == 1250
     assert body["commission"] == 125
     assert body["currency"] == "cup"
+    assert body["stock"] == 0
+    assert body["reserved"] == 0
     assert body["tags"] == []
     product_id = body["id"]
 

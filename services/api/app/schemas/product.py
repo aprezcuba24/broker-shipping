@@ -62,6 +62,8 @@ class ProductPublic(BaseModel):
     price: int
     commission: int
     currency: Currency
+    stock: int
+    reserved: int
     created_at: datetime
     updated_at: datetime | None
     tags: list[TagPublic] = Field(default_factory=list)

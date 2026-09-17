@@ -1,8 +1,8 @@
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Self
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
 
 from app.models.order.enums import Currency, OrderItemStatus, OrderStatus
 from app.schemas.customer import CustomerPublic
@@ -16,12 +16,28 @@ class OrderItemCreate(BaseModel):
     customer_change: int = Field(default=0, ge=0)
 
 
-OrderPreviewItems = Annotated[list[OrderItemCreate], Field(min_length=1)]
+def _assert_unique_product_ids(items: list[OrderItemCreate]) -> list[OrderItemCreate]:
+    product_ids = [item.product_id for item in items]
+    if len(product_ids) != len(set(product_ids)):
+        raise ValueError("Duplicate product_id in order items")
+    return items
+
+
+OrderPreviewItems = Annotated[
+    list[OrderItemCreate],
+    Field(min_length=1),
+    AfterValidator(_assert_unique_product_ids),
+]
 
 
 class OrderCreate(BaseModel):
     customer_id: UUID
     items: list[OrderItemCreate] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def unique_product_ids(self) -> Self:
+        _assert_unique_product_ids(self.items)
+        return self
 
 
 class OrderItemStatusUpdate(BaseModel):
