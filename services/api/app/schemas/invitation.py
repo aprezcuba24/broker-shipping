@@ -50,3 +50,12 @@ class InvitationCreatedResponse(InvitationPublic):
     """Token invite creation response; token is always set for email invites."""
 
     token: str | None = None
+
+
+class MemberInvitePreview(BaseModel):
+    """Public preview of a pending member invite (no auth required)."""
+
+    organization_name: str
+    invitee_email: EmailStr
+    user_exists: bool
+    status: InvitationStatus

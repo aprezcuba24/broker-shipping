@@ -7,6 +7,7 @@ import {
 } from '@broker/api'
 import { notify, peekInviteToken, PRODUCT_NAME } from '@broker/ui'
 import { useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { usePendingJoinProvider } from '@/hooks/use-pending-join-provider'
@@ -18,11 +19,21 @@ export function useOnboarding() {
   const createMutation = useCreateOrganizationOrganizationsPost()
   const { providerId, providerName, joinProviderPath } = usePendingJoinProvider()
 
+  useEffect(() => {
+    if (peekInviteToken()) {
+      void navigate('/accept-invitation', { replace: true })
+    }
+  }, [navigate])
+
   const description = providerId
     ? 'Crea tu organización vendedora. Después enviaremos la solicitud de vínculo.'
     : `Como vendedor, crea la organización con la que trabajarás en ${PRODUCT_NAME}.`
 
   const onSubmit = async ({ name }: { name: string }) => {
+    if (peekInviteToken()) {
+      void navigate('/accept-invitation', { replace: true })
+      return
+    }
     createMutation.reset()
     await createMutation.mutateAsync({
       data: { name, type: OrganizationType.seller },
@@ -31,10 +42,6 @@ export function useOnboarding() {
       queryKey: getMyOrganizationsUsersMyOrganizationsGetQueryKey(),
     })
     notify.created('Organización', 'f')
-    if (peekInviteToken()) {
-      void navigate('/accept-invitation')
-      return
-    }
     if (providerId) {
       void navigate(joinProviderPath)
       return

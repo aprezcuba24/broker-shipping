@@ -5,7 +5,7 @@ import {
   useResendVerificationUsersResendVerificationPost,
   type LoginFormValues,
 } from '@broker/api'
-import { peekInviteToken } from '@broker/ui'
+import { peekInviteToken, usePendingMemberInvite } from '@broker/ui'
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
@@ -17,10 +17,20 @@ export function useLoginPage() {
   const [lastEmail, setLastEmail] = useState('')
   const [resendDone, setResendDone] = useState(false)
   const [resendError, setResendError] = useState<string | null>(null)
+  const {
+    organizationName,
+    inviteeEmail,
+    registerPath,
+    acceptPath,
+  } = usePendingMemberInvite()
 
   const verified = searchParams.get('verified') === '1'
   const reset = searchParams.get('reset') === '1'
   const showResend = Boolean(lastEmail && (isEmailNotVerified || resendDone))
+
+  const description = organizationName
+    ? 'Inicia sesión para unirte a la organización.'
+    : 'Introduce tus credenciales para continuar.'
 
   const onSubmit = async (values: LoginFormValues) => {
     setLastEmail(values.email)
@@ -28,7 +38,7 @@ export function useLoginPage() {
     setResendError(null)
     await login(values)
     if (peekInviteToken()) {
-      void navigate('/accept-invitation')
+      void navigate(acceptPath)
       return
     }
     void navigate('/')
@@ -51,6 +61,11 @@ export function useLoginPage() {
 
   return {
     schema: loginSchema,
+    description,
+    memberInviteOrganizationName: organizationName,
+    defaultEmail: inviteeEmail ?? '',
+    emailReadOnly: Boolean(inviteeEmail),
+    registerPath,
     isSubmitting: isLoggingIn,
     error: resendDone ? null : (resendError ?? loginError),
     successMessage: resendDone

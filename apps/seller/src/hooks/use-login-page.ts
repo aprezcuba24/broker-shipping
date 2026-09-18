@@ -5,7 +5,7 @@ import {
   useResendVerificationUsersResendVerificationPost,
   type LoginFormValues,
 } from '@broker/api'
-import { peekInviteToken } from '@broker/ui'
+import { peekInviteToken, usePendingMemberInvite } from '@broker/ui'
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
@@ -19,6 +19,7 @@ export function useLoginPage() {
   const [lastEmail, setLastEmail] = useState('')
   const [resendDone, setResendDone] = useState(false)
   const [resendError, setResendError] = useState<string | null>(null)
+  const memberInvite = usePendingMemberInvite()
   const { providerId, providerName, joinProviderPath, registerPath, withProviderQuery } =
     usePendingJoinProvider()
 
@@ -26,9 +27,13 @@ export function useLoginPage() {
   const reset = searchParams.get('reset') === '1'
   const showResend = Boolean(lastEmail && (isEmailNotVerified || resendDone))
 
-  const description = providerId
-    ? 'Inicia sesión para continuar con la solicitud de vínculo.'
-    : 'Introduce tus credenciales para continuar.'
+  // Member invite takes precedence over join-provider.
+  const hasMemberInvite = Boolean(memberInvite.token)
+  const description = hasMemberInvite
+    ? 'Inicia sesión para unirte a la organización.'
+    : providerId
+      ? 'Inicia sesión para continuar con la solicitud de vínculo.'
+      : 'Introduce tus credenciales para continuar.'
 
   const onSubmit = async (values: LoginFormValues) => {
     setLastEmail(values.email)
@@ -36,7 +41,7 @@ export function useLoginPage() {
     setResendError(null)
     await login(values)
     if (peekInviteToken()) {
-      void navigate('/accept-invitation')
+      void navigate(memberInvite.acceptPath)
       return
     }
     if (providerId) {
@@ -64,8 +69,11 @@ export function useLoginPage() {
   return {
     schema: loginSchema,
     description,
-    linkedProviderName: providerName,
-    registerPath,
+    memberInviteOrganizationName: hasMemberInvite ? memberInvite.organizationName : null,
+    linkedProviderName: hasMemberInvite ? null : providerName,
+    defaultEmail: hasMemberInvite ? (memberInvite.inviteeEmail ?? '') : '',
+    emailReadOnly: hasMemberInvite && Boolean(memberInvite.inviteeEmail),
+    registerPath: hasMemberInvite ? memberInvite.registerPath : registerPath,
     isSubmitting: isLoggingIn,
     error: resendDone ? null : (resendError ?? loginError),
     successMessage: resendDone

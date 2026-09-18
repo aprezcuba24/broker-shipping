@@ -2,7 +2,7 @@ import {
   formatApiError,
   useVerifyEmailEndpointUsersVerifyEmailPost,
 } from '@broker/api'
-import { type VerifyEmailStatus } from '@broker/ui'
+import { peekInviteMeta, peekInviteToken, type VerifyEmailStatus } from '@broker/ui'
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
@@ -13,7 +13,15 @@ export function useVerifyEmail() {
   const token = searchParams.get('token')?.trim() ?? ''
   const verifyMutation = useVerifyEmailEndpointUsersVerifyEmailPost()
   const started = useRef(false)
-  const { providerName, loginPath } = usePendingJoinProvider()
+  const inviteToken = peekInviteToken()
+  const inviteMeta = peekInviteMeta()
+  const { providerName, verifiedLoginPath } = usePendingJoinProvider()
+
+  // Member invite takes precedence over join-provider.
+  const loginHref = inviteToken
+    ? `/login?verified=1&token=${encodeURIComponent(inviteToken)}`
+    : verifiedLoginPath
+
   const [status, setStatus] = useState<VerifyEmailStatus>(() =>
     token ? 'loading' : 'missing',
   )
@@ -32,18 +40,23 @@ export function useVerifyEmail() {
       .mutateAsync({ data: { token } })
       .then(() => {
         setStatus('success')
-        setMessage('Correo confirmado correctamente. Ya puedes iniciar sesión.')
+        if (inviteMeta?.organizationName) {
+          setMessage(
+            `Correo confirmado. Inicia sesión para unirte a ${inviteMeta.organizationName}.`,
+          )
+        } else if (providerName) {
+          setMessage(
+            `Correo confirmado. Inicia sesión para continuar la vinculación con ${providerName}.`,
+          )
+        } else {
+          setMessage('Correo confirmado correctamente. Ya puedes iniciar sesión.')
+        }
       })
       .catch((error: unknown) => {
         setStatus('error')
         setMessage(formatApiError(error, 'El enlace no es válido o ha caducado.'))
       })
-  }, [token, verifyMutation])
+  }, [inviteMeta?.organizationName, providerName, token, verifyMutation])
 
-  const successMessage =
-    status === 'success' && providerName
-      ? `Correo confirmado. Inicia sesión para continuar la vinculación con ${providerName}.`
-      : message
-
-  return { status, message: successMessage, loginHref: loginPath }
+  return { status, message, loginHref }
 }

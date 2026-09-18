@@ -6,7 +6,10 @@ import { Button } from '../ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 import { Field, FieldError, FieldGroup, FieldLabel } from '../ui/field'
 import { Input } from '../ui/input'
-import { LinkedProviderCallout } from '../../organization/linked-provider-callout'
+import {
+  LinkedProviderCallout,
+  MEMBER_INVITE_CALLOUT_LABEL,
+} from '../../organization/linked-provider-callout'
 import { AuthPageShell, type AuthPortalBranding } from './auth-page-shell'
 import { AuthFormLink } from './login-form'
 
@@ -33,6 +36,12 @@ export type RegisterFormProps = {
   portal?: AuthPortalBranding
   /** When set, highlights the provider the seller will link to. */
   linkedProviderName?: string | null
+  /** When set, highlights the org the user will join as a member (takes precedence). */
+  memberInviteOrganizationName?: string | null
+  /** Prefill email (e.g. from member invite). */
+  defaultEmail?: string
+  /** Lock email field when it must match the invitation. */
+  emailReadOnly?: boolean
 }
 
 export function RegisterForm({
@@ -47,13 +56,20 @@ export function RegisterForm({
   footer = null,
   portal,
   linkedProviderName = null,
+  memberInviteOrganizationName = null,
+  defaultEmail = '',
+  emailReadOnly = false,
 }: RegisterFormProps) {
   const form = useForm<RegisterFields>({
     resolver: zodResolver(schema),
-    defaultValues: { name: '', email: '', password: '' },
+    defaultValues: { name: '', email: defaultEmail, password: '' },
   })
 
   const isSuccess = Boolean(successMessage)
+  const calloutName = memberInviteOrganizationName ?? linkedProviderName
+  const calloutLabel = memberInviteOrganizationName
+    ? MEMBER_INVITE_CALLOUT_LABEL
+    : undefined
 
   const card = (
     <Card className="w-full max-w-md border-border shadow-lg">
@@ -66,8 +82,8 @@ export function RegisterForm({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {linkedProviderName ? (
-          <LinkedProviderCallout providerName={linkedProviderName} />
+        {calloutName && !isSuccess ? (
+          <LinkedProviderCallout providerName={calloutName} label={calloutLabel} />
         ) : null}
         {isSuccess ? (
           <p className="text-center text-sm text-muted-foreground">
@@ -105,7 +121,9 @@ export function RegisterForm({
                         id="email"
                         type="email"
                         autoComplete="email"
+                        readOnly={emailReadOnly}
                         aria-invalid={fieldState.invalid}
+                        className={emailReadOnly ? 'bg-muted' : undefined}
                       />
                       {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                     </Field>

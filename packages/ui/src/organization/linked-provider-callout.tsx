@@ -4,11 +4,17 @@ import { cn } from '../lib/utils'
 
 export type LinkedProviderCalloutProps = {
   providerName: string
+  /** Defaults to seller-link copy. Use member-invite label when joining as a member. */
+  label?: string
   className?: string
 }
 
-/** Highlights the provider org a seller will request to link with. */
-export function LinkedProviderCallout({ providerName, className }: LinkedProviderCalloutProps) {
+/** Highlights an organization the user will link to or join as a member. */
+export function LinkedProviderCallout({
+  providerName,
+  label = 'Te vas a vincular con',
+  className,
+}: LinkedProviderCalloutProps) {
   return (
     <div
       className={cn(
@@ -21,7 +27,7 @@ export function LinkedProviderCallout({ providerName, className }: LinkedProvide
         <Building2 className="size-4" aria-hidden />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-xs text-muted-foreground">Te vas a vincular con</p>
+        <p className="text-xs text-muted-foreground">{label}</p>
         <p className="mt-0.5 truncate font-headline text-lg font-semibold leading-snug text-on-surface">
           {providerName}
         </p>
@@ -29,3 +35,5 @@ export function LinkedProviderCallout({ providerName, className }: LinkedProvide
     </div>
   )
 }
+
+export const MEMBER_INVITE_CALLOUT_LABEL = 'Te unirás como miembro a'
