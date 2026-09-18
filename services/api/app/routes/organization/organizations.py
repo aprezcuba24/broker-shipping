@@ -11,6 +11,7 @@ from app.schemas.invitation import (
     InvitationCreatedResponse,
     InvitationPublic,
     MemberInviteCreate,
+    MemberInvitePreview,
     MemberIsActivePatch,
     MemberPublic,
 )
@@ -46,6 +47,14 @@ async def list_organizations(
 ) -> list[OrganizationPublic]:
     orgs = await org_service.list_organizations_for_user(session, user.id)
     return [OrganizationPublic.model_validate(o) for o in orgs]
+
+
+@router.get("/invitations/preview", response_model=MemberInvitePreview)
+async def preview_member_invitation(
+    token: str,
+    session: SessionDep,
+) -> MemberInvitePreview:
+    return await invitation_service.preview_member_invite(session, token)
 
 
 @router.post("/invitations/accept-by-token", response_model=MemberPublic)

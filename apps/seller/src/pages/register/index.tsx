@@ -7,10 +7,15 @@ export function RegisterPage() {
 
   return (
     <RegisterForm
+      key={register.defaultEmail || 'register'}
       title="Crear cuenta"
       description={register.description}
       portal={portalTheme}
       schema={register.schema}
+      linkedProviderName={register.linkedProviderName}
+      memberInviteOrganizationName={register.memberInviteOrganizationName}
+      defaultEmail={register.defaultEmail}
+      emailReadOnly={register.emailReadOnly}
       isSubmitting={register.isSubmitting}
       error={register.error}
       successMessage={register.successMessage}

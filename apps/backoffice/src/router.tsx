@@ -37,12 +37,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route
-          path="/register"
-          element={
-            <RegisterPage description="Crea tu cuenta de proveedor. Te enviaremos un correo para confirmarla." />
-          }
-        />
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />

@@ -32,10 +32,12 @@ import type {
   LinkedSellerPublic,
   ListProvidersOrganizationsSellerProvidersGetParams,
   MemberInviteCreate,
+  MemberInvitePreview,
   MemberIsActivePatch,
   MemberPublic,
   OrganizationCreate,
-  OrganizationPublic
+  OrganizationPublic,
+  PreviewMemberInvitationOrganizationsInvitationsPreviewGetParams
 } from '.././models';
 
 import { brokerFetch } from '../../client';
@@ -202,6 +204,99 @@ export const useCreateOrganizationOrganizationsPost = <TError = HTTPValidationEr
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * @summary Preview Member Invitation
+ */
+export const previewMemberInvitationOrganizationsInvitationsPreviewGet = (
+    params: PreviewMemberInvitationOrganizationsInvitationsPreviewGetParams,
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<MemberInvitePreview>(
+      {url: `/organizations/invitations/preview`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+  
+
+
+
+export const getPreviewMemberInvitationOrganizationsInvitationsPreviewGetQueryKey = (params?: PreviewMemberInvitationOrganizationsInvitationsPreviewGetParams,) => {
+    return [
+    `/organizations/invitations/preview`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getPreviewMemberInvitationOrganizationsInvitationsPreviewGetQueryOptions = <TData = Awaited<ReturnType<typeof previewMemberInvitationOrganizationsInvitationsPreviewGet>>, TError = HTTPValidationError>(params: PreviewMemberInvitationOrganizationsInvitationsPreviewGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof previewMemberInvitationOrganizationsInvitationsPreviewGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPreviewMemberInvitationOrganizationsInvitationsPreviewGetQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof previewMemberInvitationOrganizationsInvitationsPreviewGet>>> = ({ signal }) => previewMemberInvitationOrganizationsInvitationsPreviewGet(params, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof previewMemberInvitationOrganizationsInvitationsPreviewGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PreviewMemberInvitationOrganizationsInvitationsPreviewGetQueryResult = NonNullable<Awaited<ReturnType<typeof previewMemberInvitationOrganizationsInvitationsPreviewGet>>>
+export type PreviewMemberInvitationOrganizationsInvitationsPreviewGetQueryError = HTTPValidationError
+
+
+export function usePreviewMemberInvitationOrganizationsInvitationsPreviewGet<TData = Awaited<ReturnType<typeof previewMemberInvitationOrganizationsInvitationsPreviewGet>>, TError = HTTPValidationError>(
+ params: PreviewMemberInvitationOrganizationsInvitationsPreviewGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof previewMemberInvitationOrganizationsInvitationsPreviewGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof previewMemberInvitationOrganizationsInvitationsPreviewGet>>,
+          TError,
+          Awaited<ReturnType<typeof previewMemberInvitationOrganizationsInvitationsPreviewGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePreviewMemberInvitationOrganizationsInvitationsPreviewGet<TData = Awaited<ReturnType<typeof previewMemberInvitationOrganizationsInvitationsPreviewGet>>, TError = HTTPValidationError>(
+ params: PreviewMemberInvitationOrganizationsInvitationsPreviewGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof previewMemberInvitationOrganizationsInvitationsPreviewGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof previewMemberInvitationOrganizationsInvitationsPreviewGet>>,
+          TError,
+          Awaited<ReturnType<typeof previewMemberInvitationOrganizationsInvitationsPreviewGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePreviewMemberInvitationOrganizationsInvitationsPreviewGet<TData = Awaited<ReturnType<typeof previewMemberInvitationOrganizationsInvitationsPreviewGet>>, TError = HTTPValidationError>(
+ params: PreviewMemberInvitationOrganizationsInvitationsPreviewGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof previewMemberInvitationOrganizationsInvitationsPreviewGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Preview Member Invitation
+ */
+
+export function usePreviewMemberInvitationOrganizationsInvitationsPreviewGet<TData = Awaited<ReturnType<typeof previewMemberInvitationOrganizationsInvitationsPreviewGet>>, TError = HTTPValidationError>(
+ params: PreviewMemberInvitationOrganizationsInvitationsPreviewGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof previewMemberInvitationOrganizationsInvitationsPreviewGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getPreviewMemberInvitationOrganizationsInvitationsPreviewGetQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
  * @summary Accept Invitation By Token
  */
 export const acceptInvitationByTokenOrganizationsInvitationsAcceptByTokenPost = (

@@ -7,6 +7,10 @@ import { Button } from '../ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 import { Field, FieldError, FieldGroup, FieldLabel } from '../ui/field'
 import { Input } from '../ui/input'
+import {
+  LinkedProviderCallout,
+  MEMBER_INVITE_CALLOUT_LABEL,
+} from '../../organization/linked-provider-callout'
 import { AuthPageShell, type AuthPortalBranding } from './auth-page-shell'
 
 export type LoginFields = {
@@ -29,6 +33,14 @@ export type LoginFormProps = {
   footer?: ReactNode
   forgotPasswordHref?: string
   portal?: AuthPortalBranding
+  /** When set, highlights the provider the seller will link to. */
+  linkedProviderName?: string | null
+  /** When set, highlights the org the user will join as a member (takes precedence). */
+  memberInviteOrganizationName?: string | null
+  /** Prefill email (e.g. from member invite). */
+  defaultEmail?: string
+  /** Lock email field when it must match the invitation. */
+  emailReadOnly?: boolean
 }
 
 export function LoginForm({
@@ -43,11 +55,20 @@ export function LoginForm({
   footer = null,
   forgotPasswordHref,
   portal,
+  linkedProviderName = null,
+  memberInviteOrganizationName = null,
+  defaultEmail = '',
+  emailReadOnly = false,
 }: LoginFormProps) {
   const form = useForm<LoginFields>({
     resolver: zodResolver(schema),
-    defaultValues: { email: '', password: '' },
+    defaultValues: { email: defaultEmail, password: '' },
   })
+
+  const calloutName = memberInviteOrganizationName ?? linkedProviderName
+  const calloutLabel = memberInviteOrganizationName
+    ? MEMBER_INVITE_CALLOUT_LABEL
+    : undefined
 
   const card = (
     <Card className="w-full max-w-md border-border shadow-lg">
@@ -55,7 +76,10 @@ export function LoginForm({
         <CardTitle className="text-2xl font-headline">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        {calloutName ? (
+          <LinkedProviderCallout providerName={calloutName} label={calloutLabel} />
+        ) : null}
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FieldGroup>
             <Controller
@@ -69,7 +93,9 @@ export function LoginForm({
                     id="email"
                     type="email"
                     autoComplete="email"
+                    readOnly={emailReadOnly}
                     aria-invalid={fieldState.invalid}
+                    className={emailReadOnly ? 'bg-muted' : undefined}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -117,7 +143,7 @@ export function LoginForm({
             {isSubmitting ? 'Entrando…' : submitLabel}
           </Button>
         </form>
-        {footer ? <div className="mt-4 text-center text-sm text-muted-foreground">{footer}</div> : null}
+        {footer ? <div className="text-center text-sm text-muted-foreground">{footer}</div> : null}
       </CardContent>
     </Card>
   )

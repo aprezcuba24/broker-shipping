@@ -5,7 +5,7 @@ import {
   useResendVerificationUsersResendVerificationPost,
   type LoginFormValues,
 } from '@broker/api'
-import { peekInviteToken } from '@broker/ui'
+import { peekInviteToken, usePendingMemberInvite } from '@broker/ui'
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
@@ -17,26 +17,31 @@ export function useLoginPage() {
   const { login, isLoggingIn, loginError, isEmailNotVerified } = useAuth()
   const resendMutation = useResendVerificationUsersResendVerificationPost()
   const [lastEmail, setLastEmail] = useState('')
-  const [resendMessage, setResendMessage] = useState<string | null>(null)
+  const [resendDone, setResendDone] = useState(false)
+  const [resendError, setResendError] = useState<string | null>(null)
+  const memberInvite = usePendingMemberInvite()
   const { providerId, providerName, joinProviderPath, registerPath, withProviderQuery } =
     usePendingJoinProvider()
 
   const verified = searchParams.get('verified') === '1'
   const reset = searchParams.get('reset') === '1'
-  const showResend = Boolean(isEmailNotVerified && lastEmail)
+  const showResend = Boolean(lastEmail && (isEmailNotVerified || resendDone))
 
-  const description = providerName
-    ? `Inicia sesión para vincularte con ${providerName}.`
+  // Member invite takes precedence over join-provider.
+  const hasMemberInvite = Boolean(memberInvite.token)
+  const description = hasMemberInvite
+    ? 'Inicia sesión para unirte a la organización.'
     : providerId
       ? 'Inicia sesión para continuar con la solicitud de vínculo.'
       : 'Introduce tus credenciales para continuar.'
 
   const onSubmit = async (values: LoginFormValues) => {
     setLastEmail(values.email)
-    setResendMessage(null)
+    setResendDone(false)
+    setResendError(null)
     await login(values)
     if (peekInviteToken()) {
-      void navigate('/accept-invitation')
+      void navigate(memberInvite.acceptPath)
       return
     }
     if (providerId) {
@@ -47,16 +52,15 @@ export function useLoginPage() {
   }
 
   const onResend = async () => {
-    setResendMessage(null)
+    setResendError(null)
     try {
       await resendMutation.mutateAsync({
         data: { email: lastEmail, client_app: 'seller' },
       })
-      setResendMessage(
-        'Si la cuenta existe y no está verificada, te enviamos un nuevo enlace.',
-      )
+      setResendDone(true)
     } catch (error) {
-      setResendMessage(
+      setResendDone(false)
+      setResendError(
         formatApiError(error, 'No se pudo reenviar el correo de confirmación.'),
       )
     }
@@ -65,16 +69,20 @@ export function useLoginPage() {
   return {
     schema: loginSchema,
     description,
-    registerPath,
+    memberInviteOrganizationName: hasMemberInvite ? memberInvite.organizationName : null,
+    linkedProviderName: hasMemberInvite ? null : providerName,
+    defaultEmail: hasMemberInvite ? (memberInvite.inviteeEmail ?? '') : '',
+    emailReadOnly: hasMemberInvite && Boolean(memberInvite.inviteeEmail),
+    registerPath: hasMemberInvite ? memberInvite.registerPath : registerPath,
     isSubmitting: isLoggingIn,
-    error: loginError,
-    successMessage:
-      resendMessage ??
-      (verified
+    error: resendDone ? null : (resendError ?? loginError),
+    successMessage: resendDone
+      ? 'Te enviamos un nuevo enlace de confirmación. Revisa tu bandeja de entrada.'
+      : verified
         ? 'Correo confirmado. Ya puedes iniciar sesión.'
         : reset
           ? 'Contraseña actualizada. Ya puedes iniciar sesión.'
-          : null),
+          : null,
     onSubmit,
     showResend,
     resendPending: resendMutation.isPending,

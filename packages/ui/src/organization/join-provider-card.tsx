@@ -4,6 +4,7 @@ import {
   AuthPageShell,
   type AuthPortalBranding,
 } from '../components/auth/auth-page-shell'
+import { LinkedProviderCallout } from './linked-provider-callout'
 
 export type JoinProviderStatus =
   | 'loading'
@@ -56,15 +57,15 @@ export function JoinProviderCard({
       description = 'Estamos cargando la información del proveedor.'
     } else if (status === 'needs-auth') {
       description = providerName
-        ? `Vas a solicitar vincularte con ${providerName}. Inicia sesión o crea una cuenta para continuar.`
+        ? 'Vas a solicitar vincularte con este proveedor. Inicia sesión o crea una cuenta para continuar.'
         : 'Inicia sesión o crea una cuenta para solicitar el vínculo con este proveedor.'
     } else if (status === 'needs-org') {
       description = providerName
-        ? `Crea tu organización vendedora para solicitar el vínculo con ${providerName}.`
+        ? 'Crea tu organización vendedora para solicitar el vínculo.'
         : 'Para solicitar el vínculo necesitas una organización vendedora.'
     } else if (status === 'ready' || status === 'submitting') {
       description = providerName
-        ? `Enviando solicitud a ${providerName}…`
+        ? 'Enviando la solicitud…'
         : 'Enviando la solicitud al proveedor…'
     } else if (status === 'success') {
       description =
@@ -72,42 +73,55 @@ export function JoinProviderCard({
     }
   }
 
+  const showProviderCallout =
+    Boolean(providerName) &&
+    (status === 'needs-auth' ||
+      status === 'needs-org' ||
+      status === 'ready' ||
+      status === 'submitting' ||
+      status === 'success')
+
   const card = (
     <Card className="w-full max-w-md border-border shadow-lg">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-headline">{title}</CardTitle>
         {description ? <CardDescription>{description}</CardDescription> : null}
       </CardHeader>
-      <CardContent className="flex flex-col gap-2">
-        {status === 'needs-auth' ? (
-          <>
-            {onGoLogin ? (
-              <Button type="button" onClick={onGoLogin}>
-                Iniciar sesión
-              </Button>
-            ) : null}
-            {onGoRegister ? (
-              <Button type="button" variant="outline" onClick={onGoRegister}>
-                Crear cuenta
-              </Button>
-            ) : null}
-          </>
+      <CardContent className="flex flex-col gap-4">
+        {showProviderCallout && providerName ? (
+          <LinkedProviderCallout providerName={providerName} />
         ) : null}
-        {status === 'needs-org' && onGoOnboarding ? (
-          <Button type="button" onClick={onGoOnboarding}>
-            Crear organización
-          </Button>
-        ) : null}
-        {status === 'success' && onGoProviders ? (
-          <Button type="button" onClick={onGoProviders}>
-            Ver proveedores
-          </Button>
-        ) : null}
-        {status === 'error' && onRetry ? (
-          <Button type="button" onClick={onRetry}>
-            Reintentar
-          </Button>
-        ) : null}
+        <div className="flex flex-col gap-2">
+          {status === 'needs-auth' ? (
+            <>
+              {onGoLogin ? (
+                <Button type="button" onClick={onGoLogin}>
+                  Iniciar sesión
+                </Button>
+              ) : null}
+              {onGoRegister ? (
+                <Button type="button" variant="outline" onClick={onGoRegister}>
+                  Crear cuenta
+                </Button>
+              ) : null}
+            </>
+          ) : null}
+          {status === 'needs-org' && onGoOnboarding ? (
+            <Button type="button" onClick={onGoOnboarding}>
+              Crear organización
+            </Button>
+          ) : null}
+          {status === 'success' && onGoProviders ? (
+            <Button type="button" onClick={onGoProviders}>
+              Ver proveedores
+            </Button>
+          ) : null}
+          {status === 'error' && onRetry ? (
+            <Button type="button" onClick={onRetry}>
+              Reintentar
+            </Button>
+          ) : null}
+        </div>
       </CardContent>
     </Card>
   )

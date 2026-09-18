@@ -2,10 +2,12 @@ import {
   formatApiError,
   getMyOrganizationsUsersMyOrganizationsGetQueryKey,
   OrganizationType,
+  useAuth,
   useCreateOrganizationOrganizationsPost,
 } from '@broker/api'
 import { notify, peekInviteToken, PRODUCT_NAME } from '@broker/ui'
 import { useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { usePendingJoinProvider } from '@/hooks/use-pending-join-provider'
@@ -13,16 +15,25 @@ import { usePendingJoinProvider } from '@/hooks/use-pending-join-provider'
 export function useOnboarding() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   const createMutation = useCreateOrganizationOrganizationsPost()
   const { providerId, providerName, joinProviderPath } = usePendingJoinProvider()
 
-  const description = providerName
-    ? `Crea tu organización para solicitar el vínculo con ${providerName}.`
-    : providerId
-      ? 'Crea tu organización para continuar con la solicitud de vínculo.'
-      : `Como vendedor, crea la organización con la que trabajarás en ${PRODUCT_NAME}.`
+  useEffect(() => {
+    if (peekInviteToken()) {
+      void navigate('/accept-invitation', { replace: true })
+    }
+  }, [navigate])
+
+  const description = providerId
+    ? 'Crea tu organización vendedora. Después enviaremos la solicitud de vínculo.'
+    : `Como vendedor, crea la organización con la que trabajarás en ${PRODUCT_NAME}.`
 
   const onSubmit = async ({ name }: { name: string }) => {
+    if (peekInviteToken()) {
+      void navigate('/accept-invitation', { replace: true })
+      return
+    }
     createMutation.reset()
     await createMutation.mutateAsync({
       data: { name, type: OrganizationType.seller },
@@ -31,10 +42,6 @@ export function useOnboarding() {
       queryKey: getMyOrganizationsUsersMyOrganizationsGetQueryKey(),
     })
     notify.created('Organización', 'f')
-    if (peekInviteToken()) {
-      void navigate('/accept-invitation')
-      return
-    }
     if (providerId) {
       void navigate(joinProviderPath)
       return
@@ -44,6 +51,8 @@ export function useOnboarding() {
 
   return {
     description,
+    defaultName: user?.name?.trim() || undefined,
+    linkedProviderName: providerName,
     isSubmitting: createMutation.isPending,
     error: createMutation.isError
       ? formatApiError(createMutation.error, 'No se pudo crear la organización.')

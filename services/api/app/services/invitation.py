@@ -21,7 +21,12 @@ from app.models.organization.organization import Organization
 from app.models.organization.organization_invitation import OrganizationInvitation
 from app.models.organization.user_organization import UserOrganization
 from app.models.user.user import User
-from app.schemas.invitation import InvitationCreatedResponse, InvitationPublic, MemberPublic
+from app.schemas.invitation import (
+    InvitationCreatedResponse,
+    InvitationPublic,
+    MemberInvitePreview,
+    MemberPublic,
+)
 from app.services import membership as membership_service
 from app.services import organization as org_service
 from app.services import provider_seller_link as link_service
@@ -163,6 +168,36 @@ async def create_seller_link_request(
         invitation,
         organization_name=provider.name,
         counterparty_organization_name=seller.name,
+    )
+
+
+async def preview_member_invite(
+    session: AsyncSession,
+    token: str,
+) -> MemberInvitePreview:
+    invitation = await get_entity(
+        session,
+        OrganizationInvitation,
+        token=token,
+        kind=InvitationKind.member_invite,
+        required=False,
+    )
+    if invitation is None:
+        raise HTTPException(status_code=404, detail="Invitation not found")
+    if invitation.status != InvitationStatus.pending:
+        raise HTTPException(status_code=400, detail="Invitation is not pending")
+    if invitation.invitee_email is None:
+        raise HTTPException(status_code=400, detail="Invalid invitation")
+
+    org = await get_entity(session, Organization, id=invitation.organization_id)
+    existing = await get_entity(
+        session, User, email=invitation.invitee_email, required=False
+    )
+    return MemberInvitePreview(
+        organization_name=org.name,
+        invitee_email=invitation.invitee_email,
+        user_exists=existing is not None,
+        status=invitation.status,
     )
 
 

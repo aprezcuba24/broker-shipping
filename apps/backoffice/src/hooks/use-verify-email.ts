@@ -2,7 +2,7 @@ import {
   formatApiError,
   useVerifyEmailEndpointUsersVerifyEmailPost,
 } from '@broker/api'
-import { type VerifyEmailStatus } from '@broker/ui'
+import { peekInviteMeta, peekInviteToken, type VerifyEmailStatus } from '@broker/ui'
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
@@ -11,6 +11,11 @@ export function useVerifyEmail() {
   const token = searchParams.get('token')?.trim() ?? ''
   const verifyMutation = useVerifyEmailEndpointUsersVerifyEmailPost()
   const started = useRef(false)
+  const inviteToken = peekInviteToken()
+  const inviteMeta = peekInviteMeta()
+  const loginHref = inviteToken
+    ? `/login?verified=1&token=${encodeURIComponent(inviteToken)}`
+    : '/login?verified=1'
   const [status, setStatus] = useState<VerifyEmailStatus>(() =>
     token ? 'loading' : 'missing',
   )
@@ -29,13 +34,17 @@ export function useVerifyEmail() {
       .mutateAsync({ data: { token } })
       .then(() => {
         setStatus('success')
-        setMessage('Correo confirmado correctamente. Ya puedes iniciar sesión.')
+        setMessage(
+          inviteMeta?.organizationName
+            ? `Correo confirmado. Inicia sesión para unirte a ${inviteMeta.organizationName}.`
+            : 'Correo confirmado correctamente. Ya puedes iniciar sesión.',
+        )
       })
       .catch((error: unknown) => {
         setStatus('error')
         setMessage(formatApiError(error, 'El enlace no es válido o ha caducado.'))
       })
-  }, [token, verifyMutation])
+  }, [inviteMeta?.organizationName, token, verifyMutation])
 
-  return { status, message }
+  return { status, message, loginHref }
 }

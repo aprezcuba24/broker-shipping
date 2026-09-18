@@ -8,6 +8,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -16,6 +17,10 @@ import {
   CreateOrganizationUiProvider,
   useOpenCreateOrganization,
 } from './create-organization-ui-context'
+import {
+  clearPreferredOrganizationId,
+  peekPreferredOrganizationId,
+} from './preferred-organization-storage'
 
 export type OrganizationKind =
   | typeof OrganizationType.provider
@@ -44,7 +49,9 @@ export function ActiveOrganizationProvider({
   organizationType,
 }: ActiveOrganizationProviderProps) {
   const { token } = useAuth()
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(() =>
+    peekPreferredOrganizationId(),
+  )
   const { data, isPending } = useMyOrganizationsUsersMyOrganizationsGet({
     query: {
       enabled: Boolean(token),
@@ -56,6 +63,14 @@ export function ActiveOrganizationProvider({
     if (!organizationType) return list
     return list.filter((org) => org.type === organizationType)
   }, [data, organizationType])
+
+  // Consume one-shot preference once the invited org is in the list.
+  useEffect(() => {
+    if (!selectedId || organizations.length === 0) return
+    if (organizations.some((org) => org.id === selectedId)) {
+      clearPreferredOrganizationId()
+    }
+  }, [organizations, selectedId])
 
   const activeOrganization = useMemo(() => {
     if (selectedId) {

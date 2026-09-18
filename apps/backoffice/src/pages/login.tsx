@@ -7,10 +7,14 @@ export function LoginPage() {
 
   return (
     <LoginForm
+      key={login.defaultEmail || 'login'}
       title={PRODUCT_NAME}
-      description="Introduce tus credenciales para continuar."
+      description={login.description}
       portal={portalTheme}
       schema={login.schema}
+      memberInviteOrganizationName={login.memberInviteOrganizationName}
+      defaultEmail={login.defaultEmail}
+      emailReadOnly={login.emailReadOnly}
       isSubmitting={login.isSubmitting}
       error={login.error}
       successMessage={login.successMessage}
@@ -28,7 +32,8 @@ export function LoginPage() {
             </Button>
           ) : null}
           <p>
-            ¿No tienes cuenta? <AuthFormLink to="/register">Crear cuenta</AuthFormLink>
+            ¿No tienes cuenta?{' '}
+            <AuthFormLink to={login.registerPath}>Crear cuenta</AuthFormLink>
           </p>
         </div>
       }

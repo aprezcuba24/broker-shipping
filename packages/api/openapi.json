@@ -3590,6 +3590,48 @@
         ]
       }
     },
+    "/organizations/invitations/preview": {
+      "get": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "Preview Member Invitation",
+        "operationId": "preview_member_invitation_organizations_invitations_preview_get",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberInvitePreview"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/organizations/invitations/accept-by-token": {
       "post": {
         "tags": [
@@ -5377,6 +5419,35 @@
           "invitee_email"
         ],
         "title": "MemberInviteCreate"
+      },
+      "MemberInvitePreview": {
+        "properties": {
+          "organization_name": {
+            "type": "string",
+            "title": "Organization Name"
+          },
+          "invitee_email": {
+            "type": "string",
+            "format": "email",
+            "title": "Invitee Email"
+          },
+          "user_exists": {
+            "type": "boolean",
+            "title": "User Exists"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InvitationStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_name",
+          "invitee_email",
+          "user_exists",
+          "status"
+        ],
+        "title": "MemberInvitePreview",
+        "description": "Public preview of a pending member invite (no auth required)."
       },
       "MemberIsActivePatch": {
         "properties": {

@@ -103,6 +103,110 @@ async def test_create_second_organization_same_type_allowed(
     assert len(listed.json()) == 2
 
 
+async def test_preview_member_invite_existing_user(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    mock_invitation_emails: list[dict[str, str]],
+) -> None:
+    owner = await user_factory.build(email="owner@preview-exists.com")
+    await user_factory.build(email="invitee@preview-exists.com")
+    org = await organization_factory.build(
+        user_id=owner["id"], name="Org Preview Exists"
+    )
+
+    create = await client.post(
+        f"/organizations/{org['id']}/member-invitations",
+        json={"invitee_email": "invitee@preview-exists.com"},
+        headers=bearer_headers(user_id=owner["id"]),
+    )
+    assert create.status_code == 201
+    token = create.json()["token"]
+
+    preview = await client.get(
+        "/organizations/invitations/preview",
+        params={"token": token},
+    )
+    assert preview.status_code == 200
+    body = preview.json()
+    assert body["organization_name"] == "Org Preview Exists"
+    assert body["invitee_email"] == "invitee@preview-exists.com"
+    assert body["user_exists"] is True
+    assert body["status"] == "pending"
+
+
+async def test_preview_member_invite_new_email(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    mock_invitation_emails: list[dict[str, str]],
+) -> None:
+    owner = await user_factory.build(email="owner@preview-new.com")
+    org = await organization_factory.build(
+        user_id=owner["id"], name="Org Preview New"
+    )
+
+    create = await client.post(
+        f"/organizations/{org['id']}/member-invitations",
+        json={"invitee_email": "newcomer@preview-new.com"},
+        headers=bearer_headers(user_id=owner["id"]),
+    )
+    assert create.status_code == 201
+    token = create.json()["token"]
+
+    preview = await client.get(
+        "/organizations/invitations/preview",
+        params={"token": token},
+    )
+    assert preview.status_code == 200
+    body = preview.json()
+    assert body["organization_name"] == "Org Preview New"
+    assert body["invitee_email"] == "newcomer@preview-new.com"
+    assert body["user_exists"] is False
+    assert body["status"] == "pending"
+
+
+async def test_preview_member_invite_invalid_token(
+    client: AsyncClient,
+) -> None:
+    preview = await client.get(
+        "/organizations/invitations/preview",
+        params={"token": "not-a-real-token"},
+    )
+    assert preview.status_code == 404
+
+
+async def test_preview_member_invite_already_accepted(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    mock_invitation_emails: list[dict[str, str]],
+) -> None:
+    owner = await user_factory.build(email="owner@preview-accepted.com")
+    invitee = await user_factory.build(email="invitee@preview-accepted.com")
+    org = await organization_factory.build(user_id=owner["id"], name="Org Accepted")
+
+    create = await client.post(
+        f"/organizations/{org['id']}/member-invitations",
+        json={"invitee_email": "invitee@preview-accepted.com"},
+        headers=bearer_headers(user_id=owner["id"]),
+    )
+    token = create.json()["token"]
+
+    accept = await client.post(
+        "/organizations/invitations/accept-by-token",
+        json={"token": token},
+        headers=bearer_headers(user_id=invitee["id"]),
+    )
+    assert accept.status_code == 200
+
+    preview = await client.get(
+        "/organizations/invitations/preview",
+        params={"token": token},
+    )
+    assert preview.status_code == 400
+
+
 async def test_member_invite_email_and_accept(
     client: AsyncClient,
     user_factory: UserFactory,
