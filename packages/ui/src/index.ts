@@ -370,6 +370,8 @@ export type {
   JoinProviderCardProps,
   JoinProviderStatus,
 } from './organization/join-provider-card'
+export { LinkedProviderCallout } from './organization/linked-provider-callout'
+export type { LinkedProviderCalloutProps } from './organization/linked-provider-callout'
 export { MemberInviteForm } from './organization/member-invite-form'
 export type { MemberInviteFields, MemberInviteFormProps } from './organization/member-invite-form'
 export { OrganizationMembersPage } from './organization/organization-members-page'

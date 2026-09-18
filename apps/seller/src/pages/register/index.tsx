@@ -11,6 +11,7 @@ export function RegisterPage() {
       description={register.description}
       portal={portalTheme}
       schema={register.schema}
+      linkedProviderName={register.linkedProviderName}
       isSubmitting={register.isSubmitting}
       error={register.error}
       successMessage={register.successMessage}

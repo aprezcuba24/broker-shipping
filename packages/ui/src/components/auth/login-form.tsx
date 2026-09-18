@@ -7,6 +7,7 @@ import { Button } from '../ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 import { Field, FieldError, FieldGroup, FieldLabel } from '../ui/field'
 import { Input } from '../ui/input'
+import { LinkedProviderCallout } from '../../organization/linked-provider-callout'
 import { AuthPageShell, type AuthPortalBranding } from './auth-page-shell'
 
 export type LoginFields = {
@@ -29,6 +30,8 @@ export type LoginFormProps = {
   footer?: ReactNode
   forgotPasswordHref?: string
   portal?: AuthPortalBranding
+  /** When set, highlights the provider the seller will link to. */
+  linkedProviderName?: string | null
 }
 
 export function LoginForm({
@@ -43,6 +46,7 @@ export function LoginForm({
   footer = null,
   forgotPasswordHref,
   portal,
+  linkedProviderName = null,
 }: LoginFormProps) {
   const form = useForm<LoginFields>({
     resolver: zodResolver(schema),
@@ -55,7 +59,10 @@ export function LoginForm({
         <CardTitle className="text-2xl font-headline">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        {linkedProviderName ? (
+          <LinkedProviderCallout providerName={linkedProviderName} />
+        ) : null}
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FieldGroup>
             <Controller
@@ -117,7 +124,7 @@ export function LoginForm({
             {isSubmitting ? 'Entrando…' : submitLabel}
           </Button>
         </form>
-        {footer ? <div className="mt-4 text-center text-sm text-muted-foreground">{footer}</div> : null}
+        {footer ? <div className="text-center text-sm text-muted-foreground">{footer}</div> : null}
       </CardContent>
     </Card>
   )

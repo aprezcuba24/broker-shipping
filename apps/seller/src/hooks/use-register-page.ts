@@ -13,15 +13,13 @@ export function useRegisterPage() {
   const [done, setDone] = useState(false)
   const { providerId, providerName, loginPath } = usePendingJoinProvider()
 
-  const description = providerName
-    ? `Crea tu cuenta para solicitar vínculo con ${providerName}. Te enviaremos un correo para confirmarla.`
-    : providerId
-      ? 'Crea tu cuenta para continuar con la solicitud de vínculo. Te enviaremos un correo para confirmarla.'
-      : 'Crea tu cuenta de vendedor. Te enviaremos un correo para confirmarla.'
+  const description = providerId
+    ? 'Crea tu cuenta para continuar con la solicitud de vínculo. Te enviaremos un correo para confirmarla.'
+    : 'Crea tu cuenta de vendedor. Te enviaremos un correo para confirmarla.'
 
   const successMessage = done
     ? providerName
-      ? `Te enviamos un correo con un enlace para confirmar tu cuenta. Cuando confirmes, inicia sesión y seguiremos con ${providerName}.`
+      ? 'Te enviamos un correo con un enlace para confirmar tu cuenta. Cuando confirmes, inicia sesión y seguiremos con la vinculación.'
       : 'Te enviamos un correo con un enlace para confirmar tu cuenta. Revisa tu bandeja de entrada (o MailHog en desarrollo).'
     : null
 
@@ -39,6 +37,7 @@ export function useRegisterPage() {
   return {
     schema: registerSchema,
     description,
+    linkedProviderName: providerName,
     successMessage,
     loginHref: loginPath,
     isSubmitting: registerMutation.isPending,

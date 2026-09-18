@@ -25,11 +25,9 @@ export function useLoginPage() {
   const reset = searchParams.get('reset') === '1'
   const showResend = Boolean(isEmailNotVerified && lastEmail)
 
-  const description = providerName
-    ? `Inicia sesión para vincularte con ${providerName}.`
-    : providerId
-      ? 'Inicia sesión para continuar con la solicitud de vínculo.'
-      : 'Introduce tus credenciales para continuar.'
+  const description = providerId
+    ? 'Inicia sesión para continuar con la solicitud de vínculo.'
+    : 'Introduce tus credenciales para continuar.'
 
   const onSubmit = async (values: LoginFormValues) => {
     setLastEmail(values.email)
@@ -65,6 +63,7 @@ export function useLoginPage() {
   return {
     schema: loginSchema,
     description,
+    linkedProviderName: providerName,
     registerPath,
     isSubmitting: isLoggingIn,
     error: loginError,

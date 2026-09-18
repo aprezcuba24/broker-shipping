@@ -11,6 +11,7 @@ export function LoginPage() {
       description={login.description}
       portal={portalTheme}
       schema={login.schema}
+      linkedProviderName={login.linkedProviderName}
       isSubmitting={login.isSubmitting}
       error={login.error}
       successMessage={login.successMessage}

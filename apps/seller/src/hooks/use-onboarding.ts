@@ -2,6 +2,7 @@ import {
   formatApiError,
   getMyOrganizationsUsersMyOrganizationsGetQueryKey,
   OrganizationType,
+  useAuth,
   useCreateOrganizationOrganizationsPost,
 } from '@broker/api'
 import { notify, peekInviteToken, PRODUCT_NAME } from '@broker/ui'
@@ -13,14 +14,13 @@ import { usePendingJoinProvider } from '@/hooks/use-pending-join-provider'
 export function useOnboarding() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   const createMutation = useCreateOrganizationOrganizationsPost()
   const { providerId, providerName, joinProviderPath } = usePendingJoinProvider()
 
-  const description = providerName
-    ? `Crea tu organización para solicitar el vínculo con ${providerName}.`
-    : providerId
-      ? 'Crea tu organización para continuar con la solicitud de vínculo.'
-      : `Como vendedor, crea la organización con la que trabajarás en ${PRODUCT_NAME}.`
+  const description = providerId
+    ? 'Crea tu organización vendedora. Después enviaremos la solicitud de vínculo.'
+    : `Como vendedor, crea la organización con la que trabajarás en ${PRODUCT_NAME}.`
 
   const onSubmit = async ({ name }: { name: string }) => {
     createMutation.reset()
@@ -44,6 +44,8 @@ export function useOnboarding() {
 
   return {
     description,
+    defaultName: user?.name?.trim() || undefined,
+    linkedProviderName: providerName,
     isSubmitting: createMutation.isPending,
     error: createMutation.isError
       ? formatApiError(createMutation.error, 'No se pudo crear la organización.')

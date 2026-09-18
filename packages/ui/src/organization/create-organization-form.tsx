@@ -7,8 +7,15 @@ import {
 } from '../components/auth/auth-page-shell'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
-import { Field, FieldError, FieldGroup, FieldLabel } from '../components/ui/field'
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '../components/ui/field'
 import { Input } from '../components/ui/input'
+import { LinkedProviderCallout } from './linked-provider-callout'
 
 const schema = z.object({
   name: z.string().trim().min(1, 'El nombre es obligatorio').max(255),
@@ -24,6 +31,12 @@ export type CreateOrganizationFormProps = {
   error?: string | null
   embedded?: boolean
   portal?: AuthPortalBranding
+  /** Prefill for the organization name field (e.g. the user's display name). */
+  defaultName?: string
+  /** De-emphasized hint under the name input. */
+  nameHint?: string
+  /** When set, shows a callout highlighting the provider the seller will link to. */
+  linkedProviderName?: string | null
   onSubmit: (values: CreateOrganizationFields) => void | Promise<void>
 }
 
@@ -32,11 +45,13 @@ function OrganizationNameFields({
   isSubmitting,
   error,
   submitLabel,
+  nameHint,
 }: {
   form: ReturnType<typeof useForm<CreateOrganizationFields>>
   isSubmitting: boolean
   error: string | null
   submitLabel: string
+  nameHint?: string
 }) {
   return (
     <>
@@ -55,6 +70,9 @@ function OrganizationNameFields({
                 aria-invalid={fieldState.invalid}
               />
               {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+              {nameHint && !fieldState.invalid ? (
+                <FieldDescription className="text-xs">{nameHint}</FieldDescription>
+              ) : null}
             </Field>
           )}
         />
@@ -79,11 +97,14 @@ export function CreateOrganizationForm({
   error = null,
   embedded = false,
   portal,
+  defaultName,
+  nameHint,
+  linkedProviderName = null,
   onSubmit,
 }: CreateOrganizationFormProps) {
   const form = useForm<CreateOrganizationFields>({
     resolver: zodResolver(schema),
-    defaultValues: { name: '' },
+    defaultValues: { name: defaultName ?? '' },
   })
 
   const fields = (
@@ -93,6 +114,7 @@ export function CreateOrganizationForm({
         isSubmitting={isSubmitting}
         error={error}
         submitLabel={submitLabel}
+        nameHint={nameHint}
       />
     </form>
   )
@@ -107,7 +129,12 @@ export function CreateOrganizationForm({
         <CardTitle className="text-2xl font-headline">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent>{fields}</CardContent>
+      <CardContent className="space-y-4">
+        {linkedProviderName ? (
+          <LinkedProviderCallout providerName={linkedProviderName} />
+        ) : null}
+        {fields}
+      </CardContent>
     </Card>
   )
 

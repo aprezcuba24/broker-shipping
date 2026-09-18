@@ -2,6 +2,7 @@ import {
   formatApiError,
   getMyOrganizationsUsersMyOrganizationsGetQueryKey,
   OrganizationType,
+  useAuth,
   useCreateOrganizationOrganizationsPost,
 } from '@broker/api'
 import { notify, peekInviteToken } from '@broker/ui'
@@ -11,6 +12,7 @@ import { useNavigate } from 'react-router-dom'
 export function useOnboarding() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   const createMutation = useCreateOrganizationOrganizationsPost()
 
   const onSubmit = async ({ name }: { name: string }) => {
@@ -30,6 +32,7 @@ export function useOnboarding() {
   }
 
   return {
+    defaultName: user?.name?.trim() || undefined,
     isSubmitting: createMutation.isPending,
     error: createMutation.isError
       ? formatApiError(createMutation.error, 'No se pudo crear la organización.')

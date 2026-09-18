@@ -6,6 +6,7 @@ import { Button } from '../ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 import { Field, FieldError, FieldGroup, FieldLabel } from '../ui/field'
 import { Input } from '../ui/input'
+import { LinkedProviderCallout } from '../../organization/linked-provider-callout'
 import { AuthPageShell, type AuthPortalBranding } from './auth-page-shell'
 import { AuthFormLink } from './login-form'
 
@@ -30,6 +31,8 @@ export type RegisterFormProps = {
   loginHref?: string
   footer?: ReactNode
   portal?: AuthPortalBranding
+  /** When set, highlights the provider the seller will link to. */
+  linkedProviderName?: string | null
 }
 
 export function RegisterForm({
@@ -43,6 +46,7 @@ export function RegisterForm({
   loginHref = '/login',
   footer = null,
   portal,
+  linkedProviderName = null,
 }: RegisterFormProps) {
   const form = useForm<RegisterFields>({
     resolver: zodResolver(schema),
@@ -55,7 +59,10 @@ export function RegisterForm({
         <CardTitle className="text-2xl font-headline">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        {linkedProviderName ? (
+          <LinkedProviderCallout providerName={linkedProviderName} />
+        ) : null}
         {successMessage ? (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground" role="status">
@@ -130,7 +137,7 @@ export function RegisterForm({
                 {isSubmitting ? 'Creando cuenta…' : 'Crear cuenta'}
               </Button>
             </form>
-            <div className="mt-4 text-center text-sm text-muted-foreground">
+            <div className="text-center text-sm text-muted-foreground">
               {footer ?? (
                 <>
                   ¿Ya tienes cuenta? <AuthFormLink to={loginHref}>Inicia sesión</AuthFormLink>
