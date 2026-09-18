@@ -53,25 +53,26 @@ export function RegisterForm({
     defaultValues: { name: '', email: '', password: '' },
   })
 
+  const isSuccess = Boolean(successMessage)
+
   const card = (
     <Card className="w-full max-w-md border-border shadow-lg">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-headline">{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <CardTitle className="text-2xl font-headline">
+          {isSuccess ? 'Revisa tu correo' : title}
+        </CardTitle>
+        <CardDescription role={isSuccess ? 'status' : undefined}>
+          {isSuccess ? successMessage : description}
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {linkedProviderName ? (
           <LinkedProviderCallout providerName={linkedProviderName} />
         ) : null}
-        {successMessage ? (
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground" role="status">
-              {successMessage}
-            </p>
-            <p className="text-center text-sm text-muted-foreground">
-              <AuthFormLink to={loginHref}>Volver al inicio de sesión</AuthFormLink>
-            </p>
-          </div>
+        {isSuccess ? (
+          <p className="text-center text-sm text-muted-foreground">
+            <AuthFormLink to={loginHref}>Volver al inicio de sesión</AuthFormLink>
+          </p>
         ) : (
           <>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

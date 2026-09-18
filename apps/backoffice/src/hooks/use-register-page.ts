@@ -28,7 +28,7 @@ export function useRegisterPage() {
       ? formatApiError(registerMutation.error, 'No se pudo crear la cuenta.')
       : null,
     successMessage: done
-      ? 'Te enviamos un correo con un enlace para confirmar tu cuenta. Revisa tu bandeja de entrada (o MailHog en desarrollo).'
+      ? 'Te enviamos un correo con un enlace para confirmar tu cuenta. Revisa tu bandeja de entrada.'
       : null,
     onSubmit,
   }

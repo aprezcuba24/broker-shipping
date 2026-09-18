@@ -15,15 +15,17 @@ export function useLoginPage() {
   const { login, isLoggingIn, loginError, isEmailNotVerified } = useAuth()
   const resendMutation = useResendVerificationUsersResendVerificationPost()
   const [lastEmail, setLastEmail] = useState('')
-  const [resendMessage, setResendMessage] = useState<string | null>(null)
+  const [resendDone, setResendDone] = useState(false)
+  const [resendError, setResendError] = useState<string | null>(null)
 
   const verified = searchParams.get('verified') === '1'
   const reset = searchParams.get('reset') === '1'
-  const showResend = Boolean(isEmailNotVerified && lastEmail)
+  const showResend = Boolean(lastEmail && (isEmailNotVerified || resendDone))
 
   const onSubmit = async (values: LoginFormValues) => {
     setLastEmail(values.email)
-    setResendMessage(null)
+    setResendDone(false)
+    setResendError(null)
     await login(values)
     if (peekInviteToken()) {
       void navigate('/accept-invitation')
@@ -33,16 +35,15 @@ export function useLoginPage() {
   }
 
   const onResend = async () => {
-    setResendMessage(null)
+    setResendError(null)
     try {
       await resendMutation.mutateAsync({
         data: { email: lastEmail, client_app: 'backoffice' },
       })
-      setResendMessage(
-        'Si la cuenta existe y no está verificada, te enviamos un nuevo enlace.',
-      )
+      setResendDone(true)
     } catch (error) {
-      setResendMessage(
+      setResendDone(false)
+      setResendError(
         formatApiError(error, 'No se pudo reenviar el correo de confirmación.'),
       )
     }
@@ -51,14 +52,14 @@ export function useLoginPage() {
   return {
     schema: loginSchema,
     isSubmitting: isLoggingIn,
-    error: loginError,
-    successMessage:
-      resendMessage ??
-      (verified
+    error: resendDone ? null : (resendError ?? loginError),
+    successMessage: resendDone
+      ? 'Te enviamos un nuevo enlace de confirmación. Revisa tu bandeja de entrada.'
+      : verified
         ? 'Correo confirmado. Ya puedes iniciar sesión.'
         : reset
           ? 'Contraseña actualizada. Ya puedes iniciar sesión.'
-          : null),
+          : null,
     onSubmit,
     showResend,
     resendPending: resendMutation.isPending,

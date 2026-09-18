@@ -20,7 +20,7 @@ export function useRegisterPage() {
   const successMessage = done
     ? providerName
       ? 'Te enviamos un correo con un enlace para confirmar tu cuenta. Cuando confirmes, inicia sesión y seguiremos con la vinculación.'
-      : 'Te enviamos un correo con un enlace para confirmar tu cuenta. Revisa tu bandeja de entrada (o MailHog en desarrollo).'
+      : 'Te enviamos un correo con un enlace para confirmar tu cuenta. Revisa tu bandeja de entrada.'
     : null
 
   const onSubmit = async (values: RegisterFormValues) => {
