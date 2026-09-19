@@ -10,6 +10,10 @@ const CONTACT_DRAWER_HEADINGS = [
   'kontaktinfo',
   'infos du contact',
   'dados do contato',
+  'datos de la empresa',
+  'business info',
+  'información de la empresa',
+  'info. de la empresa',
 ]
 
 const GROUP_DRAWER_HEADINGS = [
@@ -22,11 +26,30 @@ const GROUP_DRAWER_HEADINGS = [
   'infos du groupe',
 ]
 
-export type DrawerKind = 'contact' | 'group' | 'unknown'
+const BUSINESS_MARKERS = [
+  'cuenta de empresa',
+  'cuenta comercial',
+  'business account',
+  'official business account',
+  'cuenta oficial',
+  'empresa verificada',
+  'negocio',
+  'business',
+]
+
+export type DrawerKind = 'contact' | 'group' | 'business' | 'unknown'
 
 export type DrawerInspection = {
   kind: DrawerKind
   phone: string | null
+  about: string | null
+  email: string | null
+  website: string | null
+  description: string | null
+  participantCount: number | null
+  participantsPreview: string | null
+  isVerified: boolean
+  isBusiness: boolean
 }
 
 /** Successful phone lookups keyed by chat identity (name or raw phone label). */
@@ -73,6 +96,11 @@ function findHeadingInTree(
     if (matchesHeading(text, headings)) return el
   }
   return null
+}
+
+function textLooksBusiness(text: string): boolean {
+  const t = text.toLowerCase()
+  return BUSINESS_MARKERS.some((m) => t.includes(m))
 }
 
 /**
@@ -132,29 +160,182 @@ function phoneFromElementTree(root: ParentNode): string | null {
   return null
 }
 
+function emailFromElementTree(root: ParentNode): string | null {
+  for (const a of root.querySelectorAll<HTMLAnchorElement>('a[href^="mailto:"]')) {
+    const href = a.getAttribute('href')?.replace(/^mailto:/i, '').trim()
+    if (href && href.includes('@')) return href
+  }
+  const emailRe = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i
+  for (const el of root.querySelectorAll<HTMLElement>('span, div, a')) {
+    if (el.children.length > 0) continue
+    const text = firstLine(el.textContent ?? '')
+    const m = text.match(emailRe)
+    if (m) return m[0]
+  }
+  return null
+}
+
+function websiteFromElementTree(root: ParentNode): string | null {
+  for (const a of root.querySelectorAll<HTMLAnchorElement>('a[href^="http"]')) {
+    const href = a.getAttribute('href')?.trim()
+    if (!href) continue
+    if (/whatsapp\.com|facebook\.com|meta\.com/i.test(href)) continue
+    return href
+  }
+  return null
+}
+
+function aboutFromElementTree(root: ParentNode): string | null {
+  // Common labels near status / about blocks
+  const labels = [
+    'info',
+    'about',
+    'estado',
+    'información',
+    'description',
+    'descripción',
+  ]
+  for (const el of root.querySelectorAll<HTMLElement>('span, div')) {
+    const label = firstLine(el.textContent ?? '').toLowerCase()
+    if (!labels.includes(label)) continue
+    const sibling = el.parentElement?.querySelector(
+      'span[dir="auto"], span[dir="ltr"], span.selectable-text, div[dir="auto"]',
+    )
+    const text = firstLine(sibling?.textContent ?? '')
+    if (
+      text &&
+      text.length > 1 &&
+      text.length < 200 &&
+      !looksLikePhone(text) &&
+      !labels.includes(text.toLowerCase())
+    ) {
+      return text
+    }
+  }
+  return null
+}
+
+function participantsFromGroupDrawer(root: ParentNode): {
+  count: number | null
+  preview: string | null
+} {
+  const texts: string[] = []
+  for (const el of root.querySelectorAll<HTMLElement>(
+    'span[title], span[dir="auto"]',
+  )) {
+    const title = el.getAttribute('title')?.trim()
+    const text = title || firstLine(el.textContent ?? '')
+    if (!text || text.length > 60) continue
+    if (looksLikePhone(text)) continue
+    if (matchesHeading(text, GROUP_DRAWER_HEADINGS)) continue
+    if (/^(\d+)\s+(participantes|participants|members)/i.test(text)) {
+      const n = Number(text.match(/^(\d+)/)?.[1])
+      return { count: Number.isFinite(n) ? n : null, preview: null }
+    }
+    if (/participantes|participants|members|admin/i.test(text)) continue
+    if (el.children.length > 0 && !title) continue
+    texts.push(text)
+  }
+
+  const unique = [...new Set(texts)].slice(0, 8)
+  const countMatch = root.textContent?.match(
+    /(\d+)\s+(participantes|participants|members)/i,
+  )
+  const count = countMatch ? Number(countMatch[1]) : unique.length || null
+
+  return {
+    count: count && count > 0 ? count : null,
+    preview: unique.length ? unique.join(', ') : null,
+  }
+}
+
+function drawerHasVerified(root: ParentNode): boolean {
+  if (
+    root.querySelector(
+      '[data-icon*="verified"], [data-testid*="verified"], [aria-label*="verific"]',
+    )
+  ) {
+    return true
+  }
+  const blob = (root.textContent ?? '').toLowerCase()
+  return /verificad|verified|official business/.test(blob)
+}
+
+function drawerLooksBusiness(root: ParentNode): boolean {
+  if (
+    root.querySelector(
+      '[data-testid*="business"], [data-icon*="business"], [aria-label*="business"], [aria-label*="empresa"]',
+    )
+  ) {
+    return true
+  }
+  return textLooksBusiness(root.textContent ?? '')
+}
+
 /**
- * Inspect the open drawer: group vs contact, and phone only for contact drawers.
- * Never returns a phone for group-info panels (avoids picking a member's number).
+ * Inspect the open drawer: group / contact / business and extra fields.
+ * Never returns a phone for group-info panels.
  */
 export function inspectInfoDrawer(): DrawerInspection | null {
   const drawer = findInfoDrawer()
   if (!drawer) return null
 
+  const isVerified = drawerHasVerified(drawer)
+  const isBusiness = drawerLooksBusiness(drawer)
+
   if (findHeadingInTree(drawer, GROUP_DRAWER_HEADINGS)) {
-    return { kind: 'group', phone: null }
+    const participants = participantsFromGroupDrawer(drawer)
+    return {
+      kind: 'group',
+      phone: null,
+      about: aboutFromElementTree(drawer),
+      email: null,
+      website: null,
+      description: null,
+      participantCount: participants.count,
+      participantsPreview: participants.preview,
+      isVerified,
+      isBusiness: false,
+    }
   }
 
-  if (findHeadingInTree(drawer, CONTACT_DRAWER_HEADINGS)) {
-    return { kind: 'contact', phone: phoneFromElementTree(drawer) }
+  if (
+    findHeadingInTree(drawer, CONTACT_DRAWER_HEADINGS) ||
+    isBusiness
+  ) {
+    const kind: DrawerKind = isBusiness ? 'business' : 'contact'
+    return {
+      kind,
+      phone: phoneFromElementTree(drawer),
+      about: aboutFromElementTree(drawer),
+      email: emailFromElementTree(drawer),
+      website: websiteFromElementTree(drawer),
+      description: aboutFromElementTree(drawer),
+      participantCount: null,
+      participantsPreview: null,
+      isVerified,
+      isBusiness,
+    }
   }
 
-  // Unknown drawer — do not scrape phones (could be a member profile inside a group).
-  return { kind: 'unknown', phone: null }
+  return {
+    kind: 'unknown',
+    phone: null,
+    about: null,
+    email: null,
+    website: null,
+    description: null,
+    participantCount: null,
+    participantsPreview: null,
+    isVerified,
+    isBusiness,
+  }
 }
 
-/** @deprecated use inspectInfoDrawer — kept for call sites that only need a phone. */
 export function phoneFromContactDrawer(): string | null {
   const info = inspectInfoDrawer()
-  if (!info || info.kind !== 'contact') return null
+  if (!info || (info.kind !== 'contact' && info.kind !== 'business')) {
+    return null
+  }
   return info.phone
 }

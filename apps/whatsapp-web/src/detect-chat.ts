@@ -4,24 +4,35 @@ import {
   isPhoneUnavailable,
   markPhoneUnavailable,
   rememberPhoneForChat,
+  type DrawerInspection,
 } from './contact-drawer'
 import { formatPhone, looksLikePhone, normalizePhone } from './phone'
 
 export type PhoneStatus = 'found' | 'unknown' | 'unavailable'
 
+/** High-level chat classification from WhatsApp Web UI signals. */
+export type ChatKind = 'group' | 'contact' | 'business' | 'unknown'
+
 export type DetectedChat = {
-  /** Visible contact/group name when it is not just a phone number. */
   name: string | null
-  /** Phone when WhatsApp exposes it for a 1:1 chat. */
   phone: string | null
-  /** True when the open conversation is a group. */
   isGroup: boolean
-  /**
-   * found — have a number
-   * unavailable — group, or drawer opened once without a usable number
-   * unknown — still might appear (e.g. unsaved header phone not seen yet)
-   */
   phoneStatus: PhoneStatus
+  /** group | contact | business | unknown */
+  kind: ChatKind
+  /** Human label in Spanish for the kind. */
+  kindLabel: string
+  /** Normalized presence when it looks like online / last seen / typing. */
+  presence: string | null
+  isBusiness: boolean
+  isVerified: boolean
+  /** true = saved name; false = title is a raw phone; null = unclear */
+  isSavedContact: boolean | null
+  about: string | null
+  email: string | null
+  website: string | null
+  participantCount: number | null
+  drawerOpen: boolean
 }
 
 export { formatPhone, looksLikePhone, normalizePhone } from './phone'
@@ -101,40 +112,159 @@ function conversationHeader(): HTMLElement | null {
   )
 }
 
-function detectIsGroup(): boolean {
-  const main = document.querySelector('#main')
-  if (main?.querySelector('[data-id*="@g.us"]')) return true
+/** Sticky only for chats confirmed by strong group signals. */
+const knownGroupKeys = new Set<string>()
 
-  const header = conversationHeader()
-  if (header) {
-    const subtitle =
-      header.querySelector<HTMLElement>(
-        '[data-testid="conversation-info-header-chat-subtitle"]',
-      ) ?? null
-    const subText = (
-      subtitle?.getAttribute('title') ??
-      subtitle?.textContent ??
+function rememberGroupKey(key: string | null | undefined): void {
+  const k = key?.trim()
+  if (k) knownGroupKeys.add(k)
+}
+
+function forgetGroupKey(key: string | null | undefined): void {
+  const k = key?.trim()
+  if (k) knownGroupKeys.delete(k)
+}
+
+function isKnownGroupKey(key: string | null | undefined): boolean {
+  const k = key?.trim()
+  return Boolean(k && knownGroupKeys.has(k))
+}
+
+function hasGroupMessageId(): boolean {
+  return Boolean(document.querySelector('#main [data-id*="@g.us"]'))
+}
+
+function headerHasGroupInfoLabel(header: HTMLElement | null): boolean {
+  if (!header) return false
+  for (const el of header.querySelectorAll('[title], [aria-label]')) {
+    const title = (
+      el.getAttribute('title') ??
+      el.getAttribute('aria-label') ??
       ''
     ).toLowerCase()
-    if (
-      /grupo|group info|info\.?\s*del\s*grupo|participantes|participants/.test(
-        subText,
-      )
-    ) {
+    if (/info\.?\s*del\s*grupo|group info|datos del grupo/.test(title)) {
       return true
     }
-
-    // Header copy that points at group info
-    for (const el of header.querySelectorAll('[title]')) {
-      const title = (el.getAttribute('title') ?? '').toLowerCase()
-      if (/info\.?\s*del\s*grupo|group info/.test(title)) return true
-    }
   }
-
-  const drawer = inspectInfoDrawer()
-  if (drawer?.kind === 'group') return true
-
   return false
+}
+
+/**
+ * Strong subtitle signals for groups.
+ * Avoid bare comma-lists (business taglines) and author heuristics
+ * (1:1 often shows the same peer as name AND phone).
+ */
+function subtitleLooksLikeGroup(subtitle: string | null): boolean {
+  if (!subtitle) return false
+  if (classifyPresence(subtitle)) return false
+  const t = subtitle.toLowerCase()
+  if (/\d+\s+(participantes|participants|members)\b/.test(t)) return true
+  if (/info\.?\s*del\s*grupo|group info|datos del grupo/.test(t)) return true
+  // WA group member preview usually ends with "tú" / "you"
+  const parts = subtitle.split(',').map((p) => p.trim()).filter(Boolean)
+  if (parts.length >= 2) {
+    const last = parts[parts.length - 1]?.toLowerCase() ?? ''
+    if (last === 'tú' || last === 'tu' || last === 'you') return true
+  }
+  return false
+}
+
+function detectIsGroup(
+  drawer: DrawerInspection | null,
+  subtitle: string | null,
+  header: HTMLElement | null,
+): boolean {
+  if (hasGroupMessageId()) return true
+  if (drawer?.kind === 'group') return true
+  if (headerHasGroupInfoLabel(header)) return true
+  if (subtitleLooksLikeGroup(subtitle)) return true
+  return false
+}
+
+/** Clear false sticky when the open chat looks like a clear 1:1. */
+function looksLikeOneToOne(
+  drawer: DrawerInspection | null,
+  subtitle: string | null,
+): boolean {
+  if (hasGroupMessageId() || drawer?.kind === 'group') return false
+  if (drawer?.kind === 'contact' || drawer?.kind === 'business') return true
+  if (classifyPresence(subtitle)) return true
+  return false
+}
+
+function readHeaderSubtitle(): string | null {
+  const header = conversationHeader()
+  if (!header) return null
+  const el =
+    header.querySelector<HTMLElement>(
+      '[data-testid="conversation-info-header-chat-subtitle"]',
+    ) ??
+    header.querySelector<HTMLElement>('[data-testid="chat-subtitle"]') ??
+    null
+  if (!el) return null
+  const raw = firstLine(el.getAttribute('title') ?? el.textContent ?? '')
+  if (!raw || looksLikeIconLigature(raw)) return null
+  return raw
+}
+
+function classifyPresence(subtitle: string | null): string | null {
+  if (!subtitle) return null
+  const t = subtitle.toLowerCase()
+  if (/^en línea$|^online$/.test(t) || t.startsWith('en línea') || t === 'online') {
+    return 'En línea'
+  }
+  if (/escribiendo|typing/.test(t)) return 'Escribiendo…'
+  if (/grabando|recording/.test(t)) return 'Grabando audio…'
+  if (/visto por última vez|last seen/.test(t)) return subtitle
+  return null
+}
+
+function detectBusinessSignals(header: HTMLElement | null): boolean {
+  if (!header) return false
+  if (
+    header.querySelector(
+      '[data-testid*="business"], [data-icon*="business"], [aria-label*="business" i], [aria-label*="empresa" i]',
+    )
+  ) {
+    return true
+  }
+  const blob = (header.textContent ?? '').toLowerCase()
+  return /cuenta de empresa|cuenta comercial|business account|official business/.test(
+    blob,
+  )
+}
+
+function detectVerified(header: HTMLElement | null, drawer: DrawerInspection | null): boolean {
+  if (drawer?.isVerified) return true
+  if (!header) return false
+  return Boolean(
+    header.querySelector(
+      '[data-icon*="verified"], [data-testid*="verified"], [aria-label*="verific" i]',
+    ),
+  )
+}
+
+function kindLabelFor(kind: ChatKind): string {
+  switch (kind) {
+    case 'group':
+      return 'Grupo'
+    case 'business':
+      return 'Cuenta de empresa'
+    case 'contact':
+      return 'Contacto'
+    default:
+      return 'Desconocido'
+  }
+}
+
+function participantCountFromSubtitle(subtitle: string | null): number | null {
+  if (!subtitle) return null
+  const m = subtitle.match(/^(\d+)\s+(participantes|participants|members)/i)
+  if (m) return Number(m[1])
+  // "Juan, María, Tú" style
+  const parts = subtitle.split(',').map((p) => p.trim()).filter(Boolean)
+  if (parts.length >= 2 && !classifyPresence(subtitle)) return parts.length
+  return null
 }
 
 function detectHeaderLabel(): string | null {
@@ -363,12 +493,12 @@ function detectPhone(
       return { phone: null, status: 'unavailable' }
     }
 
-    if (drawer.kind === 'contact') {
+    if (drawer.kind === 'contact' || drawer.kind === 'business') {
       if (drawer.phone) {
         if (cacheKey) rememberPhoneForChat(cacheKey, drawer.phone)
         return { phone: drawer.phone, status: 'found' }
       }
-      // User opened contact info and there is no phone → stop trying.
+      // User opened contact/business info and there is no phone → stop trying.
       if (cacheKey) markPhoneUnavailable(cacheKey)
       return { phone: null, status: 'unavailable' }
     }
@@ -426,21 +556,34 @@ function detectPhone(
 }
 
 export function detectCurrentChat(): DetectedChat {
+  const empty: DetectedChat = {
+    name: null,
+    phone: null,
+    isGroup: false,
+    phoneStatus: 'unknown',
+    kind: 'unknown',
+    kindLabel: kindLabelFor('unknown'),
+    presence: null,
+    isBusiness: false,
+    isVerified: false,
+    isSavedContact: null,
+    about: null,
+    email: null,
+    website: null,
+    participantCount: null,
+    drawerOpen: false,
+  }
+
   const mainOpen = Boolean(
     document.querySelector('#main') ||
       document.querySelector('header[data-testid="conversation-header"]'),
   )
 
-  if (!mainOpen) {
-    return {
-      name: null,
-      phone: null,
-      isGroup: false,
-      phoneStatus: 'unknown',
-    }
-  }
+  if (!mainOpen) return empty
 
-  const isGroup = detectIsGroup()
+  const header = conversationHeader()
+  const drawer = inspectInfoDrawer()
+  const subtitle = readHeaderSubtitle()
 
   const label =
     detectHeaderLabel() ??
@@ -453,17 +596,82 @@ export function detectCurrentChat(): DetectedChat {
   }
 
   const cacheKey = identityKey(name, label)
+
+  const liveGroup = detectIsGroup(drawer, subtitle, header)
+  const oneToOne = looksLikeOneToOne(drawer, subtitle)
+
+  if (oneToOne) {
+    forgetGroupKey(cacheKey)
+    forgetGroupKey(label)
+    forgetGroupKey(name)
+  }
+
+  // Sticky only helps when group DOM signals flicker; never override a clear 1:1.
+  let isGroup = oneToOne
+    ? false
+    : liveGroup ||
+      isKnownGroupKey(cacheKey) ||
+      isKnownGroupKey(label) ||
+      isKnownGroupKey(name)
+
+  if (isGroup && liveGroup) {
+    rememberGroupKey(cacheKey)
+    rememberGroupKey(label)
+    rememberGroupKey(name)
+  }
+
+  const presence = isGroup ? null : classifyPresence(subtitle)
+  const isBusiness =
+    !isGroup &&
+    (drawer?.isBusiness === true ||
+      drawer?.kind === 'business' ||
+      detectBusinessSignals(header))
+  const isVerified = detectVerified(header, drawer)
+
   const { phone, status } = detectPhone(label, cacheKey, isGroup)
 
   if (!name && !phone && !isGroup) {
     name = nameFromIncomingMessages()
   }
 
+  const resolvedName = name && !looksLikePhone(name) ? name : null
+  if (isGroup && liveGroup && resolvedName) rememberGroupKey(resolvedName)
+
+  const isSavedContact = isGroup
+    ? null
+    : resolvedName
+      ? true
+      : phone || (label && looksLikePhone(label))
+        ? false
+        : null
+
+  let kind: ChatKind = 'unknown'
+  if (isGroup) kind = 'group'
+  else if (isBusiness) kind = 'business'
+  else if (resolvedName || phone || label) kind = 'contact'
+
+  let participantCount: number | null = null
+  if (isGroup) {
+    participantCount =
+      drawer?.participantCount ?? participantCountFromSubtitle(subtitle)
+  }
+
   return {
-    name: name && !looksLikePhone(name) ? name : null,
+    name: resolvedName,
     phone,
     isGroup,
     phoneStatus: status,
+    kind,
+    kindLabel: kindLabelFor(kind),
+    presence,
+    isBusiness,
+    isVerified,
+    isSavedContact,
+    about: drawer?.about ?? null,
+    email: drawer?.email ?? null,
+    website: drawer?.website ?? null,
+    participantCount,
+    drawerOpen: Boolean(drawer),
   }
 }
 
@@ -481,7 +689,17 @@ export function watchCurrentChat(
 
   const emit = () => {
     const chat = detectCurrentChat()
-    const key = `${chatKeyFor(chat.name, chat.phone)}|${chat.isGroup}|${chat.phoneStatus}`
+    const key = [
+      chatKeyFor(chat.name, chat.phone),
+      chat.kind,
+      chat.phoneStatus,
+      chat.presence ?? '',
+      chat.about ?? '',
+      chat.email ?? '',
+      String(chat.participantCount ?? ''),
+      String(chat.isVerified),
+      String(chat.drawerOpen),
+    ].join('|')
     if (key === lastKey) return
     lastKey = key
     console.info('[Broker WA POC] chat', chat)

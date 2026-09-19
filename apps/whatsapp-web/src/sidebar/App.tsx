@@ -13,12 +13,6 @@ function readTheme(): 'dark' | 'light' {
   return document.body.classList.contains('dark') ? 'dark' : 'light'
 }
 
-function phoneLabel(chat: DetectedChat): string {
-  if (chat.phone) return chat.phone
-  if (chat.phoneStatus === 'unavailable') return 'No se pudo obtener'
-  return 'No disponible'
-}
-
 function readSidebarOpen(): boolean {
   try {
     const raw = localStorage.getItem(SIDEBAR_OPEN_STORAGE_KEY)
@@ -33,7 +27,7 @@ function writeSidebarOpen(open: boolean): void {
   try {
     localStorage.setItem(SIDEBAR_OPEN_STORAGE_KEY, open ? '1' : '0')
   } catch {
-    // ignore quota / private mode
+    // ignore
   }
 }
 
@@ -56,15 +50,13 @@ export function App({ chat }: Props) {
     writeSidebarOpen(open)
   }, [open])
 
-  const hasChat = Boolean(chat.name || chat.phone)
+  const hasChat = Boolean(chat.name || chat.phone || chat.kind !== 'unknown')
   const suggestOpenContactInfo =
     Boolean(chat.name) &&
     !chat.phone &&
     !chat.isGroup &&
     chat.phoneStatus === 'unknown'
-  const customer = hasChat
-    ? buildMockCustomer(chat.name ?? 'No disponible', phoneLabel(chat))
-    : null
+  const customer = hasChat ? buildMockCustomer(chat) : null
 
   if (!open) {
     return (
