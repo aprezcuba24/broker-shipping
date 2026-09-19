@@ -1,6 +1,7 @@
 import { createRoot, type Root } from 'react-dom/client'
 import type { DetectedChat } from '../detect-chat'
 import { SIDEBAR_HOST_ID, SIDEBAR_WIDTH_PX } from '../constants'
+import { syncSidebarChrome } from '../layout'
 import { App } from './App'
 import styles from './styles.css?inline'
 
@@ -18,24 +19,25 @@ export function mountSidebar(initialChat: DetectedChat): SidebarHandle {
   if (!host) {
     host = document.createElement('div')
     host.id = SIDEBAR_HOST_ID
-    Object.assign(host.style, {
-      position: 'fixed',
-      top: '0',
-      right: '0',
-      width: `${SIDEBAR_WIDTH_PX}px`,
-      height: '100vh',
-      // Above WhatsApp chrome (modals use very high z-index; stay under those)
-      zIndex: '2147483000',
-      pointerEvents: 'auto',
-    } satisfies Partial<CSSStyleDeclaration>)
     document.documentElement.appendChild(host)
   }
+
+  // Default open sizing; App syncs open/collapsed on mount.
+  Object.assign(host.style, {
+    position: 'fixed',
+    top: '0',
+    right: '0',
+    width: `${SIDEBAR_WIDTH_PX}px`,
+    height: '100vh',
+    zIndex: '2147483000',
+    pointerEvents: 'auto',
+  } satisfies Partial<CSSStyleDeclaration>)
+  syncSidebarChrome(true)
 
   console.info('[Broker WA POC] sidebar host mounted')
 
   const shadow = host.shadowRoot ?? host.attachShadow({ mode: 'open' })
 
-  // Clear previous mount (HMR / re-inject)
   shadow.replaceChildren()
 
   const styleEl = document.createElement('style')

@@ -1,5 +1,4 @@
 import { detectCurrentChat, watchCurrentChat } from './detect-chat'
-import { applySidebarLayout } from './layout'
 import { mountSidebar } from './sidebar/mount'
 
 let booted = false
@@ -58,7 +57,6 @@ async function boot(): Promise<void> {
     return
   }
 
-  applySidebarLayout()
   const sidebar = mountSidebar(detectCurrentChat())
   watchCurrentChat((chat) => sidebar.update(chat))
   console.info('[Broker WA POC] ready', detectCurrentChat())

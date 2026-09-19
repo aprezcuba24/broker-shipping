@@ -1,33 +1,61 @@
-import { SIDEBAR_WIDTH_PX } from './constants'
+import { SIDEBAR_HOST_ID, SIDEBAR_WIDTH_PX } from './constants'
 
 const STYLE_ID = 'broker-wa-poc-layout-style'
 
 /**
  * Reserves horizontal space on the right so WhatsApp's main UI is not
- * covered by our fixed sidebar. Falls back gracefully if WA markup changes.
+ * covered by our fixed sidebar.
  */
-export function applySidebarLayout(): () => void {
-  if (document.getElementById(STYLE_ID)) {
-    return () => undefined
+export function applySidebarLayout(): void {
+  let style = document.getElementById(STYLE_ID) as HTMLStyleElement | null
+  if (!style) {
+    style = document.createElement('style')
+    style.id = STYLE_ID
+    document.documentElement.appendChild(style)
   }
 
-  const style = document.createElement('style')
-  style.id = STYLE_ID
   style.textContent = `
-    /* Prefer shrinking the main WA shell when present */
     .app-wrapper-web > div {
       max-width: calc(100vw - ${SIDEBAR_WIDTH_PX}px) !important;
       width: calc(100vw - ${SIDEBAR_WIDTH_PX}px) !important;
     }
-    /* Fallback: push #app content left if wrapper selector misses */
     #app {
       box-sizing: border-box;
       padding-right: ${SIDEBAR_WIDTH_PX}px;
     }
   `
-  document.documentElement.appendChild(style)
+}
 
-  return () => {
-    style.remove()
+export function clearSidebarLayout(): void {
+  document.getElementById(STYLE_ID)?.remove()
+}
+
+/** Resize the extension host and WA shell for open vs collapsed modes. */
+export function syncSidebarChrome(open: boolean): void {
+  const host = document.getElementById(SIDEBAR_HOST_ID)
+  if (!host) return
+
+  if (open) {
+    Object.assign(host.style, {
+      position: 'fixed',
+      top: '0',
+      right: '0',
+      width: `${SIDEBAR_WIDTH_PX}px`,
+      height: '100vh',
+      zIndex: '2147483000',
+      pointerEvents: 'auto',
+    } satisfies Partial<CSSStyleDeclaration>)
+    applySidebarLayout()
+  } else {
+    Object.assign(host.style, {
+      position: 'fixed',
+      top: '10px',
+      right: '10px',
+      width: 'auto',
+      height: 'auto',
+      zIndex: '2147483000',
+      pointerEvents: 'auto',
+    } satisfies Partial<CSSStyleDeclaration>)
+    clearSidebarLayout()
   }
 }
