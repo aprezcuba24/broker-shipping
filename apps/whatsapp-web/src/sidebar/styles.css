@@ -1,0 +1,151 @@
+:host {
+  all: initial;
+  display: block;
+  box-sizing: border-box;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bw-bg, #f0f2f5);
+  color: var(--bw-fg, #111b21);
+  border-left: 1px solid var(--bw-border, #d1d7db);
+}
+
+.panel[data-theme='dark'] {
+  --bw-bg: #111b21;
+  --bw-fg: #e9edef;
+  --bw-muted: #8696a0;
+  --bw-card: #202c33;
+  --bw-border: #2a3942;
+  --bw-accent: #00a884;
+  --bw-badge-bg: rgba(0, 168, 132, 0.15);
+  --bw-badge-fg: #00a884;
+}
+
+.panel[data-theme='light'] {
+  --bw-bg: #f0f2f5;
+  --bw-fg: #111b21;
+  --bw-muted: #667781;
+  --bw-card: #ffffff;
+  --bw-border: #d1d7db;
+  --bw-accent: #008069;
+  --bw-badge-bg: rgba(0, 128, 105, 0.12);
+  --bw-badge-fg: #008069;
+}
+
+.header {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--bw-border);
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.header p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--bw-muted);
+}
+
+.body {
+  flex: 1;
+  overflow: auto;
+  padding: 16px 18px 24px;
+}
+
+.empty {
+  margin-top: 24px;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--bw-card);
+  border: 1px dashed var(--bw-border);
+  color: var(--bw-muted);
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.card {
+  background: var(--bw-card);
+  border: 1px solid var(--bw-border);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.card-title h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+.badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--bw-badge-bg);
+  color: var(--bw-badge-fg);
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.row dt {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--bw-muted);
+}
+
+.row dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.footer-note {
+  margin-top: 16px;
+  font-size: 11px;
+  color: var(--bw-muted);
+  line-height: 1.4;
+}

@@ -11,6 +11,7 @@
     "dev:admin": "pnpm --filter @broker/admin dev",
     "dev:seller": "pnpm --filter @broker/seller dev",
     "dev:landing": "pnpm --filter @broker/landing dev",
+    "dev:whatsapp-web": "pnpm --filter @broker/whatsapp-web dev",
     "dev:api": "cd services/api && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
     "db:reset": "cd services/api && uv run python scripts/db_reset.py",
     "rpc:schema": "cd services/api && uv run python scripts/export_openapi.py",
