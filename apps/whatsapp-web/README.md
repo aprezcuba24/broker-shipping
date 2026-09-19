@@ -66,12 +66,17 @@ Tras cada build, en `chrome://extensions` usa **Reload** en la extensión.
 WhatsApp Web no ofrece API pública para extensiones. La POC lee el DOM:
 
 1. Espera a que exista `#app` (carga / QR).
-2. Considera conversación abierta si existe `#main`.
-3. Lee el nombre desde `#main header`:
-   - Preferencia: `span[title]` / `div[title]` cuyo `title` no sea texto de UI (`en línea`, `online`, `escribiendo…`, etc.).
-   - Fallback: primer `span[dir="auto"]` del header que no sea ruido de UI.
-4. Un `MutationObserver` (con debounce ~100 ms) observa cambios en el header / árbol de `#app` y vuelve a detectar el nombre.
-5. El teléfono solo se rellena si el propio título parece un número (`+` y dígitos). En contactos guardados WhatsApp suele mostrar el **nombre**, no el número.
+2. Conversación abierta = `#main` o `header[data-testid="conversation-header"]`.
+3. **Nombre** (en orden):
+   - Primer texto útil en `header[data-testid="conversation-header"]` (salta iconos `wds-ic-*`).
+   - Atributos `title` del header.
+   - Chat seleccionado en `#pane-side`.
+   - `document.title` (sin el sufijo “WhatsApp”).
+4. **Teléfono** (en orden, solo chats 1:1 — los **grupos no tienen teléfono**):
+   - Si el título ya es un número.
+   - Panel **Datos del contacto** cuando el usuario lo abre (una sola vez: si no hay número, se marca como no obtenible).
+   - Metadatos de mensajes / `data-id` con `@c.us` (no se usan teléfonos de participantes en grupos).
+5. Si es grupo, o el panel de info se abrió y no dio número: el teléfono queda en **No se pudo obtener** y no se vuelve a intentar para ese chat.
 
 La UI React vive en un **Shadow DOM** para no pelear con los estilos de WhatsApp.
 
@@ -79,14 +84,25 @@ La UI React vive en un **Shadow DOM** para no pelear con los estilos de WhatsApp
 
 | Limitación | Detalle |
 |---|---|
-| DOM no contratado | Meta puede cambiar markup/clases en cualquier momento y romper selectores. |
-| Teléfono poco fiable | Solo si el header muestra un número; contactos con nombre → “No disponible”. |
-| Grupos | Se muestra el **nombre del grupo**, no un “contacto” individual. |
-| Layout | Se intenta reducir el ancho del shell de WA; si el selector falla, el panel fijo puede solaparse un poco. |
+| DOM no contratado | Meta puede cambiar markup en cualquier momento y romper selectores. |
+| Teléfono no siempre visible | Contactos guardados / IDs `@lid` a menudo no exponen el número en el DOM. |
+| Grupos | Se muestra el **nombre del grupo**; no hay un único teléfono. |
+| Layout | Si el selector de layout falla, el panel fijo puede solaparse un poco. |
 | Términos de uso | Solo lectura de UI visible. No automatiza chats ni scrapea masivamente. |
-| Sin persistencia | Los datos de la ficha son hardcodeados; no hay API ni CRM. |
+| Sin persistencia | Los datos de la ficha (excepto nombre/teléfono detectados) son hardcodeados. |
 
-Si tras un rediseño de WhatsApp Web el nombre deja de detectarse, inspecciona `#main header` en DevTools y ajusta `src/detect-chat.ts` con el selector más estable disponible.
+### Detalle: teléfono
+
+El teléfono **solo** aparece cuando WhatsApp lo deja en la UI:
+
+1. El título del chat **es** el número (contacto no guardado), o
+2. Está en `data-pre-plain-text` de burbujas entrantes, o
+3. Queda un `data-id` legado con `@c.us`.
+
+Si no, la ficha muestra **No disponible**. No abrimos el panel de contacto ni usamos APIs internas.
+
+Si tras un rediseño el nombre deja de detectarse, inspecciona el header en DevTools y ajusta `src/detect-chat.ts`.
+
 
 ## Estructura
 

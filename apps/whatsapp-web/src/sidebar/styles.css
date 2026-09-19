@@ -143,6 +143,21 @@
   font-weight: 500;
 }
 
+.hint {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--bw-badge-bg);
+  color: var(--bw-fg);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.hint strong {
+  font-weight: 600;
+  color: var(--bw-badge-fg);
+}
+
 .footer-note {
   margin-top: 16px;
   font-size: 11px;

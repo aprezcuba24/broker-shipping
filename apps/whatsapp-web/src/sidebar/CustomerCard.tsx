@@ -2,9 +2,14 @@ import type { MockCustomer } from '../mock-customer'
 
 type Props = {
   customer: MockCustomer
+  /** Suggest opening WA contact info when phone is still pending. */
+  suggestOpenContactInfo?: boolean
 }
 
-export function CustomerCard({ customer }: Props) {
+export function CustomerCard({
+  customer,
+  suggestOpenContactInfo = false,
+}: Props) {
   return (
     <article className="card">
       <div className="card-title">
@@ -16,6 +21,13 @@ export function CustomerCard({ customer }: Props) {
           <dt>Teléfono</dt>
           <dd>{customer.phone}</dd>
         </div>
+        {suggestOpenContactInfo ? (
+          <p className="hint">
+            Para obtener el teléfono, haz clic en el nombre del contacto en
+            WhatsApp y abre <strong>Datos del contacto</strong>. El número se
+            rellenará aquí automáticamente.
+          </p>
+        ) : null}
         <div className="row" style={{ marginTop: 12 }}>
           <dt>Estado</dt>
           <dd>{customer.status}</dd>

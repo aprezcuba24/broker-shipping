@@ -7,16 +7,13 @@ export type MockCustomer = {
 }
 
 /**
- * Fictional CRM-like card derived only from the detected display name.
- * No backend — hard-coded demo values for the POC.
+ * Fictional CRM-like card. `phone` is already a display string
+ * (number, "No disponible", or "No se pudo obtener").
  */
-export function buildMockCustomer(
-  name: string,
-  phoneFromHeader: string | null,
-): MockCustomer {
+export function buildMockCustomer(name: string, phone: string): MockCustomer {
   return {
     name,
-    phone: phoneFromHeader ?? 'No disponible',
+    phone,
     status: 'Cliente',
     purchases: '$350',
     lastOrder: '#1234',

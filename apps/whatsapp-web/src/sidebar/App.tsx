@@ -11,6 +11,12 @@ function readTheme(): 'dark' | 'light' {
   return document.body.classList.contains('dark') ? 'dark' : 'light'
 }
 
+function phoneLabel(chat: DetectedChat): string {
+  if (chat.phone) return chat.phone
+  if (chat.phoneStatus === 'unavailable') return 'No se pudo obtener'
+  return 'No disponible'
+}
+
 export function App({ chat }: Props) {
   const [theme, setTheme] = useState<'dark' | 'light'>(readTheme)
 
@@ -24,8 +30,15 @@ export function App({ chat }: Props) {
     return () => observer.disconnect()
   }, [])
 
-  const customer =
-    chat.name != null ? buildMockCustomer(chat.name, chat.phone) : null
+  const hasChat = Boolean(chat.name || chat.phone)
+  const suggestOpenContactInfo =
+    Boolean(chat.name) &&
+    !chat.phone &&
+    !chat.isGroup &&
+    chat.phoneStatus === 'unknown'
+  const customer = hasChat
+    ? buildMockCustomer(chat.name ?? 'No disponible', phoneLabel(chat))
+    : null
 
   return (
     <div className="panel" data-theme={theme}>
@@ -35,7 +48,10 @@ export function App({ chat }: Props) {
       </header>
       <div className="body">
         {customer ? (
-          <CustomerCard customer={customer} />
+          <CustomerCard
+            customer={customer}
+            suggestOpenContactInfo={suggestOpenContactInfo}
+          />
         ) : (
           <div className="empty">
             Ninguna conversación abierta.
