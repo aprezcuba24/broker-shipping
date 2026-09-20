@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { SIDEBAR_OPEN_STORAGE_KEY } from '../constants'
 import type { DetectedChat } from '../detect-chat'
 import { syncSidebarChrome } from '../layout'
-import { buildMockCustomer } from '../mock-customer'
+import { buildCustomer } from '../customer'
 import { CustomerCard } from './CustomerCard'
 
 type Props = {
@@ -31,6 +31,41 @@ function writeSidebarOpen(open: boolean): void {
   }
 }
 
+function ChatIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  )
+}
+
+function CloseIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  )
+}
+
 export function App({ chat }: Props) {
   const [theme, setTheme] = useState<'dark' | 'light'>(readTheme)
   const [open, setOpen] = useState(readSidebarOpen)
@@ -56,7 +91,7 @@ export function App({ chat }: Props) {
     !chat.phone &&
     !chat.isGroup &&
     chat.phoneStatus === 'unknown'
-  const customer = hasChat ? buildMockCustomer(chat) : null
+  const customer = hasChat ? buildCustomer(chat) : null
 
   if (!open) {
     return (
@@ -64,11 +99,11 @@ export function App({ chat }: Props) {
         type="button"
         className="fab-show"
         data-theme={theme}
-        title="Mostrar panel Broker"
-        aria-label="Mostrar panel Broker"
+        title="Mostrar panel Vendelo360"
+        aria-label="Mostrar panel Vendelo360"
         onClick={() => setOpen(true)}
       >
-        B
+        <ChatIcon size={20} />
       </button>
     )
   }
@@ -77,9 +112,14 @@ export function App({ chat }: Props) {
     <div className="panel" data-theme={theme}>
       <header className="header">
         <div className="header-top">
-          <div className="header-text">
-            <h1>Información</h1>
-            <p>Broker · WhatsApp Web POC</p>
+          <div className="brand">
+            <div className="brand-icon">
+              <ChatIcon />
+            </div>
+            <div className="brand-text">
+              <h1 className="brand-title">Vendelo360</h1>
+              <p className="brand-subtitle">WhatsApp</p>
+            </div>
           </div>
           <button
             type="button"
@@ -88,7 +128,7 @@ export function App({ chat }: Props) {
             aria-label="Ocultar panel"
             onClick={() => setOpen(false)}
           >
-            ✕
+            <CloseIcon />
           </button>
         </div>
       </header>
@@ -102,7 +142,7 @@ export function App({ chat }: Props) {
           <div className="empty">
             Ninguna conversación abierta.
             <br />
-            Abre un chat para ver el contacto detectado.
+            Abre un chat para ver el contacto.
           </div>
         )}
       </div>

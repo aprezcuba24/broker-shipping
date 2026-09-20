@@ -1,6 +1,6 @@
 import { SIDEBAR_HOST_ID, SIDEBAR_WIDTH_PX } from './constants'
 
-const STYLE_ID = 'broker-wa-poc-layout-style'
+const STYLE_ID = 'vendelo-wa-layout-style'
 
 /**
  * Reserves horizontal space on the right so WhatsApp's main UI is not

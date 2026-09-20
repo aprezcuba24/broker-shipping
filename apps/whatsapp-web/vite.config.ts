@@ -18,6 +18,7 @@ export default defineConfig({
       targets: [
         { src: 'public/manifest.json', dest: '.' },
         { src: 'public/icons', dest: '.' },
+        { src: 'public/fonts', dest: '.' },
       ],
     }),
   ],
@@ -38,7 +39,7 @@ export default defineConfig({
       input: path.resolve(rootDir, 'src/content.ts'),
       output: {
         format: 'iife',
-        name: 'BrokerWhatsAppWebPoc',
+        name: 'VendeloWhatsAppWeb',
         entryFileNames: 'content.js',
         inlineDynamicImports: true,
         assetFileNames: 'assets/[name][extname]',

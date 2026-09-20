@@ -53,13 +53,13 @@ async function boot(): Promise<void> {
   try {
     await waitForApp()
   } catch (err) {
-    console.warn('[Broker WA POC]', err)
+    console.warn('[Vendelo360]', err)
     return
   }
 
   const sidebar = mountSidebar(detectCurrentChat())
   watchCurrentChat((chat) => sidebar.update(chat))
-  console.info('[Broker WA POC] ready', detectCurrentChat())
+  console.info('[Vendelo360] ready', detectCurrentChat())
 }
 
 void boot()

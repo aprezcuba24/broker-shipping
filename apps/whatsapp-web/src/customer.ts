@@ -1,6 +1,6 @@
 import type { ChatKind, DetectedChat } from './detect-chat'
 
-export type MockCustomer = {
+export type CustomerProfile = {
   name: string
   phone: string
   kindLabel: string
@@ -13,7 +13,7 @@ export type MockCustomer = {
   email: string | null
   website: string | null
   participantCount: number | null
-  /** Demo CRM fields (still hard-coded for the POC). */
+  /** Account summary fields (placeholder until CRM is wired). */
   crmStatus: string
   purchases: string
   lastOrder: string
@@ -25,13 +25,7 @@ function phoneLabel(chat: DetectedChat): string {
   return 'No disponible'
 }
 
-function savedContactLabel(value: boolean | null): string | null {
-  if (value === true) return 'Sí (en agenda)'
-  if (value === false) return 'No (número sin guardar)'
-  return null
-}
-
-export function buildMockCustomer(chat: DetectedChat): MockCustomer {
+export function buildCustomer(chat: DetectedChat): CustomerProfile {
   return {
     name: chat.name ?? chat.phone ?? 'Sin nombre',
     phone: phoneLabel(chat),
@@ -49,8 +43,4 @@ export function buildMockCustomer(chat: DetectedChat): MockCustomer {
     purchases: '$350',
     lastOrder: '#1234',
   }
-}
-
-export function formatSavedContact(value: boolean | null): string | null {
-  return savedContactLabel(value)
 }

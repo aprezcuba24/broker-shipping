@@ -702,7 +702,7 @@ export function watchCurrentChat(
     ].join('|')
     if (key === lastKey) return
     lastKey = key
-    console.info('[Broker WA POC] chat', chat)
+    console.info('[Vendelo360] chat', chat)
     onChange(chat)
   }
 

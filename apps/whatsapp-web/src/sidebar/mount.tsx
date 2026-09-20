@@ -10,6 +10,65 @@ export type SidebarHandle = {
   unmount: () => void
 }
 
+/** Build @font-face rules using extension URLs (Shadow CSS cannot resolve relative font paths). */
+function fontFaceCss(): string {
+  try {
+    if (typeof chrome === 'undefined' || !chrome.runtime?.getURL) return ''
+    const manrope400 = chrome.runtime.getURL('fonts/manrope-latin-400-normal.woff2')
+    const manrope700 = chrome.runtime.getURL('fonts/manrope-latin-700-normal.woff2')
+    const manrope800 = chrome.runtime.getURL('fonts/manrope-latin-800-normal.woff2')
+    const inter400 = chrome.runtime.getURL('fonts/inter-latin-400-normal.woff2')
+    const inter500 = chrome.runtime.getURL('fonts/inter-latin-500-normal.woff2')
+    const inter600 = chrome.runtime.getURL('fonts/inter-latin-600-normal.woff2')
+    return `
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('${manrope400}') format('woff2');
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('${manrope700}') format('woff2');
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 800;
+  src: url('${manrope800}') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('${inter400}') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url('${inter500}') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url('${inter600}') format('woff2');
+}
+`
+  } catch {
+    return ''
+  }
+}
+
 /**
  * Creates a fixed host on the right edge, attaches an open Shadow DOM,
  * injects scoped CSS, and mounts the React tree inside.
@@ -34,14 +93,14 @@ export function mountSidebar(initialChat: DetectedChat): SidebarHandle {
   } satisfies Partial<CSSStyleDeclaration>)
   syncSidebarChrome(true)
 
-  console.info('[Broker WA POC] sidebar host mounted')
+  console.info('[Vendelo360] sidebar host mounted')
 
   const shadow = host.shadowRoot ?? host.attachShadow({ mode: 'open' })
 
   shadow.replaceChildren()
 
   const styleEl = document.createElement('style')
-  styleEl.textContent = styles
+  styleEl.textContent = fontFaceCss() + styles
   shadow.appendChild(styleEl)
 
   const mountPoint = document.createElement('div')

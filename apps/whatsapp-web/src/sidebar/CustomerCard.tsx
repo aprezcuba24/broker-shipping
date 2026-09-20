@@ -1,47 +1,202 @@
-import {
-  formatSavedContact,
-  type MockCustomer,
-} from '../mock-customer'
+import type { ReactNode } from 'react'
+import type { ChatKind } from '../detect-chat'
+import type { CustomerProfile } from '../customer'
 
 type Props = {
-  customer: MockCustomer
+  customer: CustomerProfile
   suggestOpenContactInfo?: boolean
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Kpi({ label, value }: { label: string; value: string }) {
   return (
-    <div className="row">
-      <dt>{label}</dt>
-      <dd>{value}</dd>
+    <div className="kpi">
+      <p className="kpi-label">{label}</p>
+      <p className="kpi-value">{value}</p>
     </div>
   )
+}
+
+function PhoneIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+    </svg>
+  )
+}
+
+function UserIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  )
+}
+
+function UsersIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  )
+}
+
+function BuildingIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
+      <path d="M6 12h12" />
+      <path d="M6 16h12" />
+      <path d="M10 6h4" />
+    </svg>
+  )
+}
+
+function HelpIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+      <path d="M12 17h.01" />
+    </svg>
+  )
+}
+
+function BookUserIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20" />
+      <circle cx="12" cy="8" r="2" />
+      <path d="M15 13a3 3 0 1 0-6 0" />
+    </svg>
+  )
+}
+
+function MailIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect width="20" height="16" x="2" y="4" rx="2" />
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+    </svg>
+  )
+}
+
+function GlobeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+      <path d="M2 12h20" />
+    </svg>
+  )
+}
+
+function CheckBadgeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  )
+}
+
+function kindIcon(kind: ChatKind) {
+  if (kind === 'group') return <UsersIcon />
+  if (kind === 'business') return <BuildingIcon />
+  if (kind === 'contact') return <UserIcon />
+  return <HelpIcon />
 }
 
 export function CustomerCard({
   customer,
   suggestOpenContactInfo = false,
 }: Props) {
-  const saved = formatSavedContact(customer.isSavedContact)
-  const badgeClass =
-    customer.kind === 'group'
-      ? 'badge badge-group'
-      : customer.kind === 'business'
-        ? 'badge badge-business'
-        : 'badge'
+  const extras: { icon: ReactNode | null; label: string; value: string }[] = []
+  if (customer.presence) {
+    extras.push({ icon: null, label: 'Presencia', value: customer.presence })
+  }
+  if (customer.about) {
+    extras.push({ icon: null, label: 'Estado', value: customer.about })
+  }
+  if (customer.email) {
+    extras.push({ icon: <MailIcon />, label: 'Email', value: customer.email })
+  }
+  if (customer.website) {
+    extras.push({ icon: <GlobeIcon />, label: 'Sitio web', value: customer.website })
+  }
+  if (customer.participantCount != null) {
+    extras.push({
+      icon: <UsersIcon />,
+      label: 'Participantes',
+      value: String(customer.participantCount),
+    })
+  }
 
   return (
-    <article className="card">
-      <div className="card-title">
-        <h2>{customer.name}</h2>
-        <span className={badgeClass}>{customer.kindLabel}</span>
+    <>
+      <div className="identity">
+        <div className="identity-row">
+          <h2>{customer.name}</h2>
+          {customer.isVerified ? (
+            <span
+              className="identity-verified"
+              title="Cuenta verificada"
+              aria-label="Cuenta verificada"
+            >
+              <CheckBadgeIcon />
+            </span>
+          ) : null}
+        </div>
       </div>
 
-      {customer.isVerified ? (
-        <p className="meta-chip">Cuenta verificada</p>
-      ) : null}
+      <section className="section section-compact">
+        <div className="contact-meta" role="group" aria-label="Contacto">
+          <span className="meta-item meta-phone" title="Teléfono">
+            <span className="meta-icon" aria-hidden>
+              <PhoneIcon />
+            </span>
+            <span className="meta-text">{customer.phone}</span>
+          </span>
 
-      <dl className="field-list">
-        <Row label="Teléfono" value={customer.phone} />
+          <span
+            className="meta-item meta-icon-only"
+            title={customer.kindLabel}
+            aria-label={customer.kindLabel}
+          >
+            <span className="meta-icon">{kindIcon(customer.kind)}</span>
+          </span>
+
+          {customer.isSavedContact === true ? (
+            <span
+              className="meta-item meta-icon-only meta-saved"
+              title="En agenda"
+              aria-label="En agenda"
+            >
+              <span className="meta-icon">
+                <BookUserIcon />
+              </span>
+            </span>
+          ) : null}
+        </div>
+
+        {extras.length > 0 ? (
+          <ul className="contact-extras">
+            {extras.map((item) => (
+              <li key={item.label} className="extra-item" title={item.label}>
+                {item.icon ? (
+                  <span className="meta-icon" aria-hidden>
+                    {item.icon}
+                  </span>
+                ) : null}
+                <span className="extra-text">{item.value}</span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
         {suggestOpenContactInfo ? (
           <p className="hint">
             Para obtener el teléfono, haz clic en el nombre del contacto en
@@ -49,41 +204,19 @@ export function CustomerCard({
             rellenará aquí automáticamente.
           </p>
         ) : null}
+      </section>
 
-        <Row label="Tipo" value={customer.kindLabel} />
-        {customer.isBusiness ? (
-          <Row label="Empresa" value="Sí" />
-        ) : null}
-        {saved ? <Row label="En agenda" value={saved} /> : null}
-        {customer.presence ? (
-          <Row label="Presencia" value={customer.presence} />
-        ) : null}
-        {customer.about ? <Row label="Info / estado" value={customer.about} /> : null}
-        {customer.email ? <Row label="Email" value={customer.email} /> : null}
-        {customer.website ? (
-          <Row label="Sitio web" value={customer.website} />
-        ) : null}
-        {customer.participantCount != null ? (
-          <Row
-            label="Participantes"
-            value={String(customer.participantCount)}
-          />
-        ) : null}
-      </dl>
-
-      <div className="crm-block">
-        <p className="crm-title">Demo CRM (ficticio)</p>
-        <dl className="field-list">
-          <Row label="Estado" value={customer.crmStatus} />
-          <Row label="Compras" value={customer.purchases} />
-          <Row label="Último pedido" value={customer.lastOrder} />
-        </dl>
-      </div>
-
-      <p className="footer-note">
-        Datos de WhatsApp leídos del DOM cuando están visibles. El bloque CRM
-        es solo demostración.
-      </p>
-    </article>
+      <section className="section">
+        <header className="section-header">
+          <span className="section-bar" aria-hidden />
+          <h3 className="section-title">Cuenta</h3>
+        </header>
+        <div className="kpi-grid">
+          <Kpi label="Estado" value={customer.crmStatus} />
+          <Kpi label="Compras" value={customer.purchases} />
+          <Kpi label="Último pedido" value={customer.lastOrder} />
+        </div>
+      </section>
+    </>
   )
 }
