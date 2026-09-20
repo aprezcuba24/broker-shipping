@@ -3,7 +3,9 @@ import { SIDEBAR_OPEN_STORAGE_KEY } from '../constants'
 import type { DetectedChat } from '../detect-chat'
 import { syncSidebarChrome } from '../layout'
 import { buildCustomer } from '../customer'
+import { AuthGate, LoggedOutGate } from './AuthGate'
 import { CustomerCard } from './CustomerCard'
+import { useExtensionSession } from './useExtensionSession'
 
 type Props = {
   chat: DetectedChat
@@ -66,9 +68,28 @@ function CloseIcon() {
   )
 }
 
+function LogoutIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" x2="9" y1="12" y2="12" />
+    </svg>
+  )
+}
+
 export function App({ chat }: Props) {
   const [theme, setTheme] = useState<'dark' | 'light'>(readTheme)
   const [open, setOpen] = useState(readSidebarOpen)
+  const { session, loading, openAuth, selectOrg, logout } = useExtensionSession()
 
   useEffect(() => {
     const sync = () => setTheme(readTheme())
@@ -92,6 +113,7 @@ export function App({ chat }: Props) {
     !chat.isGroup &&
     chat.phoneStatus === 'unknown'
   const customer = hasChat ? buildCustomer(chat) : null
+  const isReady = session.status === 'ready'
 
   if (!open) {
     return (
@@ -121,29 +143,71 @@ export function App({ chat }: Props) {
               <p className="brand-subtitle">WhatsApp</p>
             </div>
           </div>
-          <button
-            type="button"
-            className="btn-hide"
-            title="Ocultar panel"
-            aria-label="Ocultar panel"
-            onClick={() => setOpen(false)}
-          >
-            <CloseIcon />
-          </button>
+          <div className="header-actions">
+            {session.status !== 'loggedOut' ? (
+              <button
+                type="button"
+                className="btn-logout"
+                title="Cerrar sesión"
+                aria-label="Cerrar sesión"
+                onClick={() => void logout()}
+              >
+                <LogoutIcon />
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className="btn-hide"
+              title="Ocultar panel"
+              aria-label="Ocultar panel"
+              onClick={() => setOpen(false)}
+            >
+              <CloseIcon />
+            </button>
+          </div>
         </div>
+        {session.status !== 'loggedOut' ? (
+          isReady && session.status === 'ready' ? (
+            <p className="header-org" title={session.user.email}>
+              {session.organizations.find((o) => o.id === session.organizationId)?.name ??
+                'Organización'}
+            </p>
+          ) : (
+            <p className="header-org" title={session.user.email}>
+              {session.user.name}
+            </p>
+          )
+        ) : null}
       </header>
       <div className="body">
-        {customer ? (
-          <CustomerCard
-            customer={customer}
-            suggestOpenContactInfo={suggestOpenContactInfo}
-          />
+        {loading ? (
+          <div className="empty">Cargando sesión…</div>
+        ) : session.status === 'loggedOut' ? (
+          <LoggedOutGate onOpenAuth={() => void openAuth()} />
+        ) : session.status === 'ready' ? (
+          customer ? (
+            <CustomerCard
+              customer={customer}
+              suggestOpenContactInfo={suggestOpenContactInfo}
+            />
+          ) : (
+            <div className="empty">
+              Ninguna conversación abierta.
+              <br />
+              Abre un chat para ver el contacto.
+            </div>
+          )
         ) : (
-          <div className="empty">
-            Ninguna conversación abierta.
-            <br />
-            Abre un chat para ver el contacto.
-          </div>
+          <AuthGate
+            session={session}
+            onOpenAuth={() => void openAuth()}
+            onSelectOrg={async (organizationId) => {
+              const response = await selectOrg(organizationId)
+              if (!response.ok) {
+                throw new Error(response.error)
+              }
+            }}
+          />
         )}
       </div>
     </div>

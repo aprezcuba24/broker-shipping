@@ -2,7 +2,7 @@
 
 Extensión Chrome/Chromium (Manifest V3) que inyecta una **barra lateral** en [WhatsApp Web](https://web.whatsapp.com) y muestra la ficha del contacto de la conversación abierta.
 
-Diseñada para vendedores y proveedores. Sin backend ni CRM conectado todavía: la sección Cuenta usa valores de ejemplo.
+Diseñada para vendedores. El login vive en el **popup** de la extensión; la organización se elige en el sidebar si hay más de una. La ficha de cuenta sigue usando valores de ejemplo hasta conectar el CRM.
 
 ## Requisitos
 
@@ -80,6 +80,26 @@ WhatsApp Web no ofrece API pública para extensiones. La extensión lee el DOM:
 
 La UI React vive en un **Shadow DOM** para no pelear con los estilos de WhatsApp.
 
+## Autenticación (vendedores)
+
+1. Tras cargar la extensión, haz clic en el icono **Vendelo360** (o en “Iniciar sesión” del sidebar).
+2. Inicia sesión con email y contraseña de vendedor (`POST /users/login` contra `VITE_API_URL`).
+3. Abre WhatsApp Web:
+   - **1 organización** vendedora → el panel entra directo a la ficha.
+   - **Varias** → el sidebar pide elegir organización (primer paso).
+   - **Ninguna** → el sidebar indica crear/unirse desde la web seller.
+4. Cerrar sesión: desde el popup.
+
+La sesión (JWT + org activa) se guarda en `chrome.storage.local`, no en el `localStorage` de WhatsApp. El content script nunca muestra el formulario de contraseña.
+
+Variables de entorno al build (raíz del monorepo o shell):
+
+```bash
+VITE_API_URL=http://localhost:8000
+VITE_SELLER_URL=http://localhost:5174   # enlace “web de vendedores”
+pnpm --filter @broker/whatsapp-web build
+```
+
 ## Limitaciones conocidas
 
 | Limitación | Detalle |
@@ -90,6 +110,7 @@ La UI React vive en un **Shadow DOM** para no pelear con los estilos de WhatsApp
 | Layout | Si el selector de layout falla, el panel fijo puede solaparse un poco. |
 | Términos de uso | Solo lectura de UI visible. No automatiza chats ni scrapea masivamente. |
 | Sin CRM | Los datos de cuenta (estado, compras, pedido) son de ejemplo hasta conectar el backend. |
+| JWT sin refresh | Tras ~24 h hay que volver a iniciar sesión. |
 
 ### Detalle: teléfono
 
@@ -107,18 +128,19 @@ Si tras un rediseño el nombre deja de detectarse, inspecciona el header en DevT
 
 ```
 apps/whatsapp-web/
-  public/manifest.json
-  public/icons/
-  public/fonts/
+  popup.html            # entrada del popup de auth
+  manifest.shared.ts    # genera dist/manifest.json en el build
+  public/icons|fonts/
   src/
-    content.ts          # bootstrap
-    detect-chat.ts      # detección (sin React)
-    layout.ts           # reserva de ancho
-    customer.ts         # ficha a partir del chat detectado
-    sidebar/            # React + Shadow DOM
-  dist/                 # cargar en Chrome
+    content.ts          # bootstrap content script
+    auth/               # tipos, storage, API mínima, mensajes
+    background/         # service worker (sesión + fetch)
+    popup/              # UI de login (solo auth)
+    detect-chat.ts
+    sidebar/            # React + Shadow DOM + gating de org
+  dist/                 # cargar en Chrome (Load unpacked)
 ```
 
 ## Fuera de alcance (por ahora)
 
-IA, backend, base de datos, autenticación, CRM, Odoo, envío automático de mensajes, historial completo, scraping masivo, WhatsApp Business API.
+IA, CRM conectado, Odoo, envío automático de mensajes, historial completo, scraping masivo, WhatsApp Business API, registro/forgot-password en la extensión, cambiar de organización una vez autenticado.
