@@ -142,7 +142,7 @@ async def test_list_customers_with_filters(
             seller_customer_ctx,
             name="Ana Lopez",
             ci="11111111111",
-            phone="51111111",
+            phone="53024637",
         ),
     )
     await client.post(
@@ -177,12 +177,21 @@ async def test_list_customers_with_filters(
 
     by_phone = await client.get(
         "/customers/seller/",
-        params={**seller_customer_ctx["seller_params"], "phone": "5111"},
+        params={**seller_customer_ctx["seller_params"], "phone": "53024637"},
         headers=seller_customer_ctx["seller_bearer"],
     )
     assert by_phone.status_code == 200
     assert by_phone.json()["total"] == 1
-    assert by_phone.json()["items"][0]["phone"] == "51111111"
+    assert by_phone.json()["items"][0]["phone"] == "53024637"
+
+    by_phone = await client.get(
+        "/customers/seller/",
+        params={**seller_customer_ctx["seller_params"], "phone": "+5353024637"},
+        headers=seller_customer_ctx["seller_bearer"],
+    )
+    assert by_phone.status_code == 200
+    assert by_phone.json()["total"] == 1
+    assert by_phone.json()["items"][0]["phone"] == "53024637"
 
 
 async def test_seller_cannot_access_other_seller_customer(

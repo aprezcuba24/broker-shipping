@@ -19,6 +19,7 @@ from app.services.customer.helpers import (
     create_customer_address,
     upsert_customer_address,
 )
+from app.lib.normalize import all_phone_options
 
 
 async def list_customers_for_seller(
@@ -38,7 +39,8 @@ async def list_customers_for_seller(
     if ci:
         stmt = stmt.where(Customer.ci == ci)
     if phone:
-        stmt = stmt.where(col(Customer.phone).ilike(f"%{phone}%"))
+        phones = all_phone_options(phone)
+        stmt = stmt.where(col(Customer.phone).in_(phones))
     stmt = stmt.order_by(Customer.name, Customer.id)
     result = await paginate(session, stmt, pagination)
     await attach_addresses_to_customers(session, result.items)
