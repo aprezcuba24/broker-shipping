@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { SESSION_STORAGE_KEY } from '../auth/constants'
 import { sendMessage } from '../auth/messaging'
-import type { ExtensionSession, SessionPublic } from '../auth/types'
+import type {
+  ExtensionSession,
+  SessionPublic,
+  SessionResponse,
+} from '../auth/types'
 
 function toPublic(session: ExtensionSession | null | undefined): SessionPublic {
   if (!session || session.status === 'loggedOut') {
@@ -15,13 +19,21 @@ function toPublic(session: ExtensionSession | null | undefined): SessionPublic {
   }
 }
 
+function asSessionResponse(response: unknown): SessionResponse | null {
+  if (!response || typeof response !== 'object') return null
+  const r = response as SessionResponse
+  if (!r.ok) return r
+  if (!('session' in r)) return null
+  return r
+}
+
 export function useExtensionSession() {
   const [session, setSession] = useState<SessionPublic>({ status: 'loggedOut' })
   const [loading, setLoading] = useState(true)
 
   const refresh = useCallback(async () => {
-    const response = await sendMessage({ type: 'GET_SESSION' })
-    if (response.ok) {
+    const response = asSessionResponse(await sendMessage({ type: 'GET_SESSION' }))
+    if (response?.ok) {
       setSession(response.session)
     } else {
       setSession({ status: 'loggedOut' })
@@ -55,19 +67,23 @@ export function useExtensionSession() {
   }, [])
 
   const selectOrg = useCallback(async (organizationId: string) => {
-    const response = await sendMessage({ type: 'SELECT_ORG', organizationId })
-    if (response.ok) {
+    const response = asSessionResponse(
+      await sendMessage({ type: 'SELECT_ORG', organizationId }),
+    )
+    if (response?.ok) {
       setSession(response.session)
+      return response
     }
-    return response
+    return response ?? { ok: false as const, error: 'Respuesta inválida' }
   }, [])
 
   const logout = useCallback(async () => {
-    const response = await sendMessage({ type: 'LOGOUT' })
-    if (response.ok) {
+    const response = asSessionResponse(await sendMessage({ type: 'LOGOUT' }))
+    if (response?.ok) {
       setSession(response.session)
+      return response
     }
-    return response
+    return response ?? { ok: false as const, error: 'Respuesta inválida' }
   }, [])
 
   return { session, loading, openAuth, selectOrg, logout, refresh }

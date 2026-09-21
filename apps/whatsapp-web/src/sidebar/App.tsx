@@ -5,6 +5,7 @@ import { syncSidebarChrome } from '../layout'
 import { buildCustomer } from '../customer'
 import { AuthGate, LoggedOutGate } from './AuthGate'
 import { CustomerCard } from './CustomerCard'
+import { useCustomerLookup } from './useCustomerLookup'
 import { useExtensionSession } from './useExtensionSession'
 
 type Props = {
@@ -114,6 +115,10 @@ export function App({ chat }: Props) {
     chat.phoneStatus === 'unknown'
   const customer = hasChat ? buildCustomer(chat) : null
   const isReady = session.status === 'ready'
+  const lookup = useCustomerLookup(
+    chat.phone,
+    isReady && Boolean(chat.phone) && !chat.isGroup,
+  )
 
   if (!open) {
     return (
@@ -189,6 +194,7 @@ export function App({ chat }: Props) {
             <CustomerCard
               customer={customer}
               suggestOpenContactInfo={suggestOpenContactInfo}
+              lookup={lookup}
             />
           ) : (
             <div className="empty">

@@ -1,3 +1,5 @@
+import type { CustomerLookup } from '../services/types'
+
 export type SellerOrganization = {
   id: string
   name: string
@@ -40,7 +42,17 @@ export type ExtensionMessage =
   | { type: 'SELECT_ORG'; organizationId: string }
   | { type: 'OPEN_AUTH' }
   | { type: 'FOCUS_WHATSAPP' }
+  | { type: 'LOOKUP_CUSTOMER'; phone: string }
 
 export type ExtensionResponse =
   | { ok: true; session: SessionPublic }
+  | { ok: true; lookup: CustomerLookup }
+  | { ok: false; error: string }
+
+export type SessionResponse =
+  | { ok: true; session: SessionPublic }
+  | { ok: false; error: string }
+
+export type LookupResponse =
+  | { ok: true; lookup: CustomerLookup }
   | { ok: false; error: string }

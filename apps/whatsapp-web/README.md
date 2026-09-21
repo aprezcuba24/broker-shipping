@@ -2,7 +2,7 @@
 
 Extensión Chrome/Chromium (Manifest V3) que inyecta una **barra lateral** en [WhatsApp Web](https://web.whatsapp.com) y muestra la ficha del contacto de la conversación abierta.
 
-Diseñada para vendedores. El login vive en el **popup** de la extensión; la organización se elige en el sidebar si hay más de una. La ficha de cuenta sigue usando valores de ejemplo hasta conectar el CRM.
+Diseñada para vendedores. El login vive en el **popup** de la extensión; la organización se elige en el sidebar si hay más de una. Con teléfono detectado, el panel consulta el backend (cliente, dirección y último pedido) vía el service worker.
 
 ## Requisitos
 
@@ -90,7 +90,7 @@ La UI React vive en un **Shadow DOM** para no pelear con los estilos de WhatsApp
    - **Ninguna** → el sidebar indica crear/unirse desde la web seller.
 4. Cerrar sesión: desde el popup.
 
-La sesión (JWT + org activa) se guarda en `chrome.storage.local`, no en el `localStorage` de WhatsApp. El content script nunca muestra el formulario de contraseña.
+La sesión (JWT + org activa) se guarda en `chrome.storage.local`, no en el `localStorage` de WhatsApp. El content script nunca muestra el formulario de contraseña ni ve el JWT: las llamadas al API las hace solo el **service worker**.
 
 Variables de entorno al build (raíz del monorepo o shell):
 
@@ -99,6 +99,26 @@ VITE_API_URL=http://localhost:8000
 VITE_SELLER_URL=http://localhost:5174   # enlace “web de vendedores”
 pnpm --filter @broker/whatsapp-web build
 ```
+
+## Ficha CRM (cliente por teléfono)
+
+Con sesión `ready` y un teléfono detectado en un chat 1:1, el sidebar pide al background un `LOOKUP_CUSTOMER`. El service worker compone:
+
+1. `GET /customers/seller/?organization_id=&phone=` — filtro parcial (`ILIKE`); la extensión elige match exacto / único / prefijo-sufijo.
+2. `GET /orders/seller/?organization_id=&search=` — pedidos recientes; se toma el primero del cliente encontrado.
+
+En la UI:
+
+- **Dirección** si el cliente tiene `address` en el CRM.
+- **Estado**: `Cliente` o `Sin registrar`.
+- **Último pedido**: código del pedido o `—`.
+- **Compras**: `—` (aún no hay totales en estos listados).
+
+### Probar el flujo
+
+1. Login en el popup → organización lista.
+2. En WhatsApp Web, abre un chat 1:1 cuyo teléfono sea visible.
+3. En Cuenta deberías ver dirección y código de pedido (o “Sin registrar” si no hay ficha en esa org).
 
 ## Limitaciones conocidas
 
@@ -109,7 +129,7 @@ pnpm --filter @broker/whatsapp-web build
 | Grupos | Se muestra el **nombre del grupo**; no hay un único teléfono. |
 | Layout | Si el selector de layout falla, el panel fijo puede solaparse un poco. |
 | Términos de uso | Solo lectura de UI visible. No automatiza chats ni scrapea masivamente. |
-| Sin CRM | Los datos de cuenta (estado, compras, pedido) son de ejemplo hasta conectar el backend. |
+| Match parcial en API | El listado de clientes usa `ILIKE` y los pedidos `search`; no hay endpoint exacto por teléfono. |
 | JWT sin refresh | Tras ~24 h hay que volver a iniciar sesión. |
 
 ### Detalle: teléfono
@@ -133,8 +153,9 @@ apps/whatsapp-web/
   public/icons|fonts/
   src/
     content.ts          # bootstrap content script
-    auth/               # tipos, storage, API mínima, mensajes
-    background/         # service worker (sesión + fetch)
+    auth/               # sesión, storage, mensajes (sin HTTP)
+    services/           # capa HTTP al backend (auth, customer, …)
+    background/         # service worker (sesión + proxy API)
     popup/              # UI de login (solo auth)
     detect-chat.ts
     sidebar/            # React + Shadow DOM + gating de org
@@ -143,4 +164,4 @@ apps/whatsapp-web/
 
 ## Fuera de alcance (por ahora)
 
-IA, CRM conectado, Odoo, envío automático de mensajes, historial completo, scraping masivo, WhatsApp Business API, registro/forgot-password en la extensión, cambiar de organización una vez autenticado.
+IA, Odoo, envío automático de mensajes, historial completo, scraping masivo, WhatsApp Business API, registro/forgot-password en la extensión, cambiar de organización una vez autenticado, endpoint dedicado de lookup en el API.

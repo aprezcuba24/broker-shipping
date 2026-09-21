@@ -1,5 +1,11 @@
-import { fetchMe, fetchSellerOrganizations, loginRequest } from '../auth/api'
-import type { ExtensionMessage, ExtensionResponse } from '../auth/types'
+import { fetchMe, fetchSellerOrganizations, loginRequest } from '../services/auth'
+import { lookupCustomerByPhone } from '../services/customer'
+import type {
+  ExtensionMessage,
+  ExtensionResponse,
+  LookupResponse,
+  SessionResponse,
+} from '../auth/types'
 import { buildAuthenticatedSession } from '../auth/session'
 import {
   clearSession,
@@ -11,7 +17,7 @@ import {
 async function handleLogin(
   email: string,
   password: string,
-): Promise<ExtensionResponse> {
+): Promise<SessionResponse> {
   try {
     const accessToken = await loginRequest(email.trim(), password)
     const user = await fetchMe(accessToken)
@@ -30,17 +36,17 @@ async function handleLogin(
   }
 }
 
-async function handleLogout(): Promise<ExtensionResponse> {
+async function handleLogout(): Promise<SessionResponse> {
   await clearSession()
   return { ok: true, session: { status: 'loggedOut' } }
 }
 
-async function handleGetSession(): Promise<ExtensionResponse> {
+async function handleGetSession(): Promise<SessionResponse> {
   const session = await readSession()
   return { ok: true, session: toSessionPublic(session) }
 }
 
-async function handleSelectOrg(organizationId: string): Promise<ExtensionResponse> {
+async function handleSelectOrg(organizationId: string): Promise<SessionResponse> {
   const session = await readSession()
   if (session.status === 'loggedOut') {
     return { ok: false, error: 'No hay sesión activa' }
@@ -58,7 +64,7 @@ async function handleSelectOrg(organizationId: string): Promise<ExtensionRespons
   return { ok: true, session: toSessionPublic(next) }
 }
 
-async function handleOpenAuth(): Promise<ExtensionResponse> {
+async function handleOpenAuth(): Promise<SessionResponse> {
   const url = chrome.runtime.getURL('popup.html')
   await chrome.windows.create({
     url,
@@ -70,7 +76,7 @@ async function handleOpenAuth(): Promise<ExtensionResponse> {
   return { ok: true, session: toSessionPublic(session) }
 }
 
-async function handleFocusWhatsApp(): Promise<ExtensionResponse> {
+async function handleFocusWhatsApp(): Promise<SessionResponse> {
   const tabs = await chrome.tabs.query({ url: 'https://web.whatsapp.com/*' })
   const existing = tabs.find((tab) => tab.id != null)
   if (existing?.id != null) {
@@ -85,31 +91,65 @@ async function handleFocusWhatsApp(): Promise<ExtensionResponse> {
   return { ok: true, session: toSessionPublic(session) }
 }
 
+async function handleLookupCustomer(phone: string): Promise<LookupResponse> {
+  const session = await readSession()
+  if (session.status === 'loggedOut') {
+    return { ok: false, error: 'No hay sesión activa' }
+  }
+  if (session.status !== 'ready' || !session.organizationId) {
+    return { ok: false, error: 'Selecciona una organización primero' }
+  }
+
+  try {
+    const lookup = await lookupCustomerByPhone({
+      phone,
+      accessToken: session.accessToken,
+      organizationId: session.organizationId,
+    })
+    return { ok: true, lookup }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'No se pudo buscar el cliente'
+    if (
+      message.includes('401') ||
+      message === 'Credenciales inválidas' ||
+      /unauthorized/i.test(message)
+    ) {
+      await clearSession()
+    }
+    return { ok: false, error: message }
+  }
+}
+
 chrome.runtime.onMessage.addListener(
   (message: ExtensionMessage, _sender, sendResponse) => {
     void (async () => {
+      let response: ExtensionResponse
       switch (message.type) {
         case 'LOGIN':
-          sendResponse(await handleLogin(message.email, message.password))
+          response = await handleLogin(message.email, message.password)
           break
         case 'LOGOUT':
-          sendResponse(await handleLogout())
+          response = await handleLogout()
           break
         case 'GET_SESSION':
-          sendResponse(await handleGetSession())
+          response = await handleGetSession()
           break
         case 'SELECT_ORG':
-          sendResponse(await handleSelectOrg(message.organizationId))
+          response = await handleSelectOrg(message.organizationId)
           break
         case 'OPEN_AUTH':
-          sendResponse(await handleOpenAuth())
+          response = await handleOpenAuth()
           break
         case 'FOCUS_WHATSAPP':
-          sendResponse(await handleFocusWhatsApp())
+          response = await handleFocusWhatsApp()
+          break
+        case 'LOOKUP_CUSTOMER':
+          response = await handleLookupCustomer(message.phone)
           break
         default:
-          sendResponse({ ok: false, error: 'Mensaje desconocido' })
+          response = { ok: false, error: 'Mensaje desconocido' }
       }
+      sendResponse(response)
     })()
     return true
   },

@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react'
 import type { ChatKind } from '../detect-chat'
 import type { CustomerProfile } from '../customer'
+import type { CustomerLookupState } from './useCustomerLookup'
 
 type Props = {
   customer: CustomerProfile
   suggestOpenContactInfo?: boolean
+  lookup?: CustomerLookupState
 }
 
 function Kpi({ label, value }: { label: string; value: string }) {
@@ -94,6 +96,15 @@ function GlobeIcon() {
   )
 }
 
+function MapPinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  )
+}
+
 function CheckBadgeIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -110,11 +121,70 @@ function kindIcon(kind: ChatKind) {
   return <HelpIcon />
 }
 
+function accountKpis(customer: CustomerProfile, lookup: CustomerLookupState | undefined) {
+  if (!lookup || lookup.status === 'idle') {
+    return {
+      crmStatus: customer.crmStatus,
+      purchases: customer.purchases,
+      lastOrder: customer.lastOrder,
+      address: customer.address,
+      hint: null as string | null,
+    }
+  }
+  if (lookup.status === 'loading') {
+    return {
+      crmStatus: '…',
+      purchases: '—',
+      lastOrder: '…',
+      address: null as string | null,
+      hint: null as string | null,
+    }
+  }
+  if (lookup.status === 'error') {
+    return {
+      crmStatus: '—',
+      purchases: '—',
+      lastOrder: '—',
+      address: null as string | null,
+      hint: lookup.error,
+    }
+  }
+
+  const { lookup: data } = lookup
+  if (!data.customer) {
+    return {
+      crmStatus: 'Sin registrar',
+      purchases: '—',
+      lastOrder: '—',
+      address: null as string | null,
+      hint: null as string | null,
+    }
+  }
+
+  return {
+    crmStatus: 'Cliente',
+    purchases: '—',
+    lastOrder: data.lastOrder?.code ?? '—',
+    address: data.address,
+    hint: null as string | null,
+  }
+}
+
 export function CustomerCard({
   customer,
   suggestOpenContactInfo = false,
+  lookup,
 }: Props) {
+  const account = accountKpis(customer, lookup)
+
   const extras: { icon: ReactNode | null; label: string; value: string }[] = []
+  if (account.address) {
+    extras.push({
+      icon: <MapPinIcon />,
+      label: 'Dirección',
+      value: account.address,
+    })
+  }
   if (customer.presence) {
     extras.push({ icon: null, label: 'Presencia', value: customer.presence })
   }
@@ -212,10 +282,15 @@ export function CustomerCard({
           <h3 className="section-title">Cuenta</h3>
         </header>
         <div className="kpi-grid">
-          <Kpi label="Estado" value={customer.crmStatus} />
-          <Kpi label="Compras" value={customer.purchases} />
-          <Kpi label="Último pedido" value={customer.lastOrder} />
+          <Kpi label="Estado" value={account.crmStatus} />
+          <Kpi label="Compras" value={account.purchases} />
+          <Kpi label="Último pedido" value={account.lastOrder} />
         </div>
+        {account.hint ? (
+          <p className="hint" role="alert">
+            {account.hint}
+          </p>
+        ) : null}
       </section>
     </>
   )

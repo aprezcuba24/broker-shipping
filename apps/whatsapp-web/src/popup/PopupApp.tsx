@@ -1,8 +1,13 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { sendMessage } from '../auth/messaging'
-import type { SessionPublic } from '../auth/types'
+import type { ExtensionResponse, SessionPublic } from '../auth/types'
 
 type View = 'loading' | 'login' | 'loggedIn'
+
+function sessionFrom(response: ExtensionResponse): SessionPublic | null {
+  if (response.ok && 'session' in response) return response.session
+  return null
+}
 
 export function PopupApp() {
   const [view, setView] = useState<View>('loading')
@@ -20,8 +25,9 @@ export function PopupApp() {
 
   useEffect(() => {
     void sendMessage({ type: 'GET_SESSION' }).then((response) => {
-      if (response.ok) {
-        applySession(response.session)
+      const next = sessionFrom(response)
+      if (next) {
+        applySession(next)
       } else {
         setView('login')
       }
@@ -42,9 +48,14 @@ export function PopupApp() {
         setError(response.error)
         return
       }
+      const next = sessionFrom(response)
+      if (!next) {
+        setError('Respuesta inválida')
+        return
+      }
       setJustLoggedIn(true)
       setPassword('')
-      applySession(response.session)
+      applySession(next)
     } finally {
       setSubmitting(false)
     }
@@ -54,8 +65,9 @@ export function PopupApp() {
     setError(null)
     setJustLoggedIn(false)
     const response = await sendMessage({ type: 'LOGOUT' })
-    if (response.ok) {
-      applySession(response.session)
+    const next = sessionFrom(response)
+    if (next) {
+      applySession(next)
     }
   }
 

@@ -13,10 +13,11 @@ export type CustomerProfile = {
   email: string | null
   website: string | null
   participantCount: number | null
-  /** Account summary fields (placeholder until CRM is wired). */
+  /** Account summary from CRM lookup (or placeholders while loading). */
   crmStatus: string
   purchases: string
   lastOrder: string
+  address: string | null
 }
 
 function phoneLabel(chat: DetectedChat): string {
@@ -39,8 +40,9 @@ export function buildCustomer(chat: DetectedChat): CustomerProfile {
     email: chat.email,
     website: chat.website,
     participantCount: chat.participantCount,
-    crmStatus: 'Cliente',
-    purchases: '$350',
-    lastOrder: '#1234',
+    crmStatus: '—',
+    purchases: '—',
+    lastOrder: '—',
+    address: null,
   }
 }
