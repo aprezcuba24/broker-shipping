@@ -110,15 +110,13 @@ Con sesión `ready` y un teléfono detectado en un chat 1:1, el sidebar pide al 
 En la UI:
 
 - **Dirección** si el cliente tiene `address` en el CRM.
-- **Estado**: `Cliente` o `Sin registrar`.
-- **Último pedido**: código del pedido o `—`.
-- **Compras**: `—` (aún no hay totales en estos listados).
+- **Último pedido**: código, estado y fecha, o `—`.
 
 ### Probar el flujo
 
 1. Login en el popup → organización lista.
 2. En WhatsApp Web, abre un chat 1:1 cuyo teléfono sea visible.
-3. En Cuenta deberías ver dirección y código de pedido (o “Sin registrar” si no hay ficha en esa org).
+3. En **Último pedido** deberías ver código, estado y fecha (o `—` si no hay ficha o pedidos).
 
 ## Limitaciones conocidas
 
@@ -126,7 +124,7 @@ En la UI:
 |---|---|
 | DOM no contratado | Meta puede cambiar markup en cualquier momento y romper selectores. |
 | Teléfono no siempre visible | Contactos guardados / IDs `@lid` a menudo no exponen el número en el DOM. |
-| Grupos | Se muestra el **nombre del grupo**; no hay un único teléfono. |
+| Grupos | No hay un único teléfono; la ficha no muestra el nombre (ya está en el chat). |
 | Layout | Si el selector de layout falla, el panel fijo puede solaparse un poco. |
 | Términos de uso | Solo lectura de UI visible. No automatiza chats ni scrapea masivamente. |
 | Match parcial en API | El listado de clientes usa `ILIKE` y los pedidos `search`; no hay endpoint exacto por teléfono. |

@@ -1,7 +1,15 @@
 import type { ReactNode } from 'react'
 import type { ChatKind } from '../detect-chat'
 import type { CustomerProfile } from '../customer'
+import type { CustomerLookup } from '../services/types'
 import type { CustomerLookupState } from './useCustomerLookup'
+
+const ORDER_STATUS_LABEL: Record<string, string> = {
+  created: 'Creada',
+  processing: 'En proceso',
+  finished: 'Finalizada',
+  canceled: 'Cancelada',
+}
 
 type Props = {
   customer: CustomerProfile
@@ -9,13 +17,18 @@ type Props = {
   lookup?: CustomerLookupState
 }
 
-function Kpi({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="kpi">
-      <p className="kpi-label">{label}</p>
-      <p className="kpi-value">{value}</p>
-    </div>
-  )
+function formatOrderDate(iso: string): string {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return iso
+  return date.toLocaleDateString('es', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+function orderStatusLabel(status: string): string {
+  return ORDER_STATUS_LABEL[status] ?? status
 }
 
 function PhoneIcon() {
@@ -121,31 +134,36 @@ function kindIcon(kind: ChatKind) {
   return <HelpIcon />
 }
 
-function accountKpis(customer: CustomerProfile, lookup: CustomerLookupState | undefined) {
+function accountSummary(
+  customer: CustomerProfile,
+  lookup: CustomerLookupState | undefined,
+): {
+  lastOrder: CustomerLookup['lastOrder']
+  lastOrderPlaceholder: string | null
+  address: string | null
+  hint: string | null
+} {
   if (!lookup || lookup.status === 'idle') {
     return {
-      crmStatus: customer.crmStatus,
-      purchases: customer.purchases,
-      lastOrder: customer.lastOrder,
+      lastOrder: null,
+      lastOrderPlaceholder: '—',
       address: customer.address,
-      hint: null as string | null,
+      hint: null,
     }
   }
   if (lookup.status === 'loading') {
     return {
-      crmStatus: '…',
-      purchases: '—',
-      lastOrder: '…',
-      address: null as string | null,
-      hint: null as string | null,
+      lastOrder: null,
+      lastOrderPlaceholder: '…',
+      address: null,
+      hint: null,
     }
   }
   if (lookup.status === 'error') {
     return {
-      crmStatus: '—',
-      purchases: '—',
-      lastOrder: '—',
-      address: null as string | null,
+      lastOrder: null,
+      lastOrderPlaceholder: '—',
+      address: null,
       hint: lookup.error,
     }
   }
@@ -153,20 +171,18 @@ function accountKpis(customer: CustomerProfile, lookup: CustomerLookupState | un
   const { lookup: data } = lookup
   if (!data.customer) {
     return {
-      crmStatus: 'Sin registrar',
-      purchases: '—',
-      lastOrder: '—',
-      address: null as string | null,
-      hint: null as string | null,
+      lastOrder: null,
+      lastOrderPlaceholder: '—',
+      address: null,
+      hint: null,
     }
   }
 
   return {
-    crmStatus: 'Cliente',
-    purchases: '—',
-    lastOrder: data.lastOrder?.code ?? '—',
+    lastOrder: data.lastOrder,
+    lastOrderPlaceholder: data.lastOrder ? null : '—',
     address: data.address,
-    hint: null as string | null,
+    hint: null,
   }
 }
 
@@ -175,7 +191,7 @@ export function CustomerCard({
   suggestOpenContactInfo = false,
   lookup,
 }: Props) {
-  const account = accountKpis(customer, lookup)
+  const account = accountSummary(customer, lookup)
 
   const extras: { icon: ReactNode | null; label: string; value: string }[] = []
   if (account.address) {
@@ -187,9 +203,6 @@ export function CustomerCard({
   }
   if (customer.presence) {
     extras.push({ icon: null, label: 'Presencia', value: customer.presence })
-  }
-  if (customer.about) {
-    extras.push({ icon: null, label: 'Estado', value: customer.about })
   }
   if (customer.email) {
     extras.push({ icon: <MailIcon />, label: 'Email', value: customer.email })
@@ -207,21 +220,6 @@ export function CustomerCard({
 
   return (
     <>
-      <div className="identity">
-        <div className="identity-row">
-          <h2>{customer.name}</h2>
-          {customer.isVerified ? (
-            <span
-              className="identity-verified"
-              title="Cuenta verificada"
-              aria-label="Cuenta verificada"
-            >
-              <CheckBadgeIcon />
-            </span>
-          ) : null}
-        </div>
-      </div>
-
       <section className="section section-compact">
         <div className="contact-meta" role="group" aria-label="Contacto">
           <span className="meta-item meta-phone" title="Teléfono">
@@ -247,6 +245,18 @@ export function CustomerCard({
             >
               <span className="meta-icon">
                 <BookUserIcon />
+              </span>
+            </span>
+          ) : null}
+
+          {customer.isVerified ? (
+            <span
+              className="meta-item meta-icon-only"
+              title="Cuenta verificada"
+              aria-label="Cuenta verificada"
+            >
+              <span className="meta-icon">
+                <CheckBadgeIcon />
               </span>
             </span>
           ) : null}
@@ -279,13 +289,20 @@ export function CustomerCard({
       <section className="section">
         <header className="section-header">
           <span className="section-bar" aria-hidden />
-          <h3 className="section-title">Cuenta</h3>
+          <h3 className="section-title">Último pedido</h3>
         </header>
-        <div className="kpi-grid">
-          <Kpi label="Estado" value={account.crmStatus} />
-          <Kpi label="Compras" value={account.purchases} />
-          <Kpi label="Último pedido" value={account.lastOrder} />
-        </div>
+        {account.lastOrder ? (
+          <div className="order-summary">
+            <p className="order-code">{account.lastOrder.code}</p>
+            <p className="order-meta">
+              {orderStatusLabel(account.lastOrder.status)}
+              {' · '}
+              {formatOrderDate(account.lastOrder.createdAt)}
+            </p>
+          </div>
+        ) : (
+          <p className="order-empty">{account.lastOrderPlaceholder}</p>
+        )}
         {account.hint ? (
           <p className="hint" role="alert">
             {account.hint}

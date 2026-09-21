@@ -13,10 +13,6 @@ export type CustomerProfile = {
   email: string | null
   website: string | null
   participantCount: number | null
-  /** Account summary from CRM lookup (or placeholders while loading). */
-  crmStatus: string
-  purchases: string
-  lastOrder: string
   address: string | null
 }
 
@@ -40,9 +36,6 @@ export function buildCustomer(chat: DetectedChat): CustomerProfile {
     email: chat.email,
     website: chat.website,
     participantCount: chat.participantCount,
-    crmStatus: '—',
-    purchases: '—',
-    lastOrder: '—',
     address: null,
   }
 }
