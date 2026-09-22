@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.schemas.fields import NonEmptyStr
+from app.schemas.fields import NonEmptyStr, NormalizedPhone
 
 
 class AddressCreate(BaseModel):
@@ -27,14 +27,14 @@ class AddressPublic(BaseModel):
 class CustomerCreate(BaseModel):
     name: NonEmptyStr = Field(max_length=255)
     ci: NonEmptyStr = Field(max_length=50)
-    phone: NonEmptyStr = Field(max_length=50)
+    phone: NormalizedPhone = Field(max_length=50)
     address: AddressCreate
 
 
 class CustomerUpdate(BaseModel):
     name: NonEmptyStr | None = Field(default=None, max_length=255)
     ci: NonEmptyStr | None = Field(default=None, max_length=50)
-    phone: NonEmptyStr | None = Field(default=None, max_length=50)
+    phone: NormalizedPhone | None = Field(default=None, max_length=50)
     address: AddressCreate | None = None
 
 
