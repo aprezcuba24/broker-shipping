@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
 import type { ChatKind } from '../detect-chat'
 import type { CustomerProfile } from '../customer'
+import { normalizePhone } from '../phone'
 import type { CustomerLookup, LastOrder, LastOrderItem } from '../services/types'
+import { PurchaseTier } from './PurchaseTier'
 import type { CustomerLookupState } from './useCustomerLookup'
 
 const ORDER_STATUS_LABEL: Record<string, string> = {
@@ -243,6 +245,8 @@ export function CustomerCard({
   const account = accountSummary(customer, lookup)
   const hasCrmIdentity = Boolean(account.name || account.ci)
   const hasCrmBlock = hasCrmIdentity || Boolean(account.addressParagraph)
+  const phoneDigits =
+    customer.kind !== 'group' ? normalizePhone(customer.phone) : null
 
   const extras: { icon: ReactNode | null; label: string; value: string }[] = []
   if (customer.presence) {
@@ -350,6 +354,16 @@ export function CustomerCard({
           </p>
         ) : null}
       </section>
+
+      {phoneDigits ? (
+        <section className="section">
+          <header className="section-header">
+            <span className="section-bar" aria-hidden />
+            <h3 className="section-title">Calificación</h3>
+          </header>
+          <PurchaseTier seed={phoneDigits} />
+        </section>
+      ) : null}
 
       <section className="section">
         <header className="section-header">
