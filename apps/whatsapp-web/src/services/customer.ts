@@ -4,8 +4,10 @@ import {
   EMPTY_CUSTOMER_LOOKUP,
   type CustomerLookup,
   type CustomerPublic,
+  type MunicipalityPublic,
   type OrderPublic,
   type Page,
+  type ProvincePublic,
 } from './types'
 
 function digitsOnly(value: string): string {
@@ -51,6 +53,51 @@ function pickLastOrder(
   }
 }
 
+let provincesCache: ProvincePublic[] | null = null
+let provincesCachePromise: Promise<ProvincePublic[]> | null = null
+
+async function loadProvinces(token: string): Promise<ProvincePublic[]> {
+  if (provincesCache) return provincesCache
+  if (!provincesCachePromise) {
+    provincesCachePromise = apiRequest<ProvincePublic[]>('/locations/provinces', {
+      token,
+    })
+      .then((provinces) => {
+        provincesCache = provinces
+        return provinces
+      })
+      .catch((err) => {
+        provincesCachePromise = null
+        throw err
+      })
+  }
+  return provincesCachePromise
+}
+
+async function resolveLocationNames(
+  token: string,
+  address: CustomerPublic['address'],
+): Promise<{ province: string | null; municipality: string | null }> {
+  if (!address) return { province: null, municipality: null }
+
+  try {
+    const [provinces, municipalities] = await Promise.all([
+      loadProvinces(token),
+      apiRequest<MunicipalityPublic[]>(
+        `/locations/provinces/${address.province_id}/municipalities`,
+        { token },
+      ),
+    ])
+    return {
+      province: provinces.find((p) => p.id === address.province_id)?.name ?? null,
+      municipality:
+        municipalities.find((m) => m.id === address.municipality_id)?.name ?? null,
+    }
+  } catch {
+    return { province: null, municipality: null }
+  }
+}
+
 export async function lookupCustomerByPhone(params: {
   phone: string
   accessToken: string
@@ -85,13 +132,21 @@ export async function lookupCustomerByPhone(params: {
   const customer = pickCustomer(customersPage.items, phoneDigits)
   if (!customer) return EMPTY_CUSTOMER_LOOKUP
 
+  const { province, municipality } = await resolveLocationNames(
+    accessToken,
+    customer.address,
+  )
+
   return {
     customer: {
       id: customer.id,
       name: customer.name,
       phone: customer.phone,
+      ci: customer.ci,
     },
     address: customer.address?.address ?? null,
+    province,
+    municipality,
     lastOrder: pickLastOrder(ordersPage.items, customer.id),
   }
 }

@@ -38,9 +38,22 @@ export type Page<T> = {
   pages: number
 }
 
+export type ProvincePublic = {
+  id: string
+  name: string
+}
+
+export type MunicipalityPublic = {
+  id: string
+  name: string
+  province_id: string
+}
+
 export type CustomerLookup = {
-  customer: { id: string; name: string; phone: string } | null
+  customer: { id: string; name: string; phone: string; ci: string } | null
   address: string | null
+  province: string | null
+  municipality: string | null
   lastOrder: {
     id: string
     code: string
@@ -52,5 +65,7 @@ export type CustomerLookup = {
 export const EMPTY_CUSTOMER_LOOKUP: CustomerLookup = {
   customer: null,
   address: null,
+  province: null,
+  municipality: null,
   lastOrder: null,
 }

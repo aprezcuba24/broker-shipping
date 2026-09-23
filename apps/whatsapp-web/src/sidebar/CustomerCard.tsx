@@ -31,6 +31,17 @@ function orderStatusLabel(status: string): string {
   return ORDER_STATUS_LABEL[status] ?? status
 }
 
+function formatAddressParagraph(
+  street: string | null,
+  municipality: string | null,
+  province: string | null,
+): string | null {
+  const parts = [street, municipality, province].filter(
+    (part): part is string => Boolean(part),
+  )
+  return parts.length > 0 ? parts.join(', ') : null
+}
+
 function PhoneIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -109,15 +120,6 @@ function GlobeIcon() {
   )
 }
 
-function MapPinIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
-      <circle cx="12" cy="10" r="3" />
-    </svg>
-  )
-}
-
 function CheckBadgeIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -140,14 +142,18 @@ function accountSummary(
 ): {
   lastOrder: CustomerLookup['lastOrder']
   lastOrderPlaceholder: string | null
-  address: string | null
+  name: string | null
+  ci: string | null
+  addressParagraph: string | null
   hint: string | null
 } {
   if (!lookup || lookup.status === 'idle') {
     return {
       lastOrder: null,
       lastOrderPlaceholder: '—',
-      address: customer.address,
+      name: null,
+      ci: null,
+      addressParagraph: customer.address,
       hint: null,
     }
   }
@@ -155,7 +161,9 @@ function accountSummary(
     return {
       lastOrder: null,
       lastOrderPlaceholder: '…',
-      address: null,
+      name: null,
+      ci: null,
+      addressParagraph: null,
       hint: null,
     }
   }
@@ -163,7 +171,9 @@ function accountSummary(
     return {
       lastOrder: null,
       lastOrderPlaceholder: '—',
-      address: null,
+      name: null,
+      ci: null,
+      addressParagraph: null,
       hint: lookup.error,
     }
   }
@@ -173,7 +183,9 @@ function accountSummary(
     return {
       lastOrder: null,
       lastOrderPlaceholder: '—',
-      address: null,
+      name: null,
+      ci: null,
+      addressParagraph: null,
       hint: null,
     }
   }
@@ -181,7 +193,13 @@ function accountSummary(
   return {
     lastOrder: data.lastOrder,
     lastOrderPlaceholder: data.lastOrder ? null : '—',
-    address: data.address,
+    name: data.customer.name,
+    ci: data.customer.ci,
+    addressParagraph: formatAddressParagraph(
+      data.address,
+      data.municipality,
+      data.province,
+    ),
     hint: null,
   }
 }
@@ -192,15 +210,10 @@ export function CustomerCard({
   lookup,
 }: Props) {
   const account = accountSummary(customer, lookup)
+  const hasCrmIdentity = Boolean(account.name || account.ci)
+  const hasCrmBlock = hasCrmIdentity || Boolean(account.addressParagraph)
 
   const extras: { icon: ReactNode | null; label: string; value: string }[] = []
-  if (account.address) {
-    extras.push({
-      icon: <MapPinIcon />,
-      label: 'Dirección',
-      value: account.address,
-    })
-  }
   if (customer.presence) {
     extras.push({ icon: null, label: 'Presencia', value: customer.presence })
   }
@@ -261,6 +274,27 @@ export function CustomerCard({
             </span>
           ) : null}
         </div>
+
+        {hasCrmBlock ? (
+          <div className="crm-profile" aria-label="Cliente">
+            {hasCrmIdentity ? (
+              <p className="crm-identity">
+                {account.name ? (
+                  <span className="crm-name">{account.name}</span>
+                ) : null}
+                {account.name && account.ci ? (
+                  <span className="crm-sep" aria-hidden>
+                    ·
+                  </span>
+                ) : null}
+                {account.ci ? <span className="crm-ci">{account.ci}</span> : null}
+              </p>
+            ) : null}
+            {account.addressParagraph ? (
+              <p className="crm-address">{account.addressParagraph}</p>
+            ) : null}
+          </div>
+        ) : null}
 
         {extras.length > 0 ? (
           <ul className="contact-extras">
