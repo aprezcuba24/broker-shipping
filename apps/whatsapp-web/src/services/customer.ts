@@ -4,9 +4,12 @@ import {
   EMPTY_CUSTOMER_LOOKUP,
   type CustomerLookup,
   type CustomerPublic,
+  type LastOrder,
   type MunicipalityPublic,
   type OrderPublic,
+  type OrganizationPublic,
   type Page,
+  type ProductPublic,
   type ProvincePublic,
 } from './types'
 
@@ -39,18 +42,91 @@ function pickCustomer(
   return byOverlap ?? null
 }
 
-function pickLastOrder(
-  orders: OrderPublic[],
-  customerId: string,
-): CustomerLookup['lastOrder'] {
-  const order = orders.find((o) => o.customer_id === customerId)
-  if (!order) return null
+async function fetchProductName(
+  token: string,
+  organizationId: string,
+  productId: string,
+): Promise<string | null> {
+  try {
+    const product = await apiRequest<ProductPublic>(
+      `/products/seller/${productId}`,
+      {
+        token,
+        params: { organization_id: organizationId },
+      },
+    )
+    return product.name
+  } catch {
+    return null
+  }
+}
+
+async function loadProviderNames(
+  token: string,
+  organizationId: string,
+): Promise<Map<string, string>> {
+  try {
+    const providers = await apiRequest<OrganizationPublic[]>(
+      '/organizations/seller/providers',
+      {
+        token,
+        params: { organization_id: organizationId },
+      },
+    )
+    return new Map(providers.map((p) => [p.id, p.name]))
+  } catch {
+    return new Map()
+  }
+}
+
+async function enrichLastOrder(
+  order: OrderPublic,
+  token: string,
+  organizationId: string,
+): Promise<LastOrder> {
+  const items = order.items ?? []
+  const productIds = [...new Set(items.map((item) => item.product_id))]
+
+  const [productNames, providerNames] = await Promise.all([
+    Promise.all(
+      productIds.map(async (id) => {
+        const name = await fetchProductName(token, organizationId, id)
+        return [id, name] as const
+      }),
+    ),
+    loadProviderNames(token, organizationId),
+  ])
+
+  const productNameById = new Map(productNames)
+
   return {
     id: order.id,
     code: order.code,
     status: order.status,
     createdAt: order.created_at,
+    updatedAt: order.updated_at,
+    totals: order.totals ?? [],
+    items: items.map((item) => ({
+      id: item.id,
+      productId: item.product_id,
+      productName: productNameById.get(item.product_id) ?? null,
+      providerOrganizationId: item.provider_organization_id,
+      providerName: providerNames.get(item.provider_organization_id) ?? null,
+      quantity: item.quantity,
+      currency: item.currency,
+      unitPrice: item.seller_provider_price,
+      commission: item.seller_commission,
+      customerChange: item.customer_change,
+      status: item.status,
+    })),
   }
+}
+
+function pickLastOrder(
+  orders: OrderPublic[],
+  customerId: string,
+): OrderPublic | null {
+  return orders.find((o) => o.customer_id === customerId) ?? null
 }
 
 let provincesCache: ProvincePublic[] | null = null
@@ -132,10 +208,14 @@ export async function lookupCustomerByPhone(params: {
   const customer = pickCustomer(customersPage.items, phoneDigits)
   if (!customer) return EMPTY_CUSTOMER_LOOKUP
 
-  const { province, municipality } = await resolveLocationNames(
-    accessToken,
-    customer.address,
-  )
+  const rawLastOrder = pickLastOrder(ordersPage.items, customer.id)
+
+  const [{ province, municipality }, lastOrder] = await Promise.all([
+    resolveLocationNames(accessToken, customer.address),
+    rawLastOrder
+      ? enrichLastOrder(rawLastOrder, accessToken, organizationId)
+      : Promise.resolve(null),
+  ])
 
   return {
     customer: {
@@ -147,6 +227,6 @@ export async function lookupCustomerByPhone(params: {
     address: customer.address?.address ?? null,
     province,
     municipality,
-    lastOrder: pickLastOrder(ordersPage.items, customer.id),
+    lastOrder,
   }
 }

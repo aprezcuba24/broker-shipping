@@ -556,18 +556,13 @@
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .order-code {
-  margin: 0;
-  font-family: var(--v-font-headline);
-  font-size: 20px;
   font-weight: 700;
-  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   color: var(--v-on-surface);
-  line-height: 1.2;
 }
 
 .order-meta {
@@ -578,13 +573,43 @@
   color: var(--v-on-surface-variant);
 }
 
+.order-totals {
+  font-weight: 600;
+  color: var(--v-on-surface);
+  font-variant-numeric: tabular-nums;
+}
+
+.order-items {
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.order-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 6px;
+  border-top: 1px solid var(--v-border-soft);
+}
+
+.order-item-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--v-on-surface);
+  word-break: break-word;
+}
+
 .order-empty {
   margin: 0;
   padding: 12px 14px;
-  font-family: var(--v-font-headline);
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
   color: var(--v-on-surface-variant);
-  line-height: 1.2;
 }

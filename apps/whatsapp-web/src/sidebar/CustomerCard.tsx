@@ -1,13 +1,21 @@
 import type { ReactNode } from 'react'
 import type { ChatKind } from '../detect-chat'
 import type { CustomerProfile } from '../customer'
-import type { CustomerLookup } from '../services/types'
+import type { CustomerLookup, LastOrder, LastOrderItem } from '../services/types'
 import type { CustomerLookupState } from './useCustomerLookup'
 
 const ORDER_STATUS_LABEL: Record<string, string> = {
   created: 'Creada',
   processing: 'En proceso',
   finished: 'Finalizada',
+  canceled: 'Cancelada',
+}
+
+const ITEM_STATUS_LABEL: Record<string, string> = {
+  created: 'Creada',
+  reviewed: 'Revisada',
+  sent: 'Enviada',
+  delivered: 'Entregada',
   canceled: 'Cancelada',
 }
 
@@ -27,8 +35,31 @@ function formatOrderDate(iso: string): string {
   })
 }
 
+function formatMoney(cents: number, currency: string): string {
+  return `${(cents / 100).toFixed(2)} ${currency.toUpperCase()}`
+}
+
 function orderStatusLabel(status: string): string {
   return ORDER_STATUS_LABEL[status] ?? status
+}
+
+function itemStatusLabel(status: string): string {
+  return ITEM_STATUS_LABEL[status] ?? status
+}
+
+function sameInstant(a: string, b: string): boolean {
+  const ta = new Date(a).getTime()
+  const tb = new Date(b).getTime()
+  if (Number.isNaN(ta) || Number.isNaN(tb)) return a === b
+  return ta === tb
+}
+
+function itemTitle(item: LastOrderItem): string {
+  const product = item.productName ?? 'Producto'
+  const provider = item.providerName
+  return provider
+    ? `${item.quantity} × ${product} · ${provider}`
+    : `${item.quantity} × ${product}`
 }
 
 function formatAddressParagraph(
@@ -326,14 +357,7 @@ export function CustomerCard({
           <h3 className="section-title">Último pedido</h3>
         </header>
         {account.lastOrder ? (
-          <div className="order-summary">
-            <p className="order-code">{account.lastOrder.code}</p>
-            <p className="order-meta">
-              {orderStatusLabel(account.lastOrder.status)}
-              {' · '}
-              {formatOrderDate(account.lastOrder.createdAt)}
-            </p>
-          </div>
+          <LastOrderSummary order={account.lastOrder} />
         ) : (
           <p className="order-empty">{account.lastOrderPlaceholder}</p>
         )}
@@ -344,5 +368,65 @@ export function CustomerCard({
         ) : null}
       </section>
     </>
+  )
+}
+
+function LastOrderSummary({ order }: { order: LastOrder }) {
+  const showUpdated =
+    Boolean(order.updatedAt) &&
+    order.updatedAt != null &&
+    !sameInstant(order.createdAt, order.updatedAt)
+
+  return (
+    <div className="order-summary">
+      <p className="order-meta">
+        <span className="order-code">{order.code}</span>
+        {' · '}
+        {orderStatusLabel(order.status)}
+        {' · '}
+        {formatOrderDate(order.createdAt)}
+      </p>
+
+      {showUpdated && order.updatedAt ? (
+        <p className="order-meta">
+          Actualizado {formatOrderDate(order.updatedAt)}
+        </p>
+      ) : null}
+
+      {order.totals.length > 0 ? (
+        <p className="order-meta order-totals">
+          {order.totals
+            .map((total) => formatMoney(total.amount, total.currency))
+            .join(' · ')}
+        </p>
+      ) : null}
+
+      {order.items.length > 0 ? (
+        <ul className="order-items">
+          {order.items.map((item) => {
+            const subtotal = item.unitPrice * item.quantity
+            return (
+              <li key={item.id} className="order-item">
+                <p className="order-item-title">{itemTitle(item)}</p>
+                <p className="order-meta">
+                  {formatMoney(item.unitPrice, item.currency)}
+                  {' · '}
+                  Comisión {formatMoney(item.commission, item.currency)}
+                  {' · '}
+                  {formatMoney(subtotal, item.currency)}
+                  {' · '}
+                  {itemStatusLabel(item.status)}
+                </p>
+                {item.customerChange > 0 ? (
+                  <p className="order-meta">
+                    Vuelto {formatMoney(item.customerChange, item.currency)}
+                  </p>
+                ) : null}
+              </li>
+            )
+          })}
+        </ul>
+      ) : null}
+    </div>
   )
 }
