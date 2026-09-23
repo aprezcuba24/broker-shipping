@@ -23,6 +23,14 @@ export function mockPurchaseCount(_seed: string): number {
   return 7
 }
 
+/**
+ * Fixed mock: customer is not on the blacklist.
+ * Replace with a real API flag when the backend is ready.
+ */
+export function mockBlacklisted(_seed: string): boolean {
+  return false
+}
+
 function tierAriaLabel(tier: PurchaseTierValue): string {
   if (tier === 0) return 'Calificación: sin historial'
   if (tier === 1) return 'Calificación: más de 1 compra'
@@ -38,15 +46,17 @@ type Props = {
 export function PurchaseTier({ seed }: Props) {
   const count = mockPurchaseCount(seed)
   const current = purchaseTier(count)
+  const blacklisted = mockBlacklisted(seed)
+  const blacklistValue = blacklisted ? 'Sí' : 'No'
 
   return (
-    <div
-      className="purchase-tier"
-      role="img"
-      aria-label={tierAriaLabel(current)}
-    >
+    <div className="purchase-tier">
       <p className="purchase-tier-legend">Cantidad de compras generales</p>
-      <ol className="purchase-tier-track">
+      <ol
+        className="purchase-tier-track"
+        role="img"
+        aria-label={tierAriaLabel(current)}
+      >
         {TIERS.map((tier, index) => {
           const reached = current >= tier.value
           const isCurrent = current === tier.value
@@ -80,6 +90,9 @@ export function PurchaseTier({ seed }: Props) {
           )
         })}
       </ol>
+      <p className="purchase-tier-blacklist">
+        Lista negra: {blacklistValue}
+      </p>
     </div>
   )
 }
