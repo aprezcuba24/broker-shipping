@@ -56,12 +56,17 @@ function sameInstant(a: string, b: string): boolean {
   return ta === tb
 }
 
-function itemTitle(item: LastOrderItem): string {
+function itemTitle(item: LastOrderItem) {
   const product = item.productName ?? 'Producto'
   const provider = item.providerName
-  return provider
-    ? `${item.quantity} × ${product} · ${provider}`
-    : `${item.quantity} × ${product}`
+  return (
+    <>
+      {item.quantity} × {product}
+      {provider ? (
+        <span className="order-item-provider"> ({provider})</span>
+      ) : null}
+    </>
+  )
 }
 
 function formatAddressParagraph(
@@ -162,6 +167,16 @@ function CheckBadgeIcon() {
   )
 }
 
+function ExternalLinkIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M15 3h6v6" />
+      <path d="M10 14 21 3" />
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+    </svg>
+  )
+}
+
 function kindIcon(kind: ChatKind) {
   if (kind === 'group') return <UsersIcon />
   if (kind === 'business') return <BuildingIcon />
@@ -179,6 +194,7 @@ function accountSummary(
   ci: string | null
   addressParagraph: string | null
   hint: string | null
+  hasCustomer: boolean
 } {
   if (!lookup || lookup.status === 'idle') {
     return {
@@ -188,6 +204,7 @@ function accountSummary(
       ci: null,
       addressParagraph: customer.address,
       hint: null,
+      hasCustomer: false,
     }
   }
   if (lookup.status === 'loading') {
@@ -198,6 +215,7 @@ function accountSummary(
       ci: null,
       addressParagraph: null,
       hint: null,
+      hasCustomer: false,
     }
   }
   if (lookup.status === 'error') {
@@ -208,6 +226,7 @@ function accountSummary(
       ci: null,
       addressParagraph: null,
       hint: lookup.error,
+      hasCustomer: false,
     }
   }
 
@@ -220,6 +239,7 @@ function accountSummary(
       ci: null,
       addressParagraph: null,
       hint: null,
+      hasCustomer: false,
     }
   }
 
@@ -234,6 +254,7 @@ function accountSummary(
       data.province,
     ),
     hint: null,
+    hasCustomer: true,
   }
 }
 
@@ -267,7 +288,7 @@ export function CustomerCard({
   }
 
   return (
-    <>
+    <div className="customer-stack">
       <section className="section section-compact">
         <div className="contact-meta" role="group" aria-label="Contacto">
           <span className="meta-item meta-phone" title="Teléfono">
@@ -353,6 +374,19 @@ export function CustomerCard({
             rellenará aquí automáticamente.
           </p>
         ) : null}
+
+        {account.hasCustomer ? (
+          <div className="contact-actions">
+            <button
+              type="button"
+              className="btn-open-app"
+              title="Ver en aplicación"
+              aria-label="Ver en aplicación"
+            >
+              <ExternalLinkIcon />
+            </button>
+          </div>
+        ) : null}
       </section>
 
       {phoneDigits ? (
@@ -371,7 +405,19 @@ export function CustomerCard({
           <h3 className="section-title">Último pedido</h3>
         </header>
         {account.lastOrder ? (
-          <LastOrderSummary order={account.lastOrder} />
+          <>
+            <LastOrderSummary order={account.lastOrder} />
+            <div className="contact-actions">
+              <button
+                type="button"
+                className="btn-open-app"
+                title="Ver en aplicación"
+                aria-label="Ver en aplicación"
+              >
+                <ExternalLinkIcon />
+              </button>
+            </div>
+          </>
         ) : (
           <p className="order-empty">{account.lastOrderPlaceholder}</p>
         )}
@@ -381,7 +427,7 @@ export function CustomerCard({
           </p>
         ) : null}
       </section>
-    </>
+    </div>
   )
 }
 
@@ -393,25 +439,27 @@ function LastOrderSummary({ order }: { order: LastOrder }) {
 
   return (
     <div className="order-summary">
-      <p className="order-meta">
+      <div className="order-header">
         <span className="order-code">{order.code}</span>
-        {' · '}
-        {orderStatusLabel(order.status)}
-        {' · '}
-        {formatOrderDate(order.createdAt)}
-      </p>
+        <span className="order-date">{formatOrderDate(order.createdAt)}</span>
+        <span
+          className={`order-status-badge status-${order.status}`}
+        >
+          {orderStatusLabel(order.status)}
+        </span>
+      </div>
+
+      {order.totals.length > 0 ? (
+        <p className="order-totals">
+          {order.totals
+            .map((total) => formatMoney(total.amount, total.currency))
+            .join(' · ')}
+        </p>
+      ) : null}
 
       {showUpdated && order.updatedAt ? (
         <p className="order-meta">
           Actualizado {formatOrderDate(order.updatedAt)}
-        </p>
-      ) : null}
-
-      {order.totals.length > 0 ? (
-        <p className="order-meta order-totals">
-          {order.totals
-            .map((total) => formatMoney(total.amount, total.currency))
-            .join(' · ')}
         </p>
       ) : null}
 
