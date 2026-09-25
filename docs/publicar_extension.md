@@ -2,7 +2,7 @@
 
 Guía operativa para la primera publicación y las actualizaciones siguientes. La extensión vive en [`apps/whatsapp-web`](../apps/whatsapp-web). Chrome **no** instala un `.crx` propio desde la web del seller ni auto-actualiza una carga «Load unpacked».
 
-Flujo de los vendedores: la app seller (`/whatsapp`) abre la ficha de la tienda → el vendedor pulsa «Añadir a Chrome» → Chrome actualiza solo en segundo plano.
+Flujo de los vendedores: la app seller (**Configurar** → `/settings`) abre la ficha de la tienda → el vendedor pulsa «Añadir a Chrome» → Chrome actualiza solo en segundo plano.
 
 Visibilidad recomendada: **Unlisted** (solo quien tenga el enlace; no aparece en la búsqueda de la tienda). Una ficha privada por dominio de Google Workspace solo tendría sentido si todos los Chrome fueran de un Workspace vuestro.
 
@@ -38,7 +38,7 @@ El ID de la extensión lo fija la clave privada del paquete. Para que Load unpac
    # Clave pública PEM (contenido del campo key; una línea o multilínea escapada)
    VITE_WHATSAPP_EXTENSION_KEY=...
 
-   # Mismo ID en la app seller (página /whatsapp)
+   # Mismo ID en la app seller (Configurar → extensión WhatsApp)
    VITE_WHATSAPP_EXTENSION_ID=abcdefghijklmnopqrstuvwxyzabcdef
    ```
 
@@ -46,7 +46,7 @@ El ID de la extensión lo fija la clave privada del paquete. Para que Load unpac
 
 5. Añade `*.pem` a tu `.gitignore` local / secret store. El repo ya no debe contener la clave privada.
 
-Hasta tener la cuenta y el ID, la página `/whatsapp` del seller muestra instrucciones y **no** el botón de la tienda (`VITE_WHATSAPP_EXTENSION_ID` vacío).
+Hasta tener la cuenta y el ID, la sección de WhatsApp en **Configurar** muestra instrucciones y **no** el botón de la tienda (`VITE_WHATSAPP_EXTENSION_ID` vacío).
 
 ---
 
@@ -70,7 +70,7 @@ Comprueba que `dist/manifest.json` tenga:
 
 - `host_permissions` con el origen del API de producción y `https://web.whatsapp.com/*`
 - `externally_connectable.matches` con el origen del seller (`VITE_SELLER_URL`)
-- `web_accessible_resources` con `icons/icon16.png` para ese origen (detección desde `/whatsapp`)
+- `web_accessible_resources` con `icons/icon16.png` para ese origen (detección desde Configurar)
 
 ### Empaquetar el zip
 
@@ -119,7 +119,7 @@ La primera revisión puede tardar días. Cuando esté aprobada:
    https://chromewebstore.google.com/detail/<item-id>
    ```
 
-4. Redeploy de `apps/seller` para que `/whatsapp` muestre el botón «Instalar en Chrome».
+4. Redeploy de `apps/seller` para que **Configurar** muestre el botón «Instalar en Chrome».
 
 ---
 

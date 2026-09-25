@@ -4,8 +4,8 @@ import {
   ClipboardList,
   Contact,
   LayoutDashboard,
-  MessageCircle,
   Package,
+  Settings,
   ShoppingBag,
   Truck,
   Users,
@@ -27,7 +27,8 @@ export const sellerNavItems: NavItem[] = [
   { to: '/commissions', label: 'Comisiones', icon: CircleDollarSign },
   { to: '/providers', label: 'Proveedores', icon: Truck },
   { to: '/members', label: 'Miembros', icon: Users },
-  { to: '/whatsapp', label: 'WhatsApp', icon: MessageCircle },
 ]
 
-export const sellerBottomItems: NavItem[] = []
+export const sellerBottomItems: NavItem[] = [
+  { to: '/settings', label: 'Configurar', icon: Settings },
+]

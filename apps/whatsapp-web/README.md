@@ -32,7 +32,7 @@ Tras cada build, en `chrome://extensions` usa **Reload** en la extensión.
 
 ## Instalación para vendedores
 
-Los vendedores instalan desde la **Chrome Web Store** (ficha unlisted). En la app seller, la ruta `/whatsapp` abre esa ficha y comprueba si la extensión ya está instalada.
+Los vendedores instalan desde la **Chrome Web Store** (ficha unlisted). En la app seller, **Configurar** (`/settings`) abre esa ficha y comprueba si la extensión ya está instalada.
 
 Procedimiento para publicar y actualizar (cuenta developer, zip, versiones): **[docs/publicar_extension.md](../../docs/publicar_extension.md)**. Chrome reparte las actualizaciones solo; no uses Load unpacked en producción.
 
