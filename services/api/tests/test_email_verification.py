@@ -93,7 +93,9 @@ async def test_login_blocked_until_verified(
         json={"email": "ada@example.com", "password": "secret123"},
     )
     assert login.status_code == 403
-    assert login.json()["detail"] == "Email not verified"
+    body = login.json()
+    assert body["code"] == "email_not_verified"
+    assert body["message"] == "Debes verificar tu correo antes de continuar."
     assert "localhost:5174" in mock_send_email[0]["verify_url"]
 
 

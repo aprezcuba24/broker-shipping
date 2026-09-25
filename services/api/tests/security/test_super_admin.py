@@ -148,7 +148,9 @@ async def test_super_admin_cannot_create_api_key(
         json={"name": "should fail"},
     )
     assert r.status_code == 403
-    assert "Super admins cannot create API keys" in r.json()["detail"]
+    body = r.json()
+    assert body["code"] == "super_admin_api_key"
+    assert "superadministradores" in body["message"]
 
 
 async def test_super_admin_seller_org_on_provider_route_forbidden(

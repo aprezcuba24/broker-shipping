@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
+from app.lib.exceptions import raise_api_error
 from app.lib.persistence import get_entity
 from app.lib.persistence.pagination import paginate
 from app.lib.security.access import is_super_admin
@@ -14,7 +14,6 @@ from app.models.user.user import User
 from app.schemas.pagination import PageResult, PaginationParams
 from app.services import product_tag as product_tag_service
 from app.services import provider_seller_link as link_service
-
 
 async def list_accessible_products(
     session: AsyncSession,
@@ -32,7 +31,7 @@ async def list_accessible_products(
     )
     if provider_id is not None:
         if not is_super_admin(user) and provider_id not in provider_ids:
-            raise HTTPException(status_code=403, detail="Forbidden")
+            raise_api_error("forbidden")
         provider_ids = [provider_id]
     if not provider_ids:
         return PageResult(items=[], total=0)
@@ -44,7 +43,6 @@ async def list_accessible_products(
     result = await paginate(session, stmt, pagination)
     await product_tag_service.attach_tags_to_products(session, result.items)
     return result
-
 
 async def get_accessible_product(
     session: AsyncSession,
@@ -59,10 +57,10 @@ async def get_accessible_product(
         seller_organization_id,
     )
     if not provider_ids:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise_api_error("not_found")
 
     product = await get_entity(session, Product, id=product_id, required=False)
     if product is None or product.organization_id not in provider_ids:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise_api_error("not_found")
     await product_tag_service.attach_tags_to_products(session, [product])
     return product

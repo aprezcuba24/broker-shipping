@@ -3,10 +3,10 @@ from __future__ import annotations
 import secrets
 from uuid import UUID
 
-from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
+from app.lib.exceptions import raise_api_error
 from app.lib.persistence import get_entity
 from app.lib.security.access import is_super_admin, load_active_api_key_by_prefix
 from app.lib.security.api_keys import generate_api_key, hash_secret, split_raw
@@ -15,17 +15,13 @@ from app.models.user.api_key import ApiKey
 from app.models.user.user import User
 from app.schemas.api_key import ApiKeyCreate
 
-
-_SUPER_ADMIN_API_KEY_DETAIL = "Super admins cannot create API keys"
-
-
 async def create_for_user(
     session: AsyncSession,
     user: User,
     data: ApiKeyCreate,
 ) -> tuple[str, ApiKey]:
     if is_super_admin(user):
-        raise HTTPException(status_code=403, detail=_SUPER_ADMIN_API_KEY_DETAIL)
+        raise_api_error("super_admin_api_key")
 
     raw, prefix, secret_hash = generate_api_key()
     entity = ApiKey(
@@ -40,7 +36,6 @@ async def create_for_user(
     await session.refresh(entity)
     return raw, entity
 
-
 async def verify_raw(session: AsyncSession, raw: str) -> ApiKey | None:
     parts = split_raw(raw)
     if parts is None:
@@ -53,7 +48,6 @@ async def verify_raw(session: AsyncSession, raw: str) -> ApiKey | None:
         return None
     return row
 
-
 async def list_for_user(session: AsyncSession, user_id: UUID) -> list[ApiKey]:
     result = await session.execute(
         select(ApiKey)
@@ -61,7 +55,6 @@ async def list_for_user(session: AsyncSession, user_id: UUID) -> list[ApiKey]:
         .order_by(col(ApiKey.created_at).desc())
     )
     return list(result.scalars().all())
-
 
 async def revoke_for_user(
     session: AsyncSession,
@@ -81,7 +74,6 @@ async def revoke_for_user(
         await session.commit()
         await session.refresh(entity)
     return entity
-
 
 async def touch_last_used(session: AsyncSession, api_key: ApiKey) -> None:
     api_key.last_used_at = utc_now()

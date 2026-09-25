@@ -3,9 +3,9 @@ from __future__ import annotations
 from uuid import uuid4
 
 import pytest
-from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.lib.exceptions import ApiError
 from app.lib.persistence import get_entity
 from app.models.organization.organization import Organization
 from tests.factories.organization_factory import OrganizationFactory
@@ -40,25 +40,11 @@ async def test_get_entity_returns_none_when_not_required(
 async def test_get_entity_raises_404_by_default(
     db_session: AsyncSession,
 ) -> None:
-    with pytest.raises(HTTPException) as exc_info:
+    with pytest.raises(ApiError) as exc_info:
         await get_entity(db_session, Organization, id=uuid4())
     assert exc_info.value.status_code == 404
-    assert exc_info.value.detail == "Not found"
-
-
-@pytest.mark.asyncio(loop_scope="session")
-async def test_get_entity_custom_not_found_detail(
-    db_session: AsyncSession,
-) -> None:
-    with pytest.raises(HTTPException) as exc_info:
-        await get_entity(
-            db_session,
-            Organization,
-            id=uuid4(),
-            not_found_detail="Organization not found",
-        )
-    assert exc_info.value.status_code == 404
-    assert exc_info.value.detail == "Organization not found"
+    assert exc_info.value.code == "not_found"
+    assert exc_info.value.message == "No encontrado."
 
 
 @pytest.mark.asyncio(loop_scope="session")

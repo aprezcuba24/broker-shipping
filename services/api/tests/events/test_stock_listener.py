@@ -4,7 +4,7 @@ from collections.abc import Iterator
 from uuid import UUID
 
 import pytest
-from fastapi import HTTPException
+from app.lib.exceptions import ApiError
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
@@ -152,6 +152,10 @@ async def test_order_created_event_insufficient_stock_is_409(
         },
     )
     assert r.status_code == 409
+    body = r.json()
+    assert body["code"] == "insufficient_stock"
+    assert body["params"]["available"] == 10
+    assert body["params"]["requested"] == 11
     db_session.expire_all()
     product = await db_session.get(Product, UUID(stock_listener_ctx["product_id"]))
     assert product is not None
@@ -224,10 +228,11 @@ async def test_emit_order_created_with_missing_order_is_404(
     from uuid import uuid4
 
     async with configured_session_maker() as session:
-        with pytest.raises(HTTPException) as exc:
+        with pytest.raises(ApiError) as exc:
             await emit(
                 OrderCreatedEvent(order_id=uuid4()),
                 session=session,
                 propagate_errors=True,
             )
         assert exc.value.status_code == 404
+        assert exc.value.code == "not_found"

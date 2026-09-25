@@ -3,12 +3,12 @@ from __future__ import annotations
 import secrets
 from uuid import UUID
 
-from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
 from sqlmodel import select
 
 from app.events.types import MemberInvitedEvent, SellerLinkRequestedEvent
+from app.lib.exceptions import raise_api_error
 from app.lib.events import emit
 from app.lib.persistence import get_entity
 from app.lib.utils import utc_now
@@ -34,7 +34,6 @@ from app.services import provider_seller_link as link_service
 OrgAlias = aliased(Organization)
 CounterpartyAlias = aliased(Organization)
 
-
 def to_invitation_public(
     invitation: OrganizationInvitation,
     *,
@@ -55,15 +54,13 @@ def to_invitation_public(
         counterparty_organization_name=counterparty_organization_name,
     )
 
-
 async def _require_provider_org(
     session: AsyncSession, organization_id: UUID
 ) -> Organization:
     org = await get_entity(session, Organization, id=organization_id)
     if org.type != OrganizationType.provider:
-        raise HTTPException(status_code=403, detail="Forbidden")
+        raise_api_error("forbidden")
     return org
-
 
 async def find_pending_seller_link_request(
     session: AsyncSession,
@@ -80,7 +77,6 @@ async def find_pending_seller_link_request(
         status=InvitationStatus.pending,
         required=False,
     )
-
 
 async def create_member_invite(
     session: AsyncSession,
@@ -117,7 +113,6 @@ async def create_member_invite(
         token=invitation.token,
     )
 
-
 async def create_seller_link_request(
     session: AsyncSession,
     *,
@@ -133,14 +128,14 @@ async def create_seller_link_request(
     if await link_service.has_active_link(
         session, provider_organization_id, seller_organization_id
     ):
-        raise HTTPException(status_code=400, detail="Already linked to this provider")
+        raise_api_error("already_linked_to_provider")
 
     if await find_pending_seller_link_request(
         session,
         provider_organization_id=provider_organization_id,
         seller_organization_id=seller_organization_id,
     ) is not None:
-        raise HTTPException(status_code=409, detail="Link request already pending")
+        raise_api_error("link_request_already_pending")
 
     invitation = OrganizationInvitation(
         organization_id=provider_organization_id,
@@ -170,7 +165,6 @@ async def create_seller_link_request(
         counterparty_organization_name=seller.name,
     )
 
-
 async def preview_member_invite(
     session: AsyncSession,
     token: str,
@@ -183,11 +177,11 @@ async def preview_member_invite(
         required=False,
     )
     if invitation is None:
-        raise HTTPException(status_code=404, detail="Invitation not found")
+        raise_api_error("invitation_not_found")
     if invitation.status != InvitationStatus.pending:
-        raise HTTPException(status_code=400, detail="Invitation is not pending")
+        raise_api_error("invitation_not_pending")
     if invitation.invitee_email is None:
-        raise HTTPException(status_code=400, detail="Invalid invitation")
+        raise_api_error("invalid_invitation")
 
     org = await get_entity(session, Organization, id=invitation.organization_id)
     existing = await get_entity(
@@ -199,7 +193,6 @@ async def preview_member_invite(
         user_exists=existing is not None,
         status=invitation.status,
     )
-
 
 async def accept_by_token(
     session: AsyncSession,
@@ -213,9 +206,8 @@ async def accept_by_token(
         kind=InvitationKind.member_invite,
     )
     if invitation.status != InvitationStatus.pending:
-        raise HTTPException(status_code=400, detail="Invitation is not pending")
+        raise_api_error("invitation_not_pending")
     return await accept_member_invite(session, user, invitation)
-
 
 async def accept_member_invite(
     session: AsyncSession,
@@ -223,12 +215,9 @@ async def accept_member_invite(
     invitation: OrganizationInvitation,
 ) -> MemberPublic:
     if user.email != invitation.invitee_email:
-        raise HTTPException(
-            status_code=403,
-            detail="Invitation email does not match authenticated user",
-        )
+        raise_api_error("invitation_email_mismatch")
     if await org_service.is_active_member(session, user.id, invitation.organization_id):
-        raise HTTPException(status_code=409, detail="Already an active member")
+        raise_api_error("already_active_member")
 
     membership = await org_service.upsert_membership(
         session,
@@ -243,7 +232,6 @@ async def accept_member_invite(
     await session.refresh(membership)
     return membership_service.to_member_public(membership, user)
 
-
 async def accept_seller_link_request(
     session: AsyncSession,
     invitation_id: UUID,
@@ -254,13 +242,13 @@ async def accept_seller_link_request(
         session, OrganizationInvitation, id=invitation_id, required=False
     )
     if invitation is None or invitation.organization_id != provider_organization_id:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise_api_error("not_found")
     if invitation.kind != InvitationKind.seller_link_request:
-        raise HTTPException(status_code=400, detail="Invalid invitation type")
+        raise_api_error("invalid_invitation_type")
     if invitation.status != InvitationStatus.pending:
-        raise HTTPException(status_code=400, detail="Invitation is not pending")
+        raise_api_error("invitation_not_pending")
     if invitation.counterparty_organization_id is None or invitation.user_id is None:
-        raise HTTPException(status_code=400, detail="Invalid seller link request")
+        raise_api_error("invalid_seller_link_request")
 
     seller_org_id = invitation.counterparty_organization_id
     await link_service.link_provider_to_seller(
@@ -276,7 +264,7 @@ async def accept_seller_link_request(
         required=False,
     )
     if membership is None:
-        raise HTTPException(status_code=400, detail="Invalid seller link request")
+        raise_api_error("invalid_seller_link_request")
 
     invitation.status = InvitationStatus.accepted
     invitation.updated_at = utc_now()
@@ -285,7 +273,6 @@ async def accept_seller_link_request(
     await session.refresh(membership)
     user = await get_entity(session, User, id=invitation.user_id)
     return membership_service.to_member_public(membership, user)
-
 
 async def reject_seller_link_request(
     session: AsyncSession,
@@ -297,11 +284,11 @@ async def reject_seller_link_request(
         session, OrganizationInvitation, id=invitation_id, required=False
     )
     if invitation is None or invitation.organization_id != provider_organization_id:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise_api_error("not_found")
     if invitation.kind != InvitationKind.seller_link_request:
-        raise HTTPException(status_code=400, detail="Invalid invitation type")
+        raise_api_error("invalid_invitation_type")
     if invitation.status != InvitationStatus.pending:
-        raise HTTPException(status_code=400, detail="Invitation is not pending")
+        raise_api_error("invitation_not_pending")
 
     invitation.status = InvitationStatus.rejected
     invitation.updated_at = utc_now()
@@ -309,7 +296,6 @@ async def reject_seller_link_request(
     await session.commit()
     await session.refresh(invitation)
     return InvitationPublic.model_validate(invitation)
-
 
 async def cancel_invite(
     session: AsyncSession,
@@ -320,17 +306,16 @@ async def cancel_invite(
         session, OrganizationInvitation, id=invitation_id, required=False
     )
     if invitation is None or invitation.organization_id != organization_id:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise_api_error("not_found")
     if invitation.kind != InvitationKind.member_invite:
-        raise HTTPException(status_code=400, detail="Invalid invitation type")
+        raise_api_error("invalid_invitation_type")
     if invitation.status != InvitationStatus.pending:
-        raise HTTPException(status_code=400, detail="Invitation is not pending")
+        raise_api_error("invitation_not_pending")
 
     invitation.status = InvitationStatus.cancelled
     invitation.updated_at = utc_now()
     session.add(invitation)
     await session.commit()
-
 
 async def list_pending_for_organization(
     session: AsyncSession,
@@ -362,7 +347,6 @@ async def list_pending_for_organization(
         for invitation, org_name, counterparty_name in result.all()
     ]
 
-
 async def list_pending_member_invites(
     session: AsyncSession,
     organization_id: UUID,
@@ -381,7 +365,6 @@ async def list_pending_member_invites(
         to_invitation_public(invitation, organization_name=org_name)
         for invitation, org_name in result.all()
     ]
-
 
 async def list_my_pending_seller_link_requests(
     session: AsyncSession,

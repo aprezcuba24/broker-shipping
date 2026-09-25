@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import HTTPException
+from app.lib.exceptions import raise_api_error
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
@@ -54,7 +54,7 @@ async def ensure_organization_access(
     if is_super_admin(user):
         organization = await get_entity(session, Organization, id=organization_id)
         if required_org_type is not None and organization.type != required_org_type:
-            raise HTTPException(status_code=403, detail="Forbidden")
+            raise_api_error("forbidden")
         return organization
 
     membership = await session.execute(
@@ -65,11 +65,11 @@ async def ensure_organization_access(
         )
     )
     if membership.scalar_one_or_none() is None:
-        raise HTTPException(status_code=403, detail="Forbidden")
+        raise_api_error("forbidden")
 
     organization = await get_entity(session, Organization, id=organization_id)
 
     if required_org_type is not None and organization.type != required_org_type:
-        raise HTTPException(status_code=403, detail="Forbidden")
+        raise_api_error("forbidden")
 
     return organization

@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from uuid import UUID, uuid4
 
-from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col
 
+from app.lib.exceptions import raise_api_error
 from app.lib.persistence import get_entity
 from app.lib.persistence.pagination import paginate
 from app.lib.utils import as_naive_utc, utc_now
@@ -23,7 +23,6 @@ from app.schemas.pagination import PageResult, PaginationParams
 from app.schemas.product_stock_movement import ProductStockMovementCreate
 from app.services import stock as stock_service
 
-
 def resolve_direction(
     kind: StockMovementKind,
     direction: StockMovementDirection | None,
@@ -33,12 +32,8 @@ def resolve_direction(
     if kind == StockMovementKind.shrinkage:
         return StockMovementDirection.out
     if direction is None:
-        raise HTTPException(
-            status_code=422,
-            detail="direction is required for correction movements",
-        )
+        raise_api_error("direction_required_for_correction")
     return direction
-
 
 def attach_movement_view(
     movement: ProductStockMovement,
@@ -46,7 +41,6 @@ def attach_movement_view(
 ) -> ProductStockMovement:
     object.__setattr__(movement, "items", items)
     return movement
-
 
 async def load_items_by_movement_ids(
     session: AsyncSession,
@@ -66,7 +60,6 @@ async def load_items_by_movement_ids(
         items_by_movement.setdefault(item.movement_id, []).append(item)
     return items_by_movement
 
-
 async def attach_items_to_movements(
     session: AsyncSession,
     movements: list[ProductStockMovement],
@@ -80,7 +73,6 @@ async def attach_items_to_movements(
             movement,
             items_by_movement.get(movement.id, []),
         )
-
 
 async def create_movement(
     session: AsyncSession,
@@ -96,7 +88,7 @@ async def create_movement(
     )
     products = {product.id: product for product in result.scalars().all()}
     if len(products) != len(product_ids):
-        raise HTTPException(status_code=404, detail="Not found")
+        raise_api_error("not_found")
 
     direction = resolve_direction(data.kind, data.direction)
     quantities = {item.product_id: item.quantity for item in data.items}
@@ -131,7 +123,6 @@ async def create_movement(
         await session.refresh(item)
     return attach_movement_view(movement, items)
 
-
 async def list_movements_for_organization(
     session: AsyncSession,
     organization_id: UUID,
@@ -151,7 +142,6 @@ async def list_movements_for_organization(
     result = await paginate(session, stmt, pagination)
     await attach_items_to_movements(session, result.items)
     return result
-
 
 async def get_movement_for_organization(
     session: AsyncSession,

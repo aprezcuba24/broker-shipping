@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import HTTPException
 from sqlalchemy import exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,6 +10,7 @@ from app.events.types import (
     OrderItemConsumedEvent,
     OrderItemDeliveredEvent,
 )
+from app.lib.exceptions import raise_api_error
 from app.lib.events import emit
 from app.lib.persistence import get_entity
 from app.lib.persistence.pagination import paginate
@@ -34,7 +34,6 @@ from app.services.order.helpers import (
     order_search_clause,
 )
 
-
 def provider_order_visibility_clause(provider_organization_id: UUID):
     return exists().where(
         OrderItem.order_id == Order.id,
@@ -43,7 +42,6 @@ def provider_order_visibility_clause(provider_organization_id: UUID):
         ProviderSellerLink.provider_organization_id == provider_organization_id,
         ProviderSellerLink.is_active.is_(True),
     )
-
 
 async def list_orders_for_provider(
     session: AsyncSession,
@@ -59,7 +57,7 @@ async def list_orders_for_provider(
         provider_organization_id,
         seller_organization_id,
     ):
-        raise HTTPException(status_code=403, detail="Forbidden")
+        raise_api_error("forbidden")
 
     stmt = select(Order).where(
         provider_order_visibility_clause(provider_organization_id)
@@ -81,7 +79,6 @@ async def list_orders_for_provider(
     await attach_customers_to_orders(session, result.items)
     return result
 
-
 async def get_order_for_provider(
     session: AsyncSession,
     order_id: UUID,
@@ -97,14 +94,14 @@ async def get_order_for_provider(
         )
     )
     if not has_provider_item:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise_api_error("not_found")
 
     if not await link_service.has_active_link(
         session,
         provider_organization_id,
         order.seller_organization_id,
     ):
-        raise HTTPException(status_code=404, detail="Not found")
+        raise_api_error("not_found")
 
     await attach_items_and_totals(
         session,
@@ -114,7 +111,6 @@ async def get_order_for_provider(
     await attach_customers_to_orders(session, [order])
     await attach_seller_organizations_to_orders(session, [order])
     return order
-
 
 async def update_provider_items_status(
     session: AsyncSession,
@@ -139,7 +135,7 @@ async def update_provider_items_status(
     )
     provider_items = list(result.scalars().all())
     if not provider_items:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise_api_error("not_found")
 
     target = data.status
 

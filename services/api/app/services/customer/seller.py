@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import HTTPException
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
@@ -19,8 +18,8 @@ from app.services.customer.helpers import (
     create_customer_address,
     upsert_customer_address,
 )
+from app.lib.exceptions import raise_api_error
 from app.lib.normalize import normalize_phone
-
 
 async def list_customers_for_seller(
     session: AsyncSession,
@@ -45,7 +44,6 @@ async def list_customers_for_seller(
     await attach_addresses_to_customers(session, result.items)
     return result
 
-
 async def get_customer_for_seller(
     session: AsyncSession,
     customer_id: UUID,
@@ -59,7 +57,6 @@ async def get_customer_for_seller(
     )
     await attach_addresses_to_customers(session, [customer])
     return customer
-
 
 async def register_customer(
     session: AsyncSession,
@@ -81,10 +78,7 @@ async def register_customer(
         phone=data.phone,
     )
     if by_ci is not None and by_phone is not None and by_ci.id != by_phone.id:
-        raise HTTPException(
-            status_code=409,
-            detail="CI and phone belong to different customers",
-        )
+        raise_api_error("customers_ci_phone_conflict")
     existing = by_ci or by_phone
     if existing is not None:
         return await update_customer(
@@ -99,7 +93,6 @@ async def register_customer(
             ),
         )
     return await create_customer(session, seller_organization_id, data)
-
 
 async def create_customer(
     session: AsyncSession,
@@ -125,7 +118,6 @@ async def create_customer(
     await session.refresh(address)
     object.__setattr__(customer, "address", address)
     return customer
-
 
 async def update_customer(
     session: AsyncSession,
@@ -154,7 +146,6 @@ async def update_customer(
     await session.refresh(customer)
     await attach_addresses_to_customers(session, [customer])
     return customer
-
 
 async def delete_customer(
     session: AsyncSession,

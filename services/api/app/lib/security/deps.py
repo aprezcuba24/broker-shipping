@@ -6,11 +6,12 @@ from collections.abc import Callable
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends
 from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.deps import SessionDep
+from app.lib.exceptions import raise_api_error
 from app.lib.persistence import get_entity
 from app.lib.security.access import ensure_organization_access
 from app.lib.security.api_keys import split_raw
@@ -22,9 +23,6 @@ from app.services import api_key as api_key_service
 
 bearer_scheme = HTTPBearer(auto_error=False)
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
-
-_JWT_REQUIRED_DETAIL = "JWT required"
-
 
 async def _get_user_from_jwt(
     credentials: HTTPAuthorizationCredentials | None,
@@ -61,7 +59,7 @@ async def get_current_user(
                 await api_key_service.touch_last_used(session, key)
                 return creator
 
-    raise HTTPException(status_code=401, detail="Not authenticated")
+    raise_api_error("not_authenticated")
 
 
 async def get_jwt_user(
@@ -74,11 +72,11 @@ async def get_jwt_user(
     if raw_key and split_raw(raw_key) is not None:
         token = credentials.credentials.strip() if credentials else None
         if not token:
-            raise HTTPException(status_code=403, detail=_JWT_REQUIRED_DETAIL)
+            raise_api_error("jwt_required")
 
     user = await _get_user_from_jwt(credentials, session)
     if user is None:
-        raise HTTPException(status_code=401, detail="Not authenticated")
+        raise_api_error("not_authenticated")
     return user
 
 

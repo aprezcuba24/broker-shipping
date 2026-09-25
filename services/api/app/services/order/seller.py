@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from uuid import UUID, uuid4
 
-from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col
@@ -19,6 +18,7 @@ from app.models.user.user import User
 from app.schemas.order import OrderCreate, OrderItemCreate
 from app.schemas.pagination import PageResult, PaginationParams
 from app.events.types import OrderCreatedEvent
+from app.lib.exceptions import raise_api_error
 from app.lib.events import emit
 from app.services import provider_seller_link as link_service
 from app.services import stock as stock_service
@@ -32,7 +32,6 @@ from app.services.order.helpers import (
 
 _NIL_UUID = UUID(int=0)
 
-
 async def _resolve_linked_products(
     session: AsyncSession,
     user: User,
@@ -45,7 +44,7 @@ async def _resolve_linked_products(
         seller_organization_id,
     )
     if not provider_ids:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise_api_error("not_found")
 
     result = await session.execute(
         select(Product).where(
@@ -55,13 +54,11 @@ async def _resolve_linked_products(
     )
     products = {product.id: product for product in result.scalars().all()}
     if len(products) != len(product_ids):
-        raise HTTPException(status_code=404, detail="Not found")
+        raise_api_error("not_found")
     return products
-
 
 def _quantities_by_product(items_data: list[OrderItemCreate]) -> dict[UUID, int]:
     return {item.product_id: item.quantity for item in items_data}
-
 
 async def _build_order(
     session: AsyncSession,
@@ -111,7 +108,6 @@ async def _build_order(
         )
     return order, items
 
-
 async def preview_order(
     session: AsyncSession,
     user: User,
@@ -129,7 +125,6 @@ async def preview_order(
         _quantities_by_product(items_data),
     )
     return attach_order_view(order, items)
-
 
 async def create_order(
     session: AsyncSession,
@@ -175,7 +170,6 @@ async def create_order(
     await attach_customers_to_orders(session, [order])
     return order
 
-
 async def list_orders_for_seller(
     session: AsyncSession,
     seller_organization_id: UUID,
@@ -197,7 +191,6 @@ async def list_orders_for_seller(
     await attach_items_and_totals(session, result.items)
     await attach_customers_to_orders(session, result.items)
     return result
-
 
 async def get_order_for_seller(
     session: AsyncSession,

@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from typing import Any, Literal, TypeVar, overload
 
-from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import SQLModel, select
+
+from app.lib.exceptions import raise_api_error
 
 T = TypeVar("T", bound=SQLModel)
 
@@ -15,7 +16,6 @@ async def get_entity(
     model: type[T],
     *,
     required: Literal[True] = ...,
-    not_found_detail: str = ...,
     **filters: Any,
 ) -> T: ...
 
@@ -26,7 +26,6 @@ async def get_entity(
     model: type[T],
     *,
     required: Literal[False],
-    not_found_detail: str = ...,
     **filters: Any,
 ) -> T | None: ...
 
@@ -36,7 +35,6 @@ async def get_entity(
     model: type[T],
     *,
     required: bool = True,
-    not_found_detail: str = "Not found",
     **filters: Any,
 ) -> T | None:
     """Load a single row by equality filters; optionally raise 404 if missing."""
@@ -53,5 +51,5 @@ async def get_entity(
     result = await session.execute(select(model).where(*conditions))
     entity = result.scalar_one_or_none()
     if entity is None and required:
-        raise HTTPException(status_code=404, detail=not_found_detail)
+        raise_api_error("not_found")
     return entity
