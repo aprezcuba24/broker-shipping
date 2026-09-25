@@ -594,6 +594,7 @@
   color: var(--v-on-primary);
   cursor: pointer;
   flex-shrink: 0;
+  text-decoration: none;
 }
 
 .btn-open-app svg {

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { SELLER_APP_URL } from '../auth/constants'
 import type { ChatKind } from '../detect-chat'
 import type { CustomerProfile } from '../customer'
 import { normalizePhone } from '../phone'
@@ -199,6 +200,7 @@ function accountSummary(
   addressParagraph: string | null
   hint: string | null
   hasCustomer: boolean
+  customerId: string | null
   purchaseTier: PurchaseTierValue
 } {
   if (!lookup || lookup.status === 'idle') {
@@ -210,6 +212,7 @@ function accountSummary(
       addressParagraph: customer.address,
       hint: null,
       hasCustomer: false,
+      customerId: null,
       purchaseTier: 0,
     }
   }
@@ -222,6 +225,7 @@ function accountSummary(
       addressParagraph: null,
       hint: null,
       hasCustomer: false,
+      customerId: null,
       purchaseTier: 0,
     }
   }
@@ -234,6 +238,7 @@ function accountSummary(
       addressParagraph: null,
       hint: lookup.error,
       hasCustomer: false,
+      customerId: null,
       purchaseTier: 0,
     }
   }
@@ -248,6 +253,7 @@ function accountSummary(
       addressParagraph: null,
       hint: null,
       hasCustomer: false,
+      customerId: null,
       purchaseTier: 0,
     }
   }
@@ -264,6 +270,7 @@ function accountSummary(
     ),
     hint: null,
     hasCustomer: true,
+    customerId: data.customer.id,
     purchaseTier: data.customer.purchaseTier,
   }
 }
@@ -387,16 +394,18 @@ export function CustomerCard({
           </p>
         ) : null}
 
-        {account.hasCustomer ? (
+        {account.hasCustomer && account.customerId ? (
           <div className="contact-actions">
-            <button
-              type="button"
+            <a
               className="btn-open-app"
+              href={`${SELLER_APP_URL}/customers/${account.customerId}`}
+              target="_blank"
+              rel="noopener noreferrer"
               title="Ver en aplicación"
               aria-label="Ver en aplicación"
             >
               <ExternalLinkIcon />
-            </button>
+            </a>
           </div>
         ) : null}
       </section>
@@ -427,14 +436,16 @@ export function CustomerCard({
           <>
             <LastOrderSummary order={account.lastOrder} />
             <div className="contact-actions">
-              <button
-                type="button"
+              <a
                 className="btn-open-app"
+                href={`${SELLER_APP_URL}/orders/${account.lastOrder.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 title="Ver en aplicación"
                 aria-label="Ver en aplicación"
               >
                 <ExternalLinkIcon />
-              </button>
+              </a>
             </div>
           </>
         ) : (
