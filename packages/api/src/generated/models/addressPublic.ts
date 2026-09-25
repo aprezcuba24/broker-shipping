@@ -5,6 +5,8 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { AddressPublicUpdatedAt } from './addressPublicUpdatedAt';
+import type { AddressPublicProvinceName } from './addressPublicProvinceName';
+import type { AddressPublicMunicipalityName } from './addressPublicMunicipalityName';
 
 export interface AddressPublic {
   id: string;
@@ -14,4 +16,6 @@ export interface AddressPublic {
   customer_id: string;
   created_at: string;
   updated_at: AddressPublicUpdatedAt;
+  province_name?: AddressPublicProvinceName;
+  municipality_name?: AddressPublicMunicipalityName;
 }

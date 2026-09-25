@@ -6,6 +6,7 @@
  */
 import type { CustomerPublicUpdatedAt } from './customerPublicUpdatedAt';
 import type { CustomerPublicAddress } from './customerPublicAddress';
+import type { AddressPublic } from './addressPublic';
 
 export interface CustomerPublic {
   id: string;
@@ -16,4 +17,5 @@ export interface CustomerPublic {
   created_at: string;
   updated_at: CustomerPublicUpdatedAt;
   address?: CustomerPublicAddress;
+  addresses?: AddressPublic[];
 }

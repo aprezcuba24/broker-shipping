@@ -14,8 +14,10 @@ from app.models.customer.customer import Customer
 from app.schemas.customer import CustomerCreate, CustomerUpdate
 from app.schemas.pagination import PageResult, PaginationParams
 from app.services.customer.helpers import (
+    attach_address_history_to_customer,
     attach_addresses_to_customers,
     create_customer_address,
+    enrich_addresses_with_location_names,
     upsert_customer_address,
 )
 from app.lib.exceptions import raise_api_error
@@ -55,7 +57,7 @@ async def get_customer_for_seller(
         id=customer_id,
         seller_organization_id=seller_organization_id,
     )
-    await attach_addresses_to_customers(session, [customer])
+    await attach_address_history_to_customer(session, customer)
     return customer
 
 async def register_customer(
@@ -116,7 +118,9 @@ async def create_customer(
     await session.commit()
     await session.refresh(customer)
     await session.refresh(address)
+    await enrich_addresses_with_location_names(session, [address])
     object.__setattr__(customer, "address", address)
+    object.__setattr__(customer, "addresses", [])
     return customer
 
 async def update_customer(
@@ -144,7 +148,7 @@ async def update_customer(
 
     await session.commit()
     await session.refresh(customer)
-    await attach_addresses_to_customers(session, [customer])
+    await attach_address_history_to_customer(session, customer)
     return customer
 
 async def delete_customer(

@@ -1988,6 +1988,23 @@
             }
           },
           {
+            "name": "customer_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Customer Id"
+            }
+          },
+          {
             "name": "organization_id",
             "in": "query",
             "required": true,
@@ -4570,6 +4587,28 @@
               }
             ],
             "title": "Updated At"
+          },
+          "province_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Province Name"
+          },
+          "municipality_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Municipality Name"
           }
         },
         "type": "object",
@@ -5027,6 +5066,13 @@
                 "type": "null"
               }
             ]
+          },
+          "addresses": {
+            "items": {
+              "$ref": "#/components/schemas/AddressPublic"
+            },
+            "type": "array",
+            "title": "Addresses"
           }
         },
         "type": "object",

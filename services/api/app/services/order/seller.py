@@ -177,12 +177,15 @@ async def list_orders_for_seller(
     pagination: PaginationParams,
     search: str | None = None,
     status: OrderStatus | None = None,
+    customer_id: UUID | None = None,
 ) -> PageResult[Order]:
     stmt = select(Order).where(
         Order.seller_organization_id == seller_organization_id
     )
     if status is not None:
         stmt = stmt.where(Order.status == status)
+    if customer_id is not None:
+        stmt = stmt.where(Order.customer_id == customer_id)
     clause = order_search_clause(search) if search else None
     if clause is not None:
         stmt = stmt.join(Customer, Customer.id == Order.customer_id).where(clause)

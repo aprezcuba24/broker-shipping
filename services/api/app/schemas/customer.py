@@ -22,6 +22,8 @@ class AddressPublic(BaseModel):
     customer_id: UUID
     created_at: datetime
     updated_at: datetime | None
+    province_name: str | None = None
+    municipality_name: str | None = None
 
 
 class CustomerCreate(BaseModel):
@@ -49,3 +51,4 @@ class CustomerPublic(BaseModel):
     created_at: datetime
     updated_at: datetime | None
     address: AddressPublic | None = None
+    addresses: list[AddressPublic] = Field(default_factory=list)
