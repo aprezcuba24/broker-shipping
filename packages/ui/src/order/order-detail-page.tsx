@@ -10,6 +10,7 @@ import {
 import { PageLoading } from '../components/page-loading'
 import { PageMessage } from '../components/page-message'
 import { PageWrapper } from '../components/page-wrapper'
+import { asPurchaseTier, PurchaseTier } from '../customer/purchase-tier'
 import { formatMoney } from '../lib/utils'
 import { OrderStatusBadge } from './status'
 
@@ -88,6 +89,12 @@ export const orderDetailCustomerFields: DetailSectionField<OrderPublic>[] = [
     title: 'Dirección',
     accessor: (order) => order.customer?.address?.address,
     fullWidth: true,
+  },
+  {
+    title: 'Calificación',
+    accessor: (order) => order.customer?.purchase_tier ?? 0,
+    fullWidth: true,
+    format: (value) => <PurchaseTier tier={asPurchaseTier(value)} />,
   },
 ]
 

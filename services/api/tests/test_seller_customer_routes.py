@@ -84,6 +84,7 @@ async def test_customer_crud_happy_path(
     assert body["name"] == "Juan Perez"
     assert body["ci"] == "90010112345"
     assert body["phone"] == "5351234567"
+    assert body["purchase_tier"] == 0
     assert body["seller_organization_id"] == seller_customer_ctx["seller_org_id"]
     assert body["address"]["address"] == "Calle 1 #100"
     assert body["address"]["province_id"] == seller_customer_ctx["province_id"]

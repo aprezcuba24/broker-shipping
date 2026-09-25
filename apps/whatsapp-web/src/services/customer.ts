@@ -1,4 +1,5 @@
 import { normalizePhone } from '../phone'
+import { asPurchaseTier } from '../purchase-tier'
 import { apiRequest } from './http'
 import {
   EMPTY_CUSTOMER_LOOKUP,
@@ -223,6 +224,7 @@ export async function lookupCustomerByPhone(params: {
       name: customer.name,
       phone: customer.phone,
       ci: customer.ci,
+      purchaseTier: asPurchaseTier(customer.purchase_tier),
     },
     address: customer.address?.address ?? null,
     province,

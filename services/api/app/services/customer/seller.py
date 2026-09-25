@@ -6,6 +6,11 @@ from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
+from app.events.types import CustomerUpdated
+from app.events.types.customer_updated import customer_snapshot
+from app.lib.events import emit
+from app.lib.exceptions import raise_api_error
+from app.lib.normalize import normalize_phone
 from app.lib.persistence import get_entity
 from app.lib.persistence.apply_update import apply_partial_update
 from app.lib.persistence.pagination import paginate
@@ -20,8 +25,7 @@ from app.services.customer.helpers import (
     enrich_addresses_with_location_names,
     upsert_customer_address,
 )
-from app.lib.exceptions import raise_api_error
-from app.lib.normalize import normalize_phone
+
 
 async def list_customers_for_seller(
     session: AsyncSession,
@@ -46,6 +50,7 @@ async def list_customers_for_seller(
     await attach_addresses_to_customers(session, result.items)
     return result
 
+
 async def get_customer_for_seller(
     session: AsyncSession,
     customer_id: UUID,
@@ -59,6 +64,7 @@ async def get_customer_for_seller(
     )
     await attach_address_history_to_customer(session, customer)
     return customer
+
 
 async def register_customer(
     session: AsyncSession,
@@ -96,6 +102,7 @@ async def register_customer(
         )
     return await create_customer(session, seller_organization_id, data)
 
+
 async def create_customer(
     session: AsyncSession,
     seller_organization_id: UUID,
@@ -115,6 +122,11 @@ async def create_customer(
         customer_id=customer.id,
         data=data.address,
     )
+    await emit(
+        CustomerUpdated(new=customer_snapshot(customer)),
+        session=session,
+        propagate_errors=True,
+    )
     await session.commit()
     await session.refresh(customer)
     await session.refresh(address)
@@ -122,6 +134,7 @@ async def create_customer(
     object.__setattr__(customer, "address", address)
     object.__setattr__(customer, "addresses", [])
     return customer
+
 
 async def update_customer(
     session: AsyncSession,
@@ -136,6 +149,7 @@ async def update_customer(
         seller_organization_id=seller_organization_id,
     )
 
+    previous = customer_snapshot(customer)
     apply_partial_update(customer, data, exclude={"address"})
     session.add(customer)
 
@@ -146,10 +160,21 @@ async def update_customer(
             data=data.address,
         )
 
+    await session.flush()
+    await emit(
+        CustomerUpdated(
+            new=customer_snapshot(customer),
+            previous=previous,
+        ),
+        session=session,
+        propagate_errors=True,
+    )
+
     await session.commit()
     await session.refresh(customer)
     await attach_address_history_to_customer(session, customer)
     return customer
+
 
 async def delete_customer(
     session: AsyncSession,

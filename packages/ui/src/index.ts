@@ -442,6 +442,12 @@ export type { OrderFiltersProps, OrderListParams } from './order/order-filters'
 export { OrderStatusActions } from './order/order-status-actions'
 export type { OrderStatusActionsProps } from './order/order-status-actions'
 
+export { PurchaseTier, purchaseTier, asPurchaseTier } from './customer/purchase-tier'
+export type {
+  PurchaseTierProps,
+  PurchaseTierValue,
+} from './customer/purchase-tier'
+
 export {
   ProductDetailPage,
   SellerProductDetailPage,

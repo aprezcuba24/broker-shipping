@@ -9,6 +9,7 @@ from app.events.types import (
     OrderItemCanceledEvent,
     OrderItemConsumedEvent,
     OrderItemDeliveredEvent,
+    OrderStatusChangedEvent,
 )
 from app.lib.exceptions import raise_api_error
 from app.lib.events import emit
@@ -157,6 +158,7 @@ async def update_provider_items_status(
     provider_by_id = {item.id: item for item in provider_items}
     merged_items = [provider_by_id.get(item.id, item) for item in all_items]
 
+    previous_status = order.status
     order.status = derive_order_status(merged_items)
     order.updated_at = now
     session.add(order)
@@ -176,6 +178,13 @@ async def update_provider_items_status(
                 session=session,
                 propagate_errors=True,
             )
+
+    if previous_status != order.status:
+        await emit(
+            OrderStatusChangedEvent(order_id=order.id),
+            session=session,
+            propagate_errors=True,
+        )
 
     await session.commit()
     await session.refresh(order)

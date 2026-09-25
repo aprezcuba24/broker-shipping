@@ -5035,6 +5035,17 @@
             "type": "string",
             "title": "Phone"
           },
+          "purchase_tier": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              5,
+              10
+            ],
+            "title": "Purchase Tier",
+            "default": 0
+          },
           "seller_organization_id": {
             "type": "string",
             "format": "uuid",

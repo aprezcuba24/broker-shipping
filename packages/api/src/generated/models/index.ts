@@ -40,6 +40,7 @@ export * from './currencyAmount';
 export * from './customerCreate';
 export * from './customerPublic';
 export * from './customerPublicAddress';
+export * from './customerPublicPurchaseTier';
 export * from './customerPublicUpdatedAt';
 export * from './customerUpdate';
 export * from './customerUpdateAddress';

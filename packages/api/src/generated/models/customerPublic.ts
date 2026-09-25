@@ -4,6 +4,7 @@
  * Vendelo360 API
  * OpenAPI spec version: 0.1.0
  */
+import type { CustomerPublicPurchaseTier } from './customerPublicPurchaseTier';
 import type { CustomerPublicUpdatedAt } from './customerPublicUpdatedAt';
 import type { CustomerPublicAddress } from './customerPublicAddress';
 import type { AddressPublic } from './addressPublic';
@@ -13,6 +14,7 @@ export interface CustomerPublic {
   name: string;
   ci: string;
   phone: string;
+  purchase_tier?: CustomerPublicPurchaseTier;
   seller_organization_id: string;
   created_at: string;
   updated_at: CustomerPublicUpdatedAt;

@@ -1,4 +1,11 @@
-export type PurchaseTierValue = 0 | 1 | 5 | 10
+import {
+  asPurchaseTier,
+  purchaseTier,
+  type PurchaseTierValue,
+} from '../purchase-tier'
+
+export type { PurchaseTierValue }
+export { asPurchaseTier, purchaseTier }
 
 const TIERS: { value: PurchaseTierValue; label: string }[] = [
   { value: 0, label: '0' },
@@ -6,30 +13,6 @@ const TIERS: { value: PurchaseTierValue; label: string }[] = [
   { value: 5, label: '+5' },
   { value: 10, label: '+10' },
 ]
-
-/** Map exact purchase count to the coarsest public tier (never show the raw number). */
-export function purchaseTier(count: number): PurchaseTierValue {
-  if (count <= 0) return 0
-  if (count < 5) return 1
-  if (count < 10) return 5
-  return 10
-}
-
-/**
- * Fixed mock count so the UI always lands on the +5 tier while developing.
- * Replace with a real API count when the backend is ready.
- */
-export function mockPurchaseCount(_seed: string): number {
-  return 7
-}
-
-/**
- * Fixed mock: customer is not on the blacklist.
- * Replace with a real API flag when the backend is ready.
- */
-export function mockBlacklisted(_seed: string): boolean {
-  return false
-}
 
 function tierAriaLabel(tier: PurchaseTierValue): string {
   if (tier === 0) return 'Calificación: sin historial'
@@ -39,15 +22,12 @@ function tierAriaLabel(tier: PurchaseTierValue): string {
 }
 
 type Props = {
-  /** Phone digits or other stable seed for the mock count. */
-  seed: string
+  tier: PurchaseTierValue
 }
 
-export function PurchaseTier({ seed }: Props) {
-  const count = mockPurchaseCount(seed)
-  const current = purchaseTier(count)
-  const blacklisted = mockBlacklisted(seed)
-  const blacklistValue = blacklisted ? 'Sí' : 'No'
+export function PurchaseTier({ tier }: Props) {
+  const current = tier
+  const blacklistValue = 'No'
 
   return (
     <div className="purchase-tier">
@@ -57,12 +37,12 @@ export function PurchaseTier({ seed }: Props) {
         role="img"
         aria-label={tierAriaLabel(current)}
       >
-        {TIERS.map((tier, index) => {
-          const reached = current >= tier.value
-          const isCurrent = current === tier.value
+        {TIERS.map((step, index) => {
+          const reached = current >= step.value
+          const isCurrent = current === step.value
           return (
             <li
-              key={tier.value}
+              key={step.value}
               className={[
                 'purchase-tier-step',
                 reached ? 'is-reached' : null,
@@ -84,7 +64,7 @@ export function PurchaseTier({ seed }: Props) {
               ) : null}
               <span className="purchase-tier-mark" aria-hidden>
                 <span className="purchase-tier-dot" />
-                <span className="purchase-tier-label">{tier.label}</span>
+                <span className="purchase-tier-label">{step.label}</span>
               </span>
             </li>
           )

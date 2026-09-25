@@ -6,11 +6,13 @@ import {
   type GetCustomerCustomersSellerCustomerIdGetParams,
 } from '@broker/api'
 import {
+  asPurchaseTier,
   BtnLink,
   DetailSection,
   PageLoading,
   PageMessage,
   PageWrapper,
+  PurchaseTier,
   type DetailSectionField,
 } from '@broker/ui'
 import { ArrowLeft, ClipboardList, Contact } from 'lucide-react'
@@ -86,6 +88,13 @@ export function CustomerDetailPage() {
     >
       <div className="space-y-6">
         <DetailSection title="Datos" data={customer} fields={customerDetailFields} />
+
+        <section className="space-y-3">
+          <h2 className="text-sm font-medium">Calificación</h2>
+          <div className="rounded-xl border border-border/70 bg-surface-container-lowest px-4 py-3 sm:px-5">
+            <PurchaseTier tier={asPurchaseTier(customer.purchase_tier)} />
+          </div>
+        </section>
 
         <section className="space-y-3">
           <h2 className="text-sm font-medium">Direcciones</h2>
