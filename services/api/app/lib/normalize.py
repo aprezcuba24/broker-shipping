@@ -17,9 +17,12 @@ def strip_optional(value: str | None) -> str | None:
 
 
 def normalize_phone(value: str | None) -> str | None:
+    """Normalize a phone to digits only; prefix ``53`` for bare 8-digit numbers."""
     if value is None:
         return None
-    stripped = value.strip().removeprefix("+")
-    if len(stripped) == 8:
-        return f"53{stripped}"
-    return stripped
+    digits = "".join(ch for ch in value if ch.isdigit())
+    if not digits:
+        return None
+    if len(digits) == 8:
+        return f"53{digits}"
+    return digits

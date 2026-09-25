@@ -201,6 +201,10 @@ async def test_list_customers_with_filters(
         "+5353024637",
         "5353024637",
         "53024637",
+        "53 5302 4637",
+        "535-302-4637",
+        "(53) 5302-4637",
+        "5302 4637",
     ],
 )
 async def test_list_customers_finds_by_phone_variants(

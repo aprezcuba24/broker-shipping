@@ -44,7 +44,12 @@ async def list_customers_for_seller(
     if ci:
         stmt = stmt.where(Customer.ci == ci)
     if phone:
-        stmt = stmt.where(Customer.phone == normalize_phone(phone))
+        normalized = normalize_phone(phone)
+        if normalized:
+            stmt = stmt.where(Customer.phone == normalized)
+        else:
+            # Query had no digits — never match a stored phone.
+            stmt = stmt.where(col(Customer.id).is_(None))
     stmt = stmt.order_by(Customer.name, Customer.id)
     result = await paginate(session, stmt, pagination)
     await attach_addresses_to_customers(session, result.items)

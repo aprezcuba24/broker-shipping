@@ -12,7 +12,8 @@ from app.lib.normalize import (
 
 def _normalize_phone_required(value: str) -> str:
     normalized = normalize_phone(strip_required(value))
-    assert normalized is not None
+    if normalized is None:
+        raise ValueError("invalid phone number")
     return normalized
 
 
