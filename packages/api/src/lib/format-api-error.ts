@@ -11,6 +11,9 @@ export function formatApiError(
   }
 
   if (isRecord(error)) {
+    if (typeof error.message === 'string' && error.message.length > 0) {
+      return error.message
+    }
     const detail = error.detail
     if (typeof detail === 'string') {
       return detail
@@ -26,9 +29,6 @@ export function formatApiError(
       if (messages.length > 0) {
         return messages.join('. ')
       }
-    }
-    if (typeof error.message === 'string') {
-      return error.message
     }
   }
 

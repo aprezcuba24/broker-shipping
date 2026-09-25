@@ -1,4 +1,5 @@
 import {
+  formatApiError,
   previewOrderOrdersSellerPreviewPost,
   type OrderItemPublic,
   type OrderPublic,
@@ -74,5 +75,8 @@ export function useCartPreview() {
     isInitialLoading: hasItems && !order && query.isFetching,
     isRefreshing: hasItems && Boolean(order) && query.isFetching && !query.isLoading,
     isError: query.isError,
+    errorMessage: query.isError
+      ? formatApiError(query.error, 'No se pudieron calcular los totales.')
+      : null,
   }
 }
