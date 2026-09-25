@@ -1,4 +1,8 @@
 import type { CustomerLookup } from '../services/types'
+import type {
+  BlacklistReason,
+  PhoneBlacklistStatus,
+} from '../services/phone-blacklist'
 
 export type SellerOrganization = {
   id: string
@@ -43,10 +47,19 @@ export type ExtensionMessage =
   | { type: 'OPEN_AUTH' }
   | { type: 'FOCUS_WHATSAPP' }
   | { type: 'LOOKUP_CUSTOMER'; phone: string }
+  | { type: 'GET_BLACKLIST_STATUS'; phone: string }
+  | {
+      type: 'ADD_TO_BLACKLIST'
+      phone: string
+      reason: BlacklistReason
+      note?: string
+    }
+  | { type: 'REMOVE_FROM_BLACKLIST'; phone: string }
 
 export type ExtensionResponse =
   | { ok: true; session: SessionPublic }
   | { ok: true; lookup: CustomerLookup }
+  | { ok: true; blacklist: PhoneBlacklistStatus }
   | { ok: false; error: string }
 
 export type SessionResponse =
@@ -55,4 +68,8 @@ export type SessionResponse =
 
 export type LookupResponse =
   | { ok: true; lookup: CustomerLookup }
+  | { ok: false; error: string }
+
+export type BlacklistResponse =
+  | { ok: true; blacklist: PhoneBlacklistStatus }
   | { ok: false; error: string }

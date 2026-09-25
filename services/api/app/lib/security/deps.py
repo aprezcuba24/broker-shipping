@@ -115,6 +115,10 @@ async def optional_seller_organization(
 
 CurrentUserDep = Annotated[User, Depends(get_current_user)]
 JwtUserDep = Annotated[User, Depends(get_jwt_user)]
+AnyOrgDep = Annotated[
+    Organization,
+    Depends(require_organization()),
+]
 ProviderOrgDep = Annotated[
     Organization,
     Depends(require_organization(OrganizationType.provider)),

@@ -1,5 +1,6 @@
 from app.lib.security.access import ensure_organization_access
 from app.lib.security.deps import (
+    AnyOrgDep,
     CurrentUserDep,
     OptionalSellerOrgDep,
     ProviderOrgDep,
@@ -12,6 +13,7 @@ from app.lib.security.passwords import hash_password, verify_password
 from app.lib.security.tokens import create_access_token, decode_access_token
 
 __all__ = [
+    "AnyOrgDep",
     "CurrentUserDep",
     "OptionalSellerOrgDep",
     "ProviderOrgDep",

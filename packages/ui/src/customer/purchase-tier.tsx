@@ -1,12 +1,43 @@
+import { useState } from 'react'
+
+import { Button } from '../components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/dialog'
+import { Input } from '../components/ui/input'
+import { Label } from '../components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select'
 import { cn } from '../lib/utils'
 
 export type PurchaseTierValue = 0 | 1 | 5 | 10
+
+export type BlacklistStatus = 'no' | 'reported' | 'yes'
+
+export type BlacklistReason = 'nonpayment' | 'fraud' | 'abuse' | 'other'
 
 const TIERS: { value: PurchaseTierValue; label: string }[] = [
   { value: 0, label: '0' },
   { value: 1, label: '+1' },
   { value: 5, label: '+5' },
   { value: 10, label: '+10' },
+]
+
+const REASON_OPTIONS: { value: BlacklistReason; label: string }[] = [
+  { value: 'nonpayment', label: 'Impago' },
+  { value: 'fraud', label: 'Fraude' },
+  { value: 'abuse', label: 'Abuso' },
+  { value: 'other', label: 'Otro' },
 ]
 
 /** Map exact purchase count to the coarsest public tier (never show the raw number). */
@@ -23,6 +54,11 @@ export function asPurchaseTier(value: unknown): PurchaseTierValue {
   return 0
 }
 
+export function asBlacklistStatus(value: unknown): BlacklistStatus {
+  if (value === 'reported' || value === 'yes') return value
+  return 'no'
+}
+
 function tierAriaLabel(tier: PurchaseTierValue): string {
   if (tier === 0) return 'Calificación: sin historial'
   if (tier === 1) return 'Calificación: más de 1 compra'
@@ -30,14 +66,78 @@ function tierAriaLabel(tier: PurchaseTierValue): string {
   return 'Calificación: más de 10 compras'
 }
 
-export type PurchaseTierProps = {
-  tier: PurchaseTierValue
-  className?: string
+function blacklistLabel(status: BlacklistStatus, otherCount: number): string {
+  if (status === 'yes') return 'Sí'
+  if (status === 'reported') {
+    return otherCount > 0 ? `Reportado (${otherCount})` : 'Reportado'
+  }
+  return 'No'
 }
 
-export function PurchaseTier({ tier, className }: PurchaseTierProps) {
+function blacklistBadgeClass(status: BlacklistStatus): string {
+  if (status === 'yes') return 'bg-destructive text-white'
+  if (status === 'reported') return 'bg-amber-600 text-white'
+  return 'bg-emerald-600 text-white'
+}
+
+export type PurchaseTierProps = {
+  tier: PurchaseTierValue
+  blacklist?: BlacklistStatus
+  otherCount?: number
+  className?: string
+  onAddToBlacklist?: (input: {
+    reason: BlacklistReason
+    note?: string
+  }) => void | Promise<void>
+  onRemoveFromBlacklist?: () => void | Promise<void>
+  blacklistBusy?: boolean
+}
+
+export function PurchaseTier({
+  tier,
+  blacklist = 'no',
+  otherCount = 0,
+  className,
+  onAddToBlacklist,
+  onRemoveFromBlacklist,
+  blacklistBusy = false,
+}: PurchaseTierProps) {
   const current = tier
-  const blacklistValue = 'No'
+  const [addOpen, setAddOpen] = useState(false)
+  const [reason, setReason] = useState<BlacklistReason>('fraud')
+  const [note, setNote] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
+  const canAdd = Boolean(onAddToBlacklist) && blacklist !== 'yes'
+  const canRemove = Boolean(onRemoveFromBlacklist) && blacklist === 'yes'
+  const busy = blacklistBusy || submitting
+
+  async function handleAdd() {
+    if (!onAddToBlacklist) return
+    if (reason === 'other' && !note.trim()) return
+    setSubmitting(true)
+    try {
+      await onAddToBlacklist({
+        reason,
+        note: note.trim() || undefined,
+      })
+      setAddOpen(false)
+      setReason('fraud')
+      setNote('')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleRemove() {
+    if (!onRemoveFromBlacklist) return
+    setSubmitting(true)
+    try {
+      await onRemoveFromBlacklist()
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <div className={cn('flex flex-col gap-2.5', className)}>
@@ -98,9 +198,102 @@ export function PurchaseTier({ tier, className }: PurchaseTierProps) {
           )
         })}
       </ol>
-      <p className="m-0 inline-flex items-baseline self-start rounded-md bg-emerald-600 px-2 py-1 text-[11px] font-bold leading-tight text-white">
-        Lista negra: {blacklistValue}
-      </p>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <p
+          className={cn(
+            'm-0 inline-flex items-baseline self-start rounded-md px-2 py-1 text-[11px] font-bold leading-tight',
+            blacklistBadgeClass(blacklist),
+          )}
+        >
+          Lista negra: {blacklistLabel(blacklist, otherCount)}
+        </p>
+        {canAdd ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-7 px-2 text-[11px]"
+            disabled={busy}
+            onClick={() => setAddOpen(true)}
+          >
+            Agregar
+          </Button>
+        ) : null}
+        {canRemove ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-7 px-2 text-[11px]"
+            disabled={busy}
+            onClick={() => void handleRemove()}
+          >
+            Quitar
+          </Button>
+        ) : null}
+      </div>
+
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Agregar a lista negra</DialogTitle>
+            <DialogDescription>
+              El número queda en tu lista. Otras organizaciones verán que la
+              comunidad lo reporta.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-3 py-2">
+            <div className="grid gap-1.5">
+              <Label htmlFor="blacklist-reason">Motivo</Label>
+              <Select
+                value={reason}
+                onValueChange={(value) => setReason(value as BlacklistReason)}
+              >
+                <SelectTrigger id="blacklist-reason">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {REASON_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {reason === 'other' ? (
+              <div className="grid gap-1.5">
+                <Label htmlFor="blacklist-note">Nota</Label>
+                <Input
+                  id="blacklist-note"
+                  value={note}
+                  onChange={(event) => setNote(event.target.value)}
+                  maxLength={500}
+                  placeholder="Describe el motivo"
+                />
+              </div>
+            ) : null}
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setAddOpen(false)}
+              disabled={busy}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => void handleAdd()}
+              disabled={busy || (reason === 'other' && !note.trim())}
+            >
+              Agregar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

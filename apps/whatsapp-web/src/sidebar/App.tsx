@@ -195,6 +195,7 @@ export function App({ chat }: Props) {
               customer={customer}
               suggestOpenContactInfo={suggestOpenContactInfo}
               lookup={lookup}
+              sessionReady
             />
           ) : (
             <div className="empty">

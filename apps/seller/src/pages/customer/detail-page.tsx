@@ -12,7 +12,7 @@ import {
   PageLoading,
   PageMessage,
   PageWrapper,
-  PurchaseTier,
+  PhoneReputation,
   type DetailSectionField,
 } from '@broker/ui'
 import { ArrowLeft, ClipboardList, Contact } from 'lucide-react'
@@ -92,7 +92,10 @@ export function CustomerDetailPage() {
         <section className="space-y-3">
           <h2 className="text-sm font-medium">Calificación</h2>
           <div className="rounded-xl border border-border/70 bg-surface-container-lowest px-4 py-3 sm:px-5">
-            <PurchaseTier tier={asPurchaseTier(customer.purchase_tier)} />
+            <PhoneReputation
+              phone={customer.phone}
+              tier={asPurchaseTier(customer.purchase_tier)}
+            />
           </div>
         </section>
 

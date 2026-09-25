@@ -24,6 +24,10 @@ _CUSTOM_VALIDATION_MESSAGES: dict[str, tuple[str, str]] = {
         "direction_only_for_correction",
         "La dirección solo se permite en movimientos de corrección.",
     ),
+    "note is required when reason is other": (
+        "note_required_for_other",
+        "La nota es obligatoria cuando el motivo es otro.",
+    ),
     "Unsupported image content type": (
         "unsupported_image_content_type",
         "Tipo de imagen no admitido.",
