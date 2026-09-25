@@ -14,6 +14,14 @@ function writeManifestPlugin(mode: string): Plugin {
       if (env.VITE_API_URL) {
         process.env.VITE_API_URL = env.VITE_API_URL
       }
+      if (env.VITE_SELLER_URL) {
+        process.env.VITE_SELLER_URL = env.VITE_SELLER_URL
+      } else if (env.VITE_SELLER_APP_URL) {
+        process.env.VITE_SELLER_URL = env.VITE_SELLER_APP_URL
+      }
+      if (env.VITE_WHATSAPP_EXTENSION_KEY) {
+        process.env.VITE_WHATSAPP_EXTENSION_KEY = env.VITE_WHATSAPP_EXTENSION_KEY
+      }
       const manifest = buildManifest()
       const outPath = path.resolve(rootDir, 'dist/manifest.json')
       fs.mkdirSync(path.dirname(outPath), { recursive: true })

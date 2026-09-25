@@ -55,11 +55,14 @@ export type ExtensionMessage =
       note?: string
     }
   | { type: 'REMOVE_FROM_BLACKLIST'; phone: string }
+  | { type: 'GET_UPDATE_STATUS' }
+  | { type: 'APPLY_UPDATE' }
 
 export type ExtensionResponse =
   | { ok: true; session: SessionPublic }
   | { ok: true; lookup: CustomerLookup }
   | { ok: true; blacklist: PhoneBlacklistStatus }
+  | { ok: true; updateAvailable: boolean }
   | { ok: false; error: string }
 
 export type SessionResponse =
@@ -72,4 +75,8 @@ export type LookupResponse =
 
 export type BlacklistResponse =
   | { ok: true; blacklist: PhoneBlacklistStatus }
+  | { ok: false; error: string }
+
+export type UpdateStatusResponse =
+  | { ok: true; updateAvailable: boolean }
   | { ok: false; error: string }

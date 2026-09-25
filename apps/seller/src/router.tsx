@@ -23,6 +23,7 @@ import { RegisterPage } from './pages/register'
 import { VerifyEmailPage } from './pages/verify-email'
 import { ForgotPasswordPage } from './pages/forgot-password'
 import { ResetPasswordPage } from './pages/reset-password'
+import { WhatsAppExtensionPage } from './pages/whatsapp'
 
 export default function App() {
   return (
@@ -77,6 +78,7 @@ export default function App() {
           <Route path="commissions/:commissionId" element={<CommissionDetailPage />} />
           <Route path="providers" element={<ProvidersPage />} />
           <Route path="members" element={<MembersPage />} />
+          <Route path="whatsapp" element={<WhatsAppExtensionPage />} />
           <Route path="cart" element={<CartPage />} />
           <Route path="settings/invitations" element={<Navigate to="/members" replace />} />
         </Route>

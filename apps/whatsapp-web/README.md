@@ -30,7 +30,13 @@ pnpm --filter @broker/whatsapp-web dev
 
 Tras cada build, en `chrome://extensions` usa **Reload** en la extensión.
 
-## Instalar en Chrome (Load unpacked)
+## Instalación para vendedores
+
+Los vendedores instalan desde la **Chrome Web Store** (ficha unlisted). En la app seller, la ruta `/whatsapp` abre esa ficha y comprueba si la extensión ya está instalada.
+
+Procedimiento para publicar y actualizar (cuenta developer, zip, versiones): **[docs/publicar_extension.md](../../docs/publicar_extension.md)**. Chrome reparte las actualizaciones solo; no uses Load unpacked en producción.
+
+## Instalar en Chrome (desarrollo local — Load unpacked)
 
 1. Compila primero (si aún no lo hiciste):
    ```bash
@@ -48,6 +54,16 @@ Tras cada build, en `chrome://extensions` usa **Reload** en la extensión.
 8. Inicia sesión si hace falta y **abre una conversación**.
 9. A la derecha deberías ver el panel **Vendelo360** con el contacto detectado.
 10. Cambia a otro chat: el panel debe actualizarse al nuevo contacto.
+
+Variables útiles en el build (raíz del monorepo):
+
+```bash
+VITE_API_URL=http://localhost:8000
+VITE_SELLER_URL=http://localhost:5174
+# Tras publicar en la tienda (ver docs/publicar_extension.md):
+# VITE_WHATSAPP_EXTENSION_KEY=...   # mismo ID que la ficha
+# VITE_WHATSAPP_EXTENSION_ID=...    # en el build del seller
+```
 
 ### Si no ves nada
 
@@ -96,9 +112,11 @@ Variables de entorno al build (raíz del monorepo o shell):
 
 ```bash
 VITE_API_URL=http://localhost:8000
-VITE_SELLER_URL=http://localhost:5174   # enlace “web de vendedores”
+VITE_SELLER_URL=http://localhost:5174   # enlace “web de vendedores” + externally_connectable
 pnpm --filter @broker/whatsapp-web build
 ```
+
+Publicación en la tienda y variables `VITE_WHATSAPP_EXTENSION_*`: [docs/publicar_extension.md](../../docs/publicar_extension.md).
 
 ## Ficha CRM (cliente por teléfono)
 

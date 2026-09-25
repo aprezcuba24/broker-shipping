@@ -340,6 +340,46 @@
   display: block;
 }
 
+.update-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--v-primary-container);
+  color: var(--v-on-primary-container);
+  border-bottom: 1px solid var(--v-border-soft);
+}
+
+.update-banner-text {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.btn-update {
+  flex-shrink: 0;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  background: var(--v-primary);
+  color: var(--v-on-primary);
+}
+
+.btn-update:hover:not(:disabled) {
+  background: var(--v-primary-dim);
+}
+
+.btn-update:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
 .body {
   flex: 1;
   overflow: auto;

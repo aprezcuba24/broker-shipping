@@ -12,7 +12,9 @@ import type {
   LookupResponse,
   BlacklistResponse,
   SessionResponse,
+  UpdateStatusResponse,
 } from '../auth/types'
+import { UPDATE_AVAILABLE_KEY } from '../auth/constants'
 import { buildAuthenticatedSession } from '../auth/session'
 import {
   clearSession,
@@ -20,6 +22,15 @@ import {
   toSessionPublic,
   writeSession,
 } from '../auth/storage'
+
+async function setUpdateAvailable(available: boolean): Promise<void> {
+  await chrome.storage.local.set({ [UPDATE_AVAILABLE_KEY]: available })
+}
+
+async function readUpdateAvailable(): Promise<boolean> {
+  const result = await chrome.storage.local.get(UPDATE_AVAILABLE_KEY)
+  return result[UPDATE_AVAILABLE_KEY] === true
+}
 
 async function handleLogin(
   email: string,
@@ -218,6 +229,23 @@ async function handleRemoveFromBlacklist(phone: string): Promise<BlacklistRespon
   }
 }
 
+async function handleGetUpdateStatus(): Promise<UpdateStatusResponse> {
+  return { ok: true, updateAvailable: await readUpdateAvailable() }
+}
+
+/** Reload WhatsApp tabs, then apply the pending extension update. */
+async function handleApplyUpdate(): Promise<ExtensionResponse> {
+  const tabs = await chrome.tabs.query({ url: 'https://web.whatsapp.com/*' })
+  await Promise.all(
+    tabs.map((tab) =>
+      tab.id != null ? chrome.tabs.reload(tab.id) : Promise.resolve(),
+    ),
+  )
+  await setUpdateAvailable(false)
+  chrome.runtime.reload()
+  return { ok: true, updateAvailable: false }
+}
+
 chrome.runtime.onMessage.addListener(
   (message: ExtensionMessage, _sender, sendResponse) => {
     void (async () => {
@@ -257,6 +285,12 @@ chrome.runtime.onMessage.addListener(
         case 'REMOVE_FROM_BLACKLIST':
           response = await handleRemoveFromBlacklist(message.phone)
           break
+        case 'GET_UPDATE_STATUS':
+          response = await handleGetUpdateStatus()
+          break
+        case 'APPLY_UPDATE':
+          response = await handleApplyUpdate()
+          break
         default:
           response = { ok: false, error: 'Mensaje desconocido' }
       }
@@ -286,4 +320,21 @@ async function validateStoredSession(): Promise<void> {
   }
 }
 
+chrome.runtime.onUpdateAvailable.addListener(() => {
+  void setUpdateAvailable(true)
+})
+
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === 'update' || details.reason === 'install') {
+    void setUpdateAvailable(false)
+  }
+})
+
 void validateStoredSession()
+
+/** Ask Chrome for a store update once per SW wake (rate-limited by the browser). */
+chrome.runtime.requestUpdateCheck((status) => {
+  if (status === 'update_available') {
+    void setUpdateAvailable(true)
+  }
+})

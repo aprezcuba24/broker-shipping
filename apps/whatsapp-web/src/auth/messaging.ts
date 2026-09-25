@@ -5,6 +5,7 @@ import type {
   BlacklistResponse,
   SessionPublic,
   SessionResponse,
+  UpdateStatusResponse,
 } from './types'
 import type { BlacklistReason } from '../services/phone-blacklist'
 
@@ -69,4 +70,15 @@ export async function removeFromBlacklist(
   if (response.ok && 'blacklist' in response) return response
   if (!response.ok) return response
   return { ok: false, error: 'Respuesta inválida' }
+}
+
+export async function getUpdateStatus(): Promise<UpdateStatusResponse> {
+  const response = await sendMessage({ type: 'GET_UPDATE_STATUS' })
+  if (response.ok && 'updateAvailable' in response) return response
+  if (!response.ok) return response
+  return { ok: false, error: 'Respuesta inválida' }
+}
+
+export async function applyUpdate(): Promise<ExtensionResponse> {
+  return sendMessage({ type: 'APPLY_UPDATE' })
 }

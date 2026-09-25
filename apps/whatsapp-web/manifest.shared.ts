@@ -12,9 +12,34 @@ export function resolveApiOrigin(): string {
   }
 }
 
+export function resolveSellerOrigin(): string {
+  const raw =
+    process.env.VITE_SELLER_URL ||
+    process.env.VITE_SELLER_APP_URL ||
+    'http://localhost:5174'
+  try {
+    return new URL(raw).origin
+  } catch {
+    return 'http://localhost:5174'
+  }
+}
+
+/**
+ * Optional Chrome Web Store public key (PEM body, single line / base64).
+ * When set, Load unpacked uses the same extension ID as the store listing.
+ * See docs/publicar_extension.md.
+ */
+export function resolveExtensionKey(): string | undefined {
+  const raw = process.env.VITE_WHATSAPP_EXTENSION_KEY?.trim()
+  return raw || undefined
+}
+
 export function buildManifest(): Record<string, unknown> {
   const apiOrigin = resolveApiOrigin()
-  return {
+  const sellerOrigin = resolveSellerOrigin()
+  const extensionKey = resolveExtensionKey()
+
+  const manifest: Record<string, unknown> = {
     manifest_version: 3,
     name: 'Vendelo360',
     description: 'Ficha del cliente en WhatsApp Web.',
@@ -39,6 +64,9 @@ export function buildManifest(): Record<string, unknown> {
     },
     permissions: ['storage'],
     host_permissions: [`${apiOrigin}/*`, 'https://web.whatsapp.com/*'],
+    externally_connectable: {
+      matches: [`${sellerOrigin}/*`],
+    },
     content_scripts: [
       {
         matches: ['https://web.whatsapp.com/*'],
@@ -51,8 +79,18 @@ export function buildManifest(): Record<string, unknown> {
         resources: ['fonts/*'],
         matches: ['https://web.whatsapp.com/*'],
       },
+      {
+        resources: ['icons/icon16.png'],
+        matches: [`${sellerOrigin}/*`],
+      },
     ],
   }
+
+  if (extensionKey) {
+    manifest.key = extensionKey
+  }
+
+  return manifest
 }
 
 export { rootDir }

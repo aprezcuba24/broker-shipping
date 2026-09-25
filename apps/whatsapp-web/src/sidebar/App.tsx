@@ -7,6 +7,7 @@ import { AuthGate, LoggedOutGate } from './AuthGate'
 import { CustomerCard } from './CustomerCard'
 import { useCustomerLookup } from './useCustomerLookup'
 import { useExtensionSession } from './useExtensionSession'
+import { useExtensionUpdate } from './useExtensionUpdate'
 
 type Props = {
   chat: DetectedChat
@@ -91,6 +92,7 @@ export function App({ chat }: Props) {
   const [theme, setTheme] = useState<'dark' | 'light'>(readTheme)
   const [open, setOpen] = useState(readSidebarOpen)
   const { session, loading, openAuth, selectOrg, logout } = useExtensionSession()
+  const { updateAvailable, applying, reloadForUpdate } = useExtensionUpdate()
 
   useEffect(() => {
     const sync = () => setTheme(readTheme())
@@ -184,6 +186,19 @@ export function App({ chat }: Props) {
           )
         ) : null}
       </header>
+      {updateAvailable ? (
+        <div className="update-banner" role="status">
+          <p className="update-banner-text">Hay una versión nueva</p>
+          <button
+            type="button"
+            className="btn-update"
+            disabled={applying}
+            onClick={() => void reloadForUpdate()}
+          >
+            {applying ? 'Actualizando…' : 'Recargar'}
+          </button>
+        </div>
+      ) : null}
       <div className="body">
         {loading ? (
           <div className="empty">Cargando sesión…</div>
