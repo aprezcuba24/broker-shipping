@@ -22,15 +22,16 @@ from app.lib.exceptions import raise_api_error
 from app.lib.events import emit
 from app.services import provider_seller_link as link_service
 from app.services import stock as stock_service
+from app.services.customer.helpers import attach_addresses_to_customers
 from app.services.order.code import generate_next_order_code
 from app.services.order.helpers import (
-    attach_customers_to_orders,
-    attach_items_and_totals,
     attach_order_view,
+    attach_order_relations,
     order_search_clause,
 )
 
 _NIL_UUID = UUID(int=0)
+
 
 async def _resolve_linked_products(
     session: AsyncSession,
@@ -57,8 +58,22 @@ async def _resolve_linked_products(
         raise_api_error("not_found")
     return products
 
+
+async def _organization_names_by_id(
+    session: AsyncSession,
+    organization_ids: list[UUID],
+) -> dict[UUID, str]:
+    if not organization_ids:
+        return {}
+    result = await session.execute(
+        select(Organization).where(col(Organization.id).in_(organization_ids))
+    )
+    return {org.id: org.name for org in result.scalars().all()}
+
+
 def _quantities_by_product(items_data: list[OrderItemCreate]) -> dict[UUID, int]:
     return {item.product_id: item.quantity for item in items_data}
+
 
 async def _build_order(
     session: AsyncSession,
@@ -67,6 +82,8 @@ async def _build_order(
     items_data: list[OrderItemCreate],
     *,
     customer_id: UUID = _NIL_UUID,
+    customer: Customer | None = None,
+    seller_organization_name: str = "",
     code: str = "",
 ) -> tuple[Order, list[OrderItem]]:
     product_ids = list(dict.fromkeys(item.product_id for item in items_data))
@@ -76,12 +93,39 @@ async def _build_order(
         seller_organization_id,
         product_ids,
     )
+    provider_ids = list({product.organization_id for product in products.values()})
+    provider_names = await _organization_names_by_id(session, provider_ids)
+
+    customer_name = ""
+    customer_ci = ""
+    customer_phone = ""
+    customer_address = ""
+    customer_province_name = ""
+    customer_municipality_name = ""
+    if customer is not None:
+        customer_name = customer.name
+        customer_ci = customer.ci
+        customer_phone = customer.phone
+        address = getattr(customer, "address", None)
+        if address is not None:
+            customer_address = address.address
+            customer_province_name = getattr(address, "province_name", None) or ""
+            customer_municipality_name = (
+                getattr(address, "municipality_name", None) or ""
+            )
 
     order = Order(
         id=uuid4(),
         code=code,
         seller_organization_id=seller_organization_id,
+        seller_organization_name=seller_organization_name,
         customer_id=customer_id,
+        customer_name=customer_name,
+        customer_ci=customer_ci,
+        customer_phone=customer_phone,
+        customer_address=customer_address,
+        customer_province_name=customer_province_name,
+        customer_municipality_name=customer_municipality_name,
         status=OrderStatus.created,
     )
     items: list[OrderItem] = []
@@ -96,7 +140,12 @@ async def _build_order(
             OrderItem(
                 order_id=order.id,
                 product_id=product.id,
+                product_name=product.name,
+                product_image_key=product.image_key,
                 provider_organization_id=product.organization_id,
+                provider_organization_name=provider_names.get(
+                    product.organization_id, ""
+                ),
                 unit_provider_price=product.price,
                 seller_provider_price=seller_provider_price,
                 customer_change=item_data.customer_change,
@@ -108,17 +157,20 @@ async def _build_order(
         )
     return order, items
 
+
 async def preview_order(
     session: AsyncSession,
     user: User,
     seller_organization_id: UUID,
     items_data: list[OrderItemCreate],
 ) -> Order:
+    seller_names = await _organization_names_by_id(session, [seller_organization_id])
     order, items = await _build_order(
         session,
         user,
         seller_organization_id,
         items_data,
+        seller_organization_name=seller_names.get(seller_organization_id, ""),
     )
     await stock_service.assert_products_available(
         session,
@@ -126,24 +178,27 @@ async def preview_order(
     )
     return attach_order_view(order, items)
 
+
 async def create_order(
     session: AsyncSession,
     user: User,
     seller_organization_id: UUID,
     data: OrderCreate,
 ) -> Order:
-    await get_entity(
+    customer = await get_entity(
         session,
         Customer,
         id=data.customer_id,
         seller_organization_id=seller_organization_id,
     )
+    await attach_addresses_to_customers(session, [customer])
 
     await session.execute(
         select(Organization)
         .where(Organization.id == seller_organization_id)
         .with_for_update()
     )
+    seller_names = await _organization_names_by_id(session, [seller_organization_id])
     code = await generate_next_order_code(session, seller_organization_id)
 
     order, items = await _build_order(
@@ -152,6 +207,8 @@ async def create_order(
         seller_organization_id,
         data.items,
         customer_id=data.customer_id,
+        customer=customer,
+        seller_organization_name=seller_names.get(seller_organization_id, ""),
         code=code,
     )
     session.add(order)
@@ -167,8 +224,9 @@ async def create_order(
     for item in items:
         await session.refresh(item)
     attach_order_view(order, items)
-    await attach_customers_to_orders(session, [order])
+    await attach_order_relations(session, [order])
     return order
+
 
 async def list_orders_for_seller(
     session: AsyncSession,
@@ -188,12 +246,12 @@ async def list_orders_for_seller(
         stmt = stmt.where(Order.customer_id == customer_id)
     clause = order_search_clause(search) if search else None
     if clause is not None:
-        stmt = stmt.join(Customer, Customer.id == Order.customer_id).where(clause)
+        stmt = stmt.where(clause)
     stmt = stmt.order_by(Order.created_at.desc(), Order.id.desc())
     result = await paginate(session, stmt, pagination)
-    await attach_items_and_totals(session, result.items)
-    await attach_customers_to_orders(session, result.items)
+    await attach_order_relations(session, result.items)
     return result
+
 
 async def get_order_for_seller(
     session: AsyncSession,
@@ -206,6 +264,5 @@ async def get_order_for_seller(
         id=order_id,
         seller_organization_id=seller_organization_id,
     )
-    await attach_items_and_totals(session, [order])
-    await attach_customers_to_orders(session, [order])
+    await attach_order_relations(session, [order])
     return order

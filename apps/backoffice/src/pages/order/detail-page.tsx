@@ -1,8 +1,6 @@
 import {
-  getProductProductsProviderProductIdGet,
   useGetOrderOrdersProviderOrderIdGet,
   type GetOrderOrdersProviderOrderIdGetParams,
-  type GetProductProductsProviderProductIdGetParams,
 } from '@broker/api'
 import {
   buildProviderOrderItemColumns,
@@ -22,22 +20,7 @@ export function OrderDetailPage() {
     { query: { enabled: Boolean(orderId) } },
   )
 
-  const fetchProduct = useCallback(
-    (productId: string, signal?: AbortSignal) =>
-      getProductProductsProviderProductIdGet(
-        productId,
-        {} as GetProductProductsProviderProductIdGetParams,
-        undefined,
-        signal,
-      ),
-    [],
-  )
-
-  const buildColumns = useCallback(
-    ({ getProductName }: { getProductName: (id: string) => string }) =>
-      buildProviderOrderItemColumns({ getProductName }),
-    [],
-  )
+  const buildColumns = useCallback(() => buildProviderOrderItemColumns(), [])
 
   const order = orderQuery.data
 
@@ -57,8 +40,6 @@ export function OrderDetailPage() {
           <h2 className="text-sm font-medium">Ítems</h2>
           <OrderItemsTable
             items={order.items ?? []}
-            fetchProduct={fetchProduct}
-            productQueryKeyPrefix="provider-product-name"
             buildColumns={buildColumns}
           />
         </div>

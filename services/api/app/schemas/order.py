@@ -50,7 +50,10 @@ class OrderItemPublic(BaseModel):
     id: UUID
     order_id: UUID
     product_id: UUID
+    product_name: str = ""
+    product_image_url: str | None = None
     provider_organization_id: UUID
+    provider_organization_name: str = ""
     unit_provider_price: int
     seller_provider_price: int
     customer_change: int

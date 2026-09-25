@@ -7,13 +7,16 @@ from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col
 
+from app.lib.storage.deps import get_object_storage
 from app.models.customer.customer import Customer
 from app.models.order.enums import Currency, OrderItemStatus, OrderStatus
 from app.models.order.order import Order
 from app.models.order.order_item import OrderItem
-from app.models.organization.organization import Organization
-from app.schemas.order import OrderCurrencyTotal
-from app.services.customer.helpers import attach_addresses_to_customers
+from app.models.organization.enums import OrganizationType
+from app.schemas.customer import AddressPublic, CustomerPublic
+from app.schemas.order import OrderCurrencyTotal, OrderItemPublic, OrderPublic
+from app.schemas.organization import OrganizationPublic
+from app.types import PurchaseTier
 
 _NIL_UUID = UUID(int=0)
 
@@ -86,54 +89,180 @@ async def attach_items_and_totals(
         attach_order_view(order, items_by_order.get(order.id, []))
 
 
-async def attach_customers_to_orders(
+async def _purchase_tiers_by_phone(
+    session: AsyncSession,
+    phones: list[str],
+) -> dict[str, PurchaseTier]:
+    if not phones:
+        return {}
+    result = await session.execute(
+        select(Customer.phone, Customer.purchase_tier).where(
+            col(Customer.phone).in_(phones)
+        )
+    )
+    tiers: dict[str, PurchaseTier] = {}
+    for phone, tier in result.all():
+        value: PurchaseTier = tier if tier in (0, 1, 5, 10) else 0
+        current = tiers.get(phone, 0)
+        if value > current:
+            tiers[phone] = value
+        elif phone not in tiers:
+            tiers[phone] = value
+    return tiers
+
+
+def _customer_from_order_snapshot(
+    order: Order,
+    *,
+    purchase_tier: PurchaseTier = 0,
+) -> CustomerPublic | None:
+    if not order.customer_id or order.customer_id == _NIL_UUID:
+        return None
+    address: AddressPublic | None = None
+    if order.customer_address:
+        address = AddressPublic(
+            id=_NIL_UUID,
+            address=order.customer_address,
+            province_id=_NIL_UUID,
+            municipality_id=_NIL_UUID,
+            customer_id=order.customer_id,
+            created_at=order.created_at,
+            updated_at=None,
+            province_name=order.customer_province_name or None,
+            municipality_name=order.customer_municipality_name or None,
+        )
+    return CustomerPublic(
+        id=order.customer_id,
+        name=order.customer_name,
+        ci=order.customer_ci,
+        phone=order.customer_phone,
+        purchase_tier=purchase_tier,
+        seller_organization_id=order.seller_organization_id,
+        created_at=order.created_at,
+        updated_at=None,
+        address=address,
+        addresses=[],
+    )
+
+
+def _seller_organization_from_order_snapshot(
+    order: Order,
+) -> OrganizationPublic | None:
+    if not order.seller_organization_id:
+        return None
+    if not order.seller_organization_name:
+        return None
+    return OrganizationPublic(
+        id=order.seller_organization_id,
+        name=order.seller_organization_name,
+        type=OrganizationType.seller,
+        created_at=order.created_at,
+        updated_at=None,
+    )
+
+
+def order_item_to_public(item: OrderItem) -> OrderItemPublic:
+    return OrderItemPublic(
+        id=item.id,
+        order_id=item.order_id,
+        product_id=item.product_id,
+        product_name=item.product_name,
+        product_image_url=get_object_storage().build_public_url(item.product_image_key),
+        provider_organization_id=item.provider_organization_id,
+        provider_organization_name=item.provider_organization_name,
+        unit_provider_price=item.unit_provider_price,
+        seller_provider_price=item.seller_provider_price,
+        customer_change=item.customer_change,
+        quantity=item.quantity,
+        currency=item.currency,
+        status=item.status,
+        seller_commission=item.seller_commission,
+        created_at=item.created_at,
+        updated_at=item.updated_at,
+    )
+
+
+def order_to_public(order: Order) -> OrderPublic:
+    items = getattr(order, "items", []) or []
+    totals = getattr(order, "totals", None) or compute_order_totals(items)
+    customer = getattr(order, "customer", None)
+    if customer is None and order.customer_id and order.customer_id != _NIL_UUID:
+        customer = _customer_from_order_snapshot(order)
+    seller_organization = getattr(order, "seller_organization", None)
+    if seller_organization is None:
+        seller_organization = _seller_organization_from_order_snapshot(order)
+    return OrderPublic(
+        id=order.id,
+        code=order.code,
+        seller_organization_id=order.seller_organization_id,
+        customer_id=order.customer_id,
+        status=order.status,
+        created_at=order.created_at,
+        updated_at=order.updated_at,
+        items=[order_item_to_public(item) for item in items],
+        totals=list(totals),
+        customer=customer,
+        seller_organization=seller_organization,
+    )
+
+
+async def attach_snapshot_relations(
     session: AsyncSession,
     orders: list[Order],
 ) -> None:
-    customer_ids = list(
+    phones = list(
         {
-            order.customer_id
+            order.customer_phone
             for order in orders
-            if order.customer_id and order.customer_id != _NIL_UUID
+            if order.customer_phone
+            and order.customer_id
+            and order.customer_id != _NIL_UUID
         }
     )
-    customers_by_id: dict[UUID, Customer] = {}
-    if customer_ids:
-        result = await session.execute(
-            select(Customer).where(col(Customer.id).in_(customer_ids))
-        )
-        customers = list(result.scalars().all())
-        await attach_addresses_to_customers(session, customers)
-        customers_by_id = {customer.id: customer for customer in customers}
-
+    tiers_by_phone = await _purchase_tiers_by_phone(session, phones)
     for order in orders:
         object.__setattr__(
             order,
             "customer",
-            customers_by_id.get(order.customer_id),
+            _customer_from_order_snapshot(
+                order,
+                purchase_tier=tiers_by_phone.get(order.customer_phone, 0),
+            ),
         )
+        object.__setattr__(
+            order,
+            "seller_organization",
+            _seller_organization_from_order_snapshot(order),
+        )
+
+
+async def attach_order_relations(
+    session: AsyncSession,
+    orders: list[Order],
+    *,
+    provider_organization_id: UUID | None = None,
+) -> None:
+    await attach_items_and_totals(
+        session,
+        orders,
+        provider_organization_id=provider_organization_id,
+    )
+    await attach_snapshot_relations(session, orders)
+
+
+# Backward-compatible aliases used by dashboard / provider until fully migrated.
+async def attach_customers_to_orders(
+    session: AsyncSession,
+    orders: list[Order],
+) -> None:
+    await attach_snapshot_relations(session, orders)
 
 
 async def attach_seller_organizations_to_orders(
     session: AsyncSession,
     orders: list[Order],
 ) -> None:
-    seller_org_ids = list(
-        {order.seller_organization_id for order in orders if order.seller_organization_id}
-    )
-    orgs_by_id: dict[UUID, Organization] = {}
-    if seller_org_ids:
-        result = await session.execute(
-            select(Organization).where(col(Organization.id).in_(seller_org_ids))
-        )
-        orgs_by_id = {org.id: org for org in result.scalars().all()}
-
-    for order in orders:
-        object.__setattr__(
-            order,
-            "seller_organization",
-            orgs_by_id.get(order.seller_organization_id),
-        )
+    await attach_snapshot_relations(session, orders)
 
 
 def order_search_clause(search: str):
@@ -148,20 +277,32 @@ def order_search_clause(search: str):
     if digits_only:
         if len(term) <= 11:
             return or_(
-                Customer.ci == term,
-                col(Customer.phone).ilike(f"%{term}%"),
+                Order.customer_ci == term,
+                col(Order.customer_phone).ilike(f"%{term}%"),
             )
-        return col(Customer.phone).ilike(f"%{term}%")
+        return col(Order.customer_phone).ilike(f"%{term}%")
 
     if has_letter and has_digit:
         return col(Order.code).ilike(f"%{term}%")
 
     if has_letter and not has_digit:
-        return col(Customer.name).ilike(f"%{term}%")
+        return col(Order.customer_name).ilike(f"%{term}%")
 
     return or_(
         col(Order.code).ilike(f"%{term}%"),
-        col(Customer.name).ilike(f"%{term}%"),
-        col(Customer.phone).ilike(f"%{term}%"),
-        Customer.ci == term,
+        col(Order.customer_name).ilike(f"%{term}%"),
+        col(Order.customer_phone).ilike(f"%{term}%"),
+        Order.customer_ci == term,
     )
+
+
+async def order_item_image_key_in_use(
+    session: AsyncSession,
+    image_key: str,
+) -> bool:
+    result = await session.execute(
+        select(OrderItem.id)
+        .where(OrderItem.product_image_key == image_key)
+        .limit(1)
+    )
+    return result.scalar_one_or_none() is not None

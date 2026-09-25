@@ -5,22 +5,17 @@ import type { ColumnDef } from '../components/data-table/types'
 import { formatMoney } from '../lib/utils'
 import { OrderItemStatusBadge } from './status'
 
-export function buildSellerOrderItemColumns(options: {
-  getProductName: (productId: string) => string
-  getProductImageUrl: (productId: string) => string | null | undefined
-  getProviderName: (id: string | null | undefined) => string
-}): ColumnDef<OrderItemPublic>[] {
-  const { getProductName, getProductImageUrl, getProviderName } = options
+export function buildSellerOrderItemColumns(): ColumnDef<OrderItemPublic>[] {
   return [
     imageColumn<OrderItemPublic>({
-      src: (row) => getProductImageUrl(row.product_id),
-      alt: (row) => getProductName(row.product_id),
+      src: (row) => row.product_image_url,
+      alt: (row) => row.product_name,
     }),
     componentColumn<OrderItemPublic>('product', 'Producto', (row) => (
-      <span>{getProductName(row.product_id)}</span>
+      <span>{row.product_name || '—'}</span>
     )),
     componentColumn<OrderItemPublic>('provider', 'Proveedor', (row) => (
-      <span>{getProviderName(row.provider_organization_id)}</span>
+      <span>{row.provider_organization_name || '—'}</span>
     )),
     componentColumn<OrderItemPublic>('quantity', 'Cant.', (row) => (
       <span className="tabular-nums text-sm">{row.quantity}</span>
@@ -49,13 +44,10 @@ export function buildSellerOrderItemColumns(options: {
   ]
 }
 
-export function buildProviderOrderItemColumns(options: {
-  getProductName: (productId: string) => string
-}): ColumnDef<OrderItemPublic>[] {
-  const { getProductName } = options
+export function buildProviderOrderItemColumns(): ColumnDef<OrderItemPublic>[] {
   return [
     componentColumn<OrderItemPublic>('product', 'Producto', (row) => (
-      <span>{getProductName(row.product_id)}</span>
+      <span>{row.product_name || '—'}</span>
     )),
     componentColumn<OrderItemPublic>('quantity', 'Cant.', (row) => (
       <span className="tabular-nums text-sm">{row.quantity}</span>

@@ -425,10 +425,7 @@ export {
 } from './order/order-detail-page'
 export type { OrderDetailPageProps } from './order/order-detail-page'
 export { OrderItemsTable } from './order/order-items-table'
-export type {
-  OrderItemsTableProps,
-  OrderItemProductInfo,
-} from './order/order-items-table'
+export type { OrderItemsTableProps } from './order/order-items-table'
 export {
   buildSellerOrderItemColumns,
   buildProviderOrderItemColumns,

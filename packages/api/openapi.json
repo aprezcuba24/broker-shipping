@@ -5966,10 +5966,31 @@
             "format": "uuid",
             "title": "Product Id"
           },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name",
+            "default": ""
+          },
+          "product_image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Image Url"
+          },
           "provider_organization_id": {
             "type": "string",
             "format": "uuid",
             "title": "Provider Organization Id"
+          },
+          "provider_organization_name": {
+            "type": "string",
+            "title": "Provider Organization Name",
+            "default": ""
           },
           "unit_provider_price": {
             "type": "integer",

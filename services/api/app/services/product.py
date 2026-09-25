@@ -15,6 +15,7 @@ from app.models.product.product_tag import ProductTag
 from app.schemas.pagination import PageResult, PaginationParams
 from app.schemas.product import ProductCreate, ProductUpdate
 from app.services import product_tag as product_tag_service
+from app.services.order.helpers import order_item_image_key_in_use
 
 
 async def list_products_for_organization(
@@ -122,7 +123,9 @@ async def delete_product(
         id=product_id,
         organization_id=organization_id,
     )
-    if product.image_key:
+    if product.image_key and not await order_item_image_key_in_use(
+        session, product.image_key
+    ):
         await get_object_storage().delete_object(product.image_key)
     await session.delete(product)
     await session.commit()

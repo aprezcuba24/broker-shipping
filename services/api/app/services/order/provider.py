@@ -16,7 +16,6 @@ from app.lib.events import emit
 from app.lib.persistence import get_entity
 from app.lib.persistence.pagination import paginate
 from app.lib.utils import utc_now
-from app.models.customer.customer import Customer
 from app.models.order.enums import OrderItemStatus, OrderStatus
 from app.models.order.order import Order
 from app.models.order.order_item import OrderItem
@@ -26,10 +25,9 @@ from app.schemas.pagination import PageResult, PaginationParams
 from app.services import provider_seller_link as link_service
 from app.services.order import item_status as item_status_service
 from app.services.order.helpers import (
-    attach_customers_to_orders,
-    attach_items_and_totals,
+    attach_order_relations,
     attach_order_view,
-    attach_seller_organizations_to_orders,
+    attach_snapshot_relations,
     derive_order_status,
     load_items_by_order_ids,
     order_search_clause,
@@ -69,15 +67,14 @@ async def list_orders_for_provider(
         stmt = stmt.where(Order.status == status)
     clause = order_search_clause(search) if search else None
     if clause is not None:
-        stmt = stmt.join(Customer, Customer.id == Order.customer_id).where(clause)
+        stmt = stmt.where(clause)
     stmt = stmt.order_by(Order.created_at.desc(), Order.id.desc())
     result = await paginate(session, stmt, pagination)
-    await attach_items_and_totals(
+    await attach_order_relations(
         session,
         result.items,
         provider_organization_id=provider_organization_id,
     )
-    await attach_customers_to_orders(session, result.items)
     return result
 
 async def get_order_for_provider(
@@ -104,13 +101,11 @@ async def get_order_for_provider(
     ):
         raise_api_error("not_found")
 
-    await attach_items_and_totals(
+    await attach_order_relations(
         session,
         [order],
         provider_organization_id=provider_organization_id,
     )
-    await attach_customers_to_orders(session, [order])
-    await attach_seller_organizations_to_orders(session, [order])
     return order
 
 async def update_provider_items_status(
@@ -198,4 +193,6 @@ async def update_provider_items_status(
                 background=False,
             )
 
-    return attach_order_view(order, provider_items)
+    attach_order_view(order, provider_items)
+    await attach_snapshot_relations(session, [order])
+    return order

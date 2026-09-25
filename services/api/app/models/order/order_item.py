@@ -47,7 +47,10 @@ class OrderItem(EntityModel, table=True):
         ),
     )
     product_id: UUID = Field(foreign_key="product.id", index=True)
+    product_name: str = Field(default="", max_length=255)
+    product_image_key: str | None = Field(default=None, max_length=512)
     provider_organization_id: UUID = Field(foreign_key="organization.id", index=True)
+    provider_organization_name: str = Field(default="", max_length=255)
     unit_provider_price: int = Field(
         sa_column=Column(BigInteger, nullable=False),
     )

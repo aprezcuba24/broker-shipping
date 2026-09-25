@@ -24,7 +24,10 @@ export type OrderItemPublic = {
   id: string
   order_id: string
   product_id: string
+  product_name?: string
+  product_image_url?: string | null
   provider_organization_id: string
+  provider_organization_name?: string
   unit_provider_price: number
   seller_provider_price: number
   customer_change: number

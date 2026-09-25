@@ -4,6 +4,7 @@
  * Vendelo360 API
  * OpenAPI spec version: 0.1.0
  */
+import type { OrderItemPublicProductImageUrl } from './orderItemPublicProductImageUrl';
 import type { Currency } from './currency';
 import type { OrderItemStatus } from './orderItemStatus';
 import type { OrderItemPublicUpdatedAt } from './orderItemPublicUpdatedAt';
@@ -12,7 +13,10 @@ export interface OrderItemPublic {
   id: string;
   order_id: string;
   product_id: string;
+  product_name?: string;
+  product_image_url?: OrderItemPublicProductImageUrl;
   provider_organization_id: string;
+  provider_organization_name?: string;
   unit_provider_price: number;
   seller_provider_price: number;
   customer_change: number;

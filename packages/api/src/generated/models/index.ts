@@ -114,6 +114,7 @@ export * from './orderItemCreate';
 export * from './orderItemCreateCustomerChange';
 export * from './orderItemCreateSellerProviderPrice';
 export * from './orderItemPublic';
+export * from './orderItemPublicProductImageUrl';
 export * from './orderItemPublicUpdatedAt';
 export * from './orderItemStatus';
 export * from './orderItemStatusUpdate';

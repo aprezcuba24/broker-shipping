@@ -9,6 +9,7 @@ from app.models.order.enums import OrderStatus
 from app.schemas.order import OrderItemStatusUpdate, OrderPublic
 from app.schemas.pagination import Page
 from app.services.order import provider as provider_order_service
+from app.services.order.helpers import order_to_public
 
 router = APIRouter(prefix="/orders/provider", tags=["orders"])
 
@@ -30,7 +31,7 @@ async def list_orders(
         status=status,
         seller_organization_id=seller_organization_id,
     )
-    return Page.from_mapped(result, pagination, OrderPublic.model_validate)
+    return Page.from_mapped(result, pagination, order_to_public)
 
 
 @router.get("/{order_id}", response_model=OrderPublic)
@@ -44,7 +45,7 @@ async def get_order(
         order_id,
         organization.id,
     )
-    return OrderPublic.model_validate(order)
+    return order_to_public(order)
 
 
 @router.patch("/{order_id}/items", response_model=OrderPublic)
@@ -60,4 +61,4 @@ async def update_items_status(
         organization.id,
         body,
     )
-    return OrderPublic.model_validate(order)
+    return order_to_public(order)

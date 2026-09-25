@@ -18,6 +18,13 @@ from app.schemas.product import (
     ProductImagePresignResponse,
 )
 from app.services import product_tag as product_tag_service
+from app.services.order.helpers import order_item_image_key_in_use
+
+
+async def _delete_image_if_unused(session: AsyncSession, image_key: str) -> None:
+    if await order_item_image_key_in_use(session, image_key):
+        return
+    await get_object_storage().delete_object(image_key)
 
 
 async def presign_product_image_upload(
@@ -63,7 +70,7 @@ async def confirm_product_image(
     storage = get_object_storage()
     previous_key = product.image_key
     if previous_key and previous_key != data.image_key:
-        await storage.delete_object(previous_key)
+        await _delete_image_if_unused(session, previous_key)
     product.image_key = data.image_key
     session.add(product)
     await session.commit()
@@ -84,7 +91,7 @@ async def delete_product_image(
         organization_id=organization_id,
     )
     if product.image_key:
-        await get_object_storage().delete_object(product.image_key)
+        await _delete_image_if_unused(session, product.image_key)
     product.image_key = None
     session.add(product)
     await session.commit()
