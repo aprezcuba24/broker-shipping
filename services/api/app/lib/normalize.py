@@ -14,3 +14,12 @@ def strip_optional(value: str | None) -> str | None:
         return None
     stripped = value.strip()
     return stripped or None
+
+
+def normalize_phone(value: str | None) -> str | None:
+    if value is None:
+        return None
+    stripped = value.strip().removeprefix("+")
+    if len(stripped) == 8:
+        return f"53{stripped}"
+    return stripped

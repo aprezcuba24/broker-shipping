@@ -83,7 +83,7 @@ async def test_customer_crud_happy_path(
     body = created.json()
     assert body["name"] == "Juan Perez"
     assert body["ci"] == "90010112345"
-    assert body["phone"] == "51234567"
+    assert body["phone"] == "5351234567"
     assert body["seller_organization_id"] == seller_customer_ctx["seller_org_id"]
     assert body["address"]["address"] == "Calle 1 #100"
     assert body["address"]["province_id"] == seller_customer_ctx["province_id"]
@@ -142,7 +142,7 @@ async def test_list_customers_with_filters(
             seller_customer_ctx,
             name="Ana Lopez",
             ci="11111111111",
-            phone="51111111",
+            phone="53024637",
         ),
     )
     await client.post(
@@ -177,12 +177,60 @@ async def test_list_customers_with_filters(
 
     by_phone = await client.get(
         "/customers/seller/",
-        params={**seller_customer_ctx["seller_params"], "phone": "5111"},
+        params={**seller_customer_ctx["seller_params"], "phone": "53024637"},
         headers=seller_customer_ctx["seller_bearer"],
     )
     assert by_phone.status_code == 200
     assert by_phone.json()["total"] == 1
-    assert by_phone.json()["items"][0]["phone"] == "51111111"
+    assert by_phone.json()["items"][0]["phone"] == "5353024637"
+
+    by_phone = await client.get(
+        "/customers/seller/",
+        params={**seller_customer_ctx["seller_params"], "phone": "+5353024637"},
+        headers=seller_customer_ctx["seller_bearer"],
+    )
+    assert by_phone.status_code == 200
+    assert by_phone.json()["total"] == 1
+    assert by_phone.json()["items"][0]["phone"] == "5353024637"
+
+
+@pytest.mark.parametrize(
+    "phone_query",
+    [
+        "+5353024637",
+        "5353024637",
+        "53024637",
+    ],
+)
+async def test_list_customers_finds_by_phone_variants(
+    client: AsyncClient,
+    seller_customer_ctx: dict,
+    phone_query: str,
+) -> None:
+    created = await client.post(
+        "/customers/seller/",
+        params=seller_customer_ctx["seller_params"],
+        headers=seller_customer_ctx["seller_bearer"],
+        json=_customer_payload(
+            seller_customer_ctx,
+            name="Ana Lopez",
+            ci="11111111111",
+            phone="53024637",
+        ),
+    )
+    assert created.status_code == 201
+    customer_id = created.json()["id"]
+
+    response = await client.get(
+        "/customers/seller/",
+        params={**seller_customer_ctx["seller_params"], "phone": phone_query},
+        headers=seller_customer_ctx["seller_bearer"],
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total"] == 1
+    assert body["items"][0]["id"] == customer_id
+    assert body["items"][0]["phone"] == "5353024637"
 
 
 async def test_seller_cannot_access_other_seller_customer(
@@ -390,7 +438,7 @@ async def test_register_customer_creates_new(
     body = response.json()
     assert body["name"] == "Nuevo Cliente"
     assert body["ci"] == "30000000001"
-    assert body["phone"] == "53000001"
+    assert body["phone"] == "5353000001"
     assert body["address"]["address"] == "Calle 1 #100"
 
 
@@ -432,7 +480,7 @@ async def test_register_customer_updates_by_ci(
     body = updated.json()
     assert body["id"] == customer_id
     assert body["name"] == "Actualizado CI"
-    assert body["phone"] == "53000999"
+    assert body["phone"] == "5353000999"
     assert body["address"]["address"] == "Nueva Calle 5"
 
 
