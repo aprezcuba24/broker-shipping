@@ -1,15 +1,37 @@
 from fastapi import APIRouter, Query, Response
 
 from app.deps import SessionDep
+from app.lib.persistence.pagination import PaginationDep
 from app.lib.security.deps import AnyOrgDep, CurrentUserDep
+from app.models.customer.enums import PhoneBlacklistReason
+from app.schemas.pagination import Page
 from app.schemas.phone_blacklist import (
     PhoneBlacklistCreate,
+    PhoneBlacklistListItem,
     PhoneBlacklistPublic,
     PhoneBlacklistStatusPublic,
 )
 from app.services import phone_blacklist as phone_blacklist_service
 
 router = APIRouter(prefix="/phone-blacklist", tags=["phone-blacklist"])
+
+
+@router.get("/", response_model=Page[PhoneBlacklistListItem])
+async def list_phone_blacklist(
+    organization: AnyOrgDep,
+    session: SessionDep,
+    pagination: PaginationDep,
+    phone: str | None = None,
+    reason: PhoneBlacklistReason | None = None,
+) -> Page[PhoneBlacklistListItem]:
+    result = await phone_blacklist_service.list_active_for_organization(
+        session,
+        organization,
+        pagination=pagination,
+        phone=phone,
+        reason=reason,
+    )
+    return Page.from_result(result, pagination)
 
 
 @router.get("/status", response_model=PhoneBlacklistStatusPublic)

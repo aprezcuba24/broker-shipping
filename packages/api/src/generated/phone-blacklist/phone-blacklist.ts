@@ -27,6 +27,8 @@ import type {
   CreatePhoneBlacklistEntryPhoneBlacklistPostParams,
   GetPhoneBlacklistStatusPhoneBlacklistStatusGetParams,
   HTTPValidationError,
+  ListPhoneBlacklistPhoneBlacklistGetParams,
+  PagePhoneBlacklistListItem,
   PhoneBlacklistCreate,
   PhoneBlacklistPublic,
   PhoneBlacklistStatusPublic,
@@ -41,16 +43,16 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 /**
- * @summary Get Phone Blacklist Status
+ * @summary List Phone Blacklist
  */
-export const getPhoneBlacklistStatusPhoneBlacklistStatusGet = (
-    params: GetPhoneBlacklistStatusPhoneBlacklistStatusGetParams,
+export const listPhoneBlacklistPhoneBlacklistGet = (
+    params: ListPhoneBlacklistPhoneBlacklistGetParams,
  options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
 ) => {
       
       
-      return brokerFetch<PhoneBlacklistStatusPublic>(
-      {url: `/phone-blacklist/status`, method: 'GET',
+      return brokerFetch<PagePhoneBlacklistListItem>(
+      {url: `/phone-blacklist/`, method: 'GET',
         params, signal
     },
       options);
@@ -59,69 +61,69 @@ export const getPhoneBlacklistStatusPhoneBlacklistStatusGet = (
 
 
 
-export const getGetPhoneBlacklistStatusPhoneBlacklistStatusGetQueryKey = (params?: GetPhoneBlacklistStatusPhoneBlacklistStatusGetParams,) => {
+export const getListPhoneBlacklistPhoneBlacklistGetQueryKey = (params?: ListPhoneBlacklistPhoneBlacklistGetParams,) => {
     return [
-    `/phone-blacklist/status`, ...(params ? [params]: [])
+    `/phone-blacklist/`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetPhoneBlacklistStatusPhoneBlacklistStatusGetQueryOptions = <TData = Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError = HTTPValidationError>(params: GetPhoneBlacklistStatusPhoneBlacklistStatusGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export const getListPhoneBlacklistPhoneBlacklistGetQueryOptions = <TData = Awaited<ReturnType<typeof listPhoneBlacklistPhoneBlacklistGet>>, TError = HTTPValidationError>(params: ListPhoneBlacklistPhoneBlacklistGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPhoneBlacklistPhoneBlacklistGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetPhoneBlacklistStatusPhoneBlacklistStatusGetQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListPhoneBlacklistPhoneBlacklistGetQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>> = ({ signal }) => getPhoneBlacklistStatusPhoneBlacklistStatusGet(params, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPhoneBlacklistPhoneBlacklistGet>>> = ({ signal }) => listPhoneBlacklistPhoneBlacklistGet(params, requestOptions, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPhoneBlacklistPhoneBlacklistGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetPhoneBlacklistStatusPhoneBlacklistStatusGetQueryResult = NonNullable<Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>>
-export type GetPhoneBlacklistStatusPhoneBlacklistStatusGetQueryError = HTTPValidationError
+export type ListPhoneBlacklistPhoneBlacklistGetQueryResult = NonNullable<Awaited<ReturnType<typeof listPhoneBlacklistPhoneBlacklistGet>>>
+export type ListPhoneBlacklistPhoneBlacklistGetQueryError = HTTPValidationError
 
 
-export function useGetPhoneBlacklistStatusPhoneBlacklistStatusGet<TData = Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError = HTTPValidationError>(
- params: GetPhoneBlacklistStatusPhoneBlacklistStatusGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError, TData>> & Pick<
+export function useListPhoneBlacklistPhoneBlacklistGet<TData = Awaited<ReturnType<typeof listPhoneBlacklistPhoneBlacklistGet>>, TError = HTTPValidationError>(
+ params: ListPhoneBlacklistPhoneBlacklistGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPhoneBlacklistPhoneBlacklistGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>,
+          Awaited<ReturnType<typeof listPhoneBlacklistPhoneBlacklistGet>>,
           TError,
-          Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>
+          Awaited<ReturnType<typeof listPhoneBlacklistPhoneBlacklistGet>>
         > , 'initialData'
       >, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetPhoneBlacklistStatusPhoneBlacklistStatusGet<TData = Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError = HTTPValidationError>(
- params: GetPhoneBlacklistStatusPhoneBlacklistStatusGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError, TData>> & Pick<
+export function useListPhoneBlacklistPhoneBlacklistGet<TData = Awaited<ReturnType<typeof listPhoneBlacklistPhoneBlacklistGet>>, TError = HTTPValidationError>(
+ params: ListPhoneBlacklistPhoneBlacklistGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPhoneBlacklistPhoneBlacklistGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>,
+          Awaited<ReturnType<typeof listPhoneBlacklistPhoneBlacklistGet>>,
           TError,
-          Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>
+          Awaited<ReturnType<typeof listPhoneBlacklistPhoneBlacklistGet>>
         > , 'initialData'
       >, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetPhoneBlacklistStatusPhoneBlacklistStatusGet<TData = Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError = HTTPValidationError>(
- params: GetPhoneBlacklistStatusPhoneBlacklistStatusGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export function useListPhoneBlacklistPhoneBlacklistGet<TData = Awaited<ReturnType<typeof listPhoneBlacklistPhoneBlacklistGet>>, TError = HTTPValidationError>(
+ params: ListPhoneBlacklistPhoneBlacklistGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPhoneBlacklistPhoneBlacklistGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get Phone Blacklist Status
+ * @summary List Phone Blacklist
  */
 
-export function useGetPhoneBlacklistStatusPhoneBlacklistStatusGet<TData = Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError = HTTPValidationError>(
- params: GetPhoneBlacklistStatusPhoneBlacklistStatusGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+export function useListPhoneBlacklistPhoneBlacklistGet<TData = Awaited<ReturnType<typeof listPhoneBlacklistPhoneBlacklistGet>>, TError = HTTPValidationError>(
+ params: ListPhoneBlacklistPhoneBlacklistGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPhoneBlacklistPhoneBlacklistGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetPhoneBlacklistStatusPhoneBlacklistStatusGetQueryOptions(params,options)
+  const queryOptions = getListPhoneBlacklistPhoneBlacklistGetQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -261,4 +263,96 @@ export const useWithdrawPhoneBlacklistEntryPhoneBlacklistDelete = <TError = HTTP
 
       return useMutation(mutationOptions, queryClient);
     }
+    /**
+ * @summary Get Phone Blacklist Status
+ */
+export const getPhoneBlacklistStatusPhoneBlacklistStatusGet = (
+    params: GetPhoneBlacklistStatusPhoneBlacklistStatusGetParams,
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<PhoneBlacklistStatusPublic>(
+      {url: `/phone-blacklist/status`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+  
+
+
+
+export const getGetPhoneBlacklistStatusPhoneBlacklistStatusGetQueryKey = (params?: GetPhoneBlacklistStatusPhoneBlacklistStatusGetParams,) => {
+    return [
+    `/phone-blacklist/status`, ...(params ? [params]: [])
+    ] as const;
+    }
+
     
+export const getGetPhoneBlacklistStatusPhoneBlacklistStatusGetQueryOptions = <TData = Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError = HTTPValidationError>(params: GetPhoneBlacklistStatusPhoneBlacklistStatusGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPhoneBlacklistStatusPhoneBlacklistStatusGetQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>> = ({ signal }) => getPhoneBlacklistStatusPhoneBlacklistStatusGet(params, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetPhoneBlacklistStatusPhoneBlacklistStatusGetQueryResult = NonNullable<Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>>
+export type GetPhoneBlacklistStatusPhoneBlacklistStatusGetQueryError = HTTPValidationError
+
+
+export function useGetPhoneBlacklistStatusPhoneBlacklistStatusGet<TData = Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError = HTTPValidationError>(
+ params: GetPhoneBlacklistStatusPhoneBlacklistStatusGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>,
+          TError,
+          Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPhoneBlacklistStatusPhoneBlacklistStatusGet<TData = Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError = HTTPValidationError>(
+ params: GetPhoneBlacklistStatusPhoneBlacklistStatusGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>,
+          TError,
+          Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPhoneBlacklistStatusPhoneBlacklistStatusGet<TData = Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError = HTTPValidationError>(
+ params: GetPhoneBlacklistStatusPhoneBlacklistStatusGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get Phone Blacklist Status
+ */
+
+export function useGetPhoneBlacklistStatusPhoneBlacklistStatusGet<TData = Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError = HTTPValidationError>(
+ params: GetPhoneBlacklistStatusPhoneBlacklistStatusGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPhoneBlacklistStatusPhoneBlacklistStatusGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetPhoneBlacklistStatusPhoneBlacklistStatusGetQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+

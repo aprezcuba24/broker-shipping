@@ -264,3 +264,52 @@ async def test_withdraw_missing_is_not_found(
         headers=blacklist_ctx["seller_bearer"],
     )
     assert response.status_code == 404
+
+
+async def test_list_own_active_with_customer_and_community(
+    client: AsyncClient,
+    blacklist_ctx: dict,
+    customer_factory,
+) -> None:
+    phone = "55577766"
+    normalized = f"53{phone}"
+    customer = await customer_factory.build(
+        seller_organization_id=blacklist_ctx["seller_org_id"],
+        name="Ana Lista",
+        phone=normalized,
+        ci="91010112345",
+    )
+    await client.post(
+        "/phone-blacklist/",
+        params=blacklist_ctx["seller_params"],
+        headers=blacklist_ctx["seller_bearer"],
+        json={"phone": phone, "reason": "fraud"},
+    )
+    await client.post(
+        "/phone-blacklist/",
+        params=blacklist_ctx["other_seller_params"],
+        headers=blacklist_ctx["other_seller_bearer"],
+        json={"phone": phone, "reason": "abuse"},
+    )
+
+    listed = await client.get(
+        "/phone-blacklist/",
+        params=blacklist_ctx["seller_params"],
+        headers=blacklist_ctx["seller_bearer"],
+    )
+    assert listed.status_code == 200
+    body = listed.json()
+    assert body["total"] >= 1
+    row = next(item for item in body["items"] if item["phone"] == normalized)
+    assert row["reason"] == "fraud"
+    assert row["other_count"] == 1
+    assert row["customer"] is not None
+    assert row["customer"]["name"] == customer["name"]
+
+    only_fraud = await client.get(
+        "/phone-blacklist/",
+        params={**blacklist_ctx["seller_params"], "reason": "fraud", "phone": phone},
+        headers=blacklist_ctx["seller_bearer"],
+    )
+    assert only_fraud.status_code == 200
+    assert only_fraud.json()["total"] == 1

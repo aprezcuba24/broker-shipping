@@ -39,3 +39,20 @@ class PhoneBlacklistStatusPublic(BaseModel):
     status: PhoneBlacklistStatus
     own_entry_id: UUID | None = None
     other_count: int = 0
+
+
+class PhoneBlacklistCustomerSummary(BaseModel):
+    id: UUID
+    name: str
+    ci: str | None = None
+
+
+class PhoneBlacklistListItem(BaseModel):
+    id: UUID
+    phone: str
+    organization_id: UUID
+    reason: PhoneBlacklistReason
+    note: str | None
+    created_at: datetime
+    other_count: int = 0
+    customer: PhoneBlacklistCustomerSummary | None = None

@@ -3305,13 +3305,13 @@
         }
       }
     },
-    "/phone-blacklist/status": {
+    "/phone-blacklist/": {
       "get": {
         "tags": [
           "phone-blacklist"
         ],
-        "summary": "Get Phone Blacklist Status",
-        "operationId": "get_phone_blacklist_status_phone_blacklist_status_get",
+        "summary": "List Phone Blacklist",
+        "operationId": "list_phone_blacklist_phone_blacklist__get",
         "security": [
           {
             "HTTPBearer": []
@@ -3324,11 +3324,33 @@
           {
             "name": "phone",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "type": "string",
-              "minLength": 1,
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "title": "Phone"
+            }
+          },
+          {
+            "name": "reason",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PhoneBlacklistReason"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Reason"
             }
           },
           {
@@ -3340,6 +3362,29 @@
               "format": "uuid",
               "title": "Organization Id"
             }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
           }
         ],
         "responses": {
@@ -3348,7 +3393,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PhoneBlacklistStatusPublic"
+                  "$ref": "#/components/schemas/Page_PhoneBlacklistListItem_"
                 }
               }
             }
@@ -3364,9 +3409,7 @@
             }
           }
         }
-      }
-    },
-    "/phone-blacklist/": {
+      },
       "post": {
         "tags": [
           "phone-blacklist"
@@ -3465,6 +3508,67 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/phone-blacklist/status": {
+      "get": {
+        "tags": [
+          "phone-blacklist"
+        ],
+        "summary": "Get Phone Blacklist Status",
+        "operationId": "get_phone_blacklist_status_phone_blacklist_status_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "phone",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Phone"
+            }
+          },
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhoneBlacklistStatusPublic"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -6273,6 +6377,42 @@
         ],
         "title": "Page[OrderPublic]"
       },
+      "Page_PhoneBlacklistListItem_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PhoneBlacklistListItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size",
+          "pages"
+        ],
+        "title": "Page[PhoneBlacklistListItem]"
+      },
       "Page_ProductPublic_": {
         "properties": {
           "items": {
@@ -6410,6 +6550,98 @@
           "reason"
         ],
         "title": "PhoneBlacklistCreate"
+      },
+      "PhoneBlacklistCustomerSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "ci": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ci"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "PhoneBlacklistCustomerSummary"
+      },
+      "PhoneBlacklistListItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/PhoneBlacklistReason"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "other_count": {
+            "type": "integer",
+            "title": "Other Count",
+            "default": 0
+          },
+          "customer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PhoneBlacklistCustomerSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "phone",
+          "organization_id",
+          "reason",
+          "note",
+          "created_at"
+        ],
+        "title": "PhoneBlacklistListItem"
       },
       "PhoneBlacklistPublic": {
         "properties": {

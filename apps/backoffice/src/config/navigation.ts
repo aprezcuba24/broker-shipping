@@ -1,4 +1,5 @@
 import {
+  Ban,
   CircleDollarSign,
   ClipboardList,
   LayoutDashboard,
@@ -24,6 +25,7 @@ export const backofficeNavItems: NavItem[] = [
   { to: '/products', label: 'Productos', icon: Package },
   { to: '/inventory', label: 'Inventario', icon: Boxes },
   { to: '/tags', label: 'Etiquetas', icon: Tag },
+  { to: '/phone-blacklist', label: 'Lista negra', icon: Ban },
   { to: '/sellers', label: 'Vendedores', icon: Store },
   { to: '/members', label: 'Miembros', icon: Users },
 ]

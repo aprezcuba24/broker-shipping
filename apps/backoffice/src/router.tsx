@@ -28,6 +28,7 @@ import {
   StockMovementPage,
 } from './pages/product-stock-movement'
 import { TagPage } from './pages/tag'
+import { PhoneBlacklistPage } from './pages/phone-blacklist'
 import { VerifyEmailPage } from './pages/verify-email'
 import { ForgotPasswordPage } from './pages/forgot-password'
 import { ResetPasswordPage } from './pages/reset-password'
@@ -81,6 +82,7 @@ export default function App() {
           <Route path="inventory/new" element={<StockMovementCreatePage />} />
           <Route path="inventory/:movementId" element={<StockMovementDetailPage />} />
           <Route path="tags" element={<TagPage />} />
+          <Route path="phone-blacklist" element={<PhoneBlacklistPage />} />
           <Route path="members" element={<MembersPage />} />
           <Route path="sellers" element={<SellersPage />} />
           <Route

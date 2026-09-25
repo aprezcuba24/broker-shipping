@@ -456,6 +456,9 @@ export type {
 } from './customer/purchase-tier'
 export { PhoneReputation } from './customer/phone-reputation'
 export type { PhoneReputationProps } from './customer/phone-reputation'
+export { PhoneBlacklistPage } from './customer/phone-blacklist-page'
+export type { PhoneBlacklistPageProps } from './customer/phone-blacklist-page'
+
 
 export {
   ProductDetailPage,
