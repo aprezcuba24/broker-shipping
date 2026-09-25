@@ -766,8 +766,97 @@
   font-size: 11px;
   font-weight: 700;
   line-height: 1.3;
-  background: var(--v-success);
   color: #fff;
+}
+
+.purchase-tier-blacklist.is-no {
+  background: var(--v-success);
+}
+
+.purchase-tier-blacklist.is-reported {
+  background: #d97706;
+}
+
+.purchase-tier-blacklist.is-yes {
+  background: #dc2626;
+}
+
+.purchase-tier-blacklist-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.purchase-tier-action {
+  appearance: none;
+  border: 1px solid var(--v-outline);
+  background: var(--v-surface);
+  color: var(--v-on-surface);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+.purchase-tier-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.purchase-tier-action.is-primary {
+  background: var(--v-primary);
+  border-color: var(--v-primary);
+  color: #fff;
+}
+
+.purchase-tier-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--v-outline);
+  border-radius: 8px;
+  background: var(--v-surface);
+}
+
+.purchase-tier-dialog-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.purchase-tier-dialog-desc {
+  margin: 0;
+  font-size: 11px;
+  color: var(--v-on-surface-variant);
+}
+
+.purchase-tier-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.purchase-tier-field select,
+.purchase-tier-field input {
+  appearance: none;
+  border: 1px solid var(--v-outline);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+  background: var(--v-surface);
+  color: var(--v-on-surface);
+}
+
+.purchase-tier-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .purchase-tier-track {

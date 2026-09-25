@@ -4,6 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas.fields import NonEmptyStr, NormalizedPhone
+from app.types import PurchaseTier
 
 
 class AddressCreate(BaseModel):
@@ -22,6 +23,8 @@ class AddressPublic(BaseModel):
     customer_id: UUID
     created_at: datetime
     updated_at: datetime | None
+    province_name: str | None = None
+    municipality_name: str | None = None
 
 
 class CustomerCreate(BaseModel):
@@ -45,7 +48,9 @@ class CustomerPublic(BaseModel):
     name: str
     ci: str
     phone: str
+    purchase_tier: PurchaseTier = 0
     seller_organization_id: UUID
     created_at: datetime
     updated_at: datetime | None
     address: AddressPublic | None = None
+    addresses: list[AddressPublic] = Field(default_factory=list)

@@ -1,6 +1,8 @@
 import {
+  Ban,
   CircleDollarSign,
   ClipboardList,
+  Contact,
   LayoutDashboard,
   Package,
   ShoppingBag,
@@ -18,6 +20,8 @@ export const sellerBrand: SidebarBrand = {
 export const sellerNavItems: NavItem[] = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { to: '/products', label: 'Productos', icon: Package },
+  { to: '/customers', label: 'Clientes', icon: Contact },
+  { to: '/phone-blacklist', label: 'Lista negra', icon: Ban },
   { to: '/orders', label: 'Órdenes', icon: ClipboardList },
   { to: '/commissions', label: 'Comisiones', icon: CircleDollarSign },
   { to: '/providers', label: 'Proveedores', icon: Truck },

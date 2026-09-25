@@ -9,6 +9,7 @@ from app.models.order.enums import OrderStatus
 from app.schemas.order import OrderCreate, OrderPreviewItems, OrderPublic
 from app.schemas.pagination import Page
 from app.services.order import seller as seller_order_service
+from app.services.order.helpers import order_to_public
 
 router = APIRouter(prefix="/orders/seller", tags=["orders"])
 
@@ -20,6 +21,7 @@ async def list_orders(
     pagination: PaginationDep,
     search: str | None = None,
     status: OrderStatus | None = None,
+    customer_id: UUID | None = None,
 ) -> Page[OrderPublic]:
     result = await seller_order_service.list_orders_for_seller(
         session,
@@ -27,8 +29,9 @@ async def list_orders(
         pagination=pagination,
         search=search,
         status=status,
+        customer_id=customer_id,
     )
-    return Page.from_mapped(result, pagination, OrderPublic.model_validate)
+    return Page.from_mapped(result, pagination, order_to_public)
 
 
 @router.post("/preview", response_model=OrderPublic)
@@ -44,7 +47,7 @@ async def preview_order(
         organization.id,
         body,
     )
-    return OrderPublic.model_validate(order)
+    return order_to_public(order)
 
 
 @router.get("/{order_id}", response_model=OrderPublic)
@@ -58,7 +61,7 @@ async def get_order(
         order_id,
         organization.id,
     )
-    return OrderPublic.model_validate(order)
+    return order_to_public(order)
 
 
 @router.post("/", response_model=OrderPublic, status_code=201)
@@ -74,4 +77,4 @@ async def create_order(
         organization.id,
         body,
     )
-    return OrderPublic.model_validate(order)
+    return order_to_public(order)

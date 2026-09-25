@@ -1,1 +1,0 @@
-DEFAULT_CONFLICT_DETAIL = "Conflict"

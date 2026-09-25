@@ -158,7 +158,9 @@ async def test_unlink_blocked_when_pending_commissions(
         json={"is_active": False},
     )
     assert response.status_code == 409
-    assert "comisiones pendientes" in response.json()["detail"]
+    body = response.json()
+    assert body["code"] == "unlink_pending_commissions"
+    assert "comisiones pendientes" in body["message"]
 
     listed = await client.get(
         f"/organizations/provider/{ctx['provider_id']}/linked-sellers",

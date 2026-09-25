@@ -23,7 +23,8 @@ class Customer(EntityModel, table=True):
 
     name: str = Field(max_length=255)
     ci: str = Field(max_length=50)
-    phone: str = Field(max_length=50)
+    phone: str = Field(max_length=50, index=True)
+    purchase_tier: int = Field(default=0)
     seller_organization_id: UUID = Field(
         foreign_key="organization.id",
         index=True,

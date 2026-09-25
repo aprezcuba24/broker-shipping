@@ -5,7 +5,7 @@ export type CartOrderTotalsProps = {
   totals: OrderCurrencyTotal[]
   isInitialLoading: boolean
   isRefreshing?: boolean
-  isError: boolean
+  errorMessage: string | null
   hasOrder: boolean
 }
 
@@ -13,7 +13,7 @@ export function CartOrderTotals({
   totals,
   isInitialLoading,
   isRefreshing = false,
-  isError,
+  errorMessage,
   hasOrder,
 }: CartOrderTotalsProps) {
   return (
@@ -24,8 +24,8 @@ export function CartOrderTotals({
           <span className="text-xs text-muted-foreground">Actualizando…</span>
         ) : null}
       </div>
-      {isError ? (
-        <p className="mt-2 text-sm text-destructive">No se pudieron calcular los totales.</p>
+      {errorMessage ? (
+        <p className="mt-2 text-sm text-destructive">{errorMessage}</p>
       ) : isInitialLoading && !hasOrder ? (
         <p className="mt-2 text-sm text-muted-foreground">Calculando…</p>
       ) : totals.length > 0 ? (

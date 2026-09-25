@@ -2,11 +2,15 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import HTTPException
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
+from app.events.types import CustomerUpdated
+from app.events.types.customer_updated import customer_snapshot
+from app.lib.events import emit
+from app.lib.exceptions import raise_api_error
+from app.lib.normalize import normalize_phone
 from app.lib.persistence import get_entity
 from app.lib.persistence.apply_update import apply_partial_update
 from app.lib.persistence.pagination import paginate
@@ -15,11 +19,12 @@ from app.models.customer.customer import Customer
 from app.schemas.customer import CustomerCreate, CustomerUpdate
 from app.schemas.pagination import PageResult, PaginationParams
 from app.services.customer.helpers import (
+    attach_address_history_to_customer,
     attach_addresses_to_customers,
     create_customer_address,
+    enrich_addresses_with_location_names,
     upsert_customer_address,
 )
-from app.lib.normalize import normalize_phone
 
 
 async def list_customers_for_seller(
@@ -39,7 +44,12 @@ async def list_customers_for_seller(
     if ci:
         stmt = stmt.where(Customer.ci == ci)
     if phone:
-        stmt = stmt.where(Customer.phone == normalize_phone(phone))
+        normalized = normalize_phone(phone)
+        if normalized:
+            stmt = stmt.where(Customer.phone == normalized)
+        else:
+            # Query had no digits — never match a stored phone.
+            stmt = stmt.where(col(Customer.id).is_(None))
     stmt = stmt.order_by(Customer.name, Customer.id)
     result = await paginate(session, stmt, pagination)
     await attach_addresses_to_customers(session, result.items)
@@ -57,7 +67,7 @@ async def get_customer_for_seller(
         id=customer_id,
         seller_organization_id=seller_organization_id,
     )
-    await attach_addresses_to_customers(session, [customer])
+    await attach_address_history_to_customer(session, customer)
     return customer
 
 
@@ -81,10 +91,7 @@ async def register_customer(
         phone=data.phone,
     )
     if by_ci is not None and by_phone is not None and by_ci.id != by_phone.id:
-        raise HTTPException(
-            status_code=409,
-            detail="CI and phone belong to different customers",
-        )
+        raise_api_error("customers_ci_phone_conflict")
     existing = by_ci or by_phone
     if existing is not None:
         return await update_customer(
@@ -120,10 +127,17 @@ async def create_customer(
         customer_id=customer.id,
         data=data.address,
     )
+    await emit(
+        CustomerUpdated(new=customer_snapshot(customer)),
+        session=session,
+        propagate_errors=True,
+    )
     await session.commit()
     await session.refresh(customer)
     await session.refresh(address)
+    await enrich_addresses_with_location_names(session, [address])
     object.__setattr__(customer, "address", address)
+    object.__setattr__(customer, "addresses", [])
     return customer
 
 
@@ -140,6 +154,7 @@ async def update_customer(
         seller_organization_id=seller_organization_id,
     )
 
+    previous = customer_snapshot(customer)
     apply_partial_update(customer, data, exclude={"address"})
     session.add(customer)
 
@@ -150,9 +165,19 @@ async def update_customer(
             data=data.address,
         )
 
+    await session.flush()
+    await emit(
+        CustomerUpdated(
+            new=customer_snapshot(customer),
+            previous=previous,
+        ),
+        session=session,
+        propagate_errors=True,
+    )
+
     await session.commit()
     await session.refresh(customer)
-    await attach_addresses_to_customers(session, [customer])
+    await attach_address_history_to_customer(session, customer)
     return customer
 
 

@@ -2,17 +2,16 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.lib.exceptions import raise_api_error
 from app.lib.persistence import get_entity
 from app.lib.persistence.pagination import paginate
 from app.lib.utils import utc_now
 from app.models.commission.commission import Commission
 from app.schemas.pagination import PageResult, PaginationParams
 from app.services.commission.helpers import attach_items_to_commissions
-
 
 async def list_commissions_for_provider(
     session: AsyncSession,
@@ -35,7 +34,6 @@ async def list_commissions_for_provider(
     await attach_items_to_commissions(session, result.items)
     return result
 
-
 async def get_commission_for_provider(
     session: AsyncSession,
     commission_id: UUID,
@@ -50,7 +48,6 @@ async def get_commission_for_provider(
     await attach_items_to_commissions(session, [commission])
     return commission
 
-
 async def mark_commission_paid(
     session: AsyncSession,
     commission_id: UUID,
@@ -63,7 +60,7 @@ async def mark_commission_paid(
         provider_organization_id=provider_organization_id,
     )
     if commission.is_paid:
-        raise HTTPException(status_code=400, detail="Commission already paid")
+        raise_api_error("commission_already_paid")
 
     now = utc_now()
     commission.is_paid = True

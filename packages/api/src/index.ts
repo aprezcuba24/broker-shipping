@@ -5,7 +5,7 @@ export {
   type OrganizationScopedParams,
 } from './client'
 export { formatApiError } from './lib/format-api-error'
-export { formatDateTime } from './lib/utils'
+export { formatAddressLine, formatDateTime } from './lib/utils'
 
 export { loginSchema, type LoginFormValues } from './auth/login-schema'
 export {
@@ -38,6 +38,7 @@ export * from './generated/organizations/organizations'
 export * from './generated/orders/orders'
 export * from './generated/commissions/commissions'
 export * from './generated/customers/customers'
+export * from './generated/phone-blacklist/phone-blacklist'
 export * from './generated/locations/locations'
 export * from './generated/api-keys/api-keys'
 export * from './generated/health/health'

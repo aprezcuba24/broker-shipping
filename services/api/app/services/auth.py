@@ -3,12 +3,12 @@ from __future__ import annotations
 from datetime import timedelta
 from uuid import UUID
 
-from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.config import settings
 from app.events.types import EmailVerificationRequestedEvent, PasswordResetRequestedEvent
+from app.lib.exceptions import raise_api_error
 from app.lib.events import emit
 from app.lib.persistence import get_entity
 from app.lib.security.access import is_super_admin
@@ -22,7 +22,6 @@ from app.models.user.user import User
 from app.schemas.auth import UserLogin, UserRegister
 from app.types import ClientApp
 
-EMAIL_NOT_VERIFIED_DETAIL = "Email not verified"
 _RESEND_OK_MESSAGE = (
     "If an account exists for that email and is not verified, "
     "a new confirmation link has been sent."
@@ -40,11 +39,10 @@ def _set_verification_token(user: User) -> str:
     )
     return raw
 
-
 async def register_user(session: AsyncSession, data: UserRegister) -> User:
     existing = await get_entity(session, User, email=data.email, required=False)
     if existing is not None:
-        raise HTTPException(status_code=409, detail="Email already registered")
+        raise_api_error("email_already_registered")
 
     user = User(
         name=data.name,
@@ -66,15 +64,13 @@ async def register_user(session: AsyncSession, data: UserRegister) -> User:
     )
     return user
 
-
 async def authenticate_user(session: AsyncSession, data: UserLogin) -> User:
     user = await get_entity(session, User, email=data.email, required=False)
     if user is None or not verify_password(data.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise_api_error("invalid_credentials")
     if user.email_verified_at is None:
-        raise HTTPException(status_code=403, detail=EMAIL_NOT_VERIFIED_DETAIL)
+        raise_api_error("email_not_verified")
     return user
-
 
 async def verify_email(session: AsyncSession, token: str) -> User:
     token_hash = hash_secret(token)
@@ -85,14 +81,14 @@ async def verify_email(session: AsyncSession, token: str) -> User:
         required=False,
     )
     if user is None:
-        raise HTTPException(status_code=400, detail="Invalid or expired token")
+        raise_api_error("invalid_or_expired_token")
     if user.email_verified_at is not None:
-        raise HTTPException(status_code=400, detail="Email already verified")
+        raise_api_error("email_already_verified")
     if (
         user.email_verification_expires_at is None
         or user.email_verification_expires_at < utc_now()
     ):
-        raise HTTPException(status_code=400, detail="Invalid or expired token")
+        raise_api_error("invalid_or_expired_token")
 
     user.email_verified_at = utc_now()
     user.email_verification_token_hash = None
@@ -101,7 +97,6 @@ async def verify_email(session: AsyncSession, token: str) -> User:
     await session.commit()
     await session.refresh(user)
     return user
-
 
 async def resend_verification_email(
     session: AsyncSession,
@@ -126,7 +121,6 @@ async def resend_verification_email(
     )
     return _RESEND_OK_MESSAGE
 
-
 def _set_password_reset_token(user: User) -> str:
     raw, token_hash = generate_verification_token()
     user.password_reset_token_hash = token_hash
@@ -134,7 +128,6 @@ def _set_password_reset_token(user: User) -> str:
         hours=settings.password_reset_token_hours
     )
     return raw
-
 
 async def request_password_reset(
     session: AsyncSession,
@@ -159,7 +152,6 @@ async def request_password_reset(
     )
     return _FORGOT_PASSWORD_OK_MESSAGE
 
-
 async def reset_password(session: AsyncSession, token: str, password: str) -> User:
     token_hash = hash_secret(token)
     user = await get_entity(
@@ -169,12 +161,12 @@ async def reset_password(session: AsyncSession, token: str, password: str) -> Us
         required=False,
     )
     if user is None:
-        raise HTTPException(status_code=400, detail="Invalid or expired token")
+        raise_api_error("invalid_or_expired_token")
     if (
         user.password_reset_expires_at is None
         or user.password_reset_expires_at < utc_now()
     ):
-        raise HTTPException(status_code=400, detail="Invalid or expired token")
+        raise_api_error("invalid_or_expired_token")
 
     user.password_hash = hash_password(password)
     user.password_reset_token_hash = None
@@ -187,7 +179,6 @@ async def reset_password(session: AsyncSession, token: str, password: str) -> Us
     await session.commit()
     await session.refresh(user)
     return user
-
 
 async def list_user_organizations(
     session: AsyncSession,

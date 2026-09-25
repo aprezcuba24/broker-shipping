@@ -13,10 +13,12 @@ import { LoginPage } from './pages/login'
 import { OnboardingPage } from './pages/onboarding'
 import { CartPage } from './pages/cart'
 import { CommissionDetailPage, CommissionPage } from './pages/commission'
+import { CustomerDetailPage, CustomerPage } from './pages/customer'
 import { OrderDetailPage, OrderPage } from './pages/order'
 import { ProductDetailPage, ProductPage } from './pages/product'
 import { MembersPage } from './pages/members'
 import { ProvidersPage } from './pages/providers'
+import { PhoneBlacklistPage } from './pages/phone-blacklist'
 import { RegisterPage } from './pages/register'
 import { VerifyEmailPage } from './pages/verify-email'
 import { ForgotPasswordPage } from './pages/forgot-password'
@@ -66,6 +68,9 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="products" element={<ProductPage />} />
           <Route path="products/:productId" element={<ProductDetailPage />} />
+          <Route path="customers" element={<CustomerPage />} />
+          <Route path="customers/:customerId" element={<CustomerDetailPage />} />
+          <Route path="phone-blacklist" element={<PhoneBlacklistPage />} />
           <Route path="orders" element={<OrderPage />} />
           <Route path="orders/:orderId" element={<OrderDetailPage />} />
           <Route path="commissions" element={<CommissionPage />} />

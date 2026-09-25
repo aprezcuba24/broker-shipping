@@ -19,7 +19,6 @@ from app.schemas.dashboard import (
 )
 from app.schemas.order import OrderCurrencyTotal
 from app.services.order.helpers import (
-    attach_customers_to_orders,
     attach_items_and_totals,
     compute_order_totals,
 )
@@ -186,13 +185,11 @@ async def list_recent_orders(
         orders,
         provider_organization_id=provider_organization_id,
     )
-    await attach_customers_to_orders(session, orders)
 
     summaries: list[OrderSummaryPublic] = []
     for order in orders:
         items = getattr(order, "items", [])
         totals = getattr(order, "totals", None) or compute_order_totals(items)
-        customer = getattr(order, "customer", None)
         summaries.append(
             OrderSummaryPublic(
                 id=order.id,
@@ -203,7 +200,7 @@ async def list_recent_orders(
                     OrderCurrencyTotal(currency=t.currency, amount=t.amount)
                     for t in totals
                 ],
-                customer_name=customer.name if customer else None,
+                customer_name=order.customer_name or None,
             )
         )
     return summaries

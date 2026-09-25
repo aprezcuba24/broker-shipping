@@ -33,6 +33,7 @@ export function CartPage() {
     isInitialLoading,
     isRefreshing,
     isError,
+    errorMessage,
   } = useCartPreview()
   const { registerOrder, isSubmitting, error, setError } =
     useRegisterOrder(previewByProductId)
@@ -124,7 +125,7 @@ export function CartPage() {
           totals={totals}
           isInitialLoading={isInitialLoading}
           isRefreshing={isRefreshing}
-          isError={isError}
+          errorMessage={errorMessage}
           hasOrder={Boolean(order)}
         />
       </div>

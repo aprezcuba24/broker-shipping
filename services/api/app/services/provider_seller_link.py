@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
+from app.lib.exceptions import raise_api_error
 from app.lib.persistence import get_entity
 from app.lib.security.access import is_super_admin, list_all_provider_organization_ids
 from app.lib.utils import utc_now
@@ -15,11 +15,6 @@ from app.models.organization.organization import Organization
 from app.models.organization.provider_seller_link import ProviderSellerLink
 from app.models.organization.user_organization import UserOrganization
 from app.models.user.user import User
-
-_UNLINK_PENDING_COMMISSIONS_DETAIL = (
-    "No se puede desvincular la organización mientras existan "
-    "comisiones pendientes de pago."
-)
 
 
 async def has_active_link(
@@ -35,7 +30,6 @@ async def has_active_link(
         )
     )
     return result.scalar_one_or_none() is not None
-
 
 async def link_provider_to_seller(
     session: AsyncSession,
@@ -63,7 +57,6 @@ async def link_provider_to_seller(
     await session.flush()
     return link
 
-
 async def has_pending_commissions(
     session: AsyncSession,
     provider_organization_id: UUID,
@@ -78,7 +71,6 @@ async def has_pending_commissions(
     )
     return result.scalar_one_or_none() is not None
 
-
 async def set_link_active(
     session: AsyncSession,
     provider_organization_id: UUID,
@@ -91,10 +83,7 @@ async def set_link_active(
         provider_organization_id,
         seller_organization_id,
     ):
-        raise HTTPException(
-            status_code=409,
-            detail=_UNLINK_PENDING_COMMISSIONS_DETAIL,
-        )
+        raise_api_error("unlink_pending_commissions")
     link = await get_entity(
         session,
         ProviderSellerLink,
@@ -104,7 +93,6 @@ async def set_link_active(
     link.is_active = is_active
     session.add(link)
     await session.commit()
-
 
 async def list_linked_sellers(
     session: AsyncSession,
@@ -124,7 +112,6 @@ async def list_linked_sellers(
     )
     return list(result.scalars().all())
 
-
 async def seller_ids_with_pending_commissions(
     session: AsyncSession,
     provider_organization_id: UUID,
@@ -141,7 +128,6 @@ async def seller_ids_with_pending_commissions(
     )
     return set(result.scalars().all())
 
-
 async def list_active_provider_ids(
     session: AsyncSession,
     seller_organization_id: UUID,
@@ -153,7 +139,6 @@ async def list_active_provider_ids(
         )
     )
     return list(result.scalars().all())
-
 
 async def list_linked_provider_organizations(
     session: AsyncSession,
@@ -173,7 +158,6 @@ async def list_linked_provider_organizations(
     )
     return list(result.scalars().all())
 
-
 async def list_seller_org_ids_for_user(
     session: AsyncSession,
     user_id: UUID,
@@ -191,7 +175,6 @@ async def list_seller_org_ids_for_user(
         )
     )
     return list(result.scalars().all())
-
 
 async def resolve_provider_ids(
     session: AsyncSession,

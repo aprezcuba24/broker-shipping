@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col
 
+from app.lib.exceptions import raise_api_error
 from app.lib.utils import utc_now
 from app.models.product.product import Product
 
@@ -27,7 +27,7 @@ async def lock_products(
     )
     products = {product.id: product for product in result.scalars().all()}
     if len(products) != len(ordered_ids):
-        raise HTTPException(status_code=404, detail="Not found")
+        raise_api_error("not_found")
     return products
 
 
@@ -35,33 +35,47 @@ def _touch(product: Product) -> None:
     product.updated_at = utc_now()
 
 
+def _raise_insufficient_stock(product: Product, quantity: int) -> None:
+    raise_api_error(
+        "insufficient_stock",
+        product_id=product.id,
+        product_name=product.name,
+        available=product.stock,
+        requested=quantity,
+    )
+
+
+def _raise_insufficient_reserved(product: Product, quantity: int) -> None:
+    raise_api_error(
+        "insufficient_reserved_stock",
+        product_id=product.id,
+        product_name=product.name,
+        reserved=product.reserved,
+        requested=quantity,
+    )
+
+
 def increase_stock(product: Product, quantity: int) -> None:
     if quantity <= 0:
-        raise HTTPException(status_code=422, detail="Quantity must be positive")
+        raise_api_error("quantity_must_be_positive")
     product.stock += quantity
     _touch(product)
 
 
 def decrease_stock(product: Product, quantity: int) -> None:
     if quantity <= 0:
-        raise HTTPException(status_code=422, detail="Quantity must be positive")
+        raise_api_error("quantity_must_be_positive")
     if product.stock < quantity:
-        raise HTTPException(
-            status_code=409,
-            detail=f"Insufficient stock for product {product.id}",
-        )
+        _raise_insufficient_stock(product, quantity)
     product.stock -= quantity
     _touch(product)
 
 
 def reserve_stock(product: Product, quantity: int) -> None:
     if quantity <= 0:
-        raise HTTPException(status_code=422, detail="Quantity must be positive")
+        raise_api_error("quantity_must_be_positive")
     if product.stock < quantity:
-        raise HTTPException(
-            status_code=409,
-            detail=f"Insufficient stock for product {product.id}",
-        )
+        _raise_insufficient_stock(product, quantity)
     product.stock -= quantity
     product.reserved += quantity
     _touch(product)
@@ -69,12 +83,9 @@ def reserve_stock(product: Product, quantity: int) -> None:
 
 def release_stock(product: Product, quantity: int) -> None:
     if quantity <= 0:
-        raise HTTPException(status_code=422, detail="Quantity must be positive")
+        raise_api_error("quantity_must_be_positive")
     if product.reserved < quantity:
-        raise HTTPException(
-            status_code=409,
-            detail=f"Insufficient reserved stock for product {product.id}",
-        )
+        _raise_insufficient_reserved(product, quantity)
     product.reserved -= quantity
     product.stock += quantity
     _touch(product)
@@ -82,12 +93,9 @@ def release_stock(product: Product, quantity: int) -> None:
 
 def consume_stock(product: Product, quantity: int) -> None:
     if quantity <= 0:
-        raise HTTPException(status_code=422, detail="Quantity must be positive")
+        raise_api_error("quantity_must_be_positive")
     if product.reserved < quantity:
-        raise HTTPException(
-            status_code=409,
-            detail=f"Insufficient reserved stock for product {product.id}",
-        )
+        _raise_insufficient_reserved(product, quantity)
     product.reserved -= quantity
     _touch(product)
 
@@ -160,11 +168,8 @@ async def assert_products_available(
     )
     products = {product.id: product for product in result.scalars().all()}
     if len(products) != len(product_ids):
-        raise HTTPException(status_code=404, detail="Not found")
+        raise_api_error("not_found")
     for product_id, quantity in quantities.items():
         product = products[product_id]
         if product.stock < quantity:
-            raise HTTPException(
-                status_code=409,
-                detail=f"Insufficient stock for product {product.id}",
-            )
+            _raise_insufficient_stock(product, quantity)

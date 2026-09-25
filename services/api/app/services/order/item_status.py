@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from fastapi import HTTPException
 from transitions import Machine
 
+from app.lib.exceptions import raise_api_error
+from app.lib.exceptions.catalog import ORDER_ITEM_STATUS_LABELS
 from app.models.order.enums import OrderItemStatus
 
 _STATES = [status.value for status in OrderItemStatus]
@@ -34,11 +35,9 @@ _TRANSITIONS = [
     },
 ]
 
-
 class _OrderItemStatusModel:
     def __init__(self, status: OrderItemStatus) -> None:
         self.state = status.value
-
 
 def can_transition(current: OrderItemStatus, target: OrderItemStatus) -> bool:
     if current == target:
@@ -57,10 +56,12 @@ def can_transition(current: OrderItemStatus, target: OrderItemStatus) -> bool:
         return False
     return bool(may_trigger())
 
-
 def assert_transition(current: OrderItemStatus, target: OrderItemStatus) -> None:
     if not can_transition(current, target):
-        raise HTTPException(
-            status_code=422,
-            detail=f"Invalid status transition: {current.value} -> {target.value}",
+        raise_api_error(
+            "invalid_status_transition",
+            current=current.value,
+            target=target.value,
+            current_label=ORDER_ITEM_STATUS_LABELS.get(current.value, current.value),
+            target_label=ORDER_ITEM_STATUS_LABELS.get(target.value, target.value),
         )

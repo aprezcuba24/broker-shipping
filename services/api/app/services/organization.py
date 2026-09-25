@@ -2,17 +2,16 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
+from app.lib.exceptions import raise_api_error
 from app.lib.persistence import get_entity
 from app.lib.utils import utc_now
 from app.models.organization.enums import OrganizationType
 from app.models.organization.organization import Organization
 from app.models.organization.user_organization import UserOrganization
 from app.models.user.user import User
-
 
 async def create_organization_for_user(
     session: AsyncSession,
@@ -35,7 +34,6 @@ async def create_organization_for_user(
     await session.refresh(org)
     return org
 
-
 async def list_organizations_for_user(
     session: AsyncSession,
     user_id: UUID,
@@ -54,7 +52,6 @@ async def list_organizations_for_user(
     )
     return list(result.scalars().all())
 
-
 async def is_active_member(
     session: AsyncSession,
     user_id: UUID,
@@ -68,7 +65,6 @@ async def is_active_member(
         )
     )
     return result.scalar_one_or_none() is not None
-
 
 async def upsert_membership(
     session: AsyncSession,
@@ -98,7 +94,6 @@ async def upsert_membership(
     await session.flush()
     return membership
 
-
 async def require_seller_org_membership(
     session: AsyncSession,
     user_id: UUID,
@@ -106,11 +101,10 @@ async def require_seller_org_membership(
 ) -> Organization:
     org = await get_entity(session, Organization, id=organization_id)
     if org.type != OrganizationType.seller:
-        raise HTTPException(status_code=403, detail="Forbidden")
+        raise_api_error("forbidden")
     if not await is_active_member(session, user_id, organization_id):
-        raise HTTPException(status_code=403, detail="Forbidden")
+        raise_api_error("forbidden")
     return org
-
 
 async def get_invite_provider(
     session: AsyncSession,
@@ -124,9 +118,8 @@ async def get_invite_provider(
         required=False,
     )
     if org is None or org.type != OrganizationType.provider:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise_api_error("not_found")
     return org
-
 
 async def list_active_member_users(
     session: AsyncSession,

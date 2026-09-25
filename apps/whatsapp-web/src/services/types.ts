@@ -13,6 +13,7 @@ export type CustomerPublic = {
   name: string
   ci: string
   phone: string
+  purchase_tier?: 0 | 1 | 5 | 10
   seller_organization_id: string
   created_at: string
   updated_at: string | null
@@ -23,7 +24,10 @@ export type OrderItemPublic = {
   id: string
   order_id: string
   product_id: string
+  product_name?: string
+  product_image_url?: string | null
   provider_organization_id: string
+  provider_organization_name?: string
   unit_provider_price: number
   seller_provider_price: number
   customer_change: number
@@ -107,7 +111,13 @@ export type LastOrder = {
 }
 
 export type CustomerLookup = {
-  customer: { id: string; name: string; phone: string; ci: string } | null
+  customer: {
+    id: string
+    name: string
+    phone: string
+    ci: string
+    purchaseTier: 0 | 1 | 5 | 10
+  } | null
   address: string | null
   province: string | null
   municipality: string | null

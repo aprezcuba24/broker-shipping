@@ -1,9 +1,16 @@
 import { fetchMe, fetchSellerOrganizations, loginRequest } from '../services/auth'
 import { lookupCustomerByPhone } from '../services/customer'
+import {
+  addPhoneToBlacklist,
+  fetchPhoneBlacklistStatus,
+  removePhoneFromBlacklist,
+  type BlacklistReason,
+} from '../services/phone-blacklist'
 import type {
   ExtensionMessage,
   ExtensionResponse,
   LookupResponse,
+  BlacklistResponse,
   SessionResponse,
 } from '../auth/types'
 import { buildAuthenticatedSession } from '../auth/session'
@@ -91,7 +98,10 @@ async function handleFocusWhatsApp(): Promise<SessionResponse> {
   return { ok: true, session: toSessionPublic(session) }
 }
 
-async function handleLookupCustomer(phone: string): Promise<LookupResponse> {
+async function requireReadySession(): Promise<
+  | { ok: true; accessToken: string; organizationId: string }
+  | { ok: false; error: string }
+> {
   const session = await readSession()
   if (session.status === 'loggedOut') {
     return { ok: false, error: 'No hay sesión activa' }
@@ -99,23 +109,111 @@ async function handleLookupCustomer(phone: string): Promise<LookupResponse> {
   if (session.status !== 'ready' || !session.organizationId) {
     return { ok: false, error: 'Selecciona una organización primero' }
   }
+  return {
+    ok: true,
+    accessToken: session.accessToken,
+    organizationId: session.organizationId,
+  }
+}
+
+function maybeClearSessionOnAuthError(message: string): Promise<void> {
+  if (
+    message.includes('401') ||
+    message === 'Credenciales inválidas' ||
+    /unauthorized/i.test(message)
+  ) {
+    return clearSession()
+  }
+  return Promise.resolve()
+}
+
+async function handleLookupCustomer(phone: string): Promise<LookupResponse> {
+  const ready = await requireReadySession()
+  if (!ready.ok) return ready
 
   try {
     const lookup = await lookupCustomerByPhone({
       phone,
-      accessToken: session.accessToken,
-      organizationId: session.organizationId,
+      accessToken: ready.accessToken,
+      organizationId: ready.organizationId,
     })
     return { ok: true, lookup }
   } catch (err) {
     const message = err instanceof Error ? err.message : 'No se pudo buscar el cliente'
-    if (
-      message.includes('401') ||
-      message === 'Credenciales inválidas' ||
-      /unauthorized/i.test(message)
-    ) {
-      await clearSession()
-    }
+    await maybeClearSessionOnAuthError(message)
+    return { ok: false, error: message }
+  }
+}
+
+async function handleGetBlacklistStatus(phone: string): Promise<BlacklistResponse> {
+  const ready = await requireReadySession()
+  if (!ready.ok) return ready
+
+  try {
+    const blacklist = await fetchPhoneBlacklistStatus({
+      phone,
+      accessToken: ready.accessToken,
+      organizationId: ready.organizationId,
+    })
+    return { ok: true, blacklist }
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : 'No se pudo consultar la lista negra'
+    await maybeClearSessionOnAuthError(message)
+    return { ok: false, error: message }
+  }
+}
+
+async function handleAddToBlacklist(params: {
+  phone: string
+  reason: BlacklistReason
+  note?: string
+}): Promise<BlacklistResponse> {
+  const ready = await requireReadySession()
+  if (!ready.ok) return ready
+
+  try {
+    await addPhoneToBlacklist({
+      phone: params.phone,
+      reason: params.reason,
+      note: params.note,
+      accessToken: ready.accessToken,
+      organizationId: ready.organizationId,
+    })
+    const blacklist = await fetchPhoneBlacklistStatus({
+      phone: params.phone,
+      accessToken: ready.accessToken,
+      organizationId: ready.organizationId,
+    })
+    return { ok: true, blacklist }
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : 'No se pudo agregar a la lista negra'
+    await maybeClearSessionOnAuthError(message)
+    return { ok: false, error: message }
+  }
+}
+
+async function handleRemoveFromBlacklist(phone: string): Promise<BlacklistResponse> {
+  const ready = await requireReadySession()
+  if (!ready.ok) return ready
+
+  try {
+    await removePhoneFromBlacklist({
+      phone,
+      accessToken: ready.accessToken,
+      organizationId: ready.organizationId,
+    })
+    const blacklist = await fetchPhoneBlacklistStatus({
+      phone,
+      accessToken: ready.accessToken,
+      organizationId: ready.organizationId,
+    })
+    return { ok: true, blacklist }
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : 'No se pudo quitar de la lista negra'
+    await maybeClearSessionOnAuthError(message)
     return { ok: false, error: message }
   }
 }
@@ -145,6 +243,19 @@ chrome.runtime.onMessage.addListener(
           break
         case 'LOOKUP_CUSTOMER':
           response = await handleLookupCustomer(message.phone)
+          break
+        case 'GET_BLACKLIST_STATUS':
+          response = await handleGetBlacklistStatus(message.phone)
+          break
+        case 'ADD_TO_BLACKLIST':
+          response = await handleAddToBlacklist({
+            phone: message.phone,
+            reason: message.reason,
+            note: message.note,
+          })
+          break
+        case 'REMOVE_FROM_BLACKLIST':
+          response = await handleRemoveFromBlacklist(message.phone)
           break
         default:
           response = { ok: false, error: 'Mensaje desconocido' }

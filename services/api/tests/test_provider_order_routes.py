@@ -193,7 +193,8 @@ async def test_provider_list_and_get_filters_own_items(
     assert page["items"][0]["customer"]["name"] == provider_order_ctx["customer_name"]
     assert page["items"][0]["customer"]["ci"] == provider_order_ctx["customer_ci"]
     assert page["items"][0]["customer"]["phone"] == provider_order_ctx["customer_phone"]
-    assert page["items"][0]["seller_organization"] is None
+    assert page["items"][0]["seller_organization"] is not None
+    assert page["items"][0]["seller_organization"]["name"]
 
     detail = await client.get(
         f"/orders/provider/{provider_order_ctx['order_id']}",

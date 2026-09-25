@@ -2,20 +2,18 @@ from __future__ import annotations
 
 from uuid import UUID, uuid4
 
-from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.lib.exceptions import raise_api_error
 from app.lib.utils import utc_now
 from app.models.commission.commission import Commission
 from app.models.order.enums import OrderItemStatus
 from app.models.order.order import Order
 from app.models.order.order_item import OrderItem
 
-
 def item_commission_amount(item: OrderItem) -> int:
     return item.seller_commission * item.quantity
-
 
 async def assign_delivered_item(
     session: AsyncSession,
@@ -33,7 +31,7 @@ async def assign_delivered_item(
     )
     item = result.scalar_one_or_none()
     if item is None:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise_api_error("not_found")
 
     if item.commission_id is not None:
         return await session.get(Commission, item.commission_id)
@@ -43,7 +41,7 @@ async def assign_delivered_item(
 
     order = await session.get(Order, item.order_id)
     if order is None:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise_api_error("not_found")
 
     delta = item_commission_amount(item)
     now = utc_now()

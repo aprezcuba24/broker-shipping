@@ -7,6 +7,7 @@ from httpx import AsyncClient
 from app.models.order.enums import Currency
 from tests.factories.auth_helpers import bearer_headers
 from tests.factories.customer_factory import CustomerFactory
+from tests.factories.location_factory import LocationFactory
 from tests.factories.organization_factory import (
     OrganizationFactory,
     link_provider_to_seller,
@@ -24,6 +25,7 @@ async def seller_order_ctx(
     organization_factory: OrganizationFactory,
     product_factory: ProductFactory,
     customer_factory: CustomerFactory,
+    location_factory: LocationFactory,
 ) -> dict:
     provider_user = await user_factory.build()
     seller_user = await user_factory.build()
@@ -67,11 +69,19 @@ async def seller_order_ctx(
         commission=500,
         price=2000,
     )
+    province = await location_factory.build_province(name="La Habana")
+    municipality = await location_factory.build_municipality(
+        province_id=province["id"],
+        name="Plaza",
+    )
     customer = await customer_factory.build(
         seller_organization_id=seller_org["id"],
         name="Maria Garcia",
         ci="85010112345",
         phone="55123456",
+        address="Calle Original 10",
+        province_id=province["id"],
+        municipality_id=municipality["id"],
     )
     other_customer = await customer_factory.build(
         seller_organization_id=other_seller_org["id"],
@@ -91,6 +101,9 @@ async def seller_order_ctx(
         "customer_name": customer["name"],
         "customer_ci": customer["ci"],
         "customer_phone": customer["phone"],
+        "customer_address": "Calle Original 10",
+        "province_id": province["id"],
+        "municipality_id": municipality["id"],
         "other_customer_id": other_customer["id"],
         "seller_bearer": bearer_headers(user_id=seller_user["id"]),
         "other_seller_bearer": bearer_headers(user_id=other_seller_user["id"]),
@@ -137,6 +150,8 @@ async def test_create_order_with_mixed_currencies(
     by_product = {item["product_id"]: item for item in body["items"]}
     cup_item = by_product[seller_order_ctx["product_cup_id"]]
     assert cup_item["provider_organization_id"] == seller_order_ctx["provider_cup_id"]
+    assert cup_item["product_name"] == "Arroz"
+    assert cup_item["provider_organization_name"] == "Provider CUP"
     assert cup_item["currency"] == "cup"
     assert cup_item["seller_commission"] == 150
     assert cup_item["unit_provider_price"] == 800
@@ -147,10 +162,19 @@ async def test_create_order_with_mixed_currencies(
 
     usd_item = by_product[seller_order_ctx["product_usd_id"]]
     assert usd_item["provider_organization_id"] == seller_order_ctx["provider_usd_id"]
+    assert usd_item["product_name"] == "Phone"
+    assert usd_item["provider_organization_name"] == "Provider USD"
     assert usd_item["currency"] == "usd"
     assert usd_item["seller_commission"] == 500
     assert usd_item["unit_provider_price"] == 2000
     assert usd_item["customer_change"] == 0
+
+    assert body["customer"]["name"] == "Maria Garcia"
+    assert body["customer"]["ci"] == "85010112345"
+    assert body["customer"]["phone"] == "55123456"
+    assert body["customer"]["address"]["address"] == "Calle Original 10"
+    assert body["customer"]["address"]["province_name"] == "La Habana"
+    assert body["customer"]["address"]["municipality_name"] == "Plaza"
 
     totals = {t["currency"]: t["amount"] for t in body["totals"]}
     assert totals == {"cup": 2000, "usd": 2550}
@@ -786,3 +810,116 @@ async def test_list_orders_filter_by_status(
     )
     assert all_orders.status_code == 200
     assert all_orders.json()["total"] == 2
+
+
+async def test_order_keeps_customer_and_product_snapshot_after_edits(
+    client: AsyncClient,
+    seller_order_ctx: dict,
+    location_factory: LocationFactory,
+) -> None:
+    created = await client.post(
+        "/orders/seller/",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+        json={
+            "customer_id": seller_order_ctx["customer_id"],
+            "items": [
+                {
+                    "product_id": seller_order_ctx["product_cup_id"],
+                    "quantity": 1,
+                    "seller_provider_price": 1000,
+                },
+            ],
+        },
+    )
+    assert created.status_code == 201
+    order_id = created.json()["id"]
+    assert created.json()["customer"]["name"] == "Maria Garcia"
+    assert created.json()["items"][0]["product_name"] == "Arroz"
+
+    other_province = await location_factory.build_province(name="Matanzas")
+    other_municipality = await location_factory.build_municipality(
+        province_id=other_province["id"],
+        name="Cardenas",
+    )
+
+    updated_customer = await client.patch(
+        f"/customers/seller/{seller_order_ctx['customer_id']}",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+        json={
+            "name": "Nombre Nuevo",
+            "ci": "99010199999",
+            "phone": "55999999",
+            "address": {
+                "address": "Calle Nueva 99",
+                "province_id": other_province["id"],
+                "municipality_id": other_municipality["id"],
+            },
+        },
+    )
+    assert updated_customer.status_code == 200
+    assert updated_customer.json()["name"] == "Nombre Nuevo"
+    assert updated_customer.json()["address"]["address"] == "Calle Nueva 99"
+
+    updated_product = await client.patch(
+        f"/products/provider/{seller_order_ctx['product_cup_id']}",
+        params=seller_order_ctx["provider_cup_params"],
+        headers=seller_order_ctx["provider_bearer"],
+        json={"name": "Arroz Premium"},
+    )
+    assert updated_product.status_code == 200
+    assert updated_product.json()["name"] == "Arroz Premium"
+
+    detail = await client.get(
+        f"/orders/seller/{order_id}",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+    )
+    assert detail.status_code == 200
+    body = detail.json()
+    assert body["customer"]["name"] == "Maria Garcia"
+    assert body["customer"]["ci"] == "85010112345"
+    assert body["customer"]["phone"] == "55123456"
+    assert body["customer"]["address"]["address"] == "Calle Original 10"
+    assert body["customer"]["address"]["province_name"] == "La Habana"
+    assert body["customer"]["address"]["municipality_name"] == "Plaza"
+    assert body["items"][0]["product_name"] == "Arroz"
+    assert body["items"][0]["provider_organization_name"] == "Provider CUP"
+
+    listed = await client.get(
+        "/orders/seller/",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+    )
+    assert listed.status_code == 200
+    assert listed.json()["items"][0]["customer"]["name"] == "Maria Garcia"
+
+    by_original_name = await client.get(
+        "/orders/seller/",
+        params={**seller_order_ctx["seller_params"], "search": "Maria"},
+        headers=seller_order_ctx["seller_bearer"],
+    )
+    assert by_original_name.status_code == 200
+    assert by_original_name.json()["total"] == 1
+    assert by_original_name.json()["items"][0]["id"] == order_id
+
+    by_new_name = await client.get(
+        "/orders/seller/",
+        params={**seller_order_ctx["seller_params"], "search": "Nombre"},
+        headers=seller_order_ctx["seller_bearer"],
+    )
+    assert by_new_name.status_code == 200
+    assert by_new_name.json()["total"] == 0
+
+    dashboard = await client.get(
+        "/dashboard/seller/",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+    )
+    assert dashboard.status_code == 200
+    recent = dashboard.json()["recent_orders"]
+    assert any(
+        order["id"] == order_id and order["customer_name"] == "Maria Garcia"
+        for order in recent
+    )

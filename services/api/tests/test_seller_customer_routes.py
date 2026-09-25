@@ -84,6 +84,7 @@ async def test_customer_crud_happy_path(
     assert body["name"] == "Juan Perez"
     assert body["ci"] == "90010112345"
     assert body["phone"] == "5351234567"
+    assert body["purchase_tier"] == 0
     assert body["seller_organization_id"] == seller_customer_ctx["seller_org_id"]
     assert body["address"]["address"] == "Calle 1 #100"
     assert body["address"]["province_id"] == seller_customer_ctx["province_id"]
@@ -200,6 +201,10 @@ async def test_list_customers_with_filters(
         "+5353024637",
         "5353024637",
         "53024637",
+        "53 5302 4637",
+        "535-302-4637",
+        "(53) 5302-4637",
+        "5302 4637",
     ],
 )
 async def test_list_customers_finds_by_phone_variants(
@@ -562,3 +567,140 @@ async def test_register_customer_conflict_ci_and_phone(
         ),
     )
     assert conflict.status_code == 409
+
+
+async def test_customer_address_history_keeps_previous_addresses(
+    client: AsyncClient,
+    seller_customer_ctx: dict,
+) -> None:
+    created = await client.post(
+        "/customers/seller/",
+        params=seller_customer_ctx["seller_params"],
+        headers=seller_customer_ctx["seller_bearer"],
+        json=_customer_payload(seller_customer_ctx),
+    )
+    assert created.status_code == 201
+    customer_id = created.json()["id"]
+
+    patched = await client.patch(
+        f"/customers/seller/{customer_id}",
+        params=seller_customer_ctx["seller_params"],
+        headers=seller_customer_ctx["seller_bearer"],
+        json={
+            "address": {
+                "address": "Calle 2 #200",
+                "province_id": seller_customer_ctx["province_id"],
+                "municipality_id": seller_customer_ctx["municipality_id"],
+            },
+        },
+    )
+    assert patched.status_code == 200
+    assert patched.json()["address"]["address"] == "Calle 2 #200"
+    assert len(patched.json()["addresses"]) == 2
+
+    same_address = await client.patch(
+        f"/customers/seller/{customer_id}",
+        params=seller_customer_ctx["seller_params"],
+        headers=seller_customer_ctx["seller_bearer"],
+        json={
+            "address": {
+                "address": "Calle 2 #200",
+                "province_id": seller_customer_ctx["province_id"],
+                "municipality_id": seller_customer_ctx["municipality_id"],
+            },
+        },
+    )
+    assert same_address.status_code == 200
+    assert len(same_address.json()["addresses"]) == 2
+
+    detail = await client.get(
+        f"/customers/seller/{customer_id}",
+        params=seller_customer_ctx["seller_params"],
+        headers=seller_customer_ctx["seller_bearer"],
+    )
+    assert detail.status_code == 200
+    body = detail.json()
+    assert body["address"]["address"] == "Calle 2 #200"
+    assert body["address"]["province_name"] == "La Habana"
+    assert body["address"]["municipality_name"] == "Plaza"
+    assert len(body["addresses"]) == 2
+    assert body["addresses"][0]["address"] == "Calle 2 #200"
+    assert body["addresses"][1]["address"] == "Calle 1 #100"
+
+
+async def test_list_orders_filter_by_customer_id(
+    client: AsyncClient,
+    seller_customer_ctx: dict,
+    db_session,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    product_factory: ProductFactory,
+) -> None:
+    first = await client.post(
+        "/customers/seller/",
+        params=seller_customer_ctx["seller_params"],
+        headers=seller_customer_ctx["seller_bearer"],
+        json=_customer_payload(
+            seller_customer_ctx,
+            name="Cliente Uno",
+            ci="41000000001",
+            phone="54100001",
+        ),
+    )
+    assert first.status_code == 201
+    first_id = first.json()["id"]
+
+    second = await client.post(
+        "/customers/seller/",
+        params=seller_customer_ctx["seller_params"],
+        headers=seller_customer_ctx["seller_bearer"],
+        json=_customer_payload(
+            seller_customer_ctx,
+            name="Cliente Dos",
+            ci="41000000002",
+            phone="54100002",
+        ),
+    )
+    assert second.status_code == 201
+    second_id = second.json()["id"]
+
+    provider_user = await user_factory.build()
+    provider_org = await organization_factory.build(user_id=provider_user["id"])
+    await link_provider_to_seller(
+        db_session,
+        provider_organization_id=provider_org["id"],
+        seller_organization_id=seller_customer_ctx["seller_org_id"],
+    )
+    product = await product_factory.build(organization_id=provider_org["id"])
+
+    for customer_id in (first_id, second_id):
+        order = await client.post(
+            "/orders/seller/",
+            params=seller_customer_ctx["seller_params"],
+            headers=seller_customer_ctx["seller_bearer"],
+            json={
+                "customer_id": customer_id,
+                "items": [
+                    {
+                        "product_id": product["id"],
+                        "quantity": 1,
+                        "seller_provider_price": 1000,
+                    },
+                ],
+            },
+        )
+        assert order.status_code == 201
+
+    filtered = await client.get(
+        "/orders/seller/",
+        params={
+            **seller_customer_ctx["seller_params"],
+            "customer_id": first_id,
+        },
+        headers=seller_customer_ctx["seller_bearer"],
+    )
+    assert filtered.status_code == 200
+    body = filtered.json()
+    assert body["total"] == 1
+    assert body["items"][0]["customer_id"] == first_id
+    assert body["items"][0]["customer"]["name"] == "Cliente Uno"

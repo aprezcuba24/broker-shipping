@@ -425,10 +425,7 @@ export {
 } from './order/order-detail-page'
 export type { OrderDetailPageProps } from './order/order-detail-page'
 export { OrderItemsTable } from './order/order-items-table'
-export type {
-  OrderItemsTableProps,
-  OrderItemProductInfo,
-} from './order/order-items-table'
+export type { OrderItemsTableProps } from './order/order-items-table'
 export {
   buildSellerOrderItemColumns,
   buildProviderOrderItemColumns,
@@ -441,6 +438,24 @@ export { OrderFilters } from './order/order-filters'
 export type { OrderFiltersProps, OrderListParams } from './order/order-filters'
 export { OrderStatusActions } from './order/order-status-actions'
 export type { OrderStatusActionsProps } from './order/order-status-actions'
+
+export {
+  PurchaseTier,
+  purchaseTier,
+  asPurchaseTier,
+  asBlacklistStatus,
+} from './customer/purchase-tier'
+export type {
+  PurchaseTierProps,
+  PurchaseTierValue,
+  BlacklistStatus,
+  BlacklistReason,
+} from './customer/purchase-tier'
+export { PhoneReputation } from './customer/phone-reputation'
+export type { PhoneReputationProps } from './customer/phone-reputation'
+export { PhoneBlacklistPage } from './customer/phone-blacklist-page'
+export type { PhoneBlacklistPageProps } from './customer/phone-blacklist-page'
+
 
 export {
   ProductDetailPage,

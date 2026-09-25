@@ -10,6 +10,7 @@ import {
 import { PageLoading } from '../components/page-loading'
 import { PageMessage } from '../components/page-message'
 import { PageWrapper } from '../components/page-wrapper'
+import { PhoneReputation } from '../customer/phone-reputation'
 import { formatMoney } from '../lib/utils'
 import { OrderStatusBadge } from './status'
 
@@ -88,6 +89,22 @@ export const orderDetailCustomerFields: DetailSectionField<OrderPublic>[] = [
     title: 'Dirección',
     accessor: (order) => order.customer?.address?.address,
     fullWidth: true,
+  },
+  {
+    title: 'Calificación',
+    accessor: (order) => order,
+    fullWidth: true,
+    format: (value) => {
+      const order = value as OrderPublic
+      const phone = order.customer?.phone
+      if (!phone) return '—'
+      return (
+        <PhoneReputation
+          phone={phone}
+          tier={order.customer?.purchase_tier ?? 0}
+        />
+      )
+    },
   },
 ]
 

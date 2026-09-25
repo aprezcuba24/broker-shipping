@@ -110,6 +110,14 @@ async def test_create_order_insufficient_stock_is_409(
         },
     )
     assert r.status_code == 409
+    body = r.json()
+    assert body["code"] == "insufficient_stock"
+    assert body["params"]["product_name"] == "Arroz"
+    assert body["params"]["available"] == 10
+    assert body["params"]["requested"] == 11
+    assert "Arroz" in body["message"]
+    assert "10" in body["message"]
+    assert "11" in body["message"]
     product = await _get_product_stock(client, stock_order_ctx)
     assert product["stock"] == 10
     assert product["reserved"] == 0
@@ -132,6 +140,12 @@ async def test_preview_order_insufficient_stock_is_409(
         ],
     )
     assert r.status_code == 409
+    body = r.json()
+    assert body["code"] == "insufficient_stock"
+    assert body["params"]["product_name"] == "Arroz"
+    assert body["params"]["available"] == 10
+    assert body["params"]["requested"] == 11
+    assert "No hay stock suficiente de Arroz" in body["message"]
     product = await _get_product_stock(client, stock_order_ctx)
     assert product["stock"] == 10
     assert product["reserved"] == 0

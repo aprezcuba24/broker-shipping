@@ -2,9 +2,11 @@ import type { ReactNode } from 'react'
 import type { ChatKind } from '../detect-chat'
 import type { CustomerProfile } from '../customer'
 import { normalizePhone } from '../phone'
+import type { PurchaseTierValue } from '../purchase-tier'
 import type { CustomerLookup, LastOrder, LastOrderItem } from '../services/types'
 import { PurchaseTier } from './PurchaseTier'
 import type { CustomerLookupState } from './useCustomerLookup'
+import { usePhoneBlacklist } from './usePhoneBlacklist'
 
 const ORDER_STATUS_LABEL: Record<string, string> = {
   created: 'Creada',
@@ -25,6 +27,8 @@ type Props = {
   customer: CustomerProfile
   suggestOpenContactInfo?: boolean
   lookup?: CustomerLookupState
+  /** When true, blacklist status can be loaded and edited. */
+  sessionReady?: boolean
 }
 
 function formatOrderDate(iso: string): string {
@@ -195,6 +199,7 @@ function accountSummary(
   addressParagraph: string | null
   hint: string | null
   hasCustomer: boolean
+  purchaseTier: PurchaseTierValue
 } {
   if (!lookup || lookup.status === 'idle') {
     return {
@@ -205,6 +210,7 @@ function accountSummary(
       addressParagraph: customer.address,
       hint: null,
       hasCustomer: false,
+      purchaseTier: 0,
     }
   }
   if (lookup.status === 'loading') {
@@ -216,6 +222,7 @@ function accountSummary(
       addressParagraph: null,
       hint: null,
       hasCustomer: false,
+      purchaseTier: 0,
     }
   }
   if (lookup.status === 'error') {
@@ -227,6 +234,7 @@ function accountSummary(
       addressParagraph: null,
       hint: lookup.error,
       hasCustomer: false,
+      purchaseTier: 0,
     }
   }
 
@@ -240,6 +248,7 @@ function accountSummary(
       addressParagraph: null,
       hint: null,
       hasCustomer: false,
+      purchaseTier: 0,
     }
   }
 
@@ -255,6 +264,7 @@ function accountSummary(
     ),
     hint: null,
     hasCustomer: true,
+    purchaseTier: data.customer.purchaseTier,
   }
 }
 
@@ -262,12 +272,14 @@ export function CustomerCard({
   customer,
   suggestOpenContactInfo = false,
   lookup,
+  sessionReady = false,
 }: Props) {
   const account = accountSummary(customer, lookup)
   const hasCrmIdentity = Boolean(account.name || account.ci)
   const hasCrmBlock = hasCrmIdentity || Boolean(account.addressParagraph)
   const phoneDigits =
     customer.kind !== 'group' ? normalizePhone(customer.phone) : null
+  const blacklist = usePhoneBlacklist(phoneDigits, sessionReady && Boolean(phoneDigits))
 
   const extras: { icon: ReactNode | null; label: string; value: string }[] = []
   if (customer.presence) {
@@ -395,7 +407,14 @@ export function CustomerCard({
             <span className="section-bar" aria-hidden />
             <h3 className="section-title">Calificación</h3>
           </header>
-          <PurchaseTier seed={phoneDigits} />
+          <PurchaseTier
+            tier={account.purchaseTier}
+            blacklist={blacklist.status}
+            otherCount={blacklist.otherCount}
+            blacklistBusy={blacklist.busy}
+            onAddToBlacklist={blacklist.add}
+            onRemoveFromBlacklist={blacklist.remove}
+          />
         </section>
       ) : null}
 

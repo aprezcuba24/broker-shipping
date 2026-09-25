@@ -19,7 +19,14 @@ class Order(EntityModel, table=True):
 
     code: str = Field(max_length=20, index=True)
     seller_organization_id: UUID = Field(foreign_key="organization.id", index=True)
+    seller_organization_name: str = Field(default="", max_length=255)
     customer_id: UUID = Field(foreign_key="customer.id", index=True)
+    customer_name: str = Field(default="", max_length=255)
+    customer_ci: str = Field(default="", max_length=50)
+    customer_phone: str = Field(default="", max_length=50)
+    customer_address: str = Field(default="", max_length=500)
+    customer_province_name: str = Field(default="", max_length=255)
+    customer_municipality_name: str = Field(default="", max_length=255)
     status: OrderStatus = Field(
         default=OrderStatus.created,
         sa_column=Column(
