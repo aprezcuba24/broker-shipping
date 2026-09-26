@@ -9,7 +9,7 @@ export function buildSellerOrderItemColumns(): ColumnDef<OrderItemPublic>[] {
   return [
     imageColumn<OrderItemPublic>({
       src: (row) => row.product_image_url,
-      alt: (row) => row.product_name,
+      alt: (row) => row.product_name ?? '',
     }),
     componentColumn<OrderItemPublic>('product', 'Producto', (row) => (
       <span>{row.product_name || '—'}</span>

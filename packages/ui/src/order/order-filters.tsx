@@ -9,7 +9,7 @@ import { DebouncedInput } from '../components/debounced-input'
 import { EntitySelect } from '../components/entity-select'
 import { ORDER_STATUS_FILTER_OPTIONS } from './status'
 
-export type OrderListParams = ListParams<'search' | 'status' | 'seller_organization_id' | 'customer_id'>
+export type OrderListParams = ListParams<'search' | 'status' | 'seller_organization_id'>
 
 export type OrderFiltersProps = {
   filters: OrderListParams['filters']
