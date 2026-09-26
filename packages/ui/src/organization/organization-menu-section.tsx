@@ -44,6 +44,10 @@ export function OrganizationMenuSection() {
           <Building2 />
           Cambiar organización
         </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => openCreateOrganization()}>
+          <Plus />
+          Crear organización
+        </DropdownMenuItem>
       </>
     )
   }

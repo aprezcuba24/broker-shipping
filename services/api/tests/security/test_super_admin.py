@@ -276,3 +276,33 @@ async def test_super_admin_get_organization_by_id(
         headers=headers,
     )
     assert r_missing.status_code == 404
+
+
+async def test_super_admin_create_organization_links_membership(
+    client: AsyncClient,
+    user_factory: UserFactory,
+) -> None:
+    admin = await user_factory.build(is_super_admin=True)
+    headers = bearer_headers(user_id=admin["id"])
+
+    r_create = await client.post(
+        "/organizations/",
+        headers=headers,
+        json={"name": "Admin Owned Org", "type": "provider"},
+    )
+    assert r_create.status_code == 201
+    org = r_create.json()
+    assert org["name"] == "Admin Owned Org"
+    assert org["type"] == "provider"
+
+    r_members = await client.get(
+        f"/organizations/{org['id']}/members",
+        headers=headers,
+    )
+    assert r_members.status_code == 200
+    members = r_members.json()
+    assert any(m["user_id"] == admin["id"] and m["is_active"] for m in members)
+
+    r_orgs = await client.get("/users/my-organizations", headers=headers)
+    assert r_orgs.status_code == 200
+    assert r_orgs.json() == []

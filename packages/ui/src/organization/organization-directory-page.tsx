@@ -5,7 +5,7 @@ import {
   type ListOrganizationsDirectoryOrganizationsDirectoryGetParams,
   type OrganizationPublic,
 } from '@broker/api'
-import { Building2, LogIn } from 'lucide-react'
+import { Building2, LogIn, Plus } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { Button } from '../components/button'
@@ -27,6 +27,7 @@ import {
   useActiveOrganization,
   type OrganizationKind,
 } from './active-organization-context'
+import { CreateOrganizationDialogHost } from './create-organization-dialog-host'
 
 export type OrganizationDirectoryPageProps = {
   organizationType: OrganizationKind
@@ -64,7 +65,7 @@ export function OrganizationDirectoryPage({
 }: OrganizationDirectoryPageProps) {
   const navigate = useNavigate()
   const { user, isLoading: authLoading } = useAuth()
-  const { setActiveOrganization } = useActiveOrganization()
+  const { setActiveOrganization, openCreateOrganization } = useActiveOrganization()
 
   const list = useListParams({
     filterKeys: ['search'] as const,
@@ -110,7 +111,17 @@ export function OrganizationDirectoryPage({
   return (
     <div className="min-h-svh bg-background">
       <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-8">
-        <PageWrapper title={title} description={resolvedDescription} icon={Building2}>
+        <PageWrapper
+          title={title}
+          description={resolvedDescription}
+          icon={Building2}
+          buttons={[
+            <Button key="create" type="button" onClick={() => openCreateOrganization()}>
+              <Plus className="h-4 w-4" />
+              Crear organización
+            </Button>,
+          ]}
+        >
           <div className="space-y-4">
             <FilterBar>
               <DebouncedInput
@@ -140,6 +151,7 @@ export function OrganizationDirectoryPage({
           </div>
         </PageWrapper>
       </div>
+      <CreateOrganizationDialogHost />
     </div>
   )
 }
