@@ -4,7 +4,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Response
 
 from app.deps import SessionDep
-from app.lib.security.deps import CurrentUserDep, require_organization
+from app.lib.persistence.pagination import PaginationDep
+from app.lib.security.deps import CurrentUserDep, SuperAdminDep, require_organization
+from app.models.organization.enums import OrganizationType
 from app.models.organization.organization import Organization
 from app.schemas.invitation import (
     AcceptByTokenBody,
@@ -16,6 +18,7 @@ from app.schemas.invitation import (
     MemberPublic,
 )
 from app.schemas.organization import OrganizationCreate, OrganizationPublic
+from app.schemas.pagination import Page
 from app.services import invitation as invitation_service
 from app.services import membership as membership_service
 from app.services import organization as org_service
@@ -49,6 +52,23 @@ async def list_organizations(
     return [OrganizationPublic.model_validate(o) for o in orgs]
 
 
+@router.get("/directory", response_model=Page[OrganizationPublic])
+async def list_organizations_directory(
+    _admin: SuperAdminDep,
+    session: SessionDep,
+    pagination: PaginationDep,
+    type: OrganizationType,
+    search: str | None = None,
+) -> Page[OrganizationPublic]:
+    result = await org_service.list_organizations_directory(
+        session,
+        org_type=type,
+        pagination=pagination,
+        search=search,
+    )
+    return Page.from_mapped(result, pagination, OrganizationPublic.model_validate)
+
+
 @router.get("/invitations/preview", response_model=MemberInvitePreview)
 async def preview_member_invitation(
     token: str,
@@ -64,6 +84,13 @@ async def accept_invitation_by_token(
     session: SessionDep,
 ) -> MemberPublic:
     return await invitation_service.accept_by_token(session, user, body.token)
+
+
+@router.get("/{organization_id}", response_model=OrganizationPublic)
+async def get_organization(
+    organization: AnyOrgDep,
+) -> OrganizationPublic:
+    return OrganizationPublic.model_validate(organization)
 
 
 @router.get(

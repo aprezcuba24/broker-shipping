@@ -11,6 +11,7 @@ import { AcceptInvitationPage } from './pages/accept-invitation'
 import { HomePage } from './pages/home'
 import { LoginPage } from './pages/login'
 import { OnboardingPage } from './pages/onboarding'
+import { OrganizationsPage } from './pages/organizations'
 import { RegisterPage } from './pages/register'
 import { MembersPage } from './pages/members'
 import { CommissionDetailPage, CommissionPage } from './pages/commission'
@@ -52,6 +53,16 @@ export default function App() {
                   title="Configura tu organización"
                   description={`Como proveedor, crea la organización con la que trabajarás en ${PRODUCT_NAME}.`}
                 />
+              </ActiveOrganizationProvider>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/organizations"
+          element={
+            <RequireAuth loginPath="/login">
+              <ActiveOrganizationProvider organizationType={OrganizationType.provider}>
+                <OrganizationsPage />
               </ActiveOrganizationProvider>
             </RequireAuth>
           }

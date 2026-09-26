@@ -1,6 +1,7 @@
 import {
   OrganizationType,
   useAuth,
+  useGetOrganizationOrganizationsOrganizationIdGet,
   useMyOrganizationsUsersMyOrganizationsGet,
   type OrganizationPublic,
 } from '@broker/api'
@@ -13,6 +14,11 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import {
+  clearActiveOrganizationId,
+  peekActiveOrganizationId,
+  storeActiveOrganizationId,
+} from './active-organization-storage'
 import {
   CreateOrganizationUiProvider,
   useOpenCreateOrganization,
@@ -44,25 +50,70 @@ export type ActiveOrganizationProviderProps = {
   organizationType?: OrganizationKind
 }
 
+function matchesPortalType(
+  org: OrganizationPublic,
+  organizationType: OrganizationKind | undefined,
+): boolean {
+  return !organizationType || org.type === organizationType
+}
+
 export function ActiveOrganizationProvider({
   children,
   organizationType,
 }: ActiveOrganizationProviderProps) {
-  const { token } = useAuth()
+  const { token, user, isLoading: authLoading } = useAuth()
+  const isSuperAdmin = Boolean(user?.is_super_admin)
+
   const [selectedId, setSelectedId] = useState<string | null>(() =>
-    peekPreferredOrganizationId(),
+    peekPreferredOrganizationId() ?? peekActiveOrganizationId(),
   )
-  const { data, isPending } = useMyOrganizationsUsersMyOrganizationsGet({
+
+  const { data: membershipOrgs, isPending: membershipPending } =
+    useMyOrganizationsUsersMyOrganizationsGet({
+      query: {
+        enabled: Boolean(token) && !authLoading && !isSuperAdmin,
+      },
+    })
+
+  const {
+    data: directoryOrg,
+    isPending: directoryPending,
+    isError: directoryError,
+  } = useGetOrganizationOrganizationsOrganizationIdGet(selectedId ?? '', {
     query: {
-      enabled: Boolean(token),
+      enabled: Boolean(token && isSuperAdmin && selectedId),
+      retry: false,
     },
   })
 
+  useEffect(() => {
+    if (!isSuperAdmin) return
+    if (!selectedId) return
+    if (directoryPending) return
+    if (directoryError || (directoryOrg && !matchesPortalType(directoryOrg, organizationType))) {
+      clearActiveOrganizationId()
+      setSelectedId(null)
+    }
+  }, [
+    isSuperAdmin,
+    selectedId,
+    directoryPending,
+    directoryError,
+    directoryOrg,
+    organizationType,
+  ])
+
   const organizations = useMemo(() => {
-    const list = data ?? []
+    if (isSuperAdmin) {
+      if (directoryOrg && matchesPortalType(directoryOrg, organizationType)) {
+        return [directoryOrg]
+      }
+      return []
+    }
+    const list = membershipOrgs ?? []
     if (!organizationType) return list
     return list.filter((org) => org.type === organizationType)
-  }, [data, organizationType])
+  }, [isSuperAdmin, directoryOrg, membershipOrgs, organizationType])
 
   // Consume one-shot preference once the invited org is in the list.
   useEffect(() => {
@@ -80,9 +131,22 @@ export function ActiveOrganizationProvider({
     return organizations[0] ?? null
   }, [organizations, selectedId])
 
-  const setActiveOrganization = useCallback((organizationId: string) => {
-    setSelectedId(organizationId)
-  }, [])
+  const setActiveOrganization = useCallback(
+    (organizationId: string) => {
+      setSelectedId(organizationId)
+      if (isSuperAdmin) {
+        storeActiveOrganizationId(organizationId)
+      }
+    },
+    [isSuperAdmin],
+  )
+
+  const isLoading =
+    Boolean(token) &&
+    (authLoading ||
+      (isSuperAdmin
+        ? Boolean(selectedId) && directoryPending
+        : membershipPending))
 
   const value = useMemo<ActiveOrganizationState>(
     () => ({
@@ -90,9 +154,9 @@ export function ActiveOrganizationProvider({
       activeOrganization,
       setActiveOrganization,
       organizationType,
-      isLoading: Boolean(token) && isPending,
+      isLoading,
     }),
-    [organizations, activeOrganization, setActiveOrganization, organizationType, isPending, token],
+    [organizations, activeOrganization, setActiveOrganization, organizationType, isLoading],
   )
 
   return (

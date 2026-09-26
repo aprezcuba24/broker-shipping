@@ -5,9 +5,11 @@ from app.lib.security.deps import (
     OptionalSellerOrgDep,
     ProviderOrgDep,
     SellerOrgDep,
+    SuperAdminDep,
     get_current_user,
     optional_seller_organization,
     require_organization,
+    require_super_admin,
 )
 from app.lib.security.passwords import hash_password, verify_password
 from app.lib.security.tokens import create_access_token, decode_access_token
@@ -18,6 +20,7 @@ __all__ = [
     "OptionalSellerOrgDep",
     "ProviderOrgDep",
     "SellerOrgDep",
+    "SuperAdminDep",
     "create_access_token",
     "decode_access_token",
     "ensure_organization_access",
@@ -25,5 +28,6 @@ __all__ = [
     "hash_password",
     "optional_seller_organization",
     "require_organization",
+    "require_super_admin",
     "verify_password",
 ]

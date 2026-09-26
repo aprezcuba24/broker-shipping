@@ -339,6 +339,13 @@ export { OrganizationMenuSection } from './organization/organization-menu-sectio
 export { OrganizationScopedApiProvider } from './organization/organization-scoped-api-provider'
 export { RequireOrganization } from './organization/require-organization'
 export type { RequireOrganizationProps } from './organization/require-organization'
+export { OrganizationDirectoryPage } from './organization/organization-directory-page'
+export type { OrganizationDirectoryPageProps } from './organization/organization-directory-page'
+export {
+  storeActiveOrganizationId,
+  peekActiveOrganizationId,
+  clearActiveOrganizationId,
+} from './organization/active-organization-storage'
 export {
   storeInviteToken,
   peekInviteToken,

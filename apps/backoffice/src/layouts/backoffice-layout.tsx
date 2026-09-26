@@ -30,7 +30,7 @@ export function BackofficeLayout() {
           user
             ? {
                 name: user.name,
-                role: 'Portal B2B',
+                role: user.is_super_admin ? 'Super admin' : 'Portal B2B',
                 organization: activeOrganization?.name,
                 initials: initialsFromName(user.name),
               }
