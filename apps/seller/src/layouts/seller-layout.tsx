@@ -33,7 +33,7 @@ export function SellerLayout() {
           user
             ? {
                 name: user.name,
-                role: 'Portal vendedores',
+                role: user.is_super_admin ? 'Super admin' : 'Portal vendedores',
                 organization: activeOrganization?.name,
                 initials: initialsFromName(user.name),
               }

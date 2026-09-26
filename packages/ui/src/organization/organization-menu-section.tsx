@@ -1,4 +1,6 @@
-import { Plus } from 'lucide-react'
+import { useAuth } from '@broker/api'
+import { Building2, Plus } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import {
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -9,6 +11,8 @@ import {
 import { useActiveOrganization } from './active-organization-context'
 
 export function OrganizationMenuSection() {
+  const navigate = useNavigate()
+  const { user } = useAuth()
   const {
     organizations,
     activeOrganization,
@@ -19,6 +23,34 @@ export function OrganizationMenuSection() {
   } = useActiveOrganization()
 
   if (isLoading || !organizationType) return null
+
+  if (user?.is_super_admin) {
+    return (
+      <>
+        <DropdownMenuSeparator />
+        {activeOrganization ? (
+          <>
+            <DropdownMenuLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Organización activa
+            </DropdownMenuLabel>
+            <DropdownMenuItem disabled className="opacity-100">
+              <Building2 />
+              {activeOrganization.name}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        ) : null}
+        <DropdownMenuItem onSelect={() => void navigate('/organizations')}>
+          <Building2 />
+          Cambiar organización
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => openCreateOrganization()}>
+          <Plus />
+          Crear organización
+        </DropdownMenuItem>
+      </>
+    )
+  }
 
   return (
     <>

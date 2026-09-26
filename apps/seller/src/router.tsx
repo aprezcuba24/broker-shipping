@@ -11,6 +11,7 @@ import { HomePage } from './pages/home'
 import { JoinProviderPage } from './pages/join-provider'
 import { LoginPage } from './pages/login'
 import { OnboardingPage } from './pages/onboarding'
+import { OrganizationsPage } from './pages/organizations'
 import { CartPage } from './pages/cart'
 import { CommissionDetailPage, CommissionPage } from './pages/commission'
 import { CustomerDetailPage, CustomerPage } from './pages/customer'
@@ -49,6 +50,16 @@ export default function App() {
             <RequireAuth loginPath="/login">
               <ActiveOrganizationProvider organizationType={OrganizationType.seller}>
                 <OnboardingPage title="Configura tu organización" />
+              </ActiveOrganizationProvider>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/organizations"
+          element={
+            <RequireAuth loginPath="/login">
+              <ActiveOrganizationProvider organizationType={OrganizationType.seller}>
+                <OrganizationsPage />
               </ActiveOrganizationProvider>
             </RequireAuth>
           }

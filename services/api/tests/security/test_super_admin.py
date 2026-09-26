@@ -184,3 +184,125 @@ async def test_super_admin_unknown_org_returns_404(
         headers=bearer_headers(user_id=admin["id"]),
     )
     assert r.status_code == 404
+
+
+async def test_normal_user_directory_forbidden(
+    client: AsyncClient,
+    user_factory: UserFactory,
+) -> None:
+    user = await user_factory.build()
+    r = await client.get(
+        "/organizations/directory",
+        params={"type": "provider"},
+        headers=bearer_headers(user_id=user["id"]),
+    )
+    assert r.status_code == 403
+
+
+async def test_super_admin_directory_filters_by_type_and_search(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+) -> None:
+    admin = await user_factory.build(is_super_admin=True)
+    owner = await user_factory.build()
+    provider_a = await organization_factory.build(
+        user_id=owner["id"],
+        name="Alpha Provider",
+        org_type=OrganizationType.provider,
+    )
+    await organization_factory.build(
+        user_id=owner["id"],
+        name="Beta Provider",
+        org_type=OrganizationType.provider,
+    )
+    await organization_factory.build(
+        user_id=owner["id"],
+        name="Alpha Seller",
+        org_type=OrganizationType.seller,
+    )
+    headers = bearer_headers(user_id=admin["id"])
+
+    r_provider = await client.get(
+        "/organizations/directory",
+        params={"type": "provider"},
+        headers=headers,
+    )
+    assert r_provider.status_code == 200
+    provider_body = r_provider.json()
+    assert provider_body["total"] == 2
+    assert {item["name"] for item in provider_body["items"]} == {
+        "Alpha Provider",
+        "Beta Provider",
+    }
+
+    r_search = await client.get(
+        "/organizations/directory",
+        params={"type": "provider", "search": "Alpha"},
+        headers=headers,
+    )
+    assert r_search.status_code == 200
+    search_body = r_search.json()
+    assert search_body["total"] == 1
+    assert search_body["items"][0]["id"] == provider_a["id"]
+
+    r_seller = await client.get(
+        "/organizations/directory",
+        params={"type": "seller", "search": "Alpha"},
+        headers=headers,
+    )
+    assert r_seller.status_code == 200
+    seller_body = r_seller.json()
+    assert seller_body["total"] == 1
+    assert seller_body["items"][0]["name"] == "Alpha Seller"
+
+
+async def test_super_admin_get_organization_by_id(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+) -> None:
+    admin = await user_factory.build(is_super_admin=True)
+    owner = await user_factory.build()
+    org = await organization_factory.build(user_id=owner["id"], name="Target Org")
+    headers = bearer_headers(user_id=admin["id"])
+
+    r = await client.get(f"/organizations/{org['id']}", headers=headers)
+    assert r.status_code == 200
+    assert r.json()["name"] == "Target Org"
+
+    r_missing = await client.get(
+        f"/organizations/{uuid4()}",
+        headers=headers,
+    )
+    assert r_missing.status_code == 404
+
+
+async def test_super_admin_create_organization_links_membership(
+    client: AsyncClient,
+    user_factory: UserFactory,
+) -> None:
+    admin = await user_factory.build(is_super_admin=True)
+    headers = bearer_headers(user_id=admin["id"])
+
+    r_create = await client.post(
+        "/organizations/",
+        headers=headers,
+        json={"name": "Admin Owned Org", "type": "provider"},
+    )
+    assert r_create.status_code == 201
+    org = r_create.json()
+    assert org["name"] == "Admin Owned Org"
+    assert org["type"] == "provider"
+
+    r_members = await client.get(
+        f"/organizations/{org['id']}/members",
+        headers=headers,
+    )
+    assert r_members.status_code == 200
+    members = r_members.json()
+    assert any(m["user_id"] == admin["id"] and m["is_active"] for m in members)
+
+    r_orgs = await client.get("/users/my-organizations", headers=headers)
+    assert r_orgs.status_code == 200
+    assert r_orgs.json() == []

@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.deps import SessionDep
 from app.lib.exceptions import raise_api_error
 from app.lib.persistence import get_entity
-from app.lib.security.access import ensure_organization_access
+from app.lib.security.access import ensure_organization_access, is_super_admin
 from app.lib.security.api_keys import split_raw
 from app.lib.security.tokens import decode_access_token
 from app.models.organization.enums import OrganizationType
@@ -113,8 +113,17 @@ async def optional_seller_organization(
     )
 
 
+async def require_super_admin(
+    user: Annotated[User, Depends(get_current_user)],
+) -> User:
+    if not is_super_admin(user):
+        raise_api_error("forbidden")
+    return user
+
+
 CurrentUserDep = Annotated[User, Depends(get_current_user)]
 JwtUserDep = Annotated[User, Depends(get_jwt_user)]
+SuperAdminDep = Annotated[User, Depends(require_super_admin)]
 AnyOrgDep = Annotated[
     Organization,
     Depends(require_organization()),
