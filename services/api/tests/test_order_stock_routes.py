@@ -79,7 +79,7 @@ async def test_create_order_reserves_stock(
                 {
                     "product_id": stock_order_ctx["product_id"],
                     "quantity": 4,
-                    "seller_provider_price": 900,
+                    "seller_provider_price": {"amount": 900, "currency": "cup"},
                 },
             ],
         },
@@ -104,7 +104,7 @@ async def test_create_order_insufficient_stock_is_409(
                 {
                     "product_id": stock_order_ctx["product_id"],
                     "quantity": 11,
-                    "seller_provider_price": 900,
+                    "seller_provider_price": {"amount": 900, "currency": "cup"},
                 },
             ],
         },
@@ -135,7 +135,7 @@ async def test_preview_order_insufficient_stock_is_409(
             {
                 "product_id": stock_order_ctx["product_id"],
                 "quantity": 11,
-                "seller_provider_price": 900,
+                "seller_provider_price": {"amount": 900, "currency": "cup"},
             },
         ],
     )
@@ -165,7 +165,7 @@ async def test_cancel_order_item_releases_stock(
                 {
                     "product_id": stock_order_ctx["product_id"],
                     "quantity": 3,
-                    "seller_provider_price": 900,
+                    "seller_provider_price": {"amount": 900, "currency": "cup"},
                 },
             ],
         },
@@ -201,7 +201,7 @@ async def test_deliver_order_item_consumes_reserved(
                 {
                     "product_id": stock_order_ctx["product_id"],
                     "quantity": 3,
-                    "seller_provider_price": 900,
+                    "seller_provider_price": {"amount": 900, "currency": "cup"},
                 },
             ],
         },
@@ -237,12 +237,12 @@ async def test_duplicate_product_in_order_is_422(
                 {
                     "product_id": stock_order_ctx["product_id"],
                     "quantity": 1,
-                    "seller_provider_price": 900,
+                    "seller_provider_price": {"amount": 900, "currency": "cup"},
                 },
                 {
                     "product_id": stock_order_ctx["product_id"],
                     "quantity": 2,
-                    "seller_provider_price": 900,
+                    "seller_provider_price": {"amount": 900, "currency": "cup"},
                 },
             ],
         },
@@ -262,12 +262,12 @@ async def test_duplicate_product_in_preview_is_422(
             {
                 "product_id": stock_order_ctx["product_id"],
                 "quantity": 1,
-                "seller_provider_price": 900,
+                "seller_provider_price": {"amount": 900, "currency": "cup"},
             },
             {
                 "product_id": stock_order_ctx["product_id"],
                 "quantity": 2,
-                "seller_provider_price": 900,
+                "seller_provider_price": {"amount": 900, "currency": "cup"},
             },
         ],
     )

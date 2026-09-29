@@ -3,7 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.models.order.enums import Currency
+from app.models.commission.commission import Commission
+from app.schemas.money import Money
 
 
 class CommissionPublic(BaseModel):
@@ -13,8 +14,7 @@ class CommissionPublic(BaseModel):
     order_id: UUID
     provider_organization_id: UUID
     seller_organization_id: UUID
-    amount: int
-    currency: Currency
+    amount: Money
     is_paid: bool
     paid_at: datetime | None
     created_at: datetime
@@ -24,3 +24,18 @@ class CommissionPublic(BaseModel):
 
 class CommissionMarkPaid(BaseModel):
     """Confirm marking a commission as paid. Body may be empty ``{}``."""
+
+
+def commission_to_public(commission: Commission) -> CommissionPublic:
+    return CommissionPublic(
+        id=commission.id,
+        order_id=commission.order_id,
+        provider_organization_id=commission.provider_organization_id,
+        seller_organization_id=commission.seller_organization_id,
+        amount=Money(amount=commission.amount, currency=commission.currency),
+        is_paid=commission.is_paid,
+        paid_at=commission.paid_at,
+        created_at=commission.created_at,
+        updated_at=commission.updated_at,
+        order_item_ids=list(getattr(commission, "order_item_ids", []) or []),
+    )

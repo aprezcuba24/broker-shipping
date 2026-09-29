@@ -3,14 +3,13 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.models.order.enums import Currency, OrderStatus
+from app.models.order.enums import OrderStatus
+from app.schemas.money import Money
 from app.schemas.order import OrderCurrencyTotal
 from app.types import DashboardPeriod
 
-
-class CurrencyAmount(BaseModel):
-    currency: Currency
-    amount: int
+# Semantic alias: dashboard currency aggregates are Money values.
+CurrencyAmount = Money
 
 
 class StatusCount(BaseModel):
@@ -33,8 +32,7 @@ class CommissionSummaryPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
-    amount: int
-    currency: Currency
+    amount: Money
     provider_organization_id: UUID
     seller_organization_id: UUID
     created_at: datetime

@@ -89,12 +89,12 @@ async def provider_order_ctx(
                 {
                     "product_id": product_a["id"],
                     "quantity": 2,
-                    "seller_provider_price": 1000,
+                    "seller_provider_price": {"amount": 1000, "currency": "cup"},
                 },
                 {
                     "product_id": product_b["id"],
                     "quantity": 1,
-                    "seller_provider_price": 2000,
+                    "seller_provider_price": {"amount": 2000, "currency": "usd"},
                 },
             ],
         },
@@ -238,7 +238,7 @@ async def test_provider_list_orders_search_by_code_name_phone_ci(
                 {
                     "product_id": provider_order_ctx["product_a_id"],
                     "quantity": 1,
-                    "seller_provider_price": 1000,
+                    "seller_provider_price": {"amount": 1000, "currency": "cup"},
                 },
             ],
         },
@@ -301,7 +301,7 @@ async def test_provider_list_orders_filter_by_status(
                 {
                     "product_id": provider_order_ctx["product_a_id"],
                     "quantity": 1,
-                    "seller_provider_price": 1000,
+                    "seller_provider_price": {"amount": 1000, "currency": "cup"},
                 },
             ],
         },

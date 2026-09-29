@@ -14,6 +14,7 @@ async def create_product(
     organization_id: UUID | str,
     name: str | None = None,
     currency: Currency | None = None,
+    commission_currency: Currency | None = None,
     commission: int | None = None,
     price: int | None = None,
     stock: int | None = None,
@@ -23,11 +24,17 @@ async def create_product(
         if isinstance(organization_id, UUID)
         else UUID(str(organization_id))
     )
+    price_currency = currency if currency is not None else Currency.cup
     entity = Product(
         name=name if name is not None else "Factory product",
         organization_id=oid,
-        currency=currency if currency is not None else Currency.cup,
+        currency=price_currency,
         commission=commission if commission is not None else 0,
+        commission_currency=(
+            commission_currency
+            if commission_currency is not None
+            else price_currency
+        ),
         price=price if price is not None else 0,
         stock=stock if stock is not None else 1000,
         reserved=0,
@@ -49,6 +56,7 @@ class ProductFactory:
         organization_id: UUID | str,
         name: str | None = None,
         currency: Currency | None = None,
+        commission_currency: Currency | None = None,
         commission: int | None = None,
         price: int | None = None,
         stock: int | None = None,
@@ -60,6 +68,7 @@ class ProductFactory:
             organization_id=organization_id,
             name=final_name,
             currency=currency,
+            commission_currency=commission_currency,
             commission=commission,
             price=price,
             stock=stock,

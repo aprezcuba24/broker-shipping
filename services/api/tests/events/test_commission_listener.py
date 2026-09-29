@@ -80,7 +80,7 @@ async def test_order_item_delivered_event_creates_commission(
                 {
                     "product_id": product["id"],
                     "quantity": 4,
-                    "seller_provider_price": 1000,
+                    "seller_provider_price": {"amount": 1000, "currency": "cup"},
                 }
             ],
         },

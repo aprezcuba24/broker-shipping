@@ -71,12 +71,12 @@ async def commission_order_ctx(
                 {
                     "product_id": product_a["id"],
                     "quantity": 2,
-                    "seller_provider_price": 1000,
+                    "seller_provider_price": {"amount": 1000, "currency": "cup"},
                 },
                 {
                     "product_id": product_b["id"],
                     "quantity": 1,
-                    "seller_provider_price": 2000,
+                    "seller_provider_price": {"amount": 2000, "currency": "cup"},
                 },
             ],
         },
@@ -141,7 +141,7 @@ async def test_seller_sees_paid_and_unpaid_commissions(
     assert listed.status_code == 200
     page = listed.json()
     assert page["total"] == 2
-    amounts = {item["amount"] for item in page["items"]}
+    amounts = {item["amount"]["amount"] for item in page["items"]}
     assert amounts == {200}
 
     unpaid_only = await client.get(

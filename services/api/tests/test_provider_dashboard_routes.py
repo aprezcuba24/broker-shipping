@@ -54,7 +54,7 @@ async def provider_dashboard_ctx(
                 {
                     "product_id": product["id"],
                     "quantity": 3,
-                    "seller_provider_price": 2000,
+                    "seller_provider_price": {"amount": 2000, "currency": "cup"},
                 },
             ],
         },

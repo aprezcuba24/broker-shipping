@@ -86,6 +86,16 @@ class OrderItem(EntityModel, table=True):
     seller_commission: int = Field(
         sa_column=Column(BigInteger, nullable=False),
     )
+    commission_currency: Currency = Field(
+        sa_column=Column(
+            SAEnum(
+                Currency,
+                values_callable=lambda x: [e.value for e in x],
+                name="currency",
+            ),
+            nullable=False,
+        ),
+    )
     commission_id: UUID | None = Field(
         default=None,
         sa_column=Column(

@@ -33,6 +33,18 @@ class Product(OrganizationEntityModel, table=True):
         default=0,
         sa_column=Column(BigInteger, nullable=False, server_default="0"),
     )
+    commission_currency: Currency = Field(
+        default=Currency.cup,
+        sa_column=Column(
+            SAEnum(
+                Currency,
+                values_callable=lambda x: [e.value for e in x],
+                name="currency",
+            ),
+            nullable=False,
+            server_default="cup",
+        ),
+    )
     stock: int = Field(default=0, ge=0)
     reserved: int = Field(default=0, ge=0)
     image_key: str | None = Field(default=None, max_length=512)

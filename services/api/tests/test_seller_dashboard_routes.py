@@ -54,7 +54,7 @@ async def dashboard_ctx(
                 {
                     "product_id": product["id"],
                     "quantity": 2,
-                    "seller_provider_price": 1500,
+                    "seller_provider_price": {"amount": 1500, "currency": "cup"},
                 },
             ],
         },

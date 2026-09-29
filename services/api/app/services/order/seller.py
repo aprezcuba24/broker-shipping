@@ -136,11 +136,18 @@ async def _build_order(
     items: list[OrderItem] = []
     for item_data in items_data:
         product = products[item_data.product_id]
-        seller_provider_price = (
-            item_data.seller_provider_price
-            if "seller_provider_price" in item_data.model_fields_set
-            else product.price
-        )
+        if item_data.seller_provider_price is not None:
+            if item_data.seller_provider_price.currency != product.currency:
+                raise_api_error("currency_mismatch")
+            seller_provider_price = item_data.seller_provider_price.amount
+        else:
+            seller_provider_price = product.price
+        if item_data.customer_change is not None:
+            if item_data.customer_change.currency != product.currency:
+                raise_api_error("currency_mismatch")
+            customer_change = item_data.customer_change.amount
+        else:
+            customer_change = 0
         items.append(
             OrderItem(
                 order_id=order.id,
@@ -153,11 +160,12 @@ async def _build_order(
                 ),
                 unit_provider_price=product.price,
                 seller_provider_price=seller_provider_price,
-                customer_change=item_data.customer_change,
+                customer_change=customer_change,
                 quantity=item_data.quantity,
                 currency=product.currency,
                 status=OrderItemStatus.created,
                 seller_commission=product.commission,
+                commission_currency=product.commission_currency,
             )
         )
     return order, items

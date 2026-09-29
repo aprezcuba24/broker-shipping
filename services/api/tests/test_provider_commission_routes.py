@@ -79,12 +79,12 @@ async def commission_order_ctx(
                 {
                     "product_id": product["id"],
                     "quantity": 2,
-                    "seller_provider_price": 1000,
+                    "seller_provider_price": {"amount": 1000, "currency": "cup"},
                 },
                 {
                     "product_id": other_product["id"],
                     "quantity": 1,
-                    "seller_provider_price": 2000,
+                    "seller_provider_price": {"amount": 2000, "currency": "cup"},
                 },
             ],
         },
@@ -148,8 +148,7 @@ async def test_provider_list_shows_commission_after_delivered(
     assert commission["provider_organization_id"] == commission_order_ctx["provider_id"]
     assert commission["seller_organization_id"] == commission_order_ctx["seller_org_id"]
     assert commission["is_paid"] is False
-    assert commission["amount"] == 200
-    assert commission["currency"] == "cup"
+    assert commission["amount"] == {"amount": 200, "currency": "cup"}
     assert len(commission["order_item_ids"]) == 1
 
     detail = await client.get(

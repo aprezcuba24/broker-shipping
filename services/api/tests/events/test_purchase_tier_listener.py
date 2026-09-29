@@ -113,7 +113,7 @@ async def test_finishing_order_updates_purchase_tier_for_phone(
                 {
                     "product_id": product["id"],
                     "quantity": 1,
-                    "seller_provider_price": 1000,
+                    "seller_provider_price": {"amount": 1000, "currency": "cup"},
                 }
             ],
         },
@@ -207,7 +207,7 @@ async def test_canceled_order_does_not_raise_purchase_tier(
                 {
                     "product_id": product["id"],
                     "quantity": 1,
-                    "seller_provider_price": 1000,
+                    "seller_provider_price": {"amount": 1000, "currency": "cup"},
                 }
             ],
         },
@@ -275,7 +275,7 @@ async def test_new_customer_inherits_existing_phone_tier(
                 {
                     "product_id": product["id"],
                     "quantity": 1,
-                    "seller_provider_price": 1000,
+                    "seller_provider_price": {"amount": 1000, "currency": "cup"},
                 }
             ],
         },

@@ -14,6 +14,7 @@ from app.models.order.order import Order
 from app.models.order.order_item import OrderItem
 from app.models.organization.enums import OrganizationType
 from app.schemas.customer import AddressPublic, CustomerPublic
+from app.schemas.money import Money
 from app.schemas.order import OrderCurrencyTotal, OrderItemPublic, OrderPublic
 from app.schemas.organization import OrganizationPublic
 from app.types import PurchaseTier
@@ -26,7 +27,7 @@ def compute_order_totals(items: list[OrderItem]) -> list[OrderCurrencyTotal]:
     for item in items:
         amounts[item.currency] += item.seller_provider_price * item.quantity
     return [
-        OrderCurrencyTotal(currency=currency, amount=amount)
+        Money(amount=amount, currency=currency)
         for currency, amount in sorted(amounts.items(), key=lambda pair: pair[0].value)
     ]
 
@@ -172,13 +173,24 @@ def order_item_to_public(item: OrderItem) -> OrderItemPublic:
         product_image_url=get_object_storage().build_public_url(item.product_image_key),
         provider_organization_id=item.provider_organization_id,
         provider_organization_name=item.provider_organization_name,
-        unit_provider_price=item.unit_provider_price,
-        seller_provider_price=item.seller_provider_price,
-        customer_change=item.customer_change,
+        unit_provider_price=Money(
+            amount=item.unit_provider_price,
+            currency=item.currency,
+        ),
+        seller_provider_price=Money(
+            amount=item.seller_provider_price,
+            currency=item.currency,
+        ),
+        customer_change=Money(
+            amount=item.customer_change,
+            currency=item.currency,
+        ),
         quantity=item.quantity,
-        currency=item.currency,
         status=item.status,
-        seller_commission=item.seller_commission,
+        seller_commission=Money(
+            amount=item.seller_commission,
+            currency=item.commission_currency,
+        ),
         created_at=item.created_at,
         updated_at=item.updated_at,
     )
