@@ -3,9 +3,13 @@ export type AddressPublic = {
   address: string
   province_id: string
   municipality_id: string
+  neighborhood_id?: string | null
   customer_id: string
   created_at: string
   updated_at: string | null
+  province_name?: string | null
+  municipality_name?: string | null
+  neighborhood_name?: string | null
 }
 
 export type CustomerPublic = {
@@ -86,6 +90,12 @@ export type MunicipalityPublic = {
   province_id: string
 }
 
+export type NeighborhoodPublic = {
+  id: string
+  name: string
+  municipality_id: string
+}
+
 export type LastOrderItem = {
   id: string
   productId: string
@@ -121,6 +131,7 @@ export type CustomerLookup = {
   address: string | null
   province: string | null
   municipality: string | null
+  neighborhood: string | null
   lastOrder: LastOrder | null
 }
 
@@ -129,5 +140,6 @@ export const EMPTY_CUSTOMER_LOOKUP: CustomerLookup = {
   address: null,
   province: null,
   municipality: null,
+  neighborhood: null,
   lastOrder: null,
 }

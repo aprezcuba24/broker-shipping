@@ -5,6 +5,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.location.municipality import Municipality
+from app.models.location.neighborhood import Neighborhood
 from app.models.location.province import Province
 
 
@@ -37,6 +38,27 @@ async def create_municipality(
     return entity.model_dump(mode="json")
 
 
+async def create_neighborhood(
+    session: AsyncSession,
+    *,
+    municipality_id: UUID | str,
+    name: str | None = None,
+) -> dict:
+    mid = (
+        municipality_id
+        if isinstance(municipality_id, UUID)
+        else UUID(str(municipality_id))
+    )
+    entity = Neighborhood(
+        name=name if name is not None else "Factory Neighborhood",
+        municipality_id=mid,
+    )
+    session.add(entity)
+    await session.flush()
+    await session.commit()
+    return entity.model_dump(mode="json")
+
+
 class LocationFactory:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
@@ -60,4 +82,17 @@ class LocationFactory:
             self._session,
             province_id=province_id,
             name=name or f"Municipality-{self._n:04d}",
+        )
+
+    async def build_neighborhood(
+        self,
+        *,
+        municipality_id: UUID | str,
+        name: str | None = None,
+    ) -> dict:
+        self._n += 1
+        return await create_neighborhood(
+            self._session,
+            municipality_id=municipality_id,
+            name=name or f"Neighborhood-{self._n:04d}",
         )

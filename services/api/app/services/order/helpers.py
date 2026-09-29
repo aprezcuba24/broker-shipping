@@ -125,11 +125,13 @@ def _customer_from_order_snapshot(
             address=order.customer_address,
             province_id=_NIL_UUID,
             municipality_id=_NIL_UUID,
+            neighborhood_id=None,
             customer_id=order.customer_id,
             created_at=order.created_at,
             updated_at=None,
             province_name=order.customer_province_name or None,
             municipality_name=order.customer_municipality_name or None,
+            neighborhood_name=order.customer_neighborhood_name or None,
         )
     return CustomerPublic(
         id=order.customer_id,

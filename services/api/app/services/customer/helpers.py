@@ -10,6 +10,7 @@ from app.lib.persistence import get_entity
 from app.models.customer.address import Address
 from app.models.customer.customer import Customer
 from app.models.location.municipality import Municipality
+from app.models.location.neighborhood import Neighborhood
 from app.models.location.province import Province
 from app.schemas.customer import AddressCreate
 
@@ -26,11 +27,18 @@ async def create_customer_address(
         id=data.municipality_id,
         province_id=data.province_id,
     )
+    await get_entity(
+        session,
+        Neighborhood,
+        id=data.neighborhood_id,
+        municipality_id=data.municipality_id,
+    )
     address = Address(
         address=data.address,
         customer_id=customer_id,
         province_id=data.province_id,
         municipality_id=data.municipality_id,
+        neighborhood_id=data.neighborhood_id,
     )
     session.add(address)
     await session.flush()
@@ -42,6 +50,7 @@ def _address_matches(address: Address, data: AddressCreate) -> bool:
         address.address == data.address
         and address.province_id == data.province_id
         and address.municipality_id == data.municipality_id
+        and address.neighborhood_id == data.neighborhood_id
     )
 
 
@@ -107,8 +116,16 @@ async def enrich_addresses_with_location_names(
         return
     province_ids = list({address.province_id for address in addresses})
     municipality_ids = list({address.municipality_id for address in addresses})
+    neighborhood_ids = list(
+        {
+            address.neighborhood_id
+            for address in addresses
+            if address.neighborhood_id is not None
+        }
+    )
     provinces_by_id: dict[UUID, Province] = {}
     municipalities_by_id: dict[UUID, Municipality] = {}
+    neighborhoods_by_id: dict[UUID, Neighborhood] = {}
     if province_ids:
         provinces = await session.execute(
             select(Province).where(col(Province.id).in_(province_ids))
@@ -121,9 +138,22 @@ async def enrich_addresses_with_location_names(
         municipalities_by_id = {
             municipality.id: municipality for municipality in municipalities.scalars().all()
         }
+    if neighborhood_ids:
+        neighborhoods = await session.execute(
+            select(Neighborhood).where(col(Neighborhood.id).in_(neighborhood_ids))
+        )
+        neighborhoods_by_id = {
+            neighborhood.id: neighborhood
+            for neighborhood in neighborhoods.scalars().all()
+        }
     for address in addresses:
         province = provinces_by_id.get(address.province_id)
         municipality = municipalities_by_id.get(address.municipality_id)
+        neighborhood = (
+            neighborhoods_by_id.get(address.neighborhood_id)
+            if address.neighborhood_id is not None
+            else None
+        )
         object.__setattr__(
             address,
             "province_name",
@@ -133,6 +163,11 @@ async def enrich_addresses_with_location_names(
             address,
             "municipality_name",
             municipality.name if municipality is not None else None,
+        )
+        object.__setattr__(
+            address,
+            "neighborhood_name",
+            neighborhood.name if neighborhood is not None else None,
         )
 
 
@@ -158,5 +193,6 @@ async def attach_address_history_to_customer(
 ) -> None:
     history = await load_all_addresses_for_customer(session, customer.id)
     await enrich_addresses_with_location_names(session, history)
+    latest = history[0] if history else None
+    object.__setattr__(customer, "address", latest)
     object.__setattr__(customer, "addresses", history)
-    object.__setattr__(customer, "address", history[0] if history else None)

@@ -5,6 +5,7 @@ from app.routes import (
     demo,
     health,
     locations,
+    locations_admin,
     phone_blacklist,
     product_stock_movements_provider,
     products_provider,
@@ -42,6 +43,7 @@ router.include_router(phone_blacklist.router)
 router.include_router(dashboard_seller.router)
 router.include_router(dashboard_provider.router)
 router.include_router(locations.router)
+router.include_router(locations_admin.router)
 router.include_router(organizations.router)
 router.include_router(organizations_provider.router)
 router.include_router(organizations_seller.router)

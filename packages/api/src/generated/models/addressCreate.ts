@@ -10,4 +10,5 @@ export interface AddressCreate {
   address: string;
   province_id: string;
   municipality_id: string;
+  neighborhood_id: string;
 }

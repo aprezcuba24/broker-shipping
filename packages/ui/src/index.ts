@@ -166,17 +166,13 @@ export { RowActions } from './components/row-actions'
 export type { RowActionsProps } from './components/row-actions'
 export { EntitySelect } from './components/entity-select'
 export type { EntitySelectAllOption, EntitySelectProps } from './components/entity-select'
-export { ProvinceMunicipalityFields } from './components/province-municipality-fields'
-export {
-  MunicipalityFormField,
-  ProvinceFormField,
-  useProvinceMunicipalityFields,
-} from './components/province-municipality-fields'
+export { LocationFields, useLocationFields } from './components/province-municipality-fields'
 export type {
-  MunicipalityFormFieldProps,
-  ProvinceFormFieldProps,
-  ProvinceMunicipalityFieldsProps,
-  UseProvinceMunicipalityFieldsOptions,
+  LocationFieldsHandle,
+  LocationFieldsProps,
+  LocationSelection,
+  UseLocationFieldsOptions,
+  UseLocationFieldsReturn,
 } from './components/province-municipality-fields'
 export { EntityAutocomplete } from './components/entity-autocomplete'
 export type { EntityAutocompleteProps } from './components/entity-autocomplete'
@@ -296,7 +292,7 @@ export {
   AlertDialogAction,
   AlertDialogCancel,
 } from './components/ui/alert-dialog'
-export { Popover, PopoverTrigger, PopoverContent } from './components/ui/popover'
+export { Popover, PopoverTrigger, PopoverAnchor, PopoverContent } from './components/ui/popover'
 export { Calendar, CalendarDayButton } from './components/ui/calendar'
 export {
   Select,
@@ -341,6 +337,12 @@ export { RequireOrganization } from './organization/require-organization'
 export type { RequireOrganizationProps } from './organization/require-organization'
 export { OrganizationDirectoryPage } from './organization/organization-directory-page'
 export type { OrganizationDirectoryPageProps } from './organization/organization-directory-page'
+export { RequireSuperAdmin } from './organization/require-super-admin'
+export type { RequireSuperAdminProps } from './organization/require-super-admin'
+export { SuperAdminLayout } from './organization/super-admin-layout'
+export { ProvinceAdminPage } from './location-admin/province'
+export { MunicipalityAdminPage } from './location-admin/municipality'
+export { NeighborhoodAdminPage } from './location-admin/neighborhood'
 export {
   storeActiveOrganizationId,
   peekActiveOrganizationId,

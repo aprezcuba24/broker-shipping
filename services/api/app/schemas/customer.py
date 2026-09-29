@@ -11,6 +11,7 @@ class AddressCreate(BaseModel):
     address: NonEmptyStr = Field(max_length=500)
     province_id: UUID
     municipality_id: UUID
+    neighborhood_id: UUID
 
 
 class AddressPublic(BaseModel):
@@ -20,11 +21,13 @@ class AddressPublic(BaseModel):
     address: str
     province_id: UUID
     municipality_id: UUID
+    neighborhood_id: UUID | None = None
     customer_id: UUID
     created_at: datetime
     updated_at: datetime | None
     province_name: str | None = None
     municipality_name: str | None = None
+    neighborhood_name: str | None = None
 
 
 class CustomerCreate(BaseModel):

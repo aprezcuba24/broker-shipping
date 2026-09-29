@@ -74,6 +74,10 @@ async def seller_order_ctx(
         province_id=province["id"],
         name="Plaza",
     )
+    neighborhood = await location_factory.build_neighborhood(
+        municipality_id=municipality["id"],
+        name="Vedado",
+    )
     customer = await customer_factory.build(
         seller_organization_id=seller_org["id"],
         name="Maria Garcia",
@@ -82,6 +86,7 @@ async def seller_order_ctx(
         address="Calle Original 10",
         province_id=province["id"],
         municipality_id=municipality["id"],
+        neighborhood_id=neighborhood["id"],
     )
     other_customer = await customer_factory.build(
         seller_organization_id=other_seller_org["id"],
@@ -104,6 +109,7 @@ async def seller_order_ctx(
         "customer_address": "Calle Original 10",
         "province_id": province["id"],
         "municipality_id": municipality["id"],
+        "neighborhood_id": neighborhood["id"],
         "other_customer_id": other_customer["id"],
         "seller_bearer": bearer_headers(user_id=seller_user["id"]),
         "other_seller_bearer": bearer_headers(user_id=other_seller_user["id"]),
@@ -175,6 +181,7 @@ async def test_create_order_with_mixed_currencies(
     assert body["customer"]["address"]["address"] == "Calle Original 10"
     assert body["customer"]["address"]["province_name"] == "La Habana"
     assert body["customer"]["address"]["municipality_name"] == "Plaza"
+    assert body["customer"]["address"]["neighborhood_name"] == "Vedado"
 
     totals = {t["currency"]: t["amount"] for t in body["totals"]}
     assert totals == {"cup": 2000, "usd": 2550}
@@ -842,6 +849,10 @@ async def test_order_keeps_customer_and_product_snapshot_after_edits(
         province_id=other_province["id"],
         name="Cardenas",
     )
+    other_neighborhood = await location_factory.build_neighborhood(
+        municipality_id=other_municipality["id"],
+        name="Centro",
+    )
 
     updated_customer = await client.patch(
         f"/customers/seller/{seller_order_ctx['customer_id']}",
@@ -855,6 +866,7 @@ async def test_order_keeps_customer_and_product_snapshot_after_edits(
                 "address": "Calle Nueva 99",
                 "province_id": other_province["id"],
                 "municipality_id": other_municipality["id"],
+                "neighborhood_id": other_neighborhood["id"],
             },
         },
     )
@@ -884,6 +896,7 @@ async def test_order_keeps_customer_and_product_snapshot_after_edits(
     assert body["customer"]["address"]["address"] == "Calle Original 10"
     assert body["customer"]["address"]["province_name"] == "La Habana"
     assert body["customer"]["address"]["municipality_name"] == "Plaza"
+    assert body["customer"]["address"]["neighborhood_name"] == "Vedado"
     assert body["items"][0]["product_name"] == "Arroz"
     assert body["items"][0]["provider_organization_name"] == "Provider CUP"
 

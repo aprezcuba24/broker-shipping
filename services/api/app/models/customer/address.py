@@ -12,3 +12,8 @@ class Address(EntityModel, table=True):
     customer_id: UUID = Field(foreign_key="customer.id", index=True)
     province_id: UUID = Field(foreign_key="province.id", index=True)
     municipality_id: UUID = Field(foreign_key="municipality.id", index=True)
+    neighborhood_id: UUID | None = Field(
+        default=None,
+        foreign_key="neighborhood.id",
+        index=True,
+    )

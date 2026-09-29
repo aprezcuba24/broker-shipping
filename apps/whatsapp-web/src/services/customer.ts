@@ -7,6 +7,7 @@ import {
   type CustomerPublic,
   type LastOrder,
   type MunicipalityPublic,
+  type NeighborhoodPublic,
   type OrderPublic,
   type Page,
   type ProvincePublic,
@@ -98,24 +99,47 @@ async function loadProvinces(token: string): Promise<ProvincePublic[]> {
 async function resolveLocationNames(
   token: string,
   address: CustomerPublic['address'],
-): Promise<{ province: string | null; municipality: string | null }> {
-  if (!address) return { province: null, municipality: null }
+): Promise<{
+  province: string | null
+  municipality: string | null
+  neighborhood: string | null
+}> {
+  if (!address) {
+    return { province: null, municipality: null, neighborhood: null }
+  }
+
+  if (address.province_name || address.municipality_name || address.neighborhood_name) {
+    return {
+      province: address.province_name ?? null,
+      municipality: address.municipality_name ?? null,
+      neighborhood: address.neighborhood_name ?? null,
+    }
+  }
 
   try {
-    const [provinces, municipalities] = await Promise.all([
+    const [provinces, municipalities, neighborhoods] = await Promise.all([
       loadProvinces(token),
       apiRequest<MunicipalityPublic[]>(
         `/locations/provinces/${address.province_id}/municipalities`,
         { token },
       ),
+      address.neighborhood_id
+        ? apiRequest<NeighborhoodPublic[]>(
+            `/locations/municipalities/${address.municipality_id}/neighborhoods`,
+            { token },
+          )
+        : Promise.resolve([] as NeighborhoodPublic[]),
     ])
     return {
       province: provinces.find((p) => p.id === address.province_id)?.name ?? null,
       municipality:
         municipalities.find((m) => m.id === address.municipality_id)?.name ?? null,
+      neighborhood: address.neighborhood_id
+        ? (neighborhoods.find((n) => n.id === address.neighborhood_id)?.name ?? null)
+        : null,
     }
   } catch {
-    return { province: null, municipality: null }
+    return { province: null, municipality: null, neighborhood: null }
   }
 }
 
@@ -155,7 +179,7 @@ export async function lookupCustomerByPhone(params: {
 
   const rawLastOrder = pickLastOrder(ordersPage.items, customer.id)
 
-  const [{ province, municipality }, lastOrder] = await Promise.all([
+  const [{ province, municipality, neighborhood }, lastOrder] = await Promise.all([
     resolveLocationNames(accessToken, customer.address),
     rawLastOrder ? enrichLastOrder(rawLastOrder) : Promise.resolve(null),
   ])
@@ -171,6 +195,7 @@ export async function lookupCustomerByPhone(params: {
     address: customer.address?.address ?? null,
     province,
     municipality,
+    neighborhood,
     lastOrder,
   }
 }

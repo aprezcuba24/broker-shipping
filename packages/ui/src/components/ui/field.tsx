@@ -20,7 +20,7 @@ export function Field({
       data-slot="field"
       data-orientation={orientation}
       className={cn(
-        'flex gap-2',
+        'flex min-w-0 gap-2',
         orientation === 'vertical' && 'flex-col',
         orientation === 'horizontal' && 'flex-row items-start',
         orientation === 'responsive' && 'flex-col sm:flex-row sm:items-start sm:justify-between',

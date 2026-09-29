@@ -76,10 +76,11 @@ function itemTitle(item: LastOrderItem) {
 
 function formatAddressParagraph(
   street: string | null,
+  neighborhood: string | null,
   municipality: string | null,
   province: string | null,
 ): string | null {
-  const parts = [street, municipality, province].filter(
+  const parts = [street, neighborhood, municipality, province].filter(
     (part): part is string => Boolean(part),
   )
   return parts.length > 0 ? parts.join(', ') : null
@@ -265,6 +266,7 @@ function accountSummary(
     ci: data.customer.ci,
     addressParagraph: formatAddressParagraph(
       data.address,
+      data.neighborhood,
       data.municipality,
       data.province,
     ),

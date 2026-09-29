@@ -1,8 +1,13 @@
 import { OrganizationType, RequireAuth } from '@broker/api'
 import {
   ActiveOrganizationProvider,
+  MunicipalityAdminPage,
+  NeighborhoodAdminPage,
   OrganizationScopedApiProvider,
+  ProvinceAdminPage,
   RequireOrganization,
+  RequireSuperAdmin,
+  SuperAdminLayout,
 } from '@broker/ui'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { SellerLayout } from './layouts/seller-layout'
@@ -55,15 +60,21 @@ export default function App() {
           }
         />
         <Route
-          path="/organizations"
           element={
             <RequireAuth loginPath="/login">
               <ActiveOrganizationProvider organizationType={OrganizationType.seller}>
-                <OrganizationsPage />
+                <RequireSuperAdmin>
+                  <SuperAdminLayout />
+                </RequireSuperAdmin>
               </ActiveOrganizationProvider>
             </RequireAuth>
           }
-        />
+        >
+          <Route path="/organizations" element={<OrganizationsPage />} />
+          <Route path="/provinces" element={<ProvinceAdminPage />} />
+          <Route path="/municipalities" element={<MunicipalityAdminPage />} />
+          <Route path="/neighborhoods" element={<NeighborhoodAdminPage />} />
+        </Route>
         <Route
           element={
             <RequireAuth loginPath="/login">

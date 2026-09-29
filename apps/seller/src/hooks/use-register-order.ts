@@ -53,6 +53,7 @@ export function useRegisterOrder(
               address: values.address,
               province_id: values.province_id,
               municipality_id: values.municipality_id,
+              neighborhood_id: values.neighborhood_id,
             },
           },
           {} as RegisterCustomerCustomersSellerRegisterPostParams,

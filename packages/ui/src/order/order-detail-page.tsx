@@ -91,6 +91,18 @@ export const orderDetailCustomerFields: DetailSectionField<OrderPublic>[] = [
     fullWidth: true,
   },
   {
+    title: 'Provincia',
+    accessor: (order) => order.customer?.address?.province_name,
+  },
+  {
+    title: 'Municipio',
+    accessor: (order) => order.customer?.address?.municipality_name,
+  },
+  {
+    title: 'Barrio',
+    accessor: (order) => order.customer?.address?.neighborhood_name,
+  },
+  {
     title: 'Calificación',
     accessor: (order) => order,
     fullWidth: true,

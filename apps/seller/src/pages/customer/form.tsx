@@ -9,7 +9,7 @@ import {
   useImperativeHandle,
   useRef,
   useState,
-  type MutableRefObject,
+  type RefObject,
 } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
@@ -21,12 +21,11 @@ import {
   FormFieldCell,
   FormSection,
   Input,
-  MunicipalityFormField,
-  ProvinceFormField,
+  LocationFields,
   Textarea,
-  useProvinceMunicipalityFields,
   type EntityFormHandle,
   type EntityFormProps,
+  type LocationFieldsHandle,
 } from '@broker/ui'
 
 export const customerFormSchema = z.object({
@@ -52,6 +51,7 @@ export const customerFormSchema = z.object({
     .max(500, 'Máximo 500 caracteres'),
   province_id: z.string().uuid('Selecciona una provincia'),
   municipality_id: z.string().uuid('Selecciona un municipio'),
+  neighborhood_id: z.string().uuid('Selecciona un barrio'),
 })
 
 export type CustomerFormValues = z.infer<typeof customerFormSchema>
@@ -63,6 +63,7 @@ export const customerFormDefaultValues: CustomerFormValues = {
   address: '',
   province_id: '',
   municipality_id: '',
+  neighborhood_id: '',
 }
 
 type LookupStatus = 'idle' | 'searching' | 'found' | 'not_found' | 'error'
@@ -79,7 +80,7 @@ function isPhoneReadyForLookup(digits: string): boolean {
 function applyCustomerToForm(
   setValue: ReturnType<typeof useForm<CustomerFormValues>>['setValue'],
   customer: CustomerPublic,
-  pendingMunicipalityIdRef: MutableRefObject<string | null>,
+  locationRef: RefObject<LocationFieldsHandle | null>,
 ) {
   setValue('name', customer.name, { shouldDirty: true, shouldValidate: false })
   setValue('ci', customer.ci, { shouldDirty: true, shouldValidate: false })
@@ -87,14 +88,13 @@ function applyCustomerToForm(
     shouldDirty: true,
     shouldValidate: false,
   })
-  pendingMunicipalityIdRef.current = customer.address?.municipality_id ?? null
-  setValue('province_id', customer.address?.province_id ?? '', {
-    shouldDirty: true,
-    shouldValidate: false,
-  })
-  setValue('municipality_id', customer.address?.municipality_id ?? '', {
-    shouldDirty: true,
-    shouldValidate: false,
+  locationRef.current?.applySelection({
+    province_id: customer.address?.province_id ?? '',
+    province_name: customer.address?.province_name,
+    municipality_id: customer.address?.municipality_id ?? '',
+    municipality_name: customer.address?.municipality_name,
+    neighborhood_id: customer.address?.neighborhood_id ?? '',
+    neighborhood_name: customer.address?.neighborhood_name,
   })
 }
 
@@ -115,7 +115,7 @@ export function CustomerForm({
 
   const lastLookedUpPhoneRef = useRef<string | null>(null)
   const lookupSeqRef = useRef(0)
-  const pendingMunicipalityIdRef = useRef<string | null>(null)
+  const locationRef = useRef<LocationFieldsHandle>(null)
 
   const phoneValue = useWatch({ control: form.control, name: 'phone' })
 
@@ -140,13 +140,18 @@ export function CustomerForm({
   }))
 
   const clearCustomerDetails = () => {
-    pendingMunicipalityIdRef.current = null
+    locationRef.current?.clearSelection()
     form.setValue('name', '', { shouldDirty: false, shouldValidate: false })
     form.setValue('ci', '', { shouldDirty: false, shouldValidate: false })
     form.setValue('address', '', { shouldDirty: false, shouldValidate: false })
-    form.setValue('province_id', '', { shouldDirty: false, shouldValidate: false })
-    form.setValue('municipality_id', '', { shouldDirty: false, shouldValidate: false })
-    form.clearErrors(['name', 'ci', 'address', 'province_id', 'municipality_id'])
+    form.clearErrors([
+      'name',
+      'ci',
+      'address',
+      'province_id',
+      'municipality_id',
+      'neighborhood_id',
+    ])
   }
 
   const runLookup = async (digits: string) => {
@@ -171,7 +176,7 @@ export function CustomerForm({
       lastLookedUpPhoneRef.current = digits
       const customer = page.items[0]
       if (customer) {
-        applyCustomerToForm(form.setValue, customer, pendingMunicipalityIdRef)
+        applyCustomerToForm(form.setValue, customer, locationRef)
         setLookupStatus('found')
       } else {
         setLookupStatus('not_found')
@@ -207,25 +212,6 @@ export function CustomerForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- phone-driven lookup
   }, [phoneValue])
 
-  const locationFields = useProvinceMunicipalityFields({
-    control: form.control,
-    setValue: form.setValue,
-    provinceName: 'province_id',
-    municipalityName: 'municipality_id',
-  })
-
-  // Restore municipality after useProvinceMunicipalityFields clears it on province change.
-  useEffect(() => {
-    const municipalityId = pendingMunicipalityIdRef.current
-    if (!municipalityId) return
-    if (!locationFields.provinceId) return
-    pendingMunicipalityIdRef.current = null
-    form.setValue('municipality_id', municipalityId, {
-      shouldDirty: true,
-      shouldValidate: false,
-    })
-  }, [locationFields.provinceId, form])
-
   const detailsDisabled = isSubmitting || !detailsUnlocked
 
   const lookupHint =
@@ -240,7 +226,7 @@ export function CustomerForm({
             : null
 
   return (
-    <form className="space-y-3" onSubmit={(event) => event.preventDefault()}>
+    <form className="space-y-5" onSubmit={(event) => event.preventDefault()}>
       <FormSection>
         <FormFieldCell fullWidth>
           <Controller
@@ -282,7 +268,7 @@ export function CustomerForm({
           />
         </FormFieldCell>
 
-        <FormFieldCell fullWidth>
+        <FormFieldCell>
           <Controller
             name="name"
             control={form.control}
@@ -302,7 +288,7 @@ export function CustomerForm({
           />
         </FormFieldCell>
 
-        <FormFieldCell fullWidth>
+        <FormFieldCell>
           <Controller
             name="ci"
             control={form.control}
@@ -342,25 +328,18 @@ export function CustomerForm({
             )}
           />
         </FormFieldCell>
-
-        <FormFieldCell fullWidth>
-          <ProvinceFormField
-            control={form.control}
-            name="province_id"
-            disabled={detailsDisabled}
-            state={locationFields}
-          />
-        </FormFieldCell>
-
-        <FormFieldCell fullWidth>
-          <MunicipalityFormField
-            control={form.control}
-            name="municipality_id"
-            disabled={detailsDisabled}
-            state={locationFields}
-          />
-        </FormFieldCell>
       </FormSection>
+
+      <LocationFields
+        ref={locationRef}
+        control={form.control}
+        setValue={form.setValue}
+        provinceName="province_id"
+        municipalityName="municipality_id"
+        neighborhoodName="neighborhood_id"
+        disabled={detailsDisabled}
+        layout="row"
+      />
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
     </form>

@@ -57,7 +57,7 @@ function lastCellSpanClass(meta: FormFieldCellMeta[], index: number): string | u
 }
 
 const formFieldCellClassName = cn(
-  'flex flex-col gap-1.5 bg-surface-container-lowest px-4 py-3.5 sm:px-5 sm:py-4',
+  'flex min-w-0 flex-col gap-1.5 bg-surface-container-lowest px-4 py-3.5 sm:px-5 sm:py-4',
   'min-h-[4.25rem]',
   'sm:border-t sm:border-r sm:border-border/50',
   '[&_[data-slot=field]]:gap-1.5',

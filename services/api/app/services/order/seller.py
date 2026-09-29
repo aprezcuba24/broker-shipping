@@ -102,6 +102,7 @@ async def _build_order(
     customer_address = ""
     customer_province_name = ""
     customer_municipality_name = ""
+    customer_neighborhood_name = ""
     if customer is not None:
         customer_name = customer.name
         customer_ci = customer.ci
@@ -112,6 +113,9 @@ async def _build_order(
             customer_province_name = getattr(address, "province_name", None) or ""
             customer_municipality_name = (
                 getattr(address, "municipality_name", None) or ""
+            )
+            customer_neighborhood_name = (
+                getattr(address, "neighborhood_name", None) or ""
             )
 
     order = Order(
@@ -126,6 +130,7 @@ async def _build_order(
         customer_address=customer_address,
         customer_province_name=customer_province_name,
         customer_municipality_name=customer_municipality_name,
+        customer_neighborhood_name=customer_neighborhood_name,
         status=OrderStatus.created,
     )
     items: list[OrderItem] = []
