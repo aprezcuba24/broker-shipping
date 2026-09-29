@@ -118,3 +118,60 @@ async def test_list_municipalities_unknown_province_returns_404(
 async def test_locations_require_auth(client: AsyncClient) -> None:
     response = await client.get("/locations/provinces")
     assert response.status_code == 401
+
+
+async def test_list_locations_filter_by_name(
+    client: AsyncClient,
+    user_factory: UserFactory,
+    location_factory: LocationFactory,
+) -> None:
+    user = await user_factory.build()
+    headers = bearer_headers(user_id=user["id"])
+
+    province = await location_factory.build_province(name="La Habana")
+    await location_factory.build_province(name="Matanzas")
+    municipality = await location_factory.build_municipality(
+        province_id=province["id"],
+        name="Plaza de la Revolucion",
+    )
+    await location_factory.build_municipality(
+        province_id=province["id"],
+        name="Playa",
+    )
+    neighborhood = await location_factory.build_neighborhood(
+        municipality_id=municipality["id"],
+        name="Vedado",
+    )
+    await location_factory.build_neighborhood(
+        municipality_id=municipality["id"],
+        name="Nuevo Vedado",
+    )
+
+    provinces = await client.get(
+        "/locations/provinces",
+        headers=headers,
+        params={"name": "habana"},
+    )
+    assert provinces.status_code == 200
+    province_names = [p["name"] for p in provinces.json()]
+    assert province_names == ["La Habana"]
+
+    municipalities = await client.get(
+        f"/locations/provinces/{province['id']}/municipalities",
+        headers=headers,
+        params={"name": "plaza"},
+    )
+    assert municipalities.status_code == 200
+    municipality_body = municipalities.json()
+    assert len(municipality_body) == 1
+    assert municipality_body[0]["id"] == municipality["id"]
+
+    neighborhoods = await client.get(
+        f"/locations/municipalities/{municipality['id']}/neighborhoods",
+        headers=headers,
+        params={"name": "vedado"},
+    )
+    assert neighborhoods.status_code == 200
+    neighborhood_names = {n["name"] for n in neighborhoods.json()}
+    assert neighborhood_names == {"Vedado", "Nuevo Vedado"}
+    assert any(n["id"] == neighborhood["id"] for n in neighborhoods.json())

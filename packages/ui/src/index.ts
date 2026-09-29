@@ -166,19 +166,13 @@ export { RowActions } from './components/row-actions'
 export type { RowActionsProps } from './components/row-actions'
 export { EntitySelect } from './components/entity-select'
 export type { EntitySelectAllOption, EntitySelectProps } from './components/entity-select'
-export { ProvinceMunicipalityFields } from './components/province-municipality-fields'
-export {
-  MunicipalityFormField,
-  NeighborhoodFormField,
-  ProvinceFormField,
-  useProvinceMunicipalityFields,
-} from './components/province-municipality-fields'
+export { LocationFields, useLocationFields } from './components/province-municipality-fields'
 export type {
-  MunicipalityFormFieldProps,
-  NeighborhoodFormFieldProps,
-  ProvinceFormFieldProps,
-  ProvinceMunicipalityFieldsProps,
-  UseProvinceMunicipalityFieldsOptions,
+  LocationFieldsHandle,
+  LocationFieldsProps,
+  LocationSelection,
+  UseLocationFieldsOptions,
+  UseLocationFieldsReturn,
 } from './components/province-municipality-fields'
 export { EntityAutocomplete } from './components/entity-autocomplete'
 export type { EntityAutocompleteProps } from './components/entity-autocomplete'

@@ -3724,22 +3724,6 @@
         ],
         "summary": "List Provinces",
         "operationId": "list_provinces_locations_provinces_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/ProvincePublic"
-                  },
-                  "type": "array",
-                  "title": "Response List Provinces Locations Provinces Get"
-                }
-              }
-            }
-          }
-        },
         "security": [
           {
             "HTTPBearer": []
@@ -3747,7 +3731,51 @@
           {
             "APIKeyHeader": []
           }
-        ]
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProvincePublic"
+                  },
+                  "title": "Response List Provinces Locations Provinces Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/locations/provinces/{province_id}/municipalities": {
@@ -3774,6 +3802,22 @@
               "type": "string",
               "format": "uuid",
               "title": "Province Id"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Name"
             }
           }
         ],
@@ -3829,6 +3873,22 @@
               "type": "string",
               "format": "uuid",
               "title": "Municipality Id"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Name"
             }
           }
         ],

@@ -11,35 +11,64 @@ from app.models.location.neighborhood import Neighborhood
 from app.models.location.province import Province
 from app.schemas.location import NeighborhoodPublic
 
+_SEARCH_LIMIT = 20
 
-async def list_provinces(session: AsyncSession) -> list[Province]:
-    result = await session.execute(select(Province).order_by(Province.name))
+
+def _name_term(name: str | None) -> str | None:
+    if name is None:
+        return None
+    term = name.strip()
+    return term or None
+
+
+async def list_provinces(
+    session: AsyncSession,
+    *,
+    name: str | None = None,
+) -> list[Province]:
+    stmt = select(Province).order_by(Province.name)
+    term = _name_term(name)
+    if term is not None:
+        stmt = stmt.where(col(Province.name).ilike(f"%{term}%")).limit(_SEARCH_LIMIT)
+    result = await session.execute(stmt)
     return list(result.scalars().all())
 
 
 async def list_municipalities_for_province(
     session: AsyncSession,
     province_id: UUID,
+    *,
+    name: str | None = None,
 ) -> list[Municipality]:
     await get_entity(session, Province, id=province_id)
-    result = await session.execute(
+    stmt = (
         select(Municipality)
         .where(Municipality.province_id == province_id)
         .order_by(Municipality.name)
     )
+    term = _name_term(name)
+    if term is not None:
+        stmt = stmt.where(col(Municipality.name).ilike(f"%{term}%")).limit(_SEARCH_LIMIT)
+    result = await session.execute(stmt)
     return list(result.scalars().all())
 
 
 async def list_neighborhoods_for_municipality(
     session: AsyncSession,
     municipality_id: UUID,
+    *,
+    name: str | None = None,
 ) -> list[Neighborhood]:
     await get_entity(session, Municipality, id=municipality_id)
-    result = await session.execute(
+    stmt = (
         select(Neighborhood)
         .where(Neighborhood.municipality_id == municipality_id)
         .order_by(Neighborhood.name)
     )
+    term = _name_term(name)
+    if term is not None:
+        stmt = stmt.where(col(Neighborhood.name).ilike(f"%{term}%")).limit(_SEARCH_LIMIT)
+    result = await session.execute(stmt)
     return list(result.scalars().all())
 
 
