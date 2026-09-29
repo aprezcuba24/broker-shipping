@@ -4,8 +4,11 @@
  * Vendelo360 API
  * OpenAPI spec version: 0.1.0
  */
+import type { ProvincePublicUpdatedAt } from './provincePublicUpdatedAt';
 
 export interface ProvincePublic {
   id: string;
   name: string;
+  created_at: string;
+  updated_at?: ProvincePublicUpdatedAt;
 }

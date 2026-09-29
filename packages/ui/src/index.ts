@@ -337,6 +337,12 @@ export { RequireOrganization } from './organization/require-organization'
 export type { RequireOrganizationProps } from './organization/require-organization'
 export { OrganizationDirectoryPage } from './organization/organization-directory-page'
 export type { OrganizationDirectoryPageProps } from './organization/organization-directory-page'
+export { RequireSuperAdmin } from './organization/require-super-admin'
+export type { RequireSuperAdminProps } from './organization/require-super-admin'
+export { SuperAdminLayout } from './organization/super-admin-layout'
+export { ProvinceAdminPage } from './location-admin/province'
+export { MunicipalityAdminPage } from './location-admin/municipality'
+export { NeighborhoodAdminPage } from './location-admin/neighborhood'
 export {
   storeActiveOrganizationId,
   peekActiveOrganizationId,

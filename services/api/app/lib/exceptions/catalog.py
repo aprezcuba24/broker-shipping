@@ -149,6 +149,46 @@ ERRORS: dict[str, ErrorDef] = {
         status_code=409,
         template="Ya existe un registro con esos datos.",
     ),
+    "province_name_conflict": ErrorDef(
+        code="province_name_conflict",
+        status_code=409,
+        template="Ya existe una provincia con ese nombre.",
+    ),
+    "municipality_name_conflict": ErrorDef(
+        code="municipality_name_conflict",
+        status_code=409,
+        template="Ya existe un municipio con ese nombre en la provincia.",
+    ),
+    "neighborhood_name_conflict": ErrorDef(
+        code="neighborhood_name_conflict",
+        status_code=409,
+        template="Ya existe un barrio con ese nombre en el municipio.",
+    ),
+    "province_has_municipalities": ErrorDef(
+        code="province_has_municipalities",
+        status_code=409,
+        template="No se puede eliminar la provincia porque tiene municipios asociados.",
+    ),
+    "municipality_has_neighborhoods": ErrorDef(
+        code="municipality_has_neighborhoods",
+        status_code=409,
+        template="No se puede eliminar el municipio porque tiene barrios asociados.",
+    ),
+    "province_in_use": ErrorDef(
+        code="province_in_use",
+        status_code=409,
+        template="No se puede eliminar la provincia porque hay direcciones que la usan.",
+    ),
+    "municipality_in_use": ErrorDef(
+        code="municipality_in_use",
+        status_code=409,
+        template="No se puede eliminar el municipio porque hay direcciones que lo usan.",
+    ),
+    "neighborhood_in_use": ErrorDef(
+        code="neighborhood_in_use",
+        status_code=409,
+        template="No se puede eliminar el barrio porque hay direcciones que lo usan.",
+    ),
     "unlink_pending_commissions": ErrorDef(
         code="unlink_pending_commissions",
         status_code=409,

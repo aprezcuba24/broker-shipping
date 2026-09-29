@@ -151,6 +151,35 @@
   }
 }
 
+/* ── Super admin shell (burnt amber accent) ─────────────────── */
+.broker-super-admin-shell {
+  --primary: 36 38% 42%;
+  --primary-foreground: 42 55% 98%;
+  --ring: 36 38% 42%;
+  --background: 40 33% 97%;
+  --accent: 38 32% 92%;
+  --accent-foreground: 32 30% 22%;
+
+  --color-ds-primary: #a0783a;
+  --color-primary-dim: #856530;
+  --color-on-primary: #fffaf0;
+  --color-primary-container: #f2e3c6;
+  --color-on-primary-container: #5c4524;
+  --color-primary-fixed: #f2e3c6;
+  --color-primary-fixed-dim: #e5d4b4;
+  --color-surface-tint: #a0783a;
+
+  --color-surface: #f7f4ee;
+  --color-surface-container-low: #f5f0e8;
+  --color-surface-container: #ebe4d9;
+  --color-surface-container-high: #e2dace;
+  --color-surface-container-highest: #d9cfc0;
+}
+
+.broker-super-admin-shell .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d4c4a8;
+}
+
 /* ── Custom scrollbar (Stitch "Analytical Lens" style) ──────── */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;

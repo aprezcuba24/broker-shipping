@@ -1,5 +1,5 @@
 import { useAuth } from '@broker/api'
-import { Building2, Plus } from 'lucide-react'
+import { Building2, Plus, Shield } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import {
   DropdownMenuItem,
@@ -43,6 +43,10 @@ export function OrganizationMenuSection() {
         <DropdownMenuItem onSelect={() => void navigate('/organizations')}>
           <Building2 />
           Cambiar organización
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => void navigate('/organizations')}>
+          <Shield />
+          Super admin
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => openCreateOrganization()}>
           <Plus />
