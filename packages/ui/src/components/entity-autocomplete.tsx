@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type FocusEventHandler, type Ref } from 'react'
 import { cn } from '../lib/utils'
 import { Input } from './ui/input'
+import { Popover, PopoverAnchor, PopoverContent } from './ui/popover'
 
 type EntityValue = string | number | null | undefined
 
@@ -64,7 +65,8 @@ export function EntityAutocomplete<T extends object>({
 }: EntityAutocompleteProps<T>) {
   const [isOpen, setIsOpen] = useState(false)
   const [inputValue, setInputValue] = useState(selectedLabel ?? '')
-  const containerRef = useRef<HTMLDivElement>(null)
+  const [anchorWidth, setAnchorWidth] = useState<number>()
+  const anchorRef = useRef<HTMLDivElement>(null)
   const onSearchChangeRef = useRef(onSearchChange)
   const onValueChangeRef = useRef(onValueChange)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -99,14 +101,17 @@ export function EntityAutocomplete<T extends object>({
   }, [selectedLabel, value])
 
   useEffect(() => {
-    const handleMouseDown = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleMouseDown)
-    return () => document.removeEventListener('mousedown', handleMouseDown)
-  }, [])
+    if (!isOpen || disabled) return
+    const node = anchorRef.current
+    if (!node) return
+
+    const syncWidth = () => setAnchorWidth(node.getBoundingClientRect().width)
+    syncWidth()
+
+    const observer = new ResizeObserver(syncWidth)
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [isOpen, disabled])
 
   const trimmedInput = inputValue.trim()
   const canSearch = trimmedInput.length >= minQueryLength
@@ -122,7 +127,7 @@ export function EntityAutocomplete<T extends object>({
 
   const handleInputChange = (next: string) => {
     setInputValue(next)
-    setIsOpen(true)
+    if (!disabled) setIsOpen(true)
     scheduleSearchChange(next)
 
     // Typing away from the committed selection clears the bound value.
@@ -147,82 +152,97 @@ export function EntityAutocomplete<T extends object>({
   }
 
   return (
-    <div ref={containerRef} className="relative">
-      <Input
-        id={id}
-        name={name}
-        ref={ref}
-        onBlur={onBlur}
-        value={inputValue}
-        role="combobox"
-        aria-expanded={isOpen}
-        aria-controls={listboxId}
-        aria-autocomplete="list"
-        aria-label={ariaLabel}
-        aria-invalid={ariaInvalid}
-        autoComplete="off"
-        disabled={disabled}
-        placeholder={placeholder}
-        className={inputClassName}
-        onChange={(event) => handleInputChange(event.target.value)}
-        onFocus={() => setIsOpen(true)}
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') {
-            setIsOpen(false)
-          }
-        }}
-      />
-
-      {isOpen ? (
-        <ul
-          id={listboxId}
-          role="listbox"
-          className={cn(
-            'absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-border bg-background py-1 shadow-md',
-            listClassName,
-          )}
-        >
-          {!canSearch ? (
-            <li role="presentation" className="px-3 py-2 text-sm text-muted-foreground">
-              {minQueryMessage}
-            </li>
-          ) : isLoading ? (
-            <li role="presentation" className="px-3 py-2 text-sm text-muted-foreground">
-              {loadingMessage}
-            </li>
-          ) : items.length === 0 ? (
-            <li role="presentation" className="px-3 py-2 text-sm text-muted-foreground">
-              {emptyMessage}
-            </li>
-          ) : (
-            items.map((item, index) => {
-              const itemValue = item[valueKey as keyof T] as EntityValue
-              if (itemValue === null || itemValue === undefined || itemValue === '') {
-                return null
+    <Popover
+      open={isOpen && !disabled}
+      onOpenChange={(next) => {
+        if (!disabled) setIsOpen(next)
+      }}
+    >
+      <PopoverAnchor asChild>
+        <div ref={anchorRef} className="min-w-0 w-full">
+          <Input
+            id={id}
+            name={name}
+            ref={ref}
+            onBlur={onBlur}
+            value={inputValue}
+            role="combobox"
+            aria-expanded={isOpen && !disabled}
+            aria-controls={listboxId}
+            aria-autocomplete="list"
+            aria-label={ariaLabel}
+            aria-invalid={ariaInvalid}
+            autoComplete="off"
+            disabled={disabled}
+            placeholder={placeholder}
+            className={cn('min-w-0', inputClassName)}
+            onChange={(event) => handleInputChange(event.target.value)}
+            onFocus={() => {
+              if (!disabled) setIsOpen(true)
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') {
+                setIsOpen(false)
               }
+            }}
+          />
+        </div>
+      </PopoverAnchor>
 
-              const itemLabel = item[labelKey as keyof T]
+      <PopoverContent
+        id={listboxId}
+        role="listbox"
+        align="start"
+        sideOffset={4}
+        collisionPadding={8}
+        style={anchorWidth ? { width: anchorWidth } : undefined}
+        className={cn(
+          'z-[60] max-h-60 max-w-[calc(100vw-1rem)] overflow-auto p-0 py-1',
+          listClassName,
+        )}
+        onOpenAutoFocus={(event) => event.preventDefault()}
+        onCloseAutoFocus={(event) => event.preventDefault()}
+      >
+        {!canSearch ? (
+          <div role="presentation" className="px-3 py-2 text-sm text-muted-foreground">
+            {minQueryMessage}
+          </div>
+        ) : isLoading ? (
+          <div role="presentation" className="px-3 py-2 text-sm text-muted-foreground">
+            {loadingMessage}
+          </div>
+        ) : items.length === 0 ? (
+          <div role="presentation" className="px-3 py-2 text-sm text-muted-foreground">
+            {emptyMessage}
+          </div>
+        ) : (
+          items.map((item, index) => {
+            const itemValue = item[valueKey as keyof T] as EntityValue
+            if (itemValue === null || itemValue === undefined || itemValue === '') {
+              return null
+            }
 
-              return (
-                <li key={`${String(itemValue)}-${index}`} role="option">
-                  <button
-                    type="button"
-                    className="flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
-                    onMouseDown={(event) => event.preventDefault()}
-                    onClick={() => selectItem(item)}
-                  >
-                    {renderItem ? (
-                      renderItem(item)
-                    ) : (
-                      <span className="font-medium text-foreground">{String(itemLabel ?? '')}</span>
-                    )}
-                  </button>
-                </li>
-              )
-            })
-          )}
-        </ul>
-      ) : null}
-    </div>
+            const itemLabel = item[labelKey as keyof T]
+
+            return (
+              <div key={`${String(itemValue)}-${index}`} role="option">
+                <button
+                  type="button"
+                  className="flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => selectItem(item)}
+                >
+                  {renderItem ? (
+                    renderItem(item)
+                  ) : (
+                    <span className="font-medium text-foreground">{String(itemLabel ?? '')}</span>
+                  )}
+                </button>
+              </div>
+            )
+          })
+        )}
+      </PopoverContent>
+    </Popover>
   )
 }

@@ -1,6 +1,7 @@
 import * as React from 'react'
 
 import { BROKER_DIALOG_CLASSNAME } from '../lib/broker-dialog'
+import { cn } from '../lib/utils'
 import { Button, type ButtonProps } from './button'
 import {
   Dialog,
@@ -23,6 +24,8 @@ export type ButtonModalProps = {
   onOpenChange?: (open: boolean) => void
   /** When true, no trigger button is rendered (for externally controlled modals). */
   hideTrigger?: boolean
+  /** Extra classes merged onto DialogContent (e.g. wider max-width). */
+  contentClassName?: string
   children: React.ReactNode
 } & Omit<ButtonProps, 'children' | 'onClick'>
 
@@ -36,6 +39,7 @@ export function ButtonModal({
   open,
   onOpenChange,
   hideTrigger = false,
+  contentClassName,
   children,
   ...buttonProps
 }: ButtonModalProps) {
@@ -74,14 +78,16 @@ export function ButtonModal({
         </DialogTrigger>
       ) : null}
 
-      <DialogContent className={BROKER_DIALOG_CLASSNAME}>
-        <DialogHeader>
+      <DialogContent className={cn(BROKER_DIALOG_CLASSNAME, contentClassName)}>
+        <DialogHeader className="shrink-0">
           <DialogTitle className="font-headline">{title}</DialogTitle>
         </DialogHeader>
 
-        {children}
+        <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto p-1">
+          {children}
+        </div>
 
-        <DialogFooter className="broker-dialog-footer">
+        <DialogFooter className="broker-dialog-footer shrink-0">
           <DialogClose asChild>
             <Button
               variant="outline"

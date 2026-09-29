@@ -144,6 +144,7 @@ export function CartPage() {
         isSubmitting={isSubmitting}
         error={error}
         formKey="register-customer"
+        contentClassName="sm:max-w-3xl"
       />
     </PageWrapper>
   )

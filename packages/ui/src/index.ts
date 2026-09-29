@@ -292,7 +292,7 @@ export {
   AlertDialogAction,
   AlertDialogCancel,
 } from './components/ui/alert-dialog'
-export { Popover, PopoverTrigger, PopoverContent } from './components/ui/popover'
+export { Popover, PopoverTrigger, PopoverAnchor, PopoverContent } from './components/ui/popover'
 export { Calendar, CalendarDayButton } from './components/ui/calendar'
 export {
   Select,

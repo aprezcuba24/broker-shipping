@@ -306,7 +306,7 @@
   font-family: var(--font-headline);
 }
 
-/* FormSection inside modals: no nested card chrome (dialog already has border/padding) */
+/* FormSection inside modals: no nested card chrome; use gaps instead of shared borders */
 .broker-dialog [data-slot='form-section'] {
   border: 0;
   border-radius: 0;
@@ -321,10 +321,27 @@
   background: transparent;
 }
 
+.broker-dialog [data-slot='form-section'] > div {
+  gap: 0.875rem 1.25rem;
+}
+
+.broker-dialog [data-slot='form-section'] > div > * + * {
+  border-top-width: 0;
+}
+
+.broker-dialog [data-slot='form-section'] > div > [data-slot='form-field-cell'],
 .broker-dialog [data-slot='form-field-cell'] {
-  padding-left: 0;
-  padding-right: 0;
+  padding: 0;
+  min-height: 0;
   background: transparent;
+  border-width: 0;
+  border-style: none;
+}
+
+/* Keep focus rings inside the dialog without expanding the layout */
+.broker-dialog input:focus-visible,
+.broker-dialog textarea:focus-visible {
+  --tw-ring-offset-width: 0px;
 }
 
 .broker-dialog [data-slot='dialog-footer'] {

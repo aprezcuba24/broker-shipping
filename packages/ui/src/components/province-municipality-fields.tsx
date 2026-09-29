@@ -16,6 +16,7 @@ import {
   useWatch,
 } from 'react-hook-form'
 
+import { cn } from '../lib/utils'
 import { EntityAutocomplete } from './entity-autocomplete'
 import { FormFieldCell } from './form-section'
 import { Field, FieldError, FieldLabel } from './ui/field'
@@ -297,6 +298,8 @@ export type LocationFieldsProps<T extends FieldValues> = UseLocationFieldsOption
   provinceLabel?: string
   municipalityLabel?: string
   neighborhoodLabel?: string
+  /** `row`: 3 columns from `sm` (standalone section). Default stacks for use inside FormSection. */
+  layout?: 'stack' | 'row'
   ref?: Ref<LocationFieldsHandle>
 }
 
@@ -311,6 +314,7 @@ export function LocationFields<T extends FieldValues>({
   provinceLabel = 'Provincia',
   municipalityLabel = 'Municipio',
   neighborhoodLabel = 'Barrio',
+  layout = 'stack',
   ref,
 }: LocationFieldsProps<T>) {
   const state = useLocationFields({
@@ -331,9 +335,12 @@ export function LocationFields<T extends FieldValues>({
     [state.applySelection, state.clearSelection],
   )
 
-  return (
+  const isRow = layout === 'row'
+  const cellFullWidth = !isRow
+
+  const fields = (
     <>
-      <FormFieldCell fullWidth>
+      <FormFieldCell fullWidth={cellFullWidth}>
         <Controller
           name={provinceName}
           control={control}
@@ -369,7 +376,7 @@ export function LocationFields<T extends FieldValues>({
         />
       </FormFieldCell>
 
-      <FormFieldCell fullWidth>
+      <FormFieldCell fullWidth={cellFullWidth}>
         <Controller
           name={municipalityName}
           control={control}
@@ -410,7 +417,7 @@ export function LocationFields<T extends FieldValues>({
       </FormFieldCell>
 
       {state.showNeighborhood && neighborhoodName ? (
-        <FormFieldCell fullWidth>
+        <FormFieldCell fullWidth={cellFullWidth} className={isRow ? 'sm:border-r-0' : undefined}>
           <Controller
             name={neighborhoodName}
             control={control}
@@ -450,5 +457,27 @@ export function LocationFields<T extends FieldValues>({
         </FormFieldCell>
       ) : null}
     </>
+  )
+
+  if (!isRow) return fields
+
+  return (
+    <section
+      data-slot="form-section"
+      className={cn(
+        'rounded-xl border border-border/70 bg-surface-container-lowest',
+        'shadow-[0_1px_2px_rgba(42,52,57,0.04)]',
+        'overflow-hidden',
+      )}
+    >
+      <div
+        className={cn(
+          'grid grid-cols-1 divide-y divide-border/50',
+          'sm:grid-cols-3 sm:divide-y-0',
+        )}
+      >
+        {fields}
+      </div>
+    </section>
   )
 }

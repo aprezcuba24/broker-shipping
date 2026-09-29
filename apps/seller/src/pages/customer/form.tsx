@@ -226,7 +226,7 @@ export function CustomerForm({
             : null
 
   return (
-    <form className="space-y-3" onSubmit={(event) => event.preventDefault()}>
+    <form className="space-y-5" onSubmit={(event) => event.preventDefault()}>
       <FormSection>
         <FormFieldCell fullWidth>
           <Controller
@@ -268,7 +268,7 @@ export function CustomerForm({
           />
         </FormFieldCell>
 
-        <FormFieldCell fullWidth>
+        <FormFieldCell>
           <Controller
             name="name"
             control={form.control}
@@ -288,7 +288,7 @@ export function CustomerForm({
           />
         </FormFieldCell>
 
-        <FormFieldCell fullWidth>
+        <FormFieldCell>
           <Controller
             name="ci"
             control={form.control}
@@ -328,17 +328,18 @@ export function CustomerForm({
             )}
           />
         </FormFieldCell>
-
-        <LocationFields
-          ref={locationRef}
-          control={form.control}
-          setValue={form.setValue}
-          provinceName="province_id"
-          municipalityName="municipality_id"
-          neighborhoodName="neighborhood_id"
-          disabled={detailsDisabled}
-        />
       </FormSection>
+
+      <LocationFields
+        ref={locationRef}
+        control={form.control}
+        setValue={form.setValue}
+        provinceName="province_id"
+        municipalityName="municipality_id"
+        neighborhoodName="neighborhood_id"
+        disabled={detailsDisabled}
+        layout="row"
+      />
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
     </form>
