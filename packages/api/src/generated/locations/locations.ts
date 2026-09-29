@@ -22,6 +22,7 @@ import type {
 import type {
   HTTPValidationError,
   MunicipalityPublic,
+  NeighborhoodPublic,
   ProvincePublic
 } from '.././models';
 
@@ -205,6 +206,98 @@ export function useListMunicipalitiesLocationsProvincesProvinceIdMunicipalitiesG
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListMunicipalitiesLocationsProvincesProvinceIdMunicipalitiesGetQueryOptions(provinceId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary List Neighborhoods For Municipality
+ */
+export const listNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet = (
+    municipalityId: string,
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<NeighborhoodPublic[]>(
+      {url: `/locations/municipalities/${municipalityId}/neighborhoods`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getListNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGetQueryKey = (municipalityId?: string,) => {
+    return [
+    `/locations/municipalities/${municipalityId}/neighborhoods`
+    ] as const;
+    }
+
+    
+export const getListNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGetQueryOptions = <TData = Awaited<ReturnType<typeof listNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet>>, TError = HTTPValidationError>(municipalityId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGetQueryKey(municipalityId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet>>> = ({ signal }) => listNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet(municipalityId, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(municipalityId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGetQueryResult = NonNullable<Awaited<ReturnType<typeof listNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet>>>
+export type ListNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGetQueryError = HTTPValidationError
+
+
+export function useListNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet<TData = Awaited<ReturnType<typeof listNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet>>, TError = HTTPValidationError>(
+ municipalityId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet>>,
+          TError,
+          Awaited<ReturnType<typeof listNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet<TData = Awaited<ReturnType<typeof listNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet>>, TError = HTTPValidationError>(
+ municipalityId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet>>,
+          TError,
+          Awaited<ReturnType<typeof listNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet<TData = Awaited<ReturnType<typeof listNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet>>, TError = HTTPValidationError>(
+ municipalityId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Neighborhoods For Municipality
+ */
+
+export function useListNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet<TData = Awaited<ReturnType<typeof listNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet>>, TError = HTTPValidationError>(
+ municipalityId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet>>, TError, TData>>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListNeighborhoodsForMunicipalityLocationsMunicipalitiesMunicipalityIdNeighborhoodsGetQueryOptions(municipalityId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

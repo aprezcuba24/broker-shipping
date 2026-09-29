@@ -169,11 +169,13 @@ export type { EntitySelectAllOption, EntitySelectProps } from './components/enti
 export { ProvinceMunicipalityFields } from './components/province-municipality-fields'
 export {
   MunicipalityFormField,
+  NeighborhoodFormField,
   ProvinceFormField,
   useProvinceMunicipalityFields,
 } from './components/province-municipality-fields'
 export type {
   MunicipalityFormFieldProps,
+  NeighborhoodFormFieldProps,
   ProvinceFormFieldProps,
   ProvinceMunicipalityFieldsProps,
   UseProvinceMunicipalityFieldsOptions,

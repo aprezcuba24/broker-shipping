@@ -33,10 +33,18 @@ async def seller_customer_ctx(
         province_id=province["id"],
         name="Plaza",
     )
+    neighborhood = await location_factory.build_neighborhood(
+        municipality_id=municipality["id"],
+        name="Vedado",
+    )
     other_province = await location_factory.build_province(name="Matanzas")
     other_municipality = await location_factory.build_municipality(
         province_id=other_province["id"],
         name="Cardenas",
+    )
+    other_neighborhood = await location_factory.build_neighborhood(
+        municipality_id=other_municipality["id"],
+        name="Centro",
     )
     return {
         "seller_user_id": seller_user["id"],
@@ -45,8 +53,10 @@ async def seller_customer_ctx(
         "other_seller_org_id": other_seller_org["id"],
         "province_id": province["id"],
         "municipality_id": municipality["id"],
+        "neighborhood_id": neighborhood["id"],
         "other_province_id": other_province["id"],
         "other_municipality_id": other_municipality["id"],
+        "other_neighborhood_id": other_neighborhood["id"],
         "seller_bearer": bearer_headers(user_id=seller_user["id"]),
         "other_seller_bearer": bearer_headers(user_id=other_seller_user["id"]),
         "seller_params": {"organization_id": seller_org["id"]},
@@ -63,6 +73,7 @@ def _customer_payload(ctx: dict, **overrides) -> dict:
             "address": "Calle 1 #100",
             "province_id": ctx["province_id"],
             "municipality_id": ctx["municipality_id"],
+            "neighborhood_id": ctx["neighborhood_id"],
         },
     }
     payload.update(overrides)
@@ -89,6 +100,7 @@ async def test_customer_crud_happy_path(
     assert body["address"]["address"] == "Calle 1 #100"
     assert body["address"]["province_id"] == seller_customer_ctx["province_id"]
     assert body["address"]["municipality_id"] == seller_customer_ctx["municipality_id"]
+    assert body["address"]["neighborhood_id"] == seller_customer_ctx["neighborhood_id"]
     customer_id = body["id"]
 
     detail = await client.get(
@@ -109,6 +121,7 @@ async def test_customer_crud_happy_path(
                 "address": "Calle 2 #200",
                 "province_id": seller_customer_ctx["province_id"],
                 "municipality_id": seller_customer_ctx["municipality_id"],
+                "neighborhood_id": seller_customer_ctx["neighborhood_id"],
             },
         },
     )
@@ -330,6 +343,28 @@ async def test_municipality_from_other_province_returns_404(
                 "address": "Calle X",
                 "province_id": seller_customer_ctx["province_id"],
                 "municipality_id": seller_customer_ctx["other_municipality_id"],
+                "neighborhood_id": seller_customer_ctx["other_neighborhood_id"],
+            },
+        ),
+    )
+    assert r.status_code == 404
+
+
+async def test_neighborhood_from_other_municipality_returns_404(
+    client: AsyncClient,
+    seller_customer_ctx: dict,
+) -> None:
+    r = await client.post(
+        "/customers/seller/",
+        params=seller_customer_ctx["seller_params"],
+        headers=seller_customer_ctx["seller_bearer"],
+        json=_customer_payload(
+            seller_customer_ctx,
+            address={
+                "address": "Calle X",
+                "province_id": seller_customer_ctx["province_id"],
+                "municipality_id": seller_customer_ctx["municipality_id"],
+                "neighborhood_id": seller_customer_ctx["other_neighborhood_id"],
             },
         ),
     )
@@ -478,6 +513,7 @@ async def test_register_customer_updates_by_ci(
                 "address": "Nueva Calle 5",
                 "province_id": seller_customer_ctx["province_id"],
                 "municipality_id": seller_customer_ctx["municipality_id"],
+                "neighborhood_id": seller_customer_ctx["neighborhood_id"],
             },
         ),
     )
@@ -591,6 +627,7 @@ async def test_customer_address_history_keeps_previous_addresses(
                 "address": "Calle 2 #200",
                 "province_id": seller_customer_ctx["province_id"],
                 "municipality_id": seller_customer_ctx["municipality_id"],
+                "neighborhood_id": seller_customer_ctx["neighborhood_id"],
             },
         },
     )
@@ -607,6 +644,7 @@ async def test_customer_address_history_keeps_previous_addresses(
                 "address": "Calle 2 #200",
                 "province_id": seller_customer_ctx["province_id"],
                 "municipality_id": seller_customer_ctx["municipality_id"],
+                "neighborhood_id": seller_customer_ctx["neighborhood_id"],
             },
         },
     )
@@ -623,6 +661,7 @@ async def test_customer_address_history_keeps_previous_addresses(
     assert body["address"]["address"] == "Calle 2 #200"
     assert body["address"]["province_name"] == "La Habana"
     assert body["address"]["municipality_name"] == "Plaza"
+    assert body["address"]["neighborhood_name"] == "Vedado"
     assert len(body["addresses"]) == 2
     assert body["addresses"][0]["address"] == "Calle 2 #200"
     assert body["addresses"][1]["address"] == "Calle 1 #100"

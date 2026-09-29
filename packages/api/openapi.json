@@ -3805,6 +3805,61 @@
         }
       }
     },
+    "/locations/municipalities/{municipality_id}/neighborhoods": {
+      "get": {
+        "tags": [
+          "locations"
+        ],
+        "summary": "List Neighborhoods For Municipality",
+        "operationId": "list_neighborhoods_for_municipality_locations_municipalities__municipality_id__neighborhoods_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "municipality_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Municipality Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NeighborhoodPublic"
+                  },
+                  "title": "Response List Neighborhoods For Municipality Locations Municipalities  Municipality Id  Neighborhoods Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/organizations/": {
       "get": {
         "tags": [
@@ -4952,13 +5007,19 @@
             "type": "string",
             "format": "uuid",
             "title": "Municipality Id"
+          },
+          "neighborhood_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Neighborhood Id"
           }
         },
         "type": "object",
         "required": [
           "address",
           "province_id",
-          "municipality_id"
+          "municipality_id",
+          "neighborhood_id"
         ],
         "title": "AddressCreate"
       },
@@ -4982,6 +5043,18 @@
             "type": "string",
             "format": "uuid",
             "title": "Municipality Id"
+          },
+          "neighborhood_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Neighborhood Id"
           },
           "customer_id": {
             "type": "string",
@@ -5026,6 +5099,17 @@
               }
             ],
             "title": "Municipality Name"
+          },
+          "neighborhood_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Neighborhood Name"
           }
         },
         "type": "object",
@@ -6015,6 +6099,83 @@
           "province_id"
         ],
         "title": "MunicipalityPublic"
+      },
+      "NeighborhoodPublic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "municipality_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Municipality Id"
+          },
+          "municipality_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Municipality Name"
+          },
+          "province_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Province Id"
+          },
+          "province_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Province Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "municipality_id",
+          "created_at"
+        ],
+        "title": "NeighborhoodPublic"
       },
       "OrderCreate": {
         "properties": {

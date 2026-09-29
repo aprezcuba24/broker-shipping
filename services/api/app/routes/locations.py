@@ -4,7 +4,11 @@ from fastapi import APIRouter
 
 from app.deps import SessionDep
 from app.lib.security.deps import CurrentUserDep
-from app.schemas.location import MunicipalityPublic, ProvincePublic
+from app.schemas.location import (
+    MunicipalityPublic,
+    NeighborhoodPublic,
+    ProvincePublic,
+)
 from app.services import location as location_service
 
 router = APIRouter(prefix="/locations", tags=["locations"])
@@ -33,3 +37,19 @@ async def list_municipalities(
         province_id,
     )
     return [MunicipalityPublic.model_validate(m) for m in municipalities]
+
+
+@router.get(
+    "/municipalities/{municipality_id}/neighborhoods",
+    response_model=list[NeighborhoodPublic],
+)
+async def list_neighborhoods_for_municipality(
+    municipality_id: UUID,
+    _user: CurrentUserDep,
+    session: SessionDep,
+) -> list[NeighborhoodPublic]:
+    neighborhoods = await location_service.list_neighborhoods_for_municipality(
+        session,
+        municipality_id,
+    )
+    return await location_service.enrich_neighborhoods(session, neighborhoods)

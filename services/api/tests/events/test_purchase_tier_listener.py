@@ -293,6 +293,10 @@ async def test_new_customer_inherits_existing_phone_tier(
         province_id=province["id"],
         name="Plaza Tier",
     )
+    neighborhood = await location_factory.build_neighborhood(
+        municipality_id=municipality["id"],
+        name="Vedado Tier",
+    )
     created = await client.post(
         "/customers/seller/",
         params={"organization_id": other_seller["id"]},
@@ -305,6 +309,7 @@ async def test_new_customer_inherits_existing_phone_tier(
                 "address": "Calle Tier 1",
                 "province_id": province["id"],
                 "municipality_id": municipality["id"],
+                "neighborhood_id": neighborhood["id"],
             },
         },
     )

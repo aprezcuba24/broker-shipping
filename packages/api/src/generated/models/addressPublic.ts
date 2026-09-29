@@ -4,18 +4,22 @@
  * Vendelo360 API
  * OpenAPI spec version: 0.1.0
  */
+import type { AddressPublicNeighborhoodId } from './addressPublicNeighborhoodId';
 import type { AddressPublicUpdatedAt } from './addressPublicUpdatedAt';
 import type { AddressPublicProvinceName } from './addressPublicProvinceName';
 import type { AddressPublicMunicipalityName } from './addressPublicMunicipalityName';
+import type { AddressPublicNeighborhoodName } from './addressPublicNeighborhoodName';
 
 export interface AddressPublic {
   id: string;
   address: string;
   province_id: string;
   municipality_id: string;
+  neighborhood_id?: AddressPublicNeighborhoodId;
   customer_id: string;
   created_at: string;
   updated_at: AddressPublicUpdatedAt;
   province_name?: AddressPublicProvinceName;
   municipality_name?: AddressPublicMunicipalityName;
+  neighborhood_name?: AddressPublicNeighborhoodName;
 }

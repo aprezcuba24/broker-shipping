@@ -27,6 +27,7 @@ class Order(EntityModel, table=True):
     customer_address: str = Field(default="", max_length=500)
     customer_province_name: str = Field(default="", max_length=255)
     customer_municipality_name: str = Field(default="", max_length=255)
+    customer_neighborhood_name: str = Field(default="", max_length=255)
     status: OrderStatus = Field(
         default=OrderStatus.created,
         sa_column=Column(
