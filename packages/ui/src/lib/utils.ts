@@ -39,6 +39,18 @@ export function formatMoney(moneyOrCents: Money | number, currency?: string): st
   return `${centsToInputValue(moneyOrCents)} ${(currency ?? '').toUpperCase()}`
 }
 
+/** Order-item commission parts → "1.50 USD + 3.00 CUP", or the legacy single amount. */
+export function formatSellerCommissions(item: {
+  seller_commission: Money
+  seller_commissions?: Money[] | null
+}): string {
+  const parts = item.seller_commissions ?? []
+  if (parts.length > 0) {
+    return parts.map((money) => formatMoney(money)).join(' + ')
+  }
+  return formatMoney(item.seller_commission)
+}
+
 /** Zod schema for money stored as integer cents. */
 export const moneyCentsSchema = z.number().int().min(0)
 

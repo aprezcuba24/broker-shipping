@@ -8172,6 +8172,13 @@
           "seller_commission": {
             "$ref": "#/components/schemas/Money"
           },
+          "seller_commissions": {
+            "items": {
+              "$ref": "#/components/schemas/Money"
+            },
+            "type": "array",
+            "title": "Seller Commissions"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",

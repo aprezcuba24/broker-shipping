@@ -73,6 +73,7 @@ class OrderItemPublic(BaseModel):
     quantity: int
     status: OrderItemStatus
     seller_commission: Money
+    seller_commissions: list[Money] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime | None
 

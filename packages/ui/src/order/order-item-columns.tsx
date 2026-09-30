@@ -2,7 +2,7 @@ import type { OrderItemPublic } from '@broker/api'
 
 import { componentColumn, imageColumn } from '../crud/components/columns'
 import type { ColumnDef } from '../components/data-table/types'
-import { formatMoney } from '../lib/utils'
+import { formatMoney, formatSellerCommissions } from '../lib/utils'
 import { OrderItemStatusBadge } from './status'
 
 export function buildSellerOrderItemColumns(): ColumnDef<OrderItemPublic>[] {
@@ -32,7 +32,7 @@ export function buildSellerOrderItemColumns(): ColumnDef<OrderItemPublic>[] {
     )),
     componentColumn<OrderItemPublic>('commission', 'Comisión', (row) => (
       <span className="tabular-nums text-sm">
-        {formatMoney(row.seller_commission)}
+        {formatSellerCommissions(row)}
       </span>
     )),
     componentColumn<OrderItemPublic>('subtotal', 'Subtotal', (row) => (

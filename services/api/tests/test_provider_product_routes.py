@@ -192,6 +192,88 @@ async def test_create_and_patch_product_without_commission(
     assert disabled["commission"] == {"amount": 0, "currency": "usd"}
 
 
+async def test_create_product_rejects_zero_commission_when_enabled(
+    client: AsyncClient,
+    provider_context: dict,
+) -> None:
+    headers = provider_context["headers"]
+    params = provider_context["params"]
+
+    r_default = await client.post(
+        "/products/provider/",
+        params=params,
+        headers=headers,
+        json={"name": "Sin comisión"},
+    )
+    assert r_default.status_code == 422
+    assert r_default.json()["code"] == "commission_must_be_positive"
+
+    r_explicit = await client.post(
+        "/products/provider/",
+        params=params,
+        headers=headers,
+        json={
+            "name": "Comisión cero",
+            "has_commission": True,
+            "commission": {"amount": 0, "currency": "cup"},
+        },
+    )
+    assert r_explicit.status_code == 422
+    assert r_explicit.json()["code"] == "commission_must_be_positive"
+
+
+async def test_patch_product_rejects_zero_commission_when_enabled(
+    client: AsyncClient,
+    provider_context: dict,
+) -> None:
+    headers = provider_context["headers"]
+    params = provider_context["params"]
+
+    r_create = await client.post(
+        "/products/provider/",
+        params=params,
+        headers=headers,
+        json={
+            "name": "Con comisión",
+            "has_commission": True,
+            "commission": {"amount": 100, "currency": "cup"},
+        },
+    )
+    assert r_create.status_code == 201
+    product_id = r_create.json()["id"]
+
+    r_zero = await client.patch(
+        f"/products/provider/{product_id}",
+        params=params,
+        headers=headers,
+        json={"commission": {"amount": 0, "currency": "cup"}},
+    )
+    assert r_zero.status_code == 422
+    assert r_zero.json()["code"] == "commission_must_be_positive"
+
+    r_enable_zero = await client.post(
+        "/products/provider/",
+        params=params,
+        headers=headers,
+        json={
+            "name": "Libre",
+            "has_commission": False,
+            "price": {"amount": 1000, "currency": "cup"},
+        },
+    )
+    assert r_enable_zero.status_code == 201
+    libre_id = r_enable_zero.json()["id"]
+
+    r_enable = await client.patch(
+        f"/products/provider/{libre_id}",
+        params=params,
+        headers=headers,
+        json={"has_commission": True},
+    )
+    assert r_enable.status_code == 422
+    assert r_enable.json()["code"] == "commission_must_be_positive"
+
+
 async def test_provider_cannot_access_other_org_product(
     client: AsyncClient,
     user_factory: UserFactory,
@@ -406,6 +488,7 @@ async def test_create_product_with_tag_ids(
         headers=provider_context["headers"],
         json={
             "name": "Con tags",
+            "has_commission": False,
             "tag_ids": [tag_b["id"], tag_a["id"]],
         },
     )
@@ -436,6 +519,7 @@ async def test_create_product_uses_only_tag_ids_from_organization(
         headers=provider_context["headers"],
         json={
             "name": "Filtered tags",
+            "has_commission": False,
             "tag_ids": [foreign_tag["id"], local_tag["id"]],
         },
     )
@@ -457,7 +541,11 @@ async def test_patch_product_replaces_tag_ids(
         "/products/provider/",
         params=provider_context["params"],
         headers=provider_context["headers"],
-        json={"name": "Tagged", "tag_ids": [tag_a["id"], tag_b["id"]]},
+        json={
+            "name": "Tagged",
+            "has_commission": False,
+            "tag_ids": [tag_a["id"], tag_b["id"]],
+        },
     )
     assert r_create.status_code == 201
     product_id = r_create.json()["id"]
@@ -504,6 +592,7 @@ async def test_product_public_excludes_inactive_tags(
         headers=provider_context["headers"],
         json={
             "name": "Mixed tags",
+            "has_commission": False,
             "tag_ids": [active["id"], inactive["id"]],
         },
     )
@@ -529,19 +618,27 @@ async def test_list_products_filters_by_all_tag_ids(
         "/products/provider/",
         params=params,
         headers=headers,
-        json={"name": "Product A", "tag_ids": [tag_1["id"], tag_2["id"]]},
+        json={
+            "name": "Product A",
+            "has_commission": False,
+            "tag_ids": [tag_1["id"], tag_2["id"]],
+        },
     )
     r_b = await client.post(
         "/products/provider/",
         params=params,
         headers=headers,
-        json={"name": "Product B", "tag_ids": [tag_1["id"]]},
+        json={
+            "name": "Product B",
+            "has_commission": False,
+            "tag_ids": [tag_1["id"]],
+        },
     )
     r_c = await client.post(
         "/products/provider/",
         params=params,
         headers=headers,
-        json={"name": "Product C", "tag_ids": []},
+        json={"name": "Product C", "has_commission": False, "tag_ids": []},
     )
     assert r_a.status_code == 201
     assert r_b.status_code == 201
