@@ -19,15 +19,16 @@ from app.lib.utils import utc_now
 from app.models.order.enums import OrderItemStatus, OrderStatus
 from app.models.order.order import Order
 from app.models.order.order_item import OrderItem
+from app.models.order.order_messaging import OrderMessaging
+from app.models.organization.organization import Organization
 from app.models.organization.provider_seller_link import ProviderSellerLink
+from app.schemas.messaging import OrderMessagingCreate, OrderMessagingUpdate
 from app.schemas.order import OrderItemStatusUpdate
 from app.schemas.pagination import PageResult, PaginationParams
 from app.services import provider_seller_link as link_service
 from app.services.order import item_status as item_status_service
 from app.services.order.helpers import (
     attach_order_relations,
-    attach_order_view,
-    attach_snapshot_relations,
     derive_order_status,
     load_items_by_order_ids,
     order_search_clause,
@@ -193,6 +194,89 @@ async def update_provider_items_status(
                 background=False,
             )
 
-    attach_order_view(order, provider_items)
-    await attach_snapshot_relations(session, [order])
+    await attach_order_relations(
+        session,
+        [order],
+        provider_organization_id=provider_organization_id,
+    )
+    return order
+
+
+async def create_order_messaging(
+    session: AsyncSession,
+    order_id: UUID,
+    provider_organization_id: UUID,
+    data: OrderMessagingCreate,
+) -> Order:
+    order = await get_order_for_provider(
+        session,
+        order_id,
+        provider_organization_id,
+    )
+    if order.customer_neighborhood_id is None:
+        raise_api_error("order_neighborhood_required")
+
+    existing = await get_entity(
+        session,
+        OrderMessaging,
+        required=False,
+        order_id=order.id,
+        provider_organization_id=provider_organization_id,
+    )
+    if existing is not None:
+        raise_api_error("order_messaging_exists")
+
+    provider = await get_entity(
+        session,
+        Organization,
+        id=provider_organization_id,
+    )
+    line = OrderMessaging(
+        order_id=order.id,
+        provider_organization_id=provider_organization_id,
+        provider_organization_name=provider.name,
+        neighborhood_id=order.customer_neighborhood_id,
+        neighborhood_name=order.customer_neighborhood_name or "",
+        amount=data.price.amount,
+        currency=data.price.currency,
+    )
+    session.add(line)
+    await session.commit()
+    await attach_order_relations(
+        session,
+        [order],
+        provider_organization_id=provider_organization_id,
+    )
+    return order
+
+
+async def update_order_messaging(
+    session: AsyncSession,
+    order_id: UUID,
+    messaging_id: UUID,
+    provider_organization_id: UUID,
+    data: OrderMessagingUpdate,
+) -> Order:
+    order = await get_order_for_provider(
+        session,
+        order_id,
+        provider_organization_id,
+    )
+    line = await get_entity(
+        session,
+        OrderMessaging,
+        id=messaging_id,
+        order_id=order.id,
+        provider_organization_id=provider_organization_id,
+    )
+    line.amount = data.price.amount
+    line.currency = data.price.currency
+    line.updated_at = utc_now()
+    session.add(line)
+    await session.commit()
+    await attach_order_relations(
+        session,
+        [order],
+        provider_organization_id=provider_organization_id,
+    )
     return order

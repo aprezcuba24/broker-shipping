@@ -11,6 +11,8 @@ import {
 import { useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 
+import { ProviderOrderMessagingEditor } from './messaging-editor'
+
 export function OrderDetailPage() {
   const { orderId = '' } = useParams<{ orderId: string }>()
 
@@ -36,12 +38,15 @@ export function OrderDetailPage() {
       }
     >
       {order ? (
-        <div className="space-y-2">
-          <h2 className="text-sm font-medium">Ítems</h2>
-          <OrderItemsTable
-            items={order.items ?? []}
-            buildColumns={buildColumns}
-          />
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <h2 className="text-sm font-medium">Ítems</h2>
+            <OrderItemsTable
+              items={order.items ?? []}
+              buildColumns={buildColumns}
+            />
+          </div>
+          <ProviderOrderMessagingEditor order={order} />
         </div>
       ) : null}
     </OrderDetailView>

@@ -35,6 +35,8 @@ import {
 } from './pages/product-stock-movement'
 import { TagPage } from './pages/tag'
 import { PhoneBlacklistPage } from './pages/phone-blacklist'
+import { SettingsPage } from './pages/settings'
+import { MessagingSettingsPage } from './pages/settings/messaging-page'
 import { VerifyEmailPage } from './pages/verify-email'
 import { ForgotPasswordPage } from './pages/forgot-password'
 import { ResetPasswordPage } from './pages/reset-password'
@@ -107,6 +109,8 @@ export default function App() {
           <Route path="phone-blacklist" element={<PhoneBlacklistPage />} />
           <Route path="members" element={<MembersPage />} />
           <Route path="sellers" element={<SellersPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="settings/messaging" element={<MessagingSettingsPage />} />
           <Route
             path="settings/invitations"
             element={<Navigate to="/sellers?tab=pending" replace />}

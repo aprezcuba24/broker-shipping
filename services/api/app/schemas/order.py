@@ -6,6 +6,7 @@ from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validat
 
 from app.models.order.enums import OrderItemStatus, OrderStatus
 from app.schemas.customer import CustomerPublic
+from app.schemas.messaging import OrderMessagingPublic
 from app.schemas.money import Money
 from app.schemas.organization import OrganizationPublic
 
@@ -79,6 +80,7 @@ class OrderPublic(BaseModel):
     created_at: datetime
     updated_at: datetime | None
     items: list[OrderItemPublic] = Field(default_factory=list)
+    messaging: list[OrderMessagingPublic] = Field(default_factory=list)
     totals: list[OrderCurrencyTotal] = Field(default_factory=list)
     customer: CustomerPublic | None = None
     seller_organization: OrganizationPublic | None = None

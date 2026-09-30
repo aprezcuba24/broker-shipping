@@ -12,6 +12,7 @@ from app.models.customer.customer import Customer
 from app.models.order.enums import OrderItemStatus, OrderStatus
 from app.models.order.order import Order
 from app.models.order.order_item import OrderItem
+from app.models.order.order_messaging import OrderMessaging
 from app.models.organization.organization import Organization
 from app.models.product.product import Product
 from app.models.user.user import User
@@ -23,6 +24,8 @@ from app.lib.events import emit
 from app.services import provider_seller_link as link_service
 from app.services import stock as stock_service
 from app.services.customer.helpers import attach_addresses_to_customers
+from app.services.messaging import price as messaging_price_service
+from app.services.messaging import settings as messaging_settings_service
 from app.services.order.code import generate_next_order_code
 from app.services.order.helpers import (
     attach_order_view,
@@ -75,6 +78,65 @@ def _quantities_by_product(items_data: list[OrderItemCreate]) -> dict[UUID, int]
     return {item.product_id: item.quantity for item in items_data}
 
 
+async def _resolve_messaging_lines(
+    session: AsyncSession,
+    order: Order,
+    items: list[OrderItem],
+    *,
+    enforce: bool,
+) -> list[OrderMessaging]:
+    provider_ids = list(
+        dict.fromkeys(item.provider_organization_id for item in items)
+    )
+    if not provider_ids:
+        return []
+
+    neighborhood_id = order.customer_neighborhood_id
+    neighborhood_name = order.customer_neighborhood_name or ""
+    prices = await messaging_price_service.load_prices_by_provider_and_neighborhood(
+        session,
+        provider_ids,
+        neighborhood_id,
+    )
+    accepts = await messaging_settings_service.load_accepts_unconfigured_by_provider(
+        session,
+        provider_ids,
+    )
+
+    provider_names = {
+        item.provider_organization_id: item.provider_organization_name
+        for item in items
+    }
+    blocked_names: list[str] = []
+    lines: list[OrderMessaging] = []
+
+    for provider_id in provider_ids:
+        price = prices.get(provider_id)
+        if price is not None and neighborhood_id is not None:
+            lines.append(
+                OrderMessaging(
+                    order_id=order.id,
+                    provider_organization_id=provider_id,
+                    provider_organization_name=provider_names.get(provider_id, ""),
+                    neighborhood_id=neighborhood_id,
+                    neighborhood_name=neighborhood_name or "",
+                    amount=price.amount,
+                    currency=price.currency,
+                )
+            )
+            continue
+        if accepts.get(provider_id, False):
+            continue
+        blocked_names.append(provider_names.get(provider_id, str(provider_id)))
+
+    if enforce and blocked_names:
+        raise_api_error(
+            "messaging_neighborhood_not_configured",
+            provider_names=", ".join(blocked_names),
+        )
+    return lines
+
+
 async def _build_order(
     session: AsyncSession,
     user: User,
@@ -102,6 +164,7 @@ async def _build_order(
     customer_address = ""
     customer_province_name = ""
     customer_municipality_name = ""
+    customer_neighborhood_id: UUID | None = None
     customer_neighborhood_name = ""
     if customer is not None:
         customer_name = customer.name
@@ -114,6 +177,7 @@ async def _build_order(
             customer_municipality_name = (
                 getattr(address, "municipality_name", None) or ""
             )
+            customer_neighborhood_id = address.neighborhood_id
             customer_neighborhood_name = (
                 getattr(address, "neighborhood_name", None) or ""
             )
@@ -130,6 +194,7 @@ async def _build_order(
         customer_address=customer_address,
         customer_province_name=customer_province_name,
         customer_municipality_name=customer_municipality_name,
+        customer_neighborhood_id=customer_neighborhood_id,
         customer_neighborhood_name=customer_neighborhood_name,
         status=OrderStatus.created,
     )
@@ -191,7 +256,7 @@ async def preview_order(
         session,
         _quantities_by_product(items_data),
     )
-    return attach_order_view(order, items)
+    return attach_order_view(order, items, [])
 
 
 async def create_order(
@@ -226,8 +291,15 @@ async def create_order(
         seller_organization_name=seller_names.get(seller_organization_id, ""),
         code=code,
     )
+    messaging = await _resolve_messaging_lines(
+        session,
+        order,
+        items,
+        enforce=True,
+    )
     session.add(order)
     session.add_all(items)
+    session.add_all(messaging)
     await session.flush()
     await emit(
         OrderCreatedEvent(order_id=order.id),
@@ -238,7 +310,9 @@ async def create_order(
     await session.refresh(order)
     for item in items:
         await session.refresh(item)
-    attach_order_view(order, items)
+    for line in messaging:
+        await session.refresh(line)
+    attach_order_view(order, items, messaging)
     await attach_order_relations(session, [order])
     return order
 

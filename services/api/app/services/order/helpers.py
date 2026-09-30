@@ -12,8 +12,10 @@ from app.models.customer.customer import Customer
 from app.models.order.enums import Currency, OrderItemStatus, OrderStatus
 from app.models.order.order import Order
 from app.models.order.order_item import OrderItem
+from app.models.order.order_messaging import OrderMessaging
 from app.models.organization.enums import OrganizationType
 from app.schemas.customer import AddressPublic, CustomerPublic
+from app.schemas.messaging import OrderMessagingPublic
 from app.schemas.money import Money
 from app.schemas.order import OrderCurrencyTotal, OrderItemPublic, OrderPublic
 from app.schemas.organization import OrganizationPublic
@@ -22,19 +24,38 @@ from app.types import PurchaseTier
 _NIL_UUID = UUID(int=0)
 
 
-def compute_order_totals(items: list[OrderItem]) -> list[OrderCurrencyTotal]:
+def compute_order_totals(
+    items: list[OrderItem],
+    messaging: list[OrderMessaging] | None = None,
+) -> list[OrderCurrencyTotal]:
     amounts: dict[Currency, int] = defaultdict(int)
     for item in items:
         amounts[item.currency] += item.seller_provider_price * item.quantity
+    for line in messaging or []:
+        amounts[line.currency] += line.amount
     return [
         Money(amount=amount, currency=currency)
         for currency, amount in sorted(amounts.items(), key=lambda pair: pair[0].value)
     ]
 
 
-def attach_order_view(order: Order, items: list[OrderItem]) -> Order:
+def attach_order_view(
+    order: Order,
+    items: list[OrderItem],
+    messaging: list[OrderMessaging] | None = None,
+) -> Order:
+    messaging_lines = (
+        messaging
+        if messaging is not None
+        else getattr(order, "messaging", []) or []
+    )
     object.__setattr__(order, "items", items)
-    object.__setattr__(order, "totals", compute_order_totals(items))
+    object.__setattr__(order, "messaging", messaging_lines)
+    object.__setattr__(
+        order,
+        "totals",
+        compute_order_totals(items, messaging_lines),
+    )
     return order
 
 
@@ -75,19 +96,50 @@ async def load_items_by_order_ids(
     return dict(items_by_order)
 
 
+async def load_messaging_by_order_ids(
+    session: AsyncSession,
+    order_ids: list[UUID],
+    *,
+    provider_organization_id: UUID | None = None,
+) -> dict[UUID, list[OrderMessaging]]:
+    if not order_ids:
+        return {}
+    stmt = select(OrderMessaging).where(col(OrderMessaging.order_id).in_(order_ids))
+    if provider_organization_id is not None:
+        stmt = stmt.where(
+            OrderMessaging.provider_organization_id == provider_organization_id
+        )
+    stmt = stmt.order_by(OrderMessaging.created_at, OrderMessaging.id)
+    result = await session.execute(stmt)
+    messaging_by_order: dict[UUID, list[OrderMessaging]] = defaultdict(list)
+    for line in result.scalars().all():
+        messaging_by_order[line.order_id].append(line)
+    return dict(messaging_by_order)
+
+
 async def attach_items_and_totals(
     session: AsyncSession,
     orders: list[Order],
     *,
     provider_organization_id: UUID | None = None,
 ) -> None:
+    order_ids = [order.id for order in orders]
     items_by_order = await load_items_by_order_ids(
         session,
-        [order.id for order in orders],
+        order_ids,
+        provider_organization_id=provider_organization_id,
+    )
+    messaging_by_order = await load_messaging_by_order_ids(
+        session,
+        order_ids,
         provider_organization_id=provider_organization_id,
     )
     for order in orders:
-        attach_order_view(order, items_by_order.get(order.id, []))
+        attach_order_view(
+            order,
+            items_by_order.get(order.id, []),
+            messaging_by_order.get(order.id, []),
+        )
 
 
 async def _purchase_tiers_by_phone(
@@ -126,7 +178,7 @@ def _customer_from_order_snapshot(
             address=order.customer_address,
             province_id=_NIL_UUID,
             municipality_id=_NIL_UUID,
-            neighborhood_id=None,
+            neighborhood_id=order.customer_neighborhood_id,
             customer_id=order.customer_id,
             created_at=order.created_at,
             updated_at=None,
@@ -196,9 +248,24 @@ def order_item_to_public(item: OrderItem) -> OrderItemPublic:
     )
 
 
+def order_messaging_to_public(line: OrderMessaging) -> OrderMessagingPublic:
+    return OrderMessagingPublic(
+        id=line.id,
+        order_id=line.order_id,
+        provider_organization_id=line.provider_organization_id,
+        provider_organization_name=line.provider_organization_name,
+        neighborhood_id=line.neighborhood_id,
+        neighborhood_name=line.neighborhood_name,
+        price=Money(amount=line.amount, currency=line.currency),
+        created_at=line.created_at,
+        updated_at=line.updated_at,
+    )
+
+
 def order_to_public(order: Order) -> OrderPublic:
     items = getattr(order, "items", []) or []
-    totals = getattr(order, "totals", None) or compute_order_totals(items)
+    messaging = getattr(order, "messaging", []) or []
+    totals = getattr(order, "totals", None) or compute_order_totals(items, messaging)
     customer = getattr(order, "customer", None)
     if customer is None and order.customer_id and order.customer_id != _NIL_UUID:
         customer = _customer_from_order_snapshot(order)
@@ -214,6 +281,7 @@ def order_to_public(order: Order) -> OrderPublic:
         created_at=order.created_at,
         updated_at=order.updated_at,
         items=[order_item_to_public(item) for item in items],
+        messaging=[order_messaging_to_public(line) for line in messaging],
         totals=list(totals),
         customer=customer,
         seller_organization=seller_organization,

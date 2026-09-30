@@ -212,6 +212,29 @@ ERRORS: dict[str, ErrorDef] = {
         status_code=422,
         template="La moneda no coincide con la del producto.",
     ),
+    "messaging_price_neighborhood_conflict": ErrorDef(
+        code="messaging_price_neighborhood_conflict",
+        status_code=409,
+        template="Ya existe un precio de mensajería para ese barrio.",
+    ),
+    "messaging_neighborhood_not_configured": ErrorDef(
+        code="messaging_neighborhood_not_configured",
+        status_code=409,
+        template=(
+            "Los siguientes proveedores no tienen mensajería configurada "
+            "para el barrio del cliente: {provider_names}."
+        ),
+    ),
+    "order_messaging_exists": ErrorDef(
+        code="order_messaging_exists",
+        status_code=409,
+        template="Ya existe una línea de mensajería para este proveedor en la orden.",
+    ),
+    "order_neighborhood_required": ErrorDef(
+        code="order_neighborhood_required",
+        status_code=422,
+        template="La orden no tiene barrio; no se puede crear la mensajería.",
+    ),
 }
 
 ORDER_ITEM_STATUS_LABELS: dict[str, str] = {

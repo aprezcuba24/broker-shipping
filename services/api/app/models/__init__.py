@@ -4,6 +4,7 @@ from app.models import (
     commission,
     customer,
     location,
+    messaging,
     order,
     organization,
     product,
@@ -23,6 +24,7 @@ def get_all_table_models() -> tuple[type[SQLModel], ...]:
         *order.DOMAIN_MODELS,
         *commission.DOMAIN_MODELS,
         *product_stock_movement.DOMAIN_MODELS,
+        *messaging.DOMAIN_MODELS,
     )
 
 

@@ -8,6 +8,7 @@ from app.models.organization.enums import (
 from app.models.organization.organization import Organization
 from app.models.organization.organization_invitation import OrganizationInvitation
 from app.models.organization.provider_seller_link import ProviderSellerLink
+from app.models.organization.provider_settings import ProviderSettings
 from app.models.organization.user_organization import UserOrganization
 
 DOMAIN_MODELS: tuple[type[SQLModel], ...] = (
@@ -15,6 +16,7 @@ DOMAIN_MODELS: tuple[type[SQLModel], ...] = (
     UserOrganization,
     ProviderSellerLink,
     OrganizationInvitation,
+    ProviderSettings,
 )
 
 __all__ = [
@@ -25,5 +27,6 @@ __all__ = [
     "OrganizationInvitation",
     "OrganizationType",
     "ProviderSellerLink",
+    "ProviderSettings",
     "UserOrganization",
 ]

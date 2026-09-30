@@ -5,6 +5,7 @@ import {
 import {
   buildSellerOrderItemColumns,
   OrderItemsTable,
+  OrderMessagingSection,
   SellerOrderDetailPage as OrderDetailView,
 } from '@broker/ui'
 import { useCallback } from 'react'
@@ -21,18 +22,23 @@ export function OrderDetailPage() {
 
   const buildColumns = useCallback(() => buildSellerOrderItemColumns(), [])
 
+  const order = orderQuery.data
+
   return (
     <OrderDetailView
       isLoading={!orderId || orderQuery.isLoading}
       isError={orderQuery.isError}
-      order={orderQuery.data}
+      order={order}
     >
-      <div className="space-y-2">
-        <h2 className="text-sm font-medium">Ítems</h2>
-        <OrderItemsTable
-          items={orderQuery.data?.items ?? []}
-          buildColumns={buildColumns}
-        />
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <h2 className="text-sm font-medium">Ítems</h2>
+          <OrderItemsTable
+            items={order?.items ?? []}
+            buildColumns={buildColumns}
+          />
+        </div>
+        {order ? <OrderMessagingSection order={order} /> : null}
       </div>
     </OrderDetailView>
   )

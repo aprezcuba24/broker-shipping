@@ -2503,6 +2503,158 @@
         }
       }
     },
+    "/orders/provider/{order_id}/messaging": {
+      "post": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Create Order Messaging",
+        "operationId": "create_order_messaging_orders_provider__order_id__messaging_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Order Id"
+            }
+          },
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderMessagingCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/provider/{order_id}/messaging/{messaging_id}": {
+      "patch": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Patch Order Messaging",
+        "operationId": "patch_order_messaging_orders_provider__order_id__messaging__messaging_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Order Id"
+            }
+          },
+          {
+            "name": "messaging_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Messaging Id"
+            }
+          },
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderMessagingUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/commissions/provider/": {
       "get": {
         "tags": [
@@ -4808,6 +4960,353 @@
         }
       }
     },
+    "/messaging-prices/provider/": {
+      "get": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "List Messaging Prices",
+        "operationId": "list_messaging_prices_messaging_prices_provider__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MessagingPricePublic"
+                  },
+                  "title": "Response List Messaging Prices Messaging Prices Provider  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Create Messaging Price",
+        "operationId": "create_messaging_price_messaging_prices_provider__post",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessagingPriceCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessagingPricePublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/messaging-prices/provider/{price_id}": {
+      "patch": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Patch Messaging Price",
+        "operationId": "patch_messaging_price_messaging_prices_provider__price_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "price_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Price Id"
+            }
+          },
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessagingPriceUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessagingPricePublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Delete Messaging Price",
+        "operationId": "delete_messaging_price_messaging_prices_provider__price_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "price_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Price Id"
+            }
+          },
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/messaging-settings/provider/": {
+      "get": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Get Messaging Settings",
+        "operationId": "get_messaging_settings_messaging_settings_provider__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessagingSettingsPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Patch Messaging Settings",
+        "operationId": "patch_messaging_settings_messaging_settings_provider__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessagingSettingsUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessagingSettingsPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/organizations/": {
       "get": {
         "tags": [
@@ -6996,6 +7495,168 @@
         ],
         "title": "MessageResponse"
       },
+      "MessagingPriceCreate": {
+        "properties": {
+          "neighborhood_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Neighborhood Id"
+          },
+          "price": {
+            "$ref": "#/components/schemas/Money"
+          }
+        },
+        "type": "object",
+        "required": [
+          "neighborhood_id"
+        ],
+        "title": "MessagingPriceCreate"
+      },
+      "MessagingPricePublic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "neighborhood_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Neighborhood Id"
+          },
+          "neighborhood_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Neighborhood Name"
+          },
+          "municipality_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Municipality Id"
+          },
+          "municipality_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Municipality Name"
+          },
+          "province_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Province Id"
+          },
+          "province_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Province Name"
+          },
+          "price": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "organization_id",
+          "neighborhood_id",
+          "price",
+          "created_at"
+        ],
+        "title": "MessagingPricePublic"
+      },
+      "MessagingPriceUpdate": {
+        "properties": {
+          "price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "MessagingPriceUpdate"
+      },
+      "MessagingSettingsPublic": {
+        "properties": {
+          "accepts_unconfigured_neighborhoods": {
+            "type": "boolean",
+            "title": "Accepts Unconfigured Neighborhoods",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "MessagingSettingsPublic"
+      },
+      "MessagingSettingsUpdate": {
+        "properties": {
+          "accepts_unconfigured_neighborhoods": {
+            "type": "boolean",
+            "title": "Accepts Unconfigured Neighborhoods"
+          }
+        },
+        "type": "object",
+        "required": [
+          "accepts_unconfigured_neighborhoods"
+        ],
+        "title": "MessagingSettingsUpdate"
+      },
       "Money": {
         "properties": {
           "amount": {
@@ -7429,6 +8090,94 @@
         ],
         "title": "OrderItemStatusUpdate"
       },
+      "OrderMessagingCreate": {
+        "properties": {
+          "price": {
+            "$ref": "#/components/schemas/Money"
+          }
+        },
+        "type": "object",
+        "required": [
+          "price"
+        ],
+        "title": "OrderMessagingCreate"
+      },
+      "OrderMessagingPublic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "order_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Order Id"
+          },
+          "provider_organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Provider Organization Id"
+          },
+          "provider_organization_name": {
+            "type": "string",
+            "title": "Provider Organization Name",
+            "default": ""
+          },
+          "neighborhood_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Neighborhood Id"
+          },
+          "neighborhood_name": {
+            "type": "string",
+            "title": "Neighborhood Name",
+            "default": ""
+          },
+          "price": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "order_id",
+          "provider_organization_id",
+          "neighborhood_id",
+          "price",
+          "created_at"
+        ],
+        "title": "OrderMessagingPublic"
+      },
+      "OrderMessagingUpdate": {
+        "properties": {
+          "price": {
+            "$ref": "#/components/schemas/Money"
+          }
+        },
+        "type": "object",
+        "required": [
+          "price"
+        ],
+        "title": "OrderMessagingUpdate"
+      },
       "OrderPublic": {
         "properties": {
           "id": {
@@ -7476,6 +8225,13 @@
             },
             "type": "array",
             "title": "Items"
+          },
+          "messaging": {
+            "items": {
+              "$ref": "#/components/schemas/OrderMessagingPublic"
+            },
+            "type": "array",
+            "title": "Messaging"
           },
           "totals": {
             "items": {

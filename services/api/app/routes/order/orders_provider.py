@@ -6,6 +6,7 @@ from app.deps import SessionDep
 from app.lib.persistence.pagination import PaginationDep
 from app.lib.security.deps import ProviderOrgDep
 from app.models.order.enums import OrderStatus
+from app.schemas.messaging import OrderMessagingCreate, OrderMessagingUpdate
 from app.schemas.order import OrderItemStatusUpdate, OrderPublic
 from app.schemas.pagination import Page
 from app.services.order import provider as provider_order_service
@@ -58,6 +59,40 @@ async def update_items_status(
     order = await provider_order_service.update_provider_items_status(
         session,
         order_id,
+        organization.id,
+        body,
+    )
+    return order_to_public(order)
+
+
+@router.post("/{order_id}/messaging", response_model=OrderPublic, status_code=201)
+async def create_order_messaging(
+    order_id: UUID,
+    body: OrderMessagingCreate,
+    organization: ProviderOrgDep,
+    session: SessionDep,
+) -> OrderPublic:
+    order = await provider_order_service.create_order_messaging(
+        session,
+        order_id,
+        organization.id,
+        body,
+    )
+    return order_to_public(order)
+
+
+@router.patch("/{order_id}/messaging/{messaging_id}", response_model=OrderPublic)
+async def patch_order_messaging(
+    order_id: UUID,
+    messaging_id: UUID,
+    body: OrderMessagingUpdate,
+    organization: ProviderOrgDep,
+    session: SessionDep,
+) -> OrderPublic:
+    order = await provider_order_service.update_order_messaging(
+        session,
+        order_id,
+        messaging_id,
         organization.id,
         body,
     )

@@ -445,6 +445,14 @@ export type { OrderDetailPageProps } from './order/order-detail-page'
 export { OrderItemsTable } from './order/order-items-table'
 export type { OrderItemsTableProps } from './order/order-items-table'
 export {
+  OrderMessagingSection,
+  OrderMessagingReadOnly,
+} from './order/order-messaging-section'
+export type {
+  OrderMessagingSectionProps,
+  OrderMessagingReadOnlyProps,
+} from './order/order-messaging-section'
+export {
   buildSellerOrderItemColumns,
   buildProviderOrderItemColumns,
 } from './order/order-item-columns'
@@ -525,3 +533,7 @@ export type {
   RecentOrderRow,
   RecentCommissionRow,
 } from './dashboard/dashboard-widgets'
+
+export { SettingsOptionCard } from './settings/settings-option-card'
+export type { SettingsOptionCardProps } from './settings/settings-option-card'
+

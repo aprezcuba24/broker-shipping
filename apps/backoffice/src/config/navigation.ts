@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   Package,
   Boxes,
+  Settings,
   Store,
   Tag,
   Users,
@@ -30,4 +31,6 @@ export const backofficeNavItems: NavItem[] = [
   { to: '/members', label: 'Miembros', icon: Users },
 ]
 
-export const backofficeBottomItems: NavItem[] = []
+export const backofficeBottomItems: NavItem[] = [
+  { to: '/settings', label: 'Configurar', icon: Settings },
+]

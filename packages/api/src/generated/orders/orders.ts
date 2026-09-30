@@ -24,6 +24,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  CreateOrderMessagingOrdersProviderOrderIdMessagingPostParams,
   CreateOrderOrdersSellerPostParams,
   GetOrderOrdersProviderOrderIdGetParams,
   GetOrderOrdersSellerOrderIdGetParams,
@@ -33,8 +34,11 @@ import type {
   OrderCreate,
   OrderItemCreate,
   OrderItemStatusUpdate,
+  OrderMessagingCreate,
+  OrderMessagingUpdate,
   OrderPublic,
   PageOrderPublic,
+  PatchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatchParams,
   PreviewOrderOrdersSellerPreviewPostParams,
   UpdateItemsStatusOrdersProviderOrderIdItemsPatchParams
 } from '.././models';
@@ -627,6 +631,140 @@ export const useUpdateItemsStatusOrdersProviderOrderIdItemsPatch = <TError = HTT
       > => {
 
       const mutationOptions = getUpdateItemsStatusOrdersProviderOrderIdItemsPatchMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Create Order Messaging
+ */
+export const createOrderMessagingOrdersProviderOrderIdMessagingPost = (
+    orderId: string,
+    orderMessagingCreate: OrderMessagingCreate,
+    params: CreateOrderMessagingOrdersProviderOrderIdMessagingPostParams,
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<OrderPublic>(
+      {url: `/orders/provider/${orderId}/messaging`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: orderMessagingCreate,
+        params, signal
+    },
+      options);
+    }
+  
+
+
+export const getCreateOrderMessagingOrdersProviderOrderIdMessagingPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrderMessagingOrdersProviderOrderIdMessagingPost>>, TError,{orderId: string;data: OrderMessagingCreate;params: CreateOrderMessagingOrdersProviderOrderIdMessagingPostParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createOrderMessagingOrdersProviderOrderIdMessagingPost>>, TError,{orderId: string;data: OrderMessagingCreate;params: CreateOrderMessagingOrdersProviderOrderIdMessagingPostParams}, TContext> => {
+
+const mutationKey = ['createOrderMessagingOrdersProviderOrderIdMessagingPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOrderMessagingOrdersProviderOrderIdMessagingPost>>, {orderId: string;data: OrderMessagingCreate;params: CreateOrderMessagingOrdersProviderOrderIdMessagingPostParams}> = (props) => {
+          const {orderId,data,params} = props ?? {};
+
+          return  createOrderMessagingOrdersProviderOrderIdMessagingPost(orderId,data,params,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateOrderMessagingOrdersProviderOrderIdMessagingPostMutationResult = NonNullable<Awaited<ReturnType<typeof createOrderMessagingOrdersProviderOrderIdMessagingPost>>>
+    export type CreateOrderMessagingOrdersProviderOrderIdMessagingPostMutationBody = OrderMessagingCreate
+    export type CreateOrderMessagingOrdersProviderOrderIdMessagingPostMutationError = HTTPValidationError
+
+    /**
+ * @summary Create Order Messaging
+ */
+export const useCreateOrderMessagingOrdersProviderOrderIdMessagingPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrderMessagingOrdersProviderOrderIdMessagingPost>>, TError,{orderId: string;data: OrderMessagingCreate;params: CreateOrderMessagingOrdersProviderOrderIdMessagingPostParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createOrderMessagingOrdersProviderOrderIdMessagingPost>>,
+        TError,
+        {orderId: string;data: OrderMessagingCreate;params: CreateOrderMessagingOrdersProviderOrderIdMessagingPostParams},
+        TContext
+      > => {
+
+      const mutationOptions = getCreateOrderMessagingOrdersProviderOrderIdMessagingPostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Patch Order Messaging
+ */
+export const patchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatch = (
+    orderId: string,
+    messagingId: string,
+    orderMessagingUpdate: OrderMessagingUpdate,
+    params: PatchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatchParams,
+ options?: SecondParameter<typeof brokerFetch>,) => {
+      
+      
+      return brokerFetch<OrderPublic>(
+      {url: `/orders/provider/${orderId}/messaging/${messagingId}`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: orderMessagingUpdate,
+        params
+    },
+      options);
+    }
+  
+
+
+export const getPatchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatchMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatch>>, TError,{orderId: string;messagingId: string;data: OrderMessagingUpdate;params: PatchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatchParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof patchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatch>>, TError,{orderId: string;messagingId: string;data: OrderMessagingUpdate;params: PatchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatchParams}, TContext> => {
+
+const mutationKey = ['patchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatch'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatch>>, {orderId: string;messagingId: string;data: OrderMessagingUpdate;params: PatchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatchParams}> = (props) => {
+          const {orderId,messagingId,data,params} = props ?? {};
+
+          return  patchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatch(orderId,messagingId,data,params,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PatchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatchMutationResult = NonNullable<Awaited<ReturnType<typeof patchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatch>>>
+    export type PatchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatchMutationBody = OrderMessagingUpdate
+    export type PatchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatchMutationError = HTTPValidationError
+
+    /**
+ * @summary Patch Order Messaging
+ */
+export const usePatchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatch = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatch>>, TError,{orderId: string;messagingId: string;data: OrderMessagingUpdate;params: PatchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatchParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof patchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatch>>,
+        TError,
+        {orderId: string;messagingId: string;data: OrderMessagingUpdate;params: PatchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatchParams},
+        TContext
+      > => {
+
+      const mutationOptions = getPatchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPatchMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
