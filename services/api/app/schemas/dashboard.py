@@ -32,7 +32,7 @@ class CommissionSummaryPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
-    amount: Money
+    amounts: list[Money] = Field(default_factory=list)
     provider_organization_id: UUID
     seller_organization_id: UUID
     created_at: datetime

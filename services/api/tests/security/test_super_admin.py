@@ -58,7 +58,7 @@ async def test_super_admin_provider_crud_without_membership(
         "/products/provider/",
         params=params,
         headers=headers,
-        json={"name": "Admin product"},
+        json={"name": "Admin product", "has_commission": False},
     )
     assert r_create.status_code == 201
     product_id = r_create.json()["id"]

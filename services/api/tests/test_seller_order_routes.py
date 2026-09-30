@@ -248,6 +248,146 @@ async def test_create_order_uses_seller_sale_price_overlay(
     assert r.json()["totals"]["products"] == [{"amount": 2200, "currency": "cup"}]
 
 
+async def test_free_commission_uses_price_markup(
+    client: AsyncClient,
+    seller_order_ctx: dict,
+    product_factory: ProductFactory,
+) -> None:
+    product = await product_factory.build(
+        organization_id=seller_order_ctx["provider_cup_id"],
+        name="Libre",
+        has_commission=False,
+        commission=0,
+        price=800,
+        currency=Currency.cup,
+    )
+
+    put = await client.patch(
+        f"/products/seller/{product['id']}",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+        json={"sale_price": {"amount": 1100, "currency": "cup"}},
+    )
+    assert put.status_code == 200, put.text
+
+    preview = await client.post(
+        "/orders/seller/preview",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+        json=[
+            {
+                "product_id": product["id"],
+                "quantity": 2,
+            },
+        ],
+    )
+    assert preview.status_code == 200, preview.text
+    preview_item = preview.json()["items"][0]
+    assert preview_item["unit_provider_price"] == {"amount": 800, "currency": "cup"}
+    assert preview_item["seller_provider_price"] == {"amount": 1100, "currency": "cup"}
+    assert preview_item["seller_commission"] == {"amount": 0, "currency": "cup"}
+    assert preview_item["seller_commissions"] == [
+        {"amount": 300, "currency": "cup"},
+    ]
+
+    create = await client.post(
+        "/orders/seller/",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+        json={
+            "customer_id": seller_order_ctx["customer_id"],
+            "items": [
+                {
+                    "product_id": product["id"],
+                    "quantity": 2,
+                },
+            ],
+        },
+    )
+    assert create.status_code == 201, create.text
+    create_item = create.json()["items"][0]
+    assert create_item["unit_provider_price"] == {"amount": 800, "currency": "cup"}
+    assert create_item["seller_provider_price"] == {"amount": 1100, "currency": "cup"}
+    assert create_item["seller_commission"] == {"amount": 0, "currency": "cup"}
+    assert create_item["seller_commissions"] == [
+        {"amount": 300, "currency": "cup"},
+    ]
+    assert create.json()["totals"]["products"] == [
+        {"amount": 2200, "currency": "cup"}
+    ]
+
+    no_markup = await client.post(
+        "/orders/seller/preview",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+        json=[
+            {
+                "product_id": product["id"],
+                "quantity": 1,
+                "seller_provider_price": {"amount": 800, "currency": "cup"},
+            },
+        ],
+    )
+    assert no_markup.status_code == 200, no_markup.text
+    no_markup_item = no_markup.json()["items"][0]
+    assert no_markup_item["seller_commission"] == {"amount": 0, "currency": "cup"}
+    assert no_markup_item["seller_commissions"] == []
+
+
+async def test_fixed_commission_plus_markup_mixed_currencies(
+    client: AsyncClient,
+    seller_order_ctx: dict,
+    product_factory: ProductFactory,
+) -> None:
+    product = await product_factory.build(
+        organization_id=seller_order_ctx["provider_cup_id"],
+        name="Mixed",
+        has_commission=True,
+        commission=150,
+        commission_currency=Currency.usd,
+        price=800,
+        currency=Currency.cup,
+    )
+
+    put = await client.patch(
+        f"/products/seller/{product['id']}",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+        json={"sale_price": {"amount": 1100, "currency": "cup"}},
+    )
+    assert put.status_code == 200, put.text
+
+    preview = await client.post(
+        "/orders/seller/preview",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+        json=[{"product_id": product["id"], "quantity": 1}],
+    )
+    assert preview.status_code == 200, preview.text
+    item = preview.json()["items"][0]
+    assert item["seller_commission"] == {"amount": 150, "currency": "usd"}
+    assert item["seller_commissions"] == [
+        {"amount": 150, "currency": "usd"},
+        {"amount": 300, "currency": "cup"},
+    ]
+
+    create = await client.post(
+        "/orders/seller/",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+        json={
+            "customer_id": seller_order_ctx["customer_id"],
+            "items": [{"product_id": product["id"], "quantity": 1}],
+        },
+    )
+    assert create.status_code == 201, create.text
+    create_item = create.json()["items"][0]
+    assert create_item["seller_commissions"] == [
+        {"amount": 150, "currency": "usd"},
+        {"amount": 300, "currency": "cup"},
+    ]
+
+
 async def test_create_order_increments_code_per_seller(
     client: AsyncClient,
     seller_order_ctx: dict,

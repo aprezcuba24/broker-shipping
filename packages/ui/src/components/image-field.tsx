@@ -1,11 +1,13 @@
 import { ImagePlus, Trash2 } from 'lucide-react'
-import { useEffect, useRef, useState, type ChangeEvent } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent, type ClipboardEvent } from 'react'
 
 import {
   IMAGE_ACCEPT,
+  fileFromClipboardData,
   validateImageFile,
   type ImageFieldValue,
 } from '../lib/image-field'
+import { cn } from '../lib/utils'
 import { Button } from './button'
 import { ConfirmDialog } from './confirm-dialog'
 import { Thumbnail, type ThumbnailProps } from './thumbnail'
@@ -33,16 +35,23 @@ export function ImageField({
   onValueChange,
   disabled = false,
   alt = 'Imagen',
-  hint = 'JPEG, PNG o WebP. Máximo 5 MB.',
+  hint = 'JPEG, PNG o WebP. Máximo 5 MB. Sube un archivo o pega con Ctrl+V.',
   id,
   size = 'lg',
   'aria-invalid': ariaInvalid,
 }: ImageFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const objectUrlRef = useRef<string | null>(null)
+  const valueRef = useRef(value)
+  const onValueChangeRef = useRef(onValueChange)
+  const disabledRef = useRef(disabled)
   const [objectUrl, setObjectUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
+
+  valueRef.current = value
+  onValueChangeRef.current = onValueChange
+  disabledRef.current = disabled
 
   useEffect(() => {
     if (objectUrlRef.current) {
@@ -64,14 +73,7 @@ export function ImageField({
     }
   }, [value?.file])
 
-  const displaySrc = objectUrl ?? previewSrc(value)
-  const hasImage = Boolean(displaySrc)
-
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    event.target.value = ''
-    if (!file) return
-
+  const applyFile = (file: File) => {
     const validationError = validateImageFile(file)
     if (validationError) {
       setError(validationError)
@@ -79,11 +81,42 @@ export function ImageField({
     }
 
     setError(null)
-    onValueChange({
-      url: value?.url ?? null,
+    onValueChangeRef.current({
+      url: valueRef.current?.url ?? null,
       file,
       removed: false,
     })
+  }
+
+  useEffect(() => {
+    const onPaste = (event: globalThis.ClipboardEvent) => {
+      if (disabledRef.current) return
+      const file = fileFromClipboardData(event.clipboardData)
+      if (!file) return
+      event.preventDefault()
+      applyFile(file)
+    }
+
+    window.addEventListener('paste', onPaste)
+    return () => window.removeEventListener('paste', onPaste)
+  }, [])
+
+  const displaySrc = objectUrl ?? previewSrc(value)
+  const hasImage = Boolean(displaySrc)
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    applyFile(file)
+  }
+
+  const handlePaste = (event: ClipboardEvent<HTMLDivElement>) => {
+    if (disabled) return
+    const file = fileFromClipboardData(event.clipboardData)
+    if (!file) return
+    event.preventDefault()
+    applyFile(file)
   }
 
   const handleRemove = () => {
@@ -123,7 +156,17 @@ export function ImageField({
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-      <Thumbnail src={displaySrc} alt={alt} size={size} />
+      <div
+        tabIndex={disabled ? undefined : 0}
+        onPaste={handlePaste}
+        className={cn(
+          'rounded-md outline-none',
+          !disabled && 'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+        )}
+        aria-label={`${alt}. Pega una imagen con Ctrl+V o usa el botón para subir.`}
+      >
+        <Thumbnail src={displaySrc} alt={alt} size={size} />
+      </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <p className="text-sm text-muted-foreground">{hint}</p>

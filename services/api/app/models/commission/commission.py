@@ -2,11 +2,9 @@ from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import (
-    BigInteger,
     Boolean,
     Column,
     DateTime,
-    Enum as SAEnum,
     ForeignKey,
     Index,
     text,
@@ -14,7 +12,6 @@ from sqlalchemy import (
 from sqlmodel import Field
 
 from app.lib.persistence.entity_model import EntityModel
-from app.models.order.enums import Currency
 
 
 class Commission(EntityModel, table=True):
@@ -26,10 +23,9 @@ class Commission(EntityModel, table=True):
             "is_paid",
         ),
         Index(
-            "uq_commission_unpaid_order_provider_currency",
+            "uq_commission_unpaid_order_provider",
             "order_id",
             "provider_organization_id",
-            "currency",
             unique=True,
             postgresql_where=text("is_paid = false"),
         ),
@@ -49,19 +45,6 @@ class Commission(EntityModel, table=True):
     seller_organization_id: UUID = Field(
         foreign_key="organization.id",
         index=True,
-    )
-    amount: int = Field(
-        sa_column=Column(BigInteger, nullable=False),
-    )
-    currency: Currency = Field(
-        sa_column=Column(
-            SAEnum(
-                Currency,
-                values_callable=lambda x: [e.value for e in x],
-                name="currency",
-            ),
-            nullable=False,
-        ),
     )
     is_paid: bool = Field(
         default=False,

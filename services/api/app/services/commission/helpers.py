@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col
 
 from app.models.commission.commission import Commission
+from app.models.commission.commission_amount import CommissionAmount
 from app.models.order.commission_component import (
     CommissionComponentKind,
     OrderItemCommissionComponent,
@@ -28,6 +29,31 @@ def attach_components(
 ) -> Commission:
     object.__setattr__(commission, "components", components)
     return commission
+
+
+def attach_amounts(commission: Commission, amounts: list[Money]) -> Commission:
+    object.__setattr__(commission, "amounts", amounts)
+    return commission
+
+
+async def load_amounts_by_commission(
+    session: AsyncSession,
+    commission_ids: list[UUID],
+) -> dict[UUID, list[Money]]:
+    if not commission_ids:
+        return {}
+
+    result = await session.execute(
+        select(CommissionAmount)
+        .where(col(CommissionAmount.commission_id).in_(commission_ids))
+        .order_by(CommissionAmount.currency, CommissionAmount.id)
+    )
+    by_commission: dict[UUID, list[Money]] = defaultdict(list)
+    for row in result.scalars().all():
+        by_commission[row.commission_id].append(
+            Money(amount=row.amount, currency=row.currency)
+        )
+    return dict(by_commission)
 
 
 async def load_order_item_ids_by_commission(
@@ -159,14 +185,13 @@ async def attach_items_to_commissions(
     session: AsyncSession,
     commissions: list[Commission],
 ) -> None:
-    by_commission = await load_order_item_ids_by_commission(
-        session,
-        [commission.id for commission in commissions],
-    )
+    commission_ids = [commission.id for commission in commissions]
+    by_commission = await load_order_item_ids_by_commission(session, commission_ids)
     components_by_commission = await load_components_by_commission(
         session,
         commissions,
     )
+    amounts_by_commission = await load_amounts_by_commission(session, commission_ids)
     for commission in commissions:
         attach_order_item_ids(
             commission,
@@ -175,4 +200,8 @@ async def attach_items_to_commissions(
         attach_components(
             commission,
             components_by_commission.get(commission.id, []),
+        )
+        attach_amounts(
+            commission,
+            amounts_by_commission.get(commission.id, []),
         )

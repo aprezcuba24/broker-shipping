@@ -234,6 +234,25 @@ def _seller_organization_from_order_snapshot(
     )
 
 
+def compute_seller_commissions(item: OrderItem) -> list[Money]:
+    """Unit commission parts: fixed provider commission and/or price markup.
+
+    Currencies may differ (provider commission vs product price currency).
+    """
+    result: list[Money] = []
+    if item.seller_commission > 0:
+        result.append(
+            Money(
+                amount=item.seller_commission,
+                currency=item.commission_currency,
+            )
+        )
+    markup = item.seller_provider_price - item.unit_provider_price
+    if markup > 0:
+        result.append(Money(amount=markup, currency=item.currency))
+    return result
+
+
 def order_item_to_public(item: OrderItem) -> OrderItemPublic:
     return OrderItemPublic(
         id=item.id,
@@ -261,6 +280,7 @@ def order_item_to_public(item: OrderItem) -> OrderItemPublic:
             amount=item.seller_commission,
             currency=item.commission_currency,
         ),
+        seller_commissions=compute_seller_commissions(item),
         created_at=item.created_at,
         updated_at=item.updated_at,
     )

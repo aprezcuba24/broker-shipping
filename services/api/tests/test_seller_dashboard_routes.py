@@ -111,7 +111,7 @@ async def test_seller_dashboard_happy_path(
     pending = {
         row["currency"]: row["amount"] for row in data["commissions_pending"]
     }
-    assert pending.get("cup") == 200  # commission 100 * qty 2
+    assert pending.get("cup") == 1200  # commission 100*2 + markup 500*2
 
     assert data["commissions_paid"] == []
     assert len(data["recent_orders"]) == 1

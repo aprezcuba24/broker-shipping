@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.commission.commission import Commission
+from app.models.commission.commission_amount import CommissionAmount
 from app.models.order.enums import Currency, OrderItemStatus
 from app.models.order.order_item import OrderItem
 from app.services.commission import assign as assign_service
@@ -22,6 +23,18 @@ from tests.factories.product_factory import ProductFactory
 from tests.factories.user_factory import UserFactory
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")
+
+
+async def _amounts_by_currency(
+    session: AsyncSession,
+    commission_id: UUID,
+) -> dict[Currency, int]:
+    result = await session.execute(
+        select(CommissionAmount).where(
+            CommissionAmount.commission_id == commission_id
+        )
+    )
+    return {row.currency: row.amount for row in result.scalars().all()}
 
 
 async def _create_linked_order(
@@ -130,8 +143,9 @@ async def test_assign_creates_commission_for_first_delivered_item(
 
     commission = await assign_service.assign_delivered_item(db_session, item_id)
     assert commission is not None
-    assert commission.amount == 300  # 150 * 2
-    assert commission.currency == Currency.cup
+    assert await _amounts_by_currency(db_session, commission.id) == {
+        Currency.cup: 300,
+    }  # 150 * 2
     assert commission.is_paid is False
     assert str(commission.provider_organization_id) == ctx["provider_id"]
     assert str(commission.seller_organization_id) == ctx["seller_id"]
@@ -168,12 +182,14 @@ async def test_assign_accumulates_same_order_provider_currency(
 
     c1 = await assign_service.assign_delivered_item(db_session, item_a)
     assert c1 is not None
-    assert c1.amount == 100
+    assert await _amounts_by_currency(db_session, c1.id) == {Currency.cup: 100}
 
     c2 = await assign_service.assign_delivered_item(db_session, item_b)
     assert c2 is not None
     assert c2.id == c1.id
-    assert c2.amount == 250  # 100 + 50*3
+    assert await _amounts_by_currency(db_session, c2.id) == {
+        Currency.cup: 250,
+    }  # 100 + 50*3
 
     result = await db_session.execute(
         select(Commission).where(Commission.order_id == UUID(ctx["order_id"]))
@@ -181,7 +197,7 @@ async def test_assign_accumulates_same_order_provider_currency(
     assert len(list(result.scalars().all())) == 1
 
 
-async def test_assign_separates_by_currency(
+async def test_assign_unifies_currencies_on_same_commission(
     client: AsyncClient,
     db_session: AsyncSession,
     user_factory: UserFactory,
@@ -215,11 +231,16 @@ async def test_assign_separates_by_currency(
     c_cup = await assign_service.assign_delivered_item(db_session, item_cup)
     c_usd = await assign_service.assign_delivered_item(db_session, item_usd)
     assert c_cup is not None and c_usd is not None
-    assert c_cup.id != c_usd.id
-    assert c_cup.currency == Currency.cup
-    assert c_usd.currency == Currency.usd
-    assert c_cup.amount == 100
-    assert c_usd.amount == 200
+    assert c_cup.id == c_usd.id
+    assert await _amounts_by_currency(db_session, c_cup.id) == {
+        Currency.cup: 100,
+        Currency.usd: 200,
+    }
+
+    result = await db_session.execute(
+        select(Commission).where(Commission.order_id == UUID(ctx["order_id"]))
+    )
+    assert len(list(result.scalars().all())) == 1
 
 
 async def test_assign_creates_new_commission_after_paid(
@@ -260,7 +281,7 @@ async def test_assign_creates_new_commission_after_paid(
     assert second is not None
     assert second.id != first.id
     assert second.is_paid is False
-    assert second.amount == 75
+    assert await _amounts_by_currency(db_session, second.id) == {Currency.cup: 75}
 
 
 async def test_assign_uses_commission_currency_when_different_from_price(
@@ -297,8 +318,9 @@ async def test_assign_uses_commission_currency_when_different_from_price(
     await _mark_item_delivered(db_session, item_id)
     commission = await assign_service.assign_delivered_item(db_session, item_id)
     assert commission is not None
-    assert commission.currency == Currency.usd
-    assert commission.amount == 500  # 250 * 2
+    assert await _amounts_by_currency(db_session, commission.id) == {
+        Currency.usd: 500,
+    }  # 250 * 2
 
 
 async def test_assign_is_idempotent(
@@ -325,4 +347,4 @@ async def test_assign_is_idempotent(
     second = await assign_service.assign_delivered_item(db_session, item_id)
     assert first is not None and second is not None
     assert first.id == second.id
-    assert second.amount == 200
+    assert await _amounts_by_currency(db_session, second.id) == {Currency.cup: 200}

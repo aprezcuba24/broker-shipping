@@ -353,6 +353,7 @@ async def test_seller_product_includes_only_active_tags(
         headers=bearer_headers(user_id=provider_user["id"]),
         json={
             "name": "Tagged product",
+            "has_commission": False,
             "tag_ids": [active["id"], inactive["id"]],
         },
     )

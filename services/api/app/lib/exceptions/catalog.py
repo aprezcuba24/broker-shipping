@@ -219,6 +219,13 @@ ERRORS: dict[str, ErrorDef] = {
             "El precio del vendedor debe ser mayor que el del proveedor."
         ),
     ),
+    "commission_must_be_positive": ErrorDef(
+        code="commission_must_be_positive",
+        status_code=422,
+        template=(
+            "La comisión debe ser mayor que cero cuando el producto la tiene."
+        ),
+    ),
     "messaging_price_neighborhood_conflict": ErrorDef(
         code="messaging_price_neighborhood_conflict",
         status_code=409,

@@ -23,6 +23,7 @@ export interface OrderItemPublic {
   quantity: number;
   status: OrderItemStatus;
   seller_commission: Money;
+  seller_commissions?: Money[];
   created_at: string;
   updated_at: OrderItemPublicUpdatedAt;
 }

@@ -148,7 +148,7 @@ async def test_provider_list_shows_commission_after_delivered(
     assert commission["provider_organization_id"] == commission_order_ctx["provider_id"]
     assert commission["seller_organization_id"] == commission_order_ctx["seller_org_id"]
     assert commission["is_paid"] is False
-    assert commission["amount"] == {"amount": 200, "currency": "cup"}
+    assert commission["amounts"] == [{"amount": 200, "currency": "cup"}]
     assert len(commission["order_item_ids"]) == 1
 
     detail = await client.get(

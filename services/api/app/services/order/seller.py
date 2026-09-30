@@ -248,7 +248,11 @@ async def _build_order(
                 seller_commission=(
                     product.commission if product.has_commission else 0
                 ),
-                commission_currency=product.commission_currency,
+                commission_currency=(
+                    product.commission_currency
+                    if product.has_commission
+                    else product.currency
+                ),
             )
         )
     return order, items, products

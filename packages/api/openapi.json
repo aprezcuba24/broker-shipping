@@ -6937,8 +6937,12 @@
             "format": "uuid",
             "title": "Seller Organization Id"
           },
-          "amount": {
-            "$ref": "#/components/schemas/Money"
+          "amounts": {
+            "items": {
+              "$ref": "#/components/schemas/Money"
+            },
+            "type": "array",
+            "title": "Amounts"
           },
           "is_paid": {
             "type": "boolean",
@@ -6995,7 +6999,6 @@
           "order_id",
           "provider_organization_id",
           "seller_organization_id",
-          "amount",
           "is_paid",
           "paid_at",
           "created_at",
@@ -7010,8 +7013,12 @@
             "format": "uuid",
             "title": "Id"
           },
-          "amount": {
-            "$ref": "#/components/schemas/Money"
+          "amounts": {
+            "items": {
+              "$ref": "#/components/schemas/Money"
+            },
+            "type": "array",
+            "title": "Amounts"
           },
           "provider_organization_id": {
             "type": "string",
@@ -7032,7 +7039,6 @@
         "type": "object",
         "required": [
           "id",
-          "amount",
           "provider_organization_id",
           "seller_organization_id",
           "created_at"
@@ -8171,6 +8177,13 @@
           },
           "seller_commission": {
             "$ref": "#/components/schemas/Money"
+          },
+          "seller_commissions": {
+            "items": {
+              "$ref": "#/components/schemas/Money"
+            },
+            "type": "array",
+            "title": "Seller Commissions"
           },
           "created_at": {
             "type": "string",

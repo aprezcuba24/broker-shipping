@@ -1,6 +1,7 @@
 import {
   componentColumn,
   formatMoney,
+  formatSellerCommissions,
   imageColumn,
   SellerProductPriceBadge,
   textColumn,
@@ -22,7 +23,7 @@ function PreviewCommissionCell({ productId }: { productId: string }) {
   const preview = previewByProductId.get(productId)
   return (
     <span className="tabular-nums text-sm">
-      {preview ? formatMoney(preview.seller_commission) : '—'}
+      {preview ? formatSellerCommissions(preview) : '—'}
     </span>
   )
 }
@@ -36,7 +37,17 @@ function canShowPriceBadge(
   return product.has_commission !== undefined && product.price != null
 }
 
-function PreviewPriceCell({ product }: { product: CartProductSnapshot }) {
+function PreviewProviderPriceCell({ productId }: { productId: string }) {
+  const { previewByProductId } = useCartPreviewContext()
+  const preview = previewByProductId.get(productId)
+  return (
+    <span className="tabular-nums text-sm">
+      {preview ? formatMoney(preview.unit_provider_price) : '—'}
+    </span>
+  )
+}
+
+function PreviewSellerPriceCell({ product }: { product: CartProductSnapshot }) {
   const { previewByProductId } = useCartPreviewContext()
   const preview = previewByProductId.get(product.id)
   return (
@@ -92,8 +103,11 @@ export function buildCartColumns({
     componentColumn<CartItem>('commission', 'Comisión', (row) => (
       <PreviewCommissionCell productId={row.product.id} />
     )),
-    componentColumn<CartItem>('price', 'Precio', (row) => (
-      <PreviewPriceCell product={row.product} />
+    componentColumn<CartItem>('provider_price', 'Precio proveedor', (row) => (
+      <PreviewProviderPriceCell productId={row.product.id} />
+    )),
+    componentColumn<CartItem>('seller_price', 'Precio vendedor', (row) => (
+      <PreviewSellerPriceCell product={row.product} />
     )),
     componentColumn<CartItem>('subtotal', 'Subtotal', (row) => (
       <PreviewSubtotalCell productId={row.product.id} quantity={row.quantity} />

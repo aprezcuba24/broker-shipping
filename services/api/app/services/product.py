@@ -6,6 +6,7 @@ from sqlalchemy import exists
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
+from app.lib.exceptions import raise_api_error
 from app.lib.persistence import get_entity
 from app.lib.persistence.apply_update import apply_partial_update
 from app.lib.persistence.pagination import paginate
@@ -16,6 +17,15 @@ from app.schemas.pagination import PageResult, PaginationParams
 from app.schemas.product import ProductCreate, ProductUpdate
 from app.services import product_tag as product_tag_service
 from app.services.order.helpers import order_item_image_key_in_use
+
+
+def _ensure_commission_positive_when_enabled(
+    *,
+    has_commission: bool,
+    commission_amount: int,
+) -> None:
+    if has_commission and commission_amount <= 0:
+        raise_api_error("commission_must_be_positive")
 
 
 async def list_products_for_organization(
@@ -71,6 +81,10 @@ async def create_product(
     )
     has_commission = data.has_commission
     commission_amount = data.commission.amount if has_commission else 0
+    _ensure_commission_positive_when_enabled(
+        has_commission=has_commission,
+        commission_amount=commission_amount,
+    )
     product = Product(
         name=data.name,
         description=data.description,
@@ -122,6 +136,10 @@ async def update_product(
         product.commission_currency = data.commission.currency
     if not product.has_commission:
         product.commission = 0
+    _ensure_commission_positive_when_enabled(
+        has_commission=product.has_commission,
+        commission_amount=product.commission,
+    )
     session.add(product)
     await session.commit()
     await session.refresh(product)

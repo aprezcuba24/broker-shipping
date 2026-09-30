@@ -14,7 +14,7 @@ export interface CommissionPublic {
   order_id: string;
   provider_organization_id: string;
   seller_organization_id: string;
-  amount: Money;
+  amounts?: Money[];
   is_paid: boolean;
   paid_at: CommissionPublicPaidAt;
   created_at: string;

@@ -8,8 +8,8 @@ import {
   actionsColumn,
   componentColumn,
   createdAtColumn,
-  currencyMoneyColumn,
 } from '../crud/components/columns'
+import { formatCurrencyAmounts } from '../dashboard/dashboard-widgets'
 import { CommissionPaidBadge } from './status'
 
 function buildSharedCommissionColumns({
@@ -25,11 +25,11 @@ function buildSharedCommissionColumns({
     componentColumn<CommissionPublic>('counterparty', counterpartyHeader, (row) => (
       <span>{getCounterpartyName(getCounterpartyId(row))}</span>
     )),
-    currencyMoneyColumn<CommissionPublic>({
-      id: 'amount',
-      header: 'Monto',
-      accessor: 'amount',
-    }),
+    componentColumn<CommissionPublic>('amounts', 'Monto', (row) => (
+      <span className="tabular-nums text-sm">
+        {formatCurrencyAmounts(row.amounts ?? [])}
+      </span>
+    )),
     componentColumn<CommissionPublic>('is_paid', 'Estado', (row) => (
       <CommissionPaidBadge isPaid={row.is_paid} />
     )),
