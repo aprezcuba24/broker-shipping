@@ -23,6 +23,16 @@ import { Field, FieldError, FieldLabel } from './ui/field'
 
 const MIN_QUERY_LENGTH = 1
 
+type LocationLabelKind = 'province' | 'municipality' | 'neighborhood'
+
+function emptyLabelMaps(): Record<LocationLabelKind, Map<string, string>> {
+  return {
+    province: new Map(),
+    municipality: new Map(),
+    neighborhood: new Map(),
+  }
+}
+
 export type LocationSelection = {
   province_id?: string | null
   province_name?: string | null
@@ -97,12 +107,12 @@ export function useLocationFields<T extends FieldValues>({
   const [provinceSearch, setProvinceSearch] = useState('')
   const [municipalitySearch, setMunicipalitySearch] = useState('')
   const [neighborhoodSearch, setNeighborhoodSearch] = useState('')
-  const labelsRef = useRef(new Map<string, string>())
+  const labelsRef = useRef(emptyLabelMaps())
   const [, bumpLabels] = useState(0)
 
-  const cacheLabel = useCallback((id: string, name: string) => {
+  const cacheLabel = useCallback((kind: LocationLabelKind, id: string, name: string) => {
     if (!id || !name) return
-    labelsRef.current.set(id, name)
+    labelsRef.current[kind].set(id, name)
     bumpLabels((n) => n + 1)
   }, [])
 
@@ -177,21 +187,21 @@ export function useLocationFields<T extends FieldValues>({
 
   const onProvinceSelect = useCallback(
     (item: ProvincePublic) => {
-      cacheLabel(item.id, item.name)
+      cacheLabel('province', item.id, item.name)
     },
     [cacheLabel],
   )
 
   const onMunicipalitySelect = useCallback(
     (item: MunicipalityPublic) => {
-      cacheLabel(item.id, item.name)
+      cacheLabel('municipality', item.id, item.name)
     },
     [cacheLabel],
   )
 
   const onNeighborhoodSelect = useCallback(
     (item: NeighborhoodPublic) => {
-      cacheLabel(item.id, item.name)
+      cacheLabel('neighborhood', item.id, item.name)
     },
     [cacheLabel],
   )
@@ -203,13 +213,13 @@ export function useLocationFields<T extends FieldValues>({
       const nextNeighborhoodId = selection.neighborhood_id ?? ''
 
       if (nextProvinceId && selection.province_name) {
-        cacheLabel(nextProvinceId, selection.province_name)
+        cacheLabel('province', nextProvinceId, selection.province_name)
       }
       if (nextMunicipalityId && selection.municipality_name) {
-        cacheLabel(nextMunicipalityId, selection.municipality_name)
+        cacheLabel('municipality', nextMunicipalityId, selection.municipality_name)
       }
       if (nextNeighborhoodId && selection.neighborhood_name) {
-        cacheLabel(nextNeighborhoodId, selection.neighborhood_name)
+        cacheLabel('neighborhood', nextNeighborhoodId, selection.neighborhood_name)
       }
 
       setValue(provinceName, nextProvinceId as T[FieldPath<T>], {
@@ -267,12 +277,14 @@ export function useLocationFields<T extends FieldValues>({
     provincesError: provincesQuery.isError,
     municipalitiesError: municipalitiesQuery.isError,
     neighborhoodsError: includeNeighborhood && neighborhoodsQuery.isError,
-    provinceLabel: provinceId ? labelsRef.current.get(provinceId) : undefined,
+    provinceLabel: provinceId
+      ? labelsRef.current.province.get(provinceId)
+      : undefined,
     municipalityLabel: municipalityId
-      ? labelsRef.current.get(municipalityId)
+      ? labelsRef.current.municipality.get(municipalityId)
       : undefined,
     neighborhoodLabel: neighborhoodId
-      ? labelsRef.current.get(neighborhoodId)
+      ? labelsRef.current.neighborhood.get(neighborhoodId)
       : undefined,
     onProvinceSearchChange: setProvinceSearch,
     onMunicipalitySearchChange: setMunicipalitySearch,
