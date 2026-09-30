@@ -67,6 +67,7 @@ export {
   imageFieldDefaultValue,
   imageFieldSchema,
   validateImageFile,
+  fileFromClipboardData,
   imageFieldHasPendingChange,
 } from './lib/image-field'
 export type { ImageFieldValue } from './lib/image-field'

@@ -40,6 +40,47 @@ export function validateImageFile(file: File): string | null {
   return null
 }
 
+function extensionForImageType(type: string): string {
+  if (type === 'image/jpeg') return 'jpg'
+  if (type === 'image/webp') return 'webp'
+  return 'png'
+}
+
+/** Rename generic clipboard captures (e.g. `image.png`) to a stable local name. */
+function ensureClipboardFileName(file: File): File {
+  const name = file.name?.trim() ?? ''
+  const isGenericName = name === '' || /^image\.[a-z0-9]+$/i.test(name)
+  if (!isGenericName) return file
+
+  const ext = extensionForImageType(file.type)
+  return new File([file], `portapapeles.${ext}`, {
+    type: file.type,
+    lastModified: file.lastModified,
+  })
+}
+
+/**
+ * Returns the first allowed image file from a paste event's clipboard data,
+ * or `null` when the clipboard has no image (so text paste can proceed).
+ */
+export function fileFromClipboardData(clipboardData: DataTransfer | null): File | null {
+  if (!clipboardData) return null
+
+  for (const item of Array.from(clipboardData.items ?? [])) {
+    if (item.kind !== 'file' || !ALLOWED_IMAGE_TYPES.has(item.type)) continue
+    const file = item.getAsFile()
+    if (file) return ensureClipboardFileName(file)
+  }
+
+  for (const file of Array.from(clipboardData.files ?? [])) {
+    if (ALLOWED_IMAGE_TYPES.has(file.type)) {
+      return ensureClipboardFileName(file)
+    }
+  }
+
+  return null
+}
+
 /** Whether the field has a pending upload or delete to persist. */
 export function imageFieldHasPendingChange(value: ImageFieldValue | undefined | null): boolean {
   if (!value) return false
