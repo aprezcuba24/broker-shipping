@@ -87,9 +87,15 @@ function ProductDetailBody({
           </DetailField>
         ) : null}
 
-        <DetailField label="Precio">
+        <DetailField label={providerName !== undefined ? 'Precio del proveedor' : 'Precio'}>
           <span className="tabular-nums">{formatMoney(product.price)}</span>
         </DetailField>
+
+        {providerName !== undefined && product.sale_price ? (
+          <DetailField label="Tu precio de venta">
+            <span className="tabular-nums">{formatMoney(product.sale_price)}</span>
+          </DetailField>
+        ) : null}
 
         <DetailField label="Comisión">
           <CommissionValue

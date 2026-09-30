@@ -212,6 +212,13 @@ ERRORS: dict[str, ErrorDef] = {
         status_code=422,
         template="La moneda no coincide con la del producto.",
     ),
+    "seller_price_below_provider": ErrorDef(
+        code="seller_price_below_provider",
+        status_code=422,
+        template=(
+            "El precio del vendedor no puede ser menor que el del proveedor."
+        ),
+    ),
     "messaging_price_neighborhood_conflict": ErrorDef(
         code="messaging_price_neighborhood_conflict",
         status_code=409,

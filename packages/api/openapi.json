@@ -1212,6 +1212,75 @@
             }
           }
         }
+      },
+      "patch": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Update Seller Product",
+        "operationId": "update_seller_product_products_seller__product_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Product Id"
+            }
+          },
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SellerProductUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/product-stock-movements/provider/": {
@@ -6776,6 +6845,70 @@
         ],
         "title": "ApiKeyPublic"
       },
+      "CommissionComponentKind": {
+        "type": "string",
+        "enum": [
+          "provider_commission",
+          "price_markup"
+        ],
+        "title": "CommissionComponentKind"
+      },
+      "CommissionComponentPublic": {
+        "properties": {
+          "order_item_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Order Item Id"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/CommissionComponentKind"
+          },
+          "unit_amount": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "line_amount": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "unit_provider_price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "seller_provider_price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_item_id",
+          "product_name",
+          "quantity",
+          "kind",
+          "unit_amount",
+          "line_amount"
+        ],
+        "title": "CommissionComponentPublic"
+      },
       "CommissionMarkPaid": {
         "properties": {},
         "type": "object",
@@ -6847,6 +6980,13 @@
             },
             "type": "array",
             "title": "Order Item Ids"
+          },
+          "components": {
+            "items": {
+              "$ref": "#/components/schemas/CommissionComponentPublic"
+            },
+            "type": "array",
+            "title": "Components"
           }
         },
         "type": "object",
@@ -9214,6 +9354,16 @@
           "commission": {
             "$ref": "#/components/schemas/Money"
           },
+          "sale_price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "stock": {
             "type": "integer",
             "title": "Stock"
@@ -9883,6 +10033,23 @@
           "recent_pending_commissions"
         ],
         "title": "SellerDashboardPublic"
+      },
+      "SellerProductUpdate": {
+        "properties": {
+          "sale_price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "SellerProductUpdate",
+        "description": "Seller overlay fields for a provider product.\n\nOmitted fields are left unchanged. ``sale_price=null`` clears the overlay\nprice so the provider price is used."
       },
       "StatusCount": {
         "properties": {

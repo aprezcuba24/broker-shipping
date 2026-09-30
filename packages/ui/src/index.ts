@@ -492,6 +492,8 @@ export type {
   ProductDetailPageProps,
   SellerProductDetailPageProps,
 } from './product/product-detail-page'
+export { SellerSalePriceSection } from './product/seller-sale-price-section'
+export type { SellerSalePriceSectionProps } from './product/seller-sale-price-section'
 
 export {
   COMMISSION_PAID_FILTER_OPTIONS,
@@ -514,6 +516,8 @@ export {
   buildCommissionDetailFields,
 } from './commission/commission-detail-page'
 export type { CommissionDetailPageProps } from './commission/commission-detail-page'
+export { CommissionBreakdown } from './commission/commission-breakdown'
+export type { CommissionBreakdownProps } from './commission/commission-breakdown'
 export { CommissionMarkPaidAction } from './commission/commission-mark-paid-action'
 export type { CommissionMarkPaidActionProps } from './commission/commission-mark-paid-action'
 

@@ -4,9 +4,13 @@ from fastapi import APIRouter
 
 from app.deps import SessionDep
 from app.lib.persistence.pagination import PaginationDep
-from app.lib.security.deps import CurrentUserDep, OptionalSellerOrgDep
+from app.lib.security.deps import CurrentUserDep, OptionalSellerOrgDep, SellerOrgDep
 from app.schemas.pagination import Page
-from app.schemas.product import ProductPublic, product_to_public
+from app.schemas.product import (
+    ProductPublic,
+    SellerProductUpdate,
+    product_to_public,
+)
 from app.services import seller_product as seller_product_service
 
 router = APIRouter(prefix="/products/seller", tags=["products"])
@@ -46,5 +50,23 @@ async def get_product(
         product_id,
         user,
         seller_organization_id=seller_org_id,
+    )
+    return product_to_public(product)
+
+
+@router.patch("/{product_id}", response_model=ProductPublic)
+async def update_seller_product(
+    product_id: UUID,
+    data: SellerProductUpdate,
+    user: CurrentUserDep,
+    organization: SellerOrgDep,
+    session: SessionDep,
+) -> ProductPublic:
+    product = await seller_product_service.update_seller_product(
+        session,
+        product_id,
+        user,
+        seller_organization_id=organization.id,
+        data=data,
     )
     return product_to_public(product)

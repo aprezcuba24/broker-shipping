@@ -7,6 +7,7 @@
 import type { Money } from './money';
 import type { CommissionPublicPaidAt } from './commissionPublicPaidAt';
 import type { CommissionPublicUpdatedAt } from './commissionPublicUpdatedAt';
+import type { CommissionComponentPublic } from './commissionComponentPublic';
 
 export interface CommissionPublic {
   id: string;
@@ -19,4 +20,5 @@ export interface CommissionPublic {
   created_at: string;
   updated_at: CommissionPublicUpdatedAt;
   order_item_ids?: string[];
+  components?: CommissionComponentPublic[];
 }

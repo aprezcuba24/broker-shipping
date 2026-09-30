@@ -58,6 +58,16 @@ class ProductUpdate(BaseModel):
     commission: Money | None = None
 
 
+class SellerProductUpdate(BaseModel):
+    """Seller overlay fields for a provider product.
+
+    Omitted fields are left unchanged. ``sale_price=null`` clears the overlay
+    price so the provider price is used.
+    """
+
+    sale_price: Money | None = None
+
+
 class ProductPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -68,6 +78,7 @@ class ProductPublic(BaseModel):
     organization_id: UUID
     price: Money
     commission: Money
+    sale_price: Money | None = None
     stock: int
     reserved: int
     created_at: datetime
@@ -124,6 +135,12 @@ class ProductImageConfirmRequest(BaseModel):
 
 
 def product_to_public(product: Product) -> ProductPublic:
+    sale_price_amount = getattr(product, "sale_price", None)
+    sale_price = (
+        Money(amount=sale_price_amount, currency=product.currency)
+        if sale_price_amount is not None
+        else None
+    )
     return ProductPublic(
         id=product.id,
         name=product.name,
@@ -135,6 +152,7 @@ def product_to_public(product: Product) -> ProductPublic:
             amount=product.commission,
             currency=product.commission_currency,
         ),
+        sale_price=sale_price,
         stock=product.stock,
         reserved=product.reserved,
         created_at=product.created_at,

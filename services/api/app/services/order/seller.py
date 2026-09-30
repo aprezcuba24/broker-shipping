@@ -27,11 +27,13 @@ from app.services.customer.helpers import attach_addresses_to_customers
 from app.services.messaging import price as messaging_price_service
 from app.services.messaging import settings as messaging_settings_service
 from app.services.order.code import generate_next_order_code
+from app.services.order.commission_components import create_components_for_items
 from app.services.order.helpers import (
     attach_order_view,
     attach_order_relations,
     order_search_clause,
 )
+from app.services.seller_product import load_sale_prices
 
 _NIL_UUID = UUID(int=0)
 
@@ -147,7 +149,7 @@ async def _build_order(
     customer: Customer | None = None,
     seller_organization_name: str = "",
     code: str = "",
-) -> tuple[Order, list[OrderItem]]:
+) -> tuple[Order, list[OrderItem], dict[UUID, Product]]:
     product_ids = list(dict.fromkeys(item.product_id for item in items_data))
     products = await _resolve_linked_products(
         session,
@@ -157,6 +159,11 @@ async def _build_order(
     )
     provider_ids = list({product.organization_id for product in products.values()})
     provider_names = await _organization_names_by_id(session, provider_ids)
+    sale_prices = await load_sale_prices(
+        session,
+        seller_organization_id=seller_organization_id,
+        product_ids=product_ids,
+    )
 
     customer_name = ""
     customer_ci = ""
@@ -206,7 +213,12 @@ async def _build_order(
                 raise_api_error("currency_mismatch")
             seller_provider_price = item_data.seller_provider_price.amount
         else:
-            seller_provider_price = product.price
+            overlay_price = sale_prices.get(product.id)
+            seller_provider_price = (
+                overlay_price if overlay_price is not None else product.price
+            )
+        if seller_provider_price < product.price:
+            raise_api_error("seller_price_below_provider")
         if item_data.customer_change is not None:
             if item_data.customer_change.currency != product.currency:
                 raise_api_error("currency_mismatch")
@@ -215,6 +227,7 @@ async def _build_order(
             customer_change = 0
         items.append(
             OrderItem(
+                id=uuid4(),
                 order_id=order.id,
                 product_id=product.id,
                 product_name=product.name,
@@ -235,7 +248,7 @@ async def _build_order(
                 commission_currency=product.commission_currency,
             )
         )
-    return order, items
+    return order, items, products
 
 
 async def preview_order(
@@ -245,7 +258,7 @@ async def preview_order(
     items_data: list[OrderItemCreate],
 ) -> Order:
     seller_names = await _organization_names_by_id(session, [seller_organization_id])
-    order, items = await _build_order(
+    order, items, _products = await _build_order(
         session,
         user,
         seller_organization_id,
@@ -281,7 +294,7 @@ async def create_order(
     seller_names = await _organization_names_by_id(session, [seller_organization_id])
     code = await generate_next_order_code(session, seller_organization_id)
 
-    order, items = await _build_order(
+    order, items, products = await _build_order(
         session,
         user,
         seller_organization_id,
@@ -301,6 +314,7 @@ async def create_order(
     session.add_all(items)
     session.add_all(messaging)
     await session.flush()
+    await create_components_for_items(session, items, products)
     await emit(
         OrderCreatedEvent(order_id=order.id),
         session=session,

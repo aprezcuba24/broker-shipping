@@ -209,7 +209,14 @@ async def test_seller_get_and_cross_tenant(
         headers=commission_order_ctx["seller_bearer"],
     )
     assert detail.status_code == 200
-    assert detail.json()["id"] == commission_id
+    body = detail.json()
+    assert body["id"] == commission_id
+    assert len(body["components"]) == 1
+    component = body["components"][0]
+    assert component["kind"] == "provider_commission"
+    assert component["line_amount"] == {"amount": 200, "currency": "cup"}
+    assert component["unit_amount"] == {"amount": 100, "currency": "cup"}
+    assert component["quantity"] == 2
 
     other = await client.get(
         f"/commissions/seller/{commission_id}",
@@ -224,6 +231,101 @@ async def test_seller_get_and_cross_tenant(
         headers=commission_order_ctx["seller_bearer"],
     )
     assert unknown.status_code == 404
+
+
+async def test_commission_includes_price_markup_component(
+    client: AsyncClient,
+    db_session,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    product_factory: ProductFactory,
+    customer_factory: CustomerFactory,
+) -> None:
+    provider_user = await user_factory.build()
+    seller_user = await user_factory.build()
+    provider = await organization_factory.build(user_id=provider_user["id"])
+    seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
+    await link_provider_to_seller(
+        db_session,
+        provider_organization_id=provider["id"],
+        seller_organization_id=seller_org["id"],
+    )
+    product = await product_factory.build(
+        organization_id=provider["id"],
+        name="Arroz",
+        commission=100,
+        price=800,
+    )
+    customer = await customer_factory.build(seller_organization_id=seller_org["id"])
+
+    create = await client.post(
+        "/orders/seller/",
+        params={"organization_id": seller_org["id"]},
+        headers=bearer_headers(user_id=seller_user["id"]),
+        json={
+            "customer_id": customer["id"],
+            "items": [
+                {
+                    "product_id": product["id"],
+                    "quantity": 2,
+                    "seller_provider_price": {"amount": 1000, "currency": "cup"},
+                },
+            ],
+        },
+    )
+    assert create.status_code == 201, create.text
+    order = create.json()
+
+    await _advance_to_delivered(
+        client,
+        order["id"],
+        {"organization_id": provider["id"]},
+        bearer_headers(user_id=provider_user["id"]),
+    )
+
+    listed = await client.get(
+        "/commissions/provider/",
+        params={"organization_id": provider["id"]},
+        headers=bearer_headers(user_id=provider_user["id"]),
+    )
+    assert listed.status_code == 200
+    assert listed.json()["total"] == 1
+    commission = listed.json()["items"][0]
+    # provider commission 100*2 + markup 200*2 = 600
+    assert commission["amount"] == {"amount": 600, "currency": "cup"}
+
+    detail = await client.get(
+        f"/commissions/provider/{commission['id']}",
+        params={"organization_id": provider["id"]},
+        headers=bearer_headers(user_id=provider_user["id"]),
+    )
+    assert detail.status_code == 200
+    components = detail.json()["components"]
+    by_kind = {c["kind"]: c for c in components}
+    assert by_kind["provider_commission"]["line_amount"] == {
+        "amount": 200,
+        "currency": "cup",
+    }
+    assert by_kind["price_markup"]["line_amount"] == {
+        "amount": 400,
+        "currency": "cup",
+    }
+    assert by_kind["price_markup"]["unit_provider_price"] == {
+        "amount": 800,
+        "currency": "cup",
+    }
+    assert by_kind["price_markup"]["seller_provider_price"] == {
+        "amount": 1000,
+        "currency": "cup",
+    }
+
+    seller_detail = await client.get(
+        f"/commissions/seller/{commission['id']}",
+        params={"organization_id": seller_org["id"]},
+        headers=bearer_headers(user_id=seller_user["id"]),
+    )
+    assert seller_detail.status_code == 200
+    assert len(seller_detail.json()["components"]) == 2
 
 
 async def test_seller_cannot_mark_paid(

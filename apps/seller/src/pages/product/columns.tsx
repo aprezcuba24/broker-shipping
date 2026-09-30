@@ -7,7 +7,7 @@ import {
   CommissionValue,
   componentColumn,
   createdAtColumn,
-  currencyMoneyColumn,
+  formatMoney,
   imageColumn,
   textColumn,
   updatedAtColumn,
@@ -33,7 +33,11 @@ export function buildProductColumns({
     componentColumn<ProductPublic>('provider', 'Proveedor', (row) => (
       <span>{providerNameById.get(row.organization_id) ?? '—'}</span>
     )),
-    currencyMoneyColumn<ProductPublic>({ id: 'price', header: 'Precio' }),
+    componentColumn<ProductPublic>('price', 'Precio', (row) => (
+      <span className="tabular-nums">
+        {formatMoney(row.sale_price ?? row.price)}
+      </span>
+    )),
     componentColumn<ProductPublic>('commission', 'Comisión', (row) => (
       <CommissionValue
         hasCommission={row.has_commission}

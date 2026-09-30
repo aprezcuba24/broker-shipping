@@ -214,6 +214,40 @@ async def test_create_order_defaults_seller_provider_price(
     }
 
 
+async def test_create_order_uses_seller_sale_price_overlay(
+    client: AsyncClient,
+    seller_order_ctx: dict,
+) -> None:
+    put = await client.patch(
+        f"/products/seller/{seller_order_ctx['product_cup_id']}",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+        json={"sale_price": {"amount": 1100, "currency": "cup"}},
+    )
+    assert put.status_code == 200, put.text
+
+    r = await client.post(
+        "/orders/seller/",
+        params=seller_order_ctx["seller_params"],
+        headers=seller_order_ctx["seller_bearer"],
+        json={
+            "customer_id": seller_order_ctx["customer_id"],
+            "items": [
+                {
+                    "product_id": seller_order_ctx["product_cup_id"],
+                    "quantity": 2,
+                },
+            ],
+        },
+    )
+    assert r.status_code == 201, r.text
+    item = r.json()["items"][0]
+    assert item["unit_provider_price"] == {"amount": 800, "currency": "cup"}
+    assert item["seller_provider_price"] == {"amount": 1100, "currency": "cup"}
+    assert item["seller_commission"] == {"amount": 150, "currency": "cup"}
+    assert r.json()["totals"]["products"] == [{"amount": 2200, "currency": "cup"}]
+
+
 async def test_create_order_increments_code_per_seller(
     client: AsyncClient,
     seller_order_ctx: dict,
