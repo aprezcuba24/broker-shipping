@@ -4,131 +4,14 @@ import type { ReactNode } from 'react'
 
 import { BadgeList } from '../components/badge-list'
 import { BtnLink } from '../components/btn-link'
-import {
-  DetailSection,
-  type DetailSectionField,
-} from '../components/detail-section'
+import { CommissionValue } from '../components/commission-value'
+import { FormFieldCell, FormSection } from '../components/form-section'
 import { PageLoading } from '../components/page-loading'
 import { PageMessage } from '../components/page-message'
 import { PageWrapper } from '../components/page-wrapper'
 import { Thumbnail } from '../components/thumbnail'
+import { Field, FieldLabel } from '../components/ui/field'
 import { formatMoney } from '../lib/utils'
-
-const productDetailImageField: DetailSectionField<ProductPublic> = {
-  title: 'Imagen',
-  accessor: (product) => product,
-  format: (value) => {
-    const product = value as ProductPublic
-    return (
-      <Thumbnail
-        src={product.image_url}
-        alt={product.name}
-        size="lg"
-        fallbackIcon={Package}
-      />
-    )
-  },
-}
-
-const productDetailNameField: DetailSectionField<ProductPublic> = {
-  title: 'Nombre',
-  accessor: (product) => product.name,
-}
-
-const productDetailPriceField: DetailSectionField<ProductPublic> = {
-  title: 'Precio',
-  accessor: (product) => product.price,
-  format: (value) => (
-    <span className="tabular-nums">{formatMoney(value as ProductPublic['price'])}</span>
-  ),
-}
-
-const productDetailCommissionField: DetailSectionField<ProductPublic> = {
-  title: 'Comisión',
-  accessor: (product) => product,
-  format: (value) => {
-    const product = value as ProductPublic
-    if (product.has_commission === false) {
-      return <span>Libre</span>
-    }
-    return (
-      <span className="tabular-nums">
-        {formatMoney(product.commission)}
-      </span>
-    )
-  },
-}
-
-const productDetailStockField: DetailSectionField<ProductPublic> = {
-  title: 'Stock',
-  accessor: (product) => product.stock,
-  format: (value) => (
-    <span className="tabular-nums">{Number(value)}</span>
-  ),
-}
-
-const productDetailReservedField: DetailSectionField<ProductPublic> = {
-  title: 'Reservado',
-  accessor: (product) => product.reserved,
-  format: (value) => (
-    <span className="tabular-nums">{Number(value)}</span>
-  ),
-}
-
-const productDetailTagsField: DetailSectionField<ProductPublic> = {
-  title: 'Etiquetas',
-  accessor: (product) => product.tags,
-  fullWidth: true,
-  format: (value) => {
-    const tags = value as ProductPublic['tags']
-    return (
-      <BadgeList
-        items={(tags ?? []).map((tag) => ({
-          id: tag.id,
-          label: tag.name,
-        }))}
-      />
-    )
-  },
-}
-
-const productDetailDescriptionField: DetailSectionField<ProductPublic> = {
-  title: 'Descripción',
-  accessor: (product) => product.description,
-  fullWidth: true,
-  format: (value) => {
-    const description = value as ProductPublic['description']
-    if (!description) return '—'
-    return <p className="whitespace-pre-wrap text-sm">{description}</p>
-  },
-}
-
-const productDetailCreatedField: DetailSectionField<ProductPublic> = {
-  title: 'Creado',
-  accessor: (product) => product.created_at,
-  format: (value) => formatDateTime(value as string),
-}
-
-const productDetailUpdatedField: DetailSectionField<ProductPublic> = {
-  title: 'Actualizado',
-  accessor: (product) => product.updated_at,
-  format: (value) =>
-    value ? formatDateTime(value as string) : '—',
-}
-
-/** Provider (backoffice) summary fields — no provider column. */
-export const productDetailBaseFields: DetailSectionField<ProductPublic>[] = [
-  productDetailImageField,
-  productDetailNameField,
-  productDetailPriceField,
-  productDetailCommissionField,
-  productDetailStockField,
-  productDetailReservedField,
-  productDetailTagsField,
-  productDetailDescriptionField,
-  productDetailCreatedField,
-  productDetailUpdatedField,
-]
 
 export type ProductDetailPageProps = {
   isLoading: boolean
@@ -145,7 +28,110 @@ export type SellerProductDetailPageProps = ProductDetailPageProps & {
 }
 
 type ProductDetailLayoutProps = ProductDetailPageProps & {
-  summaryFields: DetailSectionField<ProductPublic>[]
+  providerName?: string
+}
+
+function DetailField({
+  label,
+  children,
+  fullWidth = false,
+}: {
+  label: string
+  children: ReactNode
+  fullWidth?: boolean
+}) {
+  return (
+    <FormFieldCell fullWidth={fullWidth}>
+      <Field>
+        <FieldLabel>{label}</FieldLabel>
+        <div className="text-sm font-medium break-words text-on-surface">{children}</div>
+      </Field>
+    </FormFieldCell>
+  )
+}
+
+function ProductDetailBody({
+  product,
+  providerName,
+}: {
+  product: ProductPublic
+  providerName?: string
+}) {
+  const tags = product.tags ?? []
+  const description = product.description?.trim()
+
+  return (
+    <div className="space-y-3">
+      <FormSection title="Imagen">
+        <FormFieldCell fullWidth>
+          <Field>
+            <FieldLabel>Imagen del producto</FieldLabel>
+            <Thumbnail
+              src={product.image_url}
+              alt={product.name}
+              size="xl"
+              fallbackIcon={Package}
+            />
+          </Field>
+        </FormFieldCell>
+      </FormSection>
+
+      <FormSection title="Datos del producto">
+        <DetailField label="Nombre" fullWidth>
+          {product.name}
+        </DetailField>
+
+        {providerName !== undefined ? (
+          <DetailField label="Proveedor" fullWidth>
+            {providerName}
+          </DetailField>
+        ) : null}
+
+        <DetailField label="Precio">
+          <span className="tabular-nums">{formatMoney(product.price)}</span>
+        </DetailField>
+
+        <DetailField label="Comisión">
+          <CommissionValue
+            hasCommission={product.has_commission}
+            commission={product.commission}
+          />
+        </DetailField>
+
+        <DetailField label="Etiquetas" fullWidth>
+          <BadgeList
+            items={tags.map((tag) => ({
+              id: tag.id,
+              label: tag.name,
+            }))}
+          />
+        </DetailField>
+
+        <DetailField label="Descripción" fullWidth>
+          {description ? (
+            <p className="whitespace-pre-wrap">{description}</p>
+          ) : (
+            '—'
+          )}
+        </DetailField>
+      </FormSection>
+
+      <FormSection title="Inventario">
+        <DetailField label="Stock">
+          <span className="tabular-nums">{Number(product.stock)}</span>
+        </DetailField>
+        <DetailField label="Reservado">
+          <span className="tabular-nums">{Number(product.reserved)}</span>
+        </DetailField>
+        <DetailField label="Creado">
+          {formatDateTime(product.created_at)}
+        </DetailField>
+        <DetailField label="Actualizado">
+          {product.updated_at ? formatDateTime(product.updated_at) : '—'}
+        </DetailField>
+      </FormSection>
+    </div>
+  )
 }
 
 function ProductDetailLayout({
@@ -156,7 +142,7 @@ function ProductDetailLayout({
   description = 'Detalle del producto.',
   buttons,
   children,
-  summaryFields,
+  providerName,
 }: ProductDetailLayoutProps) {
   if (isLoading) {
     return <PageLoading title="Producto" />
@@ -190,53 +176,26 @@ function ProductDetailLayout({
       buttons={buttons}
     >
       <div className="space-y-6">
-        <DetailSection title="Resumen" data={product} fields={summaryFields} />
+        <ProductDetailBody product={product} providerName={providerName} />
         {children}
       </div>
     </PageWrapper>
   )
 }
 
-function buildSellerProductDetailFields(
-  getProviderName: (organizationId: string) => string,
-): DetailSectionField<ProductPublic>[] {
-  const providerField: DetailSectionField<ProductPublic> = {
-    title: 'Proveedor',
-    accessor: (product) => product.organization_id,
-    format: (value) => getProviderName(String(value)),
-  }
-
-  return [
-    productDetailImageField,
-    productDetailNameField,
-    providerField,
-    productDetailPriceField,
-    productDetailCommissionField,
-    productDetailStockField,
-    productDetailReservedField,
-    productDetailTagsField,
-    productDetailDescriptionField,
-    productDetailCreatedField,
-    productDetailUpdatedField,
-  ]
-}
-
-/** Provider product detail — Resumen omits Proveedor. */
+/** Provider product detail — omits Proveedor. */
 export function ProductDetailPage(props: ProductDetailPageProps) {
-  return (
-    <ProductDetailLayout {...props} summaryFields={productDetailBaseFields} />
-  )
+  return <ProductDetailLayout {...props} />
 }
 
-/** Seller product detail — Resumen includes Proveedor. */
+/** Seller product detail — includes Proveedor after Nombre. */
 export function SellerProductDetailPage({
   getProviderName,
   ...props
 }: SellerProductDetailPageProps) {
-  return (
-    <ProductDetailLayout
-      {...props}
-      summaryFields={buildSellerProductDetailFields(getProviderName)}
-    />
-  )
+  const providerName = props.product
+    ? getProviderName(props.product.organization_id)
+    : undefined
+
+  return <ProductDetailLayout {...props} providerName={providerName} />
 }

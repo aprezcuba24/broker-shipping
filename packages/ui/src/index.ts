@@ -161,6 +161,8 @@ export { MoneyField } from './components/money-field'
 export type { MoneyFieldProps } from './components/money-field'
 export { CommissionField } from './components/commission-field'
 export type { CommissionFieldProps } from './components/commission-field'
+export { CommissionValue } from './components/commission-value'
+export type { CommissionValueProps } from './components/commission-value'
 export { ListFilterBar } from './components/list-filter-bar'
 export type { ListFilterBarProps } from './components/list-filter-bar'
 export { BtnConfirm } from './components/btn-confirm'
@@ -476,7 +478,6 @@ export type { PhoneBlacklistPageProps } from './customer/phone-blacklist-page'
 export {
   ProductDetailPage,
   SellerProductDetailPage,
-  productDetailBaseFields,
 } from './product/product-detail-page'
 export type {
   ProductDetailPageProps,

@@ -4,11 +4,11 @@ import {
   BadgeList,
   BtnLink,
   BtnList,
+  CommissionValue,
   componentColumn,
   createdAtColumn,
   currencyMoneyColumn,
   DeleteRowButton,
-  formatMoney,
   imageColumn,
   numberColumn,
   textColumn,
@@ -33,15 +33,12 @@ export function buildProductColumns({
     }),
     textColumn<ProductPublic>({ id: 'name', header: 'Nombre' }),
     currencyMoneyColumn<ProductPublic>({ id: 'price', header: 'Precio' }),
-    componentColumn<ProductPublic>('commission', 'Comisión', (row) =>
-      row.has_commission === false ? (
-        <span>Libre</span>
-      ) : (
-        <span className="tabular-nums text-sm">
-          {formatMoney(row.commission)}
-        </span>
-      ),
-    ),
+    componentColumn<ProductPublic>('commission', 'Comisión', (row) => (
+      <CommissionValue
+        hasCommission={row.has_commission}
+        commission={row.commission}
+      />
+    )),
     numberColumn<ProductPublic>({ id: 'stock', header: 'Stock' }),
     numberColumn<ProductPublic>({ id: 'reserved', header: 'Reservado' }),
     componentColumn<ProductPublic>('tags', 'Etiquetas', (row) => (
