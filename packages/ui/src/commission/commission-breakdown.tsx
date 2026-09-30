@@ -5,6 +5,7 @@ import {
   type Money,
 } from '@broker/api'
 
+import { formatCurrencyAmounts } from '../dashboard/dashboard-widgets'
 import { formatMoney } from '../lib/utils'
 
 const KIND_LABEL: Record<CommissionComponentKind, string> = {
@@ -16,19 +17,31 @@ function kindLabel(kind: CommissionComponentPublic['kind']): string {
   return KIND_LABEL[kind] ?? kind
 }
 
-function sumByKind(
+type KindCurrencyKey = `${CommissionComponentPublic['kind']}:${Money['currency']}`
+
+function sumByKindAndCurrency(
   components: CommissionComponentPublic[],
-): Map<CommissionComponentPublic['kind'], Money> {
-  const totals = new Map<CommissionComponentPublic['kind'], Money>()
+): Map<KindCurrencyKey, { kind: CommissionComponentPublic['kind']; total: Money }> {
+  const totals = new Map<
+    KindCurrencyKey,
+    { kind: CommissionComponentPublic['kind']; total: Money }
+  >()
   for (const component of components) {
-    const current = totals.get(component.kind)
+    const key: KindCurrencyKey = `${component.kind}:${component.line_amount.currency}`
+    const current = totals.get(key)
     if (!current) {
-      totals.set(component.kind, { ...component.line_amount })
+      totals.set(key, {
+        kind: component.kind,
+        total: { ...component.line_amount },
+      })
       continue
     }
-    totals.set(component.kind, {
-      amount: current.amount + component.line_amount.amount,
-      currency: current.currency,
+    totals.set(key, {
+      kind: component.kind,
+      total: {
+        amount: current.total.amount + component.line_amount.amount,
+        currency: current.total.currency,
+      },
     })
   }
   return totals
@@ -64,7 +77,7 @@ export function CommissionBreakdown({ commission }: CommissionBreakdownProps) {
     )
   }
 
-  const subtotals = sumByKind(components)
+  const subtotals = sumByKindAndCurrency(components)
 
   return (
     <section className="space-y-3">
@@ -89,9 +102,9 @@ export function CommissionBreakdown({ commission }: CommissionBreakdownProps) {
           ))}
         </ul>
         <div className="space-y-2 border-t border-border bg-muted/40 px-4 py-3">
-          {[...subtotals.entries()].map(([kind, total]) => (
+          {[...subtotals.entries()].map(([key, { kind, total }]) => (
             <div
-              key={kind}
+              key={key}
               className="flex items-center justify-between gap-4 text-sm"
             >
               <span className="text-muted-foreground">
@@ -104,7 +117,9 @@ export function CommissionBreakdown({ commission }: CommissionBreakdownProps) {
           ))}
           <div className="flex items-center justify-between gap-4 text-sm font-semibold">
             <span>Total</span>
-            <span className="tabular-nums">{formatMoney(commission.amount)}</span>
+            <span className="tabular-nums">
+              {formatCurrencyAmounts(commission.amounts ?? [])}
+            </span>
           </div>
         </div>
       </div>

@@ -8,8 +8,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.lib.exceptions import raise_api_error
 from app.lib.utils import utc_now
 from app.models.commission.commission import Commission
+from app.models.commission.commission_amount import CommissionAmount
 from app.models.order.commission_component import OrderItemCommissionComponent
-from app.models.order.enums import OrderItemStatus
+from app.models.order.enums import Currency, OrderItemStatus
 from app.models.order.order import Order
 from app.models.order.order_item import OrderItem
 
@@ -24,16 +25,12 @@ async def _find_or_create_unpaid_commission(
     *,
     order: Order,
     provider_organization_id: UUID,
-    currency,
-    delta: int,
 ) -> Commission:
-    now = utc_now()
     commission_result = await session.execute(
         select(Commission)
         .where(
             Commission.order_id == order.id,
             Commission.provider_organization_id == provider_organization_id,
-            Commission.currency == currency,
             Commission.is_paid.is_(False),
         )
         .with_for_update()
@@ -46,16 +43,47 @@ async def _find_or_create_unpaid_commission(
             order_id=order.id,
             provider_organization_id=provider_organization_id,
             seller_organization_id=order.seller_organization_id,
-            amount=delta,
-            currency=currency,
             is_paid=False,
         )
         session.add(commission)
-    else:
-        commission.amount += delta
-        commission.updated_at = now
-        session.add(commission)
+        await session.flush()
     return commission
+
+
+async def _add_amount(
+    session: AsyncSession,
+    *,
+    commission: Commission,
+    currency: Currency,
+    delta: int,
+) -> None:
+    now = utc_now()
+    amount_result = await session.execute(
+        select(CommissionAmount)
+        .where(
+            CommissionAmount.commission_id == commission.id,
+            CommissionAmount.currency == currency,
+        )
+        .with_for_update()
+    )
+    row = amount_result.scalar_one_or_none()
+    if row is None:
+        session.add(
+            CommissionAmount(
+                id=uuid4(),
+                commission_id=commission.id,
+                amount=delta,
+                currency=currency,
+            )
+        )
+        await session.flush()
+    else:
+        row.amount += delta
+        row.updated_at = now
+        session.add(row)
+
+    commission.updated_at = now
+    session.add(commission)
 
 
 async def assign_delivered_item(
@@ -91,56 +119,58 @@ async def assign_delivered_item(
     components = list(components_result.scalars().all())
 
     now = utc_now()
-    last_commission: Commission | None = None
+    commission: Commission | None = None
 
     if components:
         if all(component.commission_id is not None for component in components):
             return await session.get(Commission, components[0].commission_id)
 
+        commission = await _find_or_create_unpaid_commission(
+            session,
+            order=order,
+            provider_organization_id=item.provider_organization_id,
+        )
+
         for component in components:
             if component.commission_id is not None:
-                last_commission = await session.get(
-                    Commission, component.commission_id
-                )
                 continue
             delta = component.unit_amount * item.quantity
-            commission = await _find_or_create_unpaid_commission(
+            await _add_amount(
                 session,
-                order=order,
-                provider_organization_id=item.provider_organization_id,
+                commission=commission,
                 currency=component.currency,
                 delta=delta,
             )
-            await session.flush()
             component.commission_id = commission.id
             component.updated_at = now
             session.add(component)
-            last_commission = commission
 
         # Keep legacy pointer on the item for list helpers / older clients.
-        if item.commission_id is None and last_commission is not None:
-            item.commission_id = last_commission.id
+        if item.commission_id is None:
+            item.commission_id = commission.id
             item.updated_at = now
             session.add(item)
     else:
         if item.commission_id is not None:
             return await session.get(Commission, item.commission_id)
 
-        delta = item_commission_amount(item)
-        last_commission = await _find_or_create_unpaid_commission(
+        commission = await _find_or_create_unpaid_commission(
             session,
             order=order,
             provider_organization_id=item.provider_organization_id,
-            currency=item.commission_currency,
-            delta=delta,
         )
-        await session.flush()
-        item.commission_id = last_commission.id
+        await _add_amount(
+            session,
+            commission=commission,
+            currency=item.commission_currency,
+            delta=item_commission_amount(item),
+        )
+        item.commission_id = commission.id
         item.updated_at = now
         session.add(item)
 
     await session.commit()
-    if last_commission is not None:
-        await session.refresh(last_commission)
+    if commission is not None:
+        await session.refresh(commission)
     await session.refresh(item)
-    return last_commission
+    return commission

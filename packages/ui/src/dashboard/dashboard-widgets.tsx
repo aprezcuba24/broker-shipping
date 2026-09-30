@@ -228,7 +228,7 @@ export function RecentOrdersCard({
 
 export type RecentCommissionRow = {
   id: string
-  amount: Money
+  amounts: Money[]
   created_at: string
   counterpartyLabel?: string
 }
@@ -263,7 +263,7 @@ export function RecentCommissionsCard({
                 >
                   <div className="min-w-0">
                     <div className="font-medium tabular-nums">
-                      {formatMoney(row.amount)}
+                      {formatCurrencyAmounts(row.amounts ?? [])}
                     </div>
                     <p className="truncate text-xs text-muted-foreground">
                       {row.counterpartyLabel ?? '—'} · {formatDateTime(row.created_at)}

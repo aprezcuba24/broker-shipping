@@ -151,7 +151,7 @@ export function HomePage() {
             <RecentCommissionsCard
               commissions={data.recent_pending_commissions.map((row) => ({
                 id: row.id,
-                amount: row.amount,
+                amounts: row.amounts,
                 created_at: row.created_at,
                 counterpartyLabel: 'Proveedor',
               }))}

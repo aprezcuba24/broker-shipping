@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.lib.utils import utc_now
 from app.models.commission.commission import Commission
+from app.models.commission.commission_amount import CommissionAmount
 from app.models.order.enums import Currency, OrderItemStatus, OrderStatus
 from app.models.order.order import Order
 from app.models.order.order_item import OrderItem
@@ -18,6 +19,7 @@ from app.schemas.dashboard import (
     StatusCount,
 )
 from app.schemas.money import Money
+from app.services.commission.helpers import load_amounts_by_commission
 from app.services.order.helpers import (
     attach_items_and_totals,
     compute_order_totals,
@@ -151,11 +153,12 @@ async def sum_commissions(
 ) -> list[CurrencyAmount]:
     stmt = (
         select(
-            Commission.currency,
-            func.coalesce(func.sum(Commission.amount), 0),
+            CommissionAmount.currency,
+            func.coalesce(func.sum(CommissionAmount.amount), 0),
         )
+        .join(Commission, Commission.id == CommissionAmount.commission_id)
         .where(org_filter, Commission.is_paid.is_(is_paid))
-        .group_by(Commission.currency)
+        .group_by(CommissionAmount.currency)
     )
     if is_paid and period_start is not None:
         stmt = stmt.where(Commission.paid_at >= period_start)
@@ -218,15 +221,20 @@ async def list_recent_pending_commissions(
         .limit(_RECENT_LIMIT)
     )
     result = await session.execute(stmt)
+    commissions = list(result.scalars().all())
+    amounts_by_id = await load_amounts_by_commission(
+        session,
+        [c.id for c in commissions],
+    )
     return [
         CommissionSummaryPublic(
             id=c.id,
-            amount=Money(amount=c.amount, currency=c.currency),
+            amounts=amounts_by_id.get(c.id, []),
             provider_organization_id=c.provider_organization_id,
             seller_organization_id=c.seller_organization_id,
             created_at=c.created_at,
         )
-        for c in result.scalars().all()
+        for c in commissions
     ]
 
 

@@ -26,7 +26,7 @@ class CommissionPublic(BaseModel):
     order_id: UUID
     provider_organization_id: UUID
     seller_organization_id: UUID
-    amount: Money
+    amounts: list[Money] = Field(default_factory=list)
     is_paid: bool
     paid_at: datetime | None
     created_at: datetime
@@ -45,7 +45,7 @@ def commission_to_public(commission: Commission) -> CommissionPublic:
         order_id=commission.order_id,
         provider_organization_id=commission.provider_organization_id,
         seller_organization_id=commission.seller_organization_id,
-        amount=Money(amount=commission.amount, currency=commission.currency),
+        amounts=list(getattr(commission, "amounts", []) or []),
         is_paid=commission.is_paid,
         paid_at=commission.paid_at,
         created_at=commission.created_at,

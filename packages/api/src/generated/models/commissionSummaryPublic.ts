@@ -8,7 +8,7 @@ import type { Money } from './money';
 
 export interface CommissionSummaryPublic {
   id: string;
-  amount: Money;
+  amounts?: Money[];
   provider_organization_id: string;
   seller_organization_id: string;
   created_at: string;

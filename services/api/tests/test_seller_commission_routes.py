@@ -141,7 +141,11 @@ async def test_seller_sees_paid_and_unpaid_commissions(
     assert listed.status_code == 200
     page = listed.json()
     assert page["total"] == 2
-    amounts = {item["amount"]["amount"] for item in page["items"]}
+    amounts = {
+        item["amounts"][0]["amount"]
+        for item in page["items"]
+        if item["amounts"]
+    }
     assert amounts == {200}
 
     unpaid_only = await client.get(
@@ -292,7 +296,7 @@ async def test_commission_includes_price_markup_component(
     assert listed.json()["total"] == 1
     commission = listed.json()["items"][0]
     # provider commission 100*2 + markup 200*2 = 600
-    assert commission["amount"] == {"amount": 600, "currency": "cup"}
+    assert commission["amounts"] == [{"amount": 600, "currency": "cup"}]
 
     detail = await client.get(
         f"/commissions/provider/{commission['id']}",

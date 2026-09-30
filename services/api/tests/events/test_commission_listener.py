@@ -13,6 +13,7 @@ from app.db.context import configure_session_maker
 from app.events.types import OrderItemDeliveredEvent
 from app.lib.events import emit
 from app.models.commission.commission import Commission
+from app.models.commission.commission_amount import CommissionAmount
 from app.models.order.enums import Currency, OrderItemStatus
 from app.models.order.order_item import OrderItem
 from tests.factories.auth_helpers import bearer_headers
@@ -102,7 +103,13 @@ async def test_order_item_delivered_event_creates_commission(
     )
     commissions = list(result.scalars().all())
     assert len(commissions) == 1
-    assert commissions[0].amount == 500  # 125 * 4
+    amounts = await db_session.execute(
+        select(CommissionAmount).where(
+            CommissionAmount.commission_id == commissions[0].id
+        )
+    )
+    by_currency = {row.currency: row.amount for row in amounts.scalars().all()}
+    assert by_currency == {Currency.cup: 500}  # 125 * 4
     item = await db_session.get(OrderItem, item_id)
     assert item is not None
     assert item.commission_id == commissions[0].id

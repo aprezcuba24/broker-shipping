@@ -11,7 +11,7 @@ import {
 import { PageLoading } from '../components/page-loading'
 import { PageMessage } from '../components/page-message'
 import { PageWrapper } from '../components/page-wrapper'
-import { formatMoney } from '../lib/utils'
+import { formatCurrencyAmounts } from '../dashboard/dashboard-widgets'
 import { CommissionBreakdown } from './commission-breakdown'
 import { CommissionPaidBadge } from './status'
 
@@ -32,7 +32,7 @@ export function buildCommissionDetailFields({
         const commission = value as CommissionPublic
         return (
           <span className="font-medium tabular-nums">
-            {formatMoney(commission.amount)}
+            {formatCurrencyAmounts(commission.amounts ?? [])}
           </span>
         )
       },
@@ -127,7 +127,7 @@ export function CommissionDetailPage({
 
   return (
     <PageWrapper
-      title={formatMoney(commission.amount)}
+      title={formatCurrencyAmounts(commission.amounts ?? [])}
       description={description}
       icon={CircleDollarSign}
       leading={
