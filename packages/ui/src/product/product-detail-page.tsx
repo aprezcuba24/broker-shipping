@@ -12,6 +12,7 @@ import { PageWrapper } from '../components/page-wrapper'
 import { Thumbnail } from '../components/thumbnail'
 import { Field, FieldLabel } from '../components/ui/field'
 import { formatMoney } from '../lib/utils'
+import { SellerProductPriceBadge } from './seller-product-price-badge'
 
 export type ProductDetailPageProps = {
   isLoading: boolean
@@ -87,9 +88,23 @@ function ProductDetailBody({
           </DetailField>
         ) : null}
 
-        <DetailField label="Precio">
-          <span className="tabular-nums">{formatMoney(product.price)}</span>
+        <DetailField label={providerName !== undefined ? 'Precio del proveedor' : 'Precio'}>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="tabular-nums">{formatMoney(product.price)}</span>
+            {providerName !== undefined && !product.sale_price ? (
+              <SellerProductPriceBadge product={product} />
+            ) : null}
+          </div>
         </DetailField>
+
+        {providerName !== undefined && product.sale_price ? (
+          <DetailField label="Tu precio de venta">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="tabular-nums">{formatMoney(product.sale_price)}</span>
+              <SellerProductPriceBadge product={product} />
+            </div>
+          </DetailField>
+        ) : null}
 
         <DetailField label="Comisión">
           <CommissionValue

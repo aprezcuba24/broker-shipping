@@ -2,12 +2,13 @@ import {
   componentColumn,
   formatMoney,
   imageColumn,
+  SellerProductPriceBadge,
   textColumn,
   type ColumnDef,
 } from '@broker/ui'
 
 import { ProductCartControl } from '@/components/product-cart-control'
-import type { CartItem } from '@/stores/cart-store'
+import type { CartItem, CartProductSnapshot } from '@/stores/cart-store'
 
 import { useCartPreviewContext } from './cart-preview-context'
 import { lineSubtotal } from './cart-utils'
@@ -26,13 +27,27 @@ function PreviewCommissionCell({ productId }: { productId: string }) {
   )
 }
 
-function PreviewPriceCell({ productId }: { productId: string }) {
+function canShowPriceBadge(
+  product: CartProductSnapshot,
+): product is CartProductSnapshot & {
+  has_commission: boolean
+  price: NonNullable<CartProductSnapshot['price']>
+} {
+  return product.has_commission !== undefined && product.price != null
+}
+
+function PreviewPriceCell({ product }: { product: CartProductSnapshot }) {
   const { previewByProductId } = useCartPreviewContext()
-  const preview = previewByProductId.get(productId)
+  const preview = previewByProductId.get(product.id)
   return (
-    <span className="tabular-nums text-sm">
-      {preview ? formatMoney(preview.seller_provider_price) : '—'}
-    </span>
+    <div className="flex flex-wrap items-center justify-end gap-2">
+      <span className="tabular-nums text-sm">
+        {preview ? formatMoney(preview.seller_provider_price) : '—'}
+      </span>
+      {canShowPriceBadge(product) ? (
+        <SellerProductPriceBadge product={product} />
+      ) : null}
+    </div>
   )
 }
 
@@ -78,7 +93,7 @@ export function buildCartColumns({
       <PreviewCommissionCell productId={row.product.id} />
     )),
     componentColumn<CartItem>('price', 'Precio', (row) => (
-      <PreviewPriceCell productId={row.product.id} />
+      <PreviewPriceCell product={row.product} />
     )),
     componentColumn<CartItem>('subtotal', 'Subtotal', (row) => (
       <PreviewSubtotalCell productId={row.product.id} quantity={row.quantity} />

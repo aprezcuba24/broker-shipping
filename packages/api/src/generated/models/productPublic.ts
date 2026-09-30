@@ -6,6 +6,7 @@
  */
 import type { ProductPublicDescription } from './productPublicDescription';
 import type { Money } from './money';
+import type { ProductPublicSalePrice } from './productPublicSalePrice';
 import type { ProductPublicUpdatedAt } from './productPublicUpdatedAt';
 import type { TagPublic } from './tagPublic';
 import type { ProductPublicImageUrl } from './productPublicImageUrl';
@@ -18,6 +19,7 @@ export interface ProductPublic {
   organization_id: string;
   price: Money;
   commission: Money;
+  sale_price?: ProductPublicSalePrice;
   stock: number;
   reserved: number;
   created_at: string;

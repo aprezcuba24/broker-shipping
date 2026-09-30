@@ -20,7 +20,12 @@ export function buildSellerOrderItemColumns(): ColumnDef<OrderItemPublic>[] {
     componentColumn<OrderItemPublic>('quantity', 'Cant.', (row) => (
       <span className="tabular-nums text-sm">{row.quantity}</span>
     )),
-    componentColumn<OrderItemPublic>('price', 'Precio', (row) => (
+    componentColumn<OrderItemPublic>('provider_price', 'Precio proveedor', (row) => (
+      <span className="tabular-nums text-sm">
+        {formatMoney(row.unit_provider_price)}
+      </span>
+    )),
+    componentColumn<OrderItemPublic>('seller_price', 'Precio vendedor', (row) => (
       <span className="tabular-nums text-sm">
         {formatMoney(row.seller_provider_price)}
       </span>
@@ -52,9 +57,14 @@ export function buildProviderOrderItemColumns(): ColumnDef<OrderItemPublic>[] {
     componentColumn<OrderItemPublic>('quantity', 'Cant.', (row) => (
       <span className="tabular-nums text-sm">{row.quantity}</span>
     )),
-    componentColumn<OrderItemPublic>('price', 'Precio', (row) => (
+    componentColumn<OrderItemPublic>('provider_price', 'Precio proveedor', (row) => (
       <span className="tabular-nums text-sm">
         {formatMoney(row.unit_provider_price)}
+      </span>
+    )),
+    componentColumn<OrderItemPublic>('seller_price', 'Precio vendedor', (row) => (
+      <span className="tabular-nums text-sm">
+        {formatMoney(row.seller_provider_price)}
       </span>
     )),
     componentColumn<OrderItemPublic>('subtotal', 'Subtotal', (row) => (

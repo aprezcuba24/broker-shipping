@@ -12,6 +12,7 @@ import { PageLoading } from '../components/page-loading'
 import { PageMessage } from '../components/page-message'
 import { PageWrapper } from '../components/page-wrapper'
 import { formatMoney } from '../lib/utils'
+import { CommissionBreakdown } from './commission-breakdown'
 import { CommissionPaidBadge } from './status'
 
 export function buildCommissionDetailFields({
@@ -141,6 +142,7 @@ export function CommissionDetailPage({
     >
       <div className="space-y-6">
         <DetailSection title="Resumen" data={commission} fields={fields} />
+        <CommissionBreakdown commission={commission} />
         {children}
       </div>
     </PageWrapper>

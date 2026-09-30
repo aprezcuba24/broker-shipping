@@ -41,7 +41,9 @@ import type {
   ProductImagePresignRequest,
   ProductImagePresignResponse,
   ProductPublic,
-  ProductUpdate
+  ProductUpdate,
+  SellerProductUpdate,
+  UpdateSellerProductProductsSellerProductIdPatchParams
 } from '.././models';
 
 import { brokerFetch } from '../../client';
@@ -828,3 +830,70 @@ export function useGetProductProductsSellerProductIdGet<TData = Awaited<ReturnTy
 
 
 
+/**
+ * @summary Update Seller Product
+ */
+export const updateSellerProductProductsSellerProductIdPatch = (
+    productId: string,
+    sellerProductUpdate: SellerProductUpdate,
+    params: UpdateSellerProductProductsSellerProductIdPatchParams,
+ options?: SecondParameter<typeof brokerFetch>,) => {
+      
+      
+      return brokerFetch<ProductPublic>(
+      {url: `/products/seller/${productId}`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: sellerProductUpdate,
+        params
+    },
+      options);
+    }
+  
+
+
+export const getUpdateSellerProductProductsSellerProductIdPatchMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSellerProductProductsSellerProductIdPatch>>, TError,{productId: string;data: SellerProductUpdate;params: UpdateSellerProductProductsSellerProductIdPatchParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateSellerProductProductsSellerProductIdPatch>>, TError,{productId: string;data: SellerProductUpdate;params: UpdateSellerProductProductsSellerProductIdPatchParams}, TContext> => {
+
+const mutationKey = ['updateSellerProductProductsSellerProductIdPatch'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSellerProductProductsSellerProductIdPatch>>, {productId: string;data: SellerProductUpdate;params: UpdateSellerProductProductsSellerProductIdPatchParams}> = (props) => {
+          const {productId,data,params} = props ?? {};
+
+          return  updateSellerProductProductsSellerProductIdPatch(productId,data,params,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateSellerProductProductsSellerProductIdPatchMutationResult = NonNullable<Awaited<ReturnType<typeof updateSellerProductProductsSellerProductIdPatch>>>
+    export type UpdateSellerProductProductsSellerProductIdPatchMutationBody = SellerProductUpdate
+    export type UpdateSellerProductProductsSellerProductIdPatchMutationError = HTTPValidationError
+
+    /**
+ * @summary Update Seller Product
+ */
+export const useUpdateSellerProductProductsSellerProductIdPatch = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSellerProductProductsSellerProductIdPatch>>, TError,{productId: string;data: SellerProductUpdate;params: UpdateSellerProductProductsSellerProductIdPatchParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateSellerProductProductsSellerProductIdPatch>>,
+        TError,
+        {productId: string;data: SellerProductUpdate;params: UpdateSellerProductProductsSellerProductIdPatchParams},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdateSellerProductProductsSellerProductIdPatchMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    

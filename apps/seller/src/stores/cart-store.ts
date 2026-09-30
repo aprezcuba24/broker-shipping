@@ -4,7 +4,13 @@ import { persist } from 'zustand/middleware'
 
 export type CartProductSnapshot = Pick<
   ProductPublic,
-  'id' | 'name' | 'organization_id' | 'image_url'
+  | 'id'
+  | 'name'
+  | 'organization_id'
+  | 'image_url'
+  | 'has_commission'
+  | 'price'
+  | 'sale_price'
 >
 
 export type CartItem = {
@@ -74,7 +80,9 @@ export const useCartStore = create<CartState>()(
             const existing = items.find((i) => i.product.id === product.id)
             if (existing) {
               return items.map((i) =>
-                i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i,
+                i.product.id === product.id
+                  ? { ...i, quantity: i.quantity + 1, product }
+                  : i,
               )
             }
             return [...items, { product, quantity: 1 }]
