@@ -11,8 +11,8 @@ from app.models.customer.address import Address
 from app.models.customer.customer import Customer
 from app.models.location.municipality import Municipality
 from app.models.location.neighborhood import Neighborhood
-from app.models.location.province import Province
 from app.schemas.customer import AddressCreate
+from app.services.location import load_locations
 
 
 async def create_customer_address(
@@ -114,61 +114,25 @@ async def enrich_addresses_with_location_names(
 ) -> None:
     if not addresses:
         return
-    province_ids = list({address.province_id for address in addresses})
-    municipality_ids = list({address.municipality_id for address in addresses})
-    neighborhood_ids = list(
-        {
+    lookup = await load_locations(
+        session,
+        province_ids=[address.province_id for address in addresses],
+        municipality_ids=[address.municipality_id for address in addresses],
+        neighborhood_ids=[
             address.neighborhood_id
             for address in addresses
             if address.neighborhood_id is not None
-        }
+        ],
     )
-    provinces_by_id: dict[UUID, Province] = {}
-    municipalities_by_id: dict[UUID, Municipality] = {}
-    neighborhoods_by_id: dict[UUID, Neighborhood] = {}
-    if province_ids:
-        provinces = await session.execute(
-            select(Province).where(col(Province.id).in_(province_ids))
-        )
-        provinces_by_id = {province.id: province for province in provinces.scalars().all()}
-    if municipality_ids:
-        municipalities = await session.execute(
-            select(Municipality).where(col(Municipality.id).in_(municipality_ids))
-        )
-        municipalities_by_id = {
-            municipality.id: municipality for municipality in municipalities.scalars().all()
-        }
-    if neighborhood_ids:
-        neighborhoods = await session.execute(
-            select(Neighborhood).where(col(Neighborhood.id).in_(neighborhood_ids))
-        )
-        neighborhoods_by_id = {
-            neighborhood.id: neighborhood
-            for neighborhood in neighborhoods.scalars().all()
-        }
     for address in addresses:
-        province = provinces_by_id.get(address.province_id)
-        municipality = municipalities_by_id.get(address.municipality_id)
-        neighborhood = (
-            neighborhoods_by_id.get(address.neighborhood_id)
-            if address.neighborhood_id is not None
-            else None
+        chain = lookup.for_ids(
+            province_id=address.province_id,
+            municipality_id=address.municipality_id,
+            neighborhood_id=address.neighborhood_id,
         )
-        object.__setattr__(
-            address,
-            "province_name",
-            province.name if province is not None else None,
-        )
-        object.__setattr__(
-            address,
-            "municipality_name",
-            municipality.name if municipality is not None else None,
-        )
-        object.__setattr__(
-            address,
-            "neighborhood_name",
-            neighborhood.name if neighborhood is not None else None,
-        )
+        object.__setattr__(address, "province_name", chain.province_name)
+        object.__setattr__(address, "municipality_name", chain.municipality_name)
+        object.__setattr__(address, "neighborhood_name", chain.neighborhood_name)
 
 
 async def attach_addresses_to_customers(

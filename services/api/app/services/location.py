@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from uuid import UUID
 
 from sqlalchemy import func
@@ -33,6 +34,144 @@ def _name_term(name: str | None) -> str | None:
         return None
     term = name.strip()
     return term or None
+
+
+@dataclass(frozen=True, slots=True)
+class LocationChain:
+    neighborhood_id: UUID | None = None
+    neighborhood_name: str | None = None
+    municipality_id: UUID | None = None
+    municipality_name: str | None = None
+    province_id: UUID | None = None
+    province_name: str | None = None
+    neighborhood: Neighborhood | None = None
+    municipality: Municipality | None = None
+    province: Province | None = None
+
+
+@dataclass(slots=True)
+class LocationLookup:
+    neighborhoods: dict[UUID, Neighborhood]
+    municipalities: dict[UUID, Municipality]
+    provinces: dict[UUID, Province]
+
+    def for_neighborhood(self, neighborhood_id: UUID | None) -> LocationChain:
+        neighborhood = (
+            self.neighborhoods.get(neighborhood_id)
+            if neighborhood_id is not None
+            else None
+        )
+        municipality = (
+            self.municipalities.get(neighborhood.municipality_id)
+            if neighborhood is not None
+            else None
+        )
+        province = (
+            self.provinces.get(municipality.province_id)
+            if municipality is not None
+            else None
+        )
+        return LocationChain(
+            neighborhood_id=neighborhood.id if neighborhood is not None else None,
+            neighborhood_name=neighborhood.name if neighborhood is not None else None,
+            municipality_id=municipality.id if municipality is not None else None,
+            municipality_name=municipality.name if municipality is not None else None,
+            province_id=province.id if province is not None else None,
+            province_name=province.name if province is not None else None,
+            neighborhood=neighborhood,
+            municipality=municipality,
+            province=province,
+        )
+
+    def for_ids(
+        self,
+        *,
+        province_id: UUID | None = None,
+        municipality_id: UUID | None = None,
+        neighborhood_id: UUID | None = None,
+    ) -> LocationChain:
+        neighborhood = (
+            self.neighborhoods.get(neighborhood_id)
+            if neighborhood_id is not None
+            else None
+        )
+        municipality = (
+            self.municipalities.get(municipality_id)
+            if municipality_id is not None
+            else None
+        )
+        if municipality is None and neighborhood is not None:
+            municipality = self.municipalities.get(neighborhood.municipality_id)
+        province = (
+            self.provinces.get(province_id) if province_id is not None else None
+        )
+        if province is None and municipality is not None:
+            province = self.provinces.get(municipality.province_id)
+        return LocationChain(
+            neighborhood_id=neighborhood.id if neighborhood is not None else None,
+            neighborhood_name=neighborhood.name if neighborhood is not None else None,
+            municipality_id=municipality.id if municipality is not None else None,
+            municipality_name=municipality.name if municipality is not None else None,
+            province_id=province.id if province is not None else None,
+            province_name=province.name if province is not None else None,
+            neighborhood=neighborhood,
+            municipality=municipality,
+            province=province,
+        )
+
+
+async def load_locations(
+    session: AsyncSession,
+    *,
+    neighborhood_ids: list[UUID] | None = None,
+    municipality_ids: list[UUID] | None = None,
+    province_ids: list[UUID] | None = None,
+) -> LocationLookup:
+    """Load province/municipality/neighborhood rows and resolve parent chains.
+
+    Passing neighborhood_ids also loads their municipalities and provinces.
+    Passing municipality_ids also loads their provinces.
+    """
+    neighborhood_id_set = {nid for nid in (neighborhood_ids or []) if nid is not None}
+    municipality_id_set = {mid for mid in (municipality_ids or []) if mid is not None}
+    province_id_set = {pid for pid in (province_ids or []) if pid is not None}
+
+    neighborhoods: dict[UUID, Neighborhood] = {}
+    if neighborhood_id_set:
+        result = await session.execute(
+            select(Neighborhood).where(col(Neighborhood.id).in_(neighborhood_id_set))
+        )
+        neighborhoods = {
+            neighborhood.id: neighborhood for neighborhood in result.scalars().all()
+        }
+        municipality_id_set.update(
+            neighborhood.municipality_id for neighborhood in neighborhoods.values()
+        )
+
+    municipalities: dict[UUID, Municipality] = {}
+    if municipality_id_set:
+        result = await session.execute(
+            select(Municipality).where(col(Municipality.id).in_(municipality_id_set))
+        )
+        municipalities = {
+            municipality.id: municipality for municipality in result.scalars().all()
+        }
+        province_id_set.update(
+            municipality.province_id for municipality in municipalities.values()
+        )
+
+    provinces: dict[UUID, Province] = {}
+    if province_id_set:
+        result = await session.execute(
+            select(Province).where(col(Province.id).in_(province_id_set))
+        )
+        provinces = {province.id: province for province in result.scalars().all()}
+
+    return LocationLookup(
+        neighborhoods=neighborhoods,
+        municipalities=municipalities,
+        provinces=provinces,
+    )
 
 
 async def list_provinces(
@@ -122,45 +261,18 @@ def to_neighborhood_public(
     )
 
 
-async def _provinces_by_id(
-    session: AsyncSession,
-    province_ids: list[UUID],
-) -> dict[UUID, Province]:
-    if not province_ids:
-        return {}
-    result = await session.execute(
-        select(Province).where(col(Province.id).in_(province_ids))
-    )
-    return {province.id: province for province in result.scalars().all()}
-
-
-async def _municipalities_and_provinces_by_id(
-    session: AsyncSession,
-    municipality_ids: list[UUID],
-) -> tuple[dict[UUID, Municipality], dict[UUID, Province]]:
-    if not municipality_ids:
-        return {}, {}
-    mun_result = await session.execute(
-        select(Municipality).where(col(Municipality.id).in_(municipality_ids))
-    )
-    municipalities = {
-        municipality.id: municipality for municipality in mun_result.scalars().all()
-    }
-    province_ids = list({m.province_id for m in municipalities.values()})
-    provinces = await _provinces_by_id(session, province_ids)
-    return municipalities, provinces
-
-
 async def enrich_municipalities(
     session: AsyncSession,
     municipalities: list[Municipality],
 ) -> list[MunicipalityPublic]:
-    province_ids = list({m.province_id for m in municipalities})
-    provinces = await _provinces_by_id(session, province_ids)
+    lookup = await load_locations(
+        session,
+        province_ids=[m.province_id for m in municipalities],
+    )
     return [
         to_municipality_public(
             municipality,
-            province=provinces.get(municipality.province_id),
+            province=lookup.provinces.get(municipality.province_id),
         )
         for municipality in municipalities
     ]
@@ -170,22 +282,19 @@ async def enrich_neighborhoods(
     session: AsyncSession,
     neighborhoods: list[Neighborhood],
 ) -> list[NeighborhoodPublic]:
-    municipality_ids = list({n.municipality_id for n in neighborhoods})
-    municipalities, provinces = await _municipalities_and_provinces_by_id(
+    lookup = await load_locations(
         session,
-        municipality_ids,
+        neighborhood_ids=[n.id for n in neighborhoods],
+        municipality_ids=[n.municipality_id for n in neighborhoods],
     )
     items: list[NeighborhoodPublic] = []
     for neighborhood in neighborhoods:
-        municipality = municipalities.get(neighborhood.municipality_id)
-        province = (
-            provinces.get(municipality.province_id) if municipality is not None else None
-        )
+        chain = lookup.for_neighborhood(neighborhood.id)
         items.append(
             to_neighborhood_public(
                 neighborhood,
-                municipality=municipality,
-                province=province,
+                municipality=chain.municipality,
+                province=chain.province,
             )
         )
     return items
