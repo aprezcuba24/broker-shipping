@@ -439,7 +439,6 @@ export {
   SellerOrderDetailPage,
   orderDetailBaseFields,
   orderDetailSellerBaseFields,
-  orderDetailCustomerFields,
 } from './order/order-detail-page'
 export type { OrderDetailPageProps } from './order/order-detail-page'
 export { OrderItemsTable } from './order/order-items-table'
@@ -481,6 +480,8 @@ export { PhoneReputation } from './customer/phone-reputation'
 export type { PhoneReputationProps } from './customer/phone-reputation'
 export { PhoneBlacklistPage } from './customer/phone-blacklist-page'
 export type { PhoneBlacklistPageProps } from './customer/phone-blacklist-page'
+export { CustomerProfileCard } from './customer/customer-profile-card'
+export type { CustomerProfileCardProps } from './customer/customer-profile-card'
 
 
 export {

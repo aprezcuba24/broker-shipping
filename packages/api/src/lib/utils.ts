@@ -15,11 +15,18 @@ export function formatDateTime(value: string | null | undefined): string {
 }
 
 export function formatAddressLine(
-  address: Pick<AddressPublic, 'address' | 'municipality_name' | 'province_name'> | null | undefined,
+  address:
+    | Pick<
+        AddressPublic,
+        'address' | 'neighborhood_name' | 'municipality_name' | 'province_name'
+      >
+    | null
+    | undefined,
 ): string {
   if (!address) return '—'
   const parts = [
     address.address,
+    address.neighborhood_name,
     address.municipality_name,
     address.province_name,
   ].filter(Boolean)

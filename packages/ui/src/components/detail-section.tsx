@@ -51,6 +51,7 @@ function lastCellSpanClass<TData>(
 
   return cn(
     rem2 === 1 && 'sm:col-span-2 sm:border-r-0',
+    rem2 === 1 && rem3 === 0 && 'lg:col-span-1',
     rem3 === 1 && 'lg:col-span-3 lg:border-r-0',
     rem3 === 2 && 'lg:col-span-2 lg:border-r-0',
   )

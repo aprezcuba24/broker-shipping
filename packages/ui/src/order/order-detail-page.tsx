@@ -1,4 +1,7 @@
-import { formatDateTime, type OrderPublic } from '@broker/api'
+import {
+  formatDateTime,
+  type OrderPublic,
+} from '@broker/api'
 import { ClipboardList, ArrowLeft } from 'lucide-react'
 import type { ReactNode } from 'react'
 
@@ -10,6 +13,7 @@ import {
 import { PageLoading } from '../components/page-loading'
 import { PageMessage } from '../components/page-message'
 import { PageWrapper } from '../components/page-wrapper'
+import { CustomerProfileCard } from '../customer/customer-profile-card'
 import { PhoneReputation } from '../customer/phone-reputation'
 import { formatMoney } from '../lib/utils'
 import { OrderStatusBadge } from './status'
@@ -72,54 +76,6 @@ export const orderDetailSellerBaseFields: DetailSectionField<OrderPublic>[] = [
   orderDetailTotalsField,
 ]
 
-export const orderDetailCustomerFields: DetailSectionField<OrderPublic>[] = [
-  {
-    title: 'Nombre',
-    accessor: (order) => order.customer?.name,
-  },
-  {
-    title: 'Teléfono',
-    accessor: (order) => order.customer?.phone,
-  },
-  {
-    title: 'CI',
-    accessor: (order) => order.customer?.ci,
-  },
-  {
-    title: 'Dirección',
-    accessor: (order) => order.customer?.address?.address,
-    fullWidth: true,
-  },
-  {
-    title: 'Provincia',
-    accessor: (order) => order.customer?.address?.province_name,
-  },
-  {
-    title: 'Municipio',
-    accessor: (order) => order.customer?.address?.municipality_name,
-  },
-  {
-    title: 'Barrio',
-    accessor: (order) => order.customer?.address?.neighborhood_name,
-  },
-  {
-    title: 'Calificación',
-    accessor: (order) => order,
-    fullWidth: true,
-    format: (value) => {
-      const order = value as OrderPublic
-      const phone = order.customer?.phone
-      if (!phone) return '—'
-      return (
-        <PhoneReputation
-          phone={phone}
-          tier={order.customer?.purchase_tier ?? 0}
-        />
-      )
-    },
-  },
-]
-
 export type OrderDetailPageProps = {
   isLoading: boolean
   isError: boolean
@@ -159,6 +115,8 @@ function OrderDetailLayout({
     )
   }
 
+  const customer = order.customer
+
   return (
     <PageWrapper
       title={order.code}
@@ -177,7 +135,19 @@ function OrderDetailLayout({
       <div className="space-y-6">
         {topContent}
         <DetailSection title="Resumen" data={order} fields={summaryFields} />
-        <DetailSection title="Cliente" data={order} fields={orderDetailCustomerFields} />
+        <CustomerProfileCard customer={customer} title="Cliente">
+          {customer?.phone ? (
+            <section className="space-y-3">
+              <h2 className="text-sm font-medium">Calificación</h2>
+              <div className="rounded-xl border border-border/70 bg-surface-container-lowest px-4 py-3 sm:px-5">
+                <PhoneReputation
+                  phone={customer.phone}
+                  tier={customer.purchase_tier ?? 0}
+                />
+              </div>
+            </section>
+          ) : null}
+        </CustomerProfileCard>
         {children}
       </div>
     </PageWrapper>

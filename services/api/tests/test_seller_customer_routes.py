@@ -665,6 +665,7 @@ async def test_customer_address_history_keeps_previous_addresses(
     assert len(body["addresses"]) == 2
     assert body["addresses"][0]["address"] == "Calle 2 #200"
     assert body["addresses"][1]["address"] == "Calle 1 #100"
+    assert body["addresses"][0]["created_at"] >= body["addresses"][1]["created_at"]
 
 
 async def test_list_orders_filter_by_customer_id(
