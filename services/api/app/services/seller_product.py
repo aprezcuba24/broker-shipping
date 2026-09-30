@@ -159,7 +159,7 @@ async def update_seller_product(
 
         if sale_price.currency != product.currency:
             raise_api_error("currency_mismatch")
-        if sale_price.amount < product.price:
+        if sale_price.amount <= product.price:
             raise_api_error("seller_price_below_provider")
 
         if existing is None:

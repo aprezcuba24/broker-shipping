@@ -9,6 +9,7 @@ import {
   createdAtColumn,
   formatMoney,
   imageColumn,
+  SellerProductPriceBadge,
   textColumn,
   updatedAtColumn,
   type ColumnDef,
@@ -34,9 +35,12 @@ export function buildProductColumns({
       <span>{providerNameById.get(row.organization_id) ?? '—'}</span>
     )),
     componentColumn<ProductPublic>('price', 'Precio', (row) => (
-      <span className="tabular-nums">
-        {formatMoney(row.sale_price ?? row.price)}
-      </span>
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <span className="tabular-nums">
+          {formatMoney(row.sale_price ?? row.price)}
+        </span>
+        <SellerProductPriceBadge product={row} />
+      </div>
     )),
     componentColumn<ProductPublic>('commission', 'Comisión', (row) => (
       <CommissionValue

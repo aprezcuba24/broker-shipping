@@ -212,13 +212,16 @@ async def _build_order(
             if item_data.seller_provider_price.currency != product.currency:
                 raise_api_error("currency_mismatch")
             seller_provider_price = item_data.seller_provider_price.amount
+            if seller_provider_price < product.price:
+                raise_api_error("seller_price_below_provider")
         else:
             overlay_price = sale_prices.get(product.id)
-            seller_provider_price = (
-                overlay_price if overlay_price is not None else product.price
-            )
-        if seller_provider_price < product.price:
-            raise_api_error("seller_price_below_provider")
+            if overlay_price is not None:
+                seller_provider_price = overlay_price
+                if seller_provider_price <= product.price:
+                    raise_api_error("seller_price_below_provider")
+            else:
+                seller_provider_price = product.price
         if item_data.customer_change is not None:
             if item_data.customer_change.currency != product.currency:
                 raise_api_error("currency_mismatch")

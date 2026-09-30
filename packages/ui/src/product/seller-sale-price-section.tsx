@@ -38,11 +38,20 @@ export function SellerSalePriceSection({ product }: SellerSalePriceSectionProps)
   const mutation = useUpdateSellerProductProductsSellerProductIdPatch()
 
   const [draft, setDraft] = useState<Money>(
-    () => product.sale_price ?? { ...product.price },
+    () =>
+      product.sale_price ?? {
+        amount: product.price.amount + 1,
+        currency: product.price.currency,
+      },
   )
 
   useEffect(() => {
-    setDraft(product.sale_price ?? { ...product.price })
+    setDraft(
+      product.sale_price ?? {
+        amount: product.price.amount + 1,
+        currency: product.price.currency,
+      },
+    )
   }, [product.id, product.sale_price, product.price])
 
   const save = useAsyncAction(
@@ -87,8 +96,8 @@ export function SellerSalePriceSection({ product }: SellerSalePriceSectionProps)
           <span className="font-medium tabular-nums text-on-surface">
             {formatMoney(product.price)}
           </span>
-          . Si defines un precio propio, las órdenes usarán ese valor y la
-          diferencia se sumará a la comisión.
+          . Si defines un precio propio, debe ser mayor que el del proveedor;
+          las órdenes usarán ese valor y la diferencia se sumará a la comisión.
         </p>
       </FormFieldCell>
       <FormFieldCell fullWidth>

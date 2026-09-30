@@ -494,6 +494,15 @@ export type {
 } from './product/product-detail-page'
 export { SellerSalePriceSection } from './product/seller-sale-price-section'
 export type { SellerSalePriceSectionProps } from './product/seller-sale-price-section'
+export {
+  SellerProductPriceBadge,
+  getSellerProductPriceBadgeKind,
+} from './product/seller-product-price-badge'
+export type {
+  SellerProductPriceBadgeKind,
+  SellerProductPriceBadgeProduct,
+  SellerProductPriceBadgeProps,
+} from './product/seller-product-price-badge'
 
 export {
   COMMISSION_PAID_FILTER_OPTIONS,

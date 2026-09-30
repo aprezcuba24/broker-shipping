@@ -216,7 +216,7 @@ ERRORS: dict[str, ErrorDef] = {
         code="seller_price_below_provider",
         status_code=422,
         template=(
-            "El precio del vendedor no puede ser menor que el del proveedor."
+            "El precio del vendedor debe ser mayor que el del proveedor."
         ),
     ),
     "messaging_price_neighborhood_conflict": ErrorDef(

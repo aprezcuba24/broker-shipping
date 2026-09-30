@@ -117,6 +117,20 @@ async def test_sale_price_rejects_below_provider(
     assert response.json()["code"] == "seller_price_below_provider"
 
 
+async def test_sale_price_rejects_equal_to_provider(
+    client: AsyncClient,
+    seller_product_ctx: dict,
+) -> None:
+    response = await client.patch(
+        f"/products/seller/{seller_product_ctx['product_id']}",
+        params=seller_product_ctx["seller_params"],
+        headers=seller_product_ctx["seller_bearer"],
+        json={"sale_price": {"amount": 800, "currency": "cup"}},
+    )
+    assert response.status_code == 422
+    assert response.json()["code"] == "seller_price_below_provider"
+
+
 async def test_sale_price_rejects_currency_mismatch(
     client: AsyncClient,
     seller_product_ctx: dict,
