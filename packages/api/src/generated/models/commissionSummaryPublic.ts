@@ -4,12 +4,11 @@
  * Vendelo360 API
  * OpenAPI spec version: 0.1.0
  */
-import type { Currency } from './currency';
+import type { Money } from './money';
 
 export interface CommissionSummaryPublic {
   id: string;
-  amount: number;
-  currency: Currency;
+  amount: Money;
   provider_organization_id: string;
   seller_organization_id: string;
   created_at: string;

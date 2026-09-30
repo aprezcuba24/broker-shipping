@@ -116,6 +116,7 @@ export * from './memberInvitePreview';
 export * from './memberIsActivePatch';
 export * from './memberPublic';
 export * from './messageResponse';
+export * from './money';
 export * from './municipalityCreate';
 export * from './municipalityPublic';
 export * from './municipalityPublicProvinceName';

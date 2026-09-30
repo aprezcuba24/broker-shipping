@@ -4,7 +4,7 @@
  * Vendelo360 API
  * OpenAPI spec version: 0.1.0
  */
-import type { Currency } from './currency';
+import type { Money } from './money';
 import type { ProductPublicUpdatedAt } from './productPublicUpdatedAt';
 import type { TagPublic } from './tagPublic';
 import type { ProductPublicImageUrl } from './productPublicImageUrl';
@@ -13,9 +13,8 @@ export interface ProductPublic {
   id: string;
   name: string;
   organization_id: string;
-  price: number;
-  commission: number;
-  currency: Currency;
+  price: Money;
+  commission: Money;
   stock: number;
   reserved: number;
   created_at: string;

@@ -24,6 +24,11 @@ export type CustomerPublic = {
   address?: AddressPublic | null
 }
 
+export type Money = {
+  amount: number
+  currency: string
+}
+
 export type OrderItemPublic = {
   id: string
   order_id: string
@@ -32,13 +37,12 @@ export type OrderItemPublic = {
   product_image_url?: string | null
   provider_organization_id: string
   provider_organization_name?: string
-  unit_provider_price: number
-  seller_provider_price: number
-  customer_change: number
+  unit_provider_price: Money
+  seller_provider_price: Money
+  customer_change: Money
   quantity: number
-  currency: string
   status: string
-  seller_commission: number
+  seller_commission: Money
   created_at: string
   updated_at: string | null
 }
@@ -103,10 +107,9 @@ export type LastOrderItem = {
   providerOrganizationId: string
   providerName: string | null
   quantity: number
-  currency: string
-  unitPrice: number
-  commission: number
-  customerChange: number
+  unitPrice: Money
+  commission: Money
+  customerChange: Money
   status: string
 }
 

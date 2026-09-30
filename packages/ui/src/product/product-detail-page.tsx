@@ -37,28 +37,20 @@ const productDetailNameField: DetailSectionField<ProductPublic> = {
 
 const productDetailPriceField: DetailSectionField<ProductPublic> = {
   title: 'Precio',
-  accessor: (product) => product,
-  format: (value) => {
-    const product = value as ProductPublic
-    return (
-      <span className="tabular-nums">
-        {formatMoney(product.price, product.currency)}
-      </span>
-    )
-  },
+  accessor: (product) => product.price,
+  format: (value) => (
+    <span className="tabular-nums">{formatMoney(value as ProductPublic['price'])}</span>
+  ),
 }
 
 const productDetailCommissionField: DetailSectionField<ProductPublic> = {
   title: 'Comisión',
-  accessor: (product) => product,
-  format: (value) => {
-    const product = value as ProductPublic
-    return (
-      <span className="tabular-nums">
-        {formatMoney(product.commission, product.currency)}
-      </span>
-    )
-  },
+  accessor: (product) => product.commission,
+  format: (value) => (
+    <span className="tabular-nums">
+      {formatMoney(value as ProductPublic['commission'])}
+    </span>
+  ),
 }
 
 const productDetailStockField: DetailSectionField<ProductPublic> = {

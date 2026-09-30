@@ -4,5 +4,6 @@
  * Vendelo360 API
  * OpenAPI spec version: 0.1.0
  */
+import type { Money } from './money';
 
-export type ProductUpdateCommission = number | null;
+export type ProductUpdateCommission = Money | null;

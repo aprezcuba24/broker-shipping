@@ -81,12 +81,9 @@ export function moneyColumn<TData>(
 }
 
 export function currencyMoneyColumn<TData>(
-  options: BaseColumnOptions<TData> & {
-    /** Field that holds the currency code (e.g. `"cup"`, `"usd"`). Default `"currency"`. */
-    currencyAccessor?: keyof TData & string
-  },
+  options: BaseColumnOptions<TData>,
 ): ColumnDef<TData> {
-  const { currencyAccessor = 'currency' as keyof TData & string, cell, ...rest } = options
+  const { cell, ...rest } = options
   return {
     type: ColumnType.Number,
     align: rest.align ?? 'right',
@@ -95,22 +92,24 @@ export function currencyMoneyColumn<TData>(
       cell ??
       ((row) => {
         const amountKey = rest.accessor ?? rest.id
-        const amount = (row as Record<string, unknown>)[amountKey]
-        const currency = (row as Record<string, unknown>)[currencyAccessor]
+        const value = (row as Record<string, unknown>)[amountKey]
         if (
-          amount === null ||
-          amount === undefined ||
-          amount === '' ||
-          typeof currency !== 'string' ||
-          !currency
+          value === null ||
+          value === undefined ||
+          typeof value !== 'object' ||
+          !('amount' in value) ||
+          !('currency' in value)
         ) {
           return '—'
         }
-        const cents = Number(amount)
-        if (!Number.isFinite(cents)) return '—'
+        const money = value as { amount: unknown; currency: unknown }
+        const cents = Number(money.amount)
+        if (!Number.isFinite(cents) || typeof money.currency !== 'string' || !money.currency) {
+          return '—'
+        }
         return (
           <span className="tabular-nums text-sm">
-            {formatMoney(cents, currency)}
+            {formatMoney(cents, money.currency)}
           </span>
         )
       }),

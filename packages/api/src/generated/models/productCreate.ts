@@ -4,15 +4,12 @@
  * Vendelo360 API
  * OpenAPI spec version: 0.1.0
  */
-import type { Currency } from './currency';
+import type { Money } from './money';
 
 export interface ProductCreate {
   /** @maxLength 255 */
   name: string;
   tag_ids?: string[];
-  /** @minimum 0 */
-  price?: number;
-  /** @minimum 0 */
-  commission?: number;
-  currency?: Currency;
+  price?: Money;
+  commission?: Money;
 }

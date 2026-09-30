@@ -16,22 +16,12 @@ export type BuildCartColumnsOptions = {
   getProviderName: (id: string | null | undefined) => string
 }
 
-function PreviewCurrencyCell({ productId }: { productId: string }) {
-  const { previewByProductId } = useCartPreviewContext()
-  const preview = previewByProductId.get(productId)
-  return (
-    <span className="tabular-nums text-sm">
-      {preview ? preview.currency.toUpperCase() : '—'}
-    </span>
-  )
-}
-
 function PreviewCommissionCell({ productId }: { productId: string }) {
   const { previewByProductId } = useCartPreviewContext()
   const preview = previewByProductId.get(productId)
   return (
     <span className="tabular-nums text-sm">
-      {preview ? formatMoney(preview.seller_commission, preview.currency) : '—'}
+      {preview ? formatMoney(preview.seller_commission) : '—'}
     </span>
   )
 }
@@ -41,7 +31,7 @@ function PreviewPriceCell({ productId }: { productId: string }) {
   const preview = previewByProductId.get(productId)
   return (
     <span className="tabular-nums text-sm">
-      {preview ? formatMoney(preview.seller_provider_price, preview.currency) : '—'}
+      {preview ? formatMoney(preview.seller_provider_price) : '—'}
     </span>
   )
 }
@@ -57,7 +47,12 @@ function PreviewSubtotalCell({
   const preview = previewByProductId.get(productId)
   return (
     <span className="tabular-nums text-sm">
-      {preview ? formatMoney(lineSubtotal(preview, quantity), preview.currency) : '—'}
+      {preview
+        ? formatMoney(
+            lineSubtotal(preview, quantity),
+            preview.seller_provider_price.currency,
+          )
+        : '—'}
     </span>
   )
 }
@@ -78,9 +73,6 @@ export function buildCartColumns({
     }),
     componentColumn<CartItem>('provider', 'Proveedor', (row) => (
       <span>{getProviderName(row.product.organization_id)}</span>
-    )),
-    componentColumn<CartItem>('currency', 'Moneda', (row) => (
-      <PreviewCurrencyCell productId={row.product.id} />
     )),
     componentColumn<CartItem>('commission', 'Comisión', (row) => (
       <PreviewCommissionCell productId={row.product.id} />

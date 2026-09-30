@@ -42,8 +42,8 @@ function formatOrderDate(iso: string): string {
   })
 }
 
-function formatMoney(cents: number, currency: string): string {
-  return `${(cents / 100).toFixed(2)} ${currency.toUpperCase()}`
+function formatMoney(money: { amount: number; currency: string }): string {
+  return `${(money.amount / 100).toFixed(2)} ${money.currency.toUpperCase()}`
 }
 
 function orderStatusLabel(status: string): string {
@@ -484,7 +484,7 @@ function LastOrderSummary({ order }: { order: LastOrder }) {
       {order.totals.length > 0 ? (
         <p className="order-totals">
           {order.totals
-            .map((total) => formatMoney(total.amount, total.currency))
+            .map((total) => formatMoney(total))
             .join(' · ')}
         </p>
       ) : null}
@@ -498,22 +498,25 @@ function LastOrderSummary({ order }: { order: LastOrder }) {
       {order.items.length > 0 ? (
         <ul className="order-items">
           {order.items.map((item) => {
-            const subtotal = item.unitPrice * item.quantity
+            const subtotal = {
+              amount: item.unitPrice.amount * item.quantity,
+              currency: item.unitPrice.currency,
+            }
             return (
               <li key={item.id} className="order-item">
                 <p className="order-item-title">{itemTitle(item)}</p>
                 <p className="order-meta">
-                  {formatMoney(item.unitPrice, item.currency)}
+                  {formatMoney(item.unitPrice)}
                   {' · '}
-                  Comisión {formatMoney(item.commission, item.currency)}
+                  Comisión {formatMoney(item.commission)}
                   {' · '}
-                  {formatMoney(subtotal, item.currency)}
+                  {formatMoney(subtotal)}
                   {' · '}
                   {itemStatusLabel(item.status)}
                 </p>
-                {item.customerChange > 0 ? (
+                {item.customerChange.amount > 0 ? (
                   <p className="order-meta">
-                    Vuelto {formatMoney(item.customerChange, item.currency)}
+                    Vuelto {formatMoney(item.customerChange)}
                   </p>
                 ) : null}
               </li>

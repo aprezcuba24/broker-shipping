@@ -5,7 +5,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { OrderItemPublicProductImageUrl } from './orderItemPublicProductImageUrl';
-import type { Currency } from './currency';
+import type { Money } from './money';
 import type { OrderItemStatus } from './orderItemStatus';
 import type { OrderItemPublicUpdatedAt } from './orderItemPublicUpdatedAt';
 
@@ -17,13 +17,12 @@ export interface OrderItemPublic {
   product_image_url?: OrderItemPublicProductImageUrl;
   provider_organization_id: string;
   provider_organization_name?: string;
-  unit_provider_price: number;
-  seller_provider_price: number;
-  customer_change: number;
+  unit_provider_price: Money;
+  seller_provider_price: Money;
+  customer_change: Money;
   quantity: number;
-  currency: Currency;
   status: OrderItemStatus;
-  seller_commission: number;
+  seller_commission: Money;
   created_at: string;
   updated_at: OrderItemPublicUpdatedAt;
 }

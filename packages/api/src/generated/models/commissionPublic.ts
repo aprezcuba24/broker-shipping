@@ -4,7 +4,7 @@
  * Vendelo360 API
  * OpenAPI spec version: 0.1.0
  */
-import type { Currency } from './currency';
+import type { Money } from './money';
 import type { CommissionPublicPaidAt } from './commissionPublicPaidAt';
 import type { CommissionPublicUpdatedAt } from './commissionPublicUpdatedAt';
 
@@ -13,8 +13,7 @@ export interface CommissionPublic {
   order_id: string;
   provider_organization_id: string;
   seller_organization_id: string;
-  amount: number;
-  currency: Currency;
+  amount: Money;
   is_paid: boolean;
   paid_at: CommissionPublicPaidAt;
   created_at: string;

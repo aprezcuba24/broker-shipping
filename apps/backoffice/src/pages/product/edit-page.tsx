@@ -24,7 +24,6 @@ function productToFormValues(product: ProductPublic): ProductFormValues {
     tag_ids: product.tags?.map((tag) => tag.id) ?? [],
     price: product.price,
     commission: product.commission,
-    currency: product.currency,
     image: {
       url: product.image_url ?? null,
       file: null,
@@ -66,7 +65,6 @@ export function ProductEditPage() {
           tag_ids: data.tag_ids,
           price: data.price,
           commission: data.commission,
-          currency: data.currency,
         },
         params: {} as PatchProductProductsProviderProductIdPatchParams,
       })

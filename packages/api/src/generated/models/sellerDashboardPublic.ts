@@ -7,7 +7,7 @@
 import type { SellerDashboardPublicPeriod } from './sellerDashboardPublicPeriod';
 import type { SellerDashboardPublicPeriodStart } from './sellerDashboardPublicPeriodStart';
 import type { StatusCount } from './statusCount';
-import type { CurrencyAmount } from './currencyAmount';
+import type { Money } from './money';
 import type { OrderSummaryPublic } from './orderSummaryPublic';
 import type { CommissionSummaryPublic } from './commissionSummaryPublic';
 
@@ -21,9 +21,9 @@ export interface SellerDashboardPublic {
   linked_providers_total: number;
   products_available_total: number;
   pending_link_requests: number;
-  sales_by_currency: CurrencyAmount[];
-  commissions_pending: CurrencyAmount[];
-  commissions_paid: CurrencyAmount[];
+  sales_by_currency: Money[];
+  commissions_pending: Money[];
+  commissions_paid: Money[];
   recent_orders: OrderSummaryPublic[];
   recent_pending_commissions: CommissionSummaryPublic[];
 }

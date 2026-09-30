@@ -152,7 +152,6 @@ export function HomePage() {
               commissions={data.recent_pending_commissions.map((row) => ({
                 id: row.id,
                 amount: row.amount,
-                currency: row.currency,
                 created_at: row.created_at,
                 counterpartyLabel: 'Proveedor',
               }))}

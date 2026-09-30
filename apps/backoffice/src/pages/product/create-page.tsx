@@ -23,7 +23,6 @@ export function ProductCreatePage() {
           tag_ids: data.tag_ids,
           price: data.price,
           commission: data.commission,
-          currency: data.currency,
         },
         params: {} as CreateProductProductsProviderPostParams,
       })
