@@ -45,12 +45,18 @@ const productDetailPriceField: DetailSectionField<ProductPublic> = {
 
 const productDetailCommissionField: DetailSectionField<ProductPublic> = {
   title: 'Comisión',
-  accessor: (product) => product.commission,
-  format: (value) => (
-    <span className="tabular-nums">
-      {formatMoney(value as ProductPublic['commission'])}
-    </span>
-  ),
+  accessor: (product) => product,
+  format: (value) => {
+    const product = value as ProductPublic
+    if (product.has_commission === false) {
+      return <span>Libre</span>
+    }
+    return (
+      <span className="tabular-nums">
+        {formatMoney(product.commission)}
+      </span>
+    )
+  },
 }
 
 const productDetailStockField: DetailSectionField<ProductPublic> = {
@@ -86,6 +92,17 @@ const productDetailTagsField: DetailSectionField<ProductPublic> = {
   },
 }
 
+const productDetailDescriptionField: DetailSectionField<ProductPublic> = {
+  title: 'Descripción',
+  accessor: (product) => product.description,
+  fullWidth: true,
+  format: (value) => {
+    const description = value as ProductPublic['description']
+    if (!description) return '—'
+    return <p className="whitespace-pre-wrap text-sm">{description}</p>
+  },
+}
+
 const productDetailCreatedField: DetailSectionField<ProductPublic> = {
   title: 'Creado',
   accessor: (product) => product.created_at,
@@ -108,6 +125,7 @@ export const productDetailBaseFields: DetailSectionField<ProductPublic>[] = [
   productDetailStockField,
   productDetailReservedField,
   productDetailTagsField,
+  productDetailDescriptionField,
   productDetailCreatedField,
   productDetailUpdatedField,
 ]
@@ -197,6 +215,7 @@ function buildSellerProductDetailFields(
     productDetailStockField,
     productDetailReservedField,
     productDetailTagsField,
+    productDetailDescriptionField,
     productDetailCreatedField,
     productDetailUpdatedField,
   ]

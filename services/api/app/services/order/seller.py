@@ -164,7 +164,9 @@ async def _build_order(
                 quantity=item_data.quantity,
                 currency=product.currency,
                 status=OrderItemStatus.created,
-                seller_commission=product.commission,
+                seller_commission=(
+                    product.commission if product.has_commission else 0
+                ),
                 commission_currency=product.commission_currency,
             )
         )

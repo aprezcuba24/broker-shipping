@@ -5,12 +5,16 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ProductUpdateName } from './productUpdateName';
+import type { ProductUpdateDescription } from './productUpdateDescription';
+import type { ProductUpdateHasCommission } from './productUpdateHasCommission';
 import type { ProductUpdateTagIds } from './productUpdateTagIds';
 import type { ProductUpdatePrice } from './productUpdatePrice';
 import type { ProductUpdateCommission } from './productUpdateCommission';
 
 export interface ProductUpdate {
   name?: ProductUpdateName;
+  description?: ProductUpdateDescription;
+  has_commission?: ProductUpdateHasCommission;
   tag_ids?: ProductUpdateTagIds;
   price?: ProductUpdatePrice;
   commission?: ProductUpdateCommission;

@@ -13,6 +13,8 @@ class Product(OrganizationEntityModel, table=True):
     )
 
     name: str = Field(max_length=255, index=True)
+    description: str | None = Field(default=None, max_length=2000)
+    has_commission: bool = Field(default=True)
     currency: Currency = Field(
         default=Currency.cup,
         sa_column=Column(

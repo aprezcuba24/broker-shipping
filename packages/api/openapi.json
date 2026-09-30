@@ -8296,6 +8296,23 @@
             "maxLength": 255,
             "title": "Name"
           },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "has_commission": {
+            "type": "boolean",
+            "title": "Has Commission",
+            "default": true
+          },
           "tag_ids": {
             "items": {
               "type": "string",
@@ -8391,6 +8408,21 @@
             "type": "string",
             "title": "Name"
           },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "has_commission": {
+            "type": "boolean",
+            "title": "Has Commission"
+          },
           "organization_id": {
             "type": "string",
             "format": "uuid",
@@ -8450,6 +8482,7 @@
         "required": [
           "id",
           "name",
+          "has_commission",
           "organization_id",
           "price",
           "commission",
@@ -8669,6 +8702,29 @@
               }
             ],
             "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "has_commission": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Has Commission"
           },
           "tag_ids": {
             "anyOf": [

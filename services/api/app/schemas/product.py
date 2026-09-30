@@ -20,7 +20,7 @@ from app.lib.storage.keys import (
 )
 from app.models.order.enums import Currency
 from app.models.product.product import Product
-from app.schemas.fields import NonEmptyStr
+from app.schemas.fields import NonEmptyStr, OptionalStrippedStr
 from app.schemas.money import Money
 from app.schemas.tag import TagPublic
 
@@ -42,6 +42,8 @@ ImageContentType = Annotated[
 
 class ProductCreate(BaseModel):
     name: NonEmptyStr = Field(max_length=255)
+    description: OptionalStrippedStr = Field(default=None, max_length=2000)
+    has_commission: bool = True
     tag_ids: list[UUID] = Field(default_factory=list)
     price: Money = Field(default_factory=lambda: _ZERO_CUP.model_copy())
     commission: Money = Field(default_factory=lambda: _ZERO_CUP.model_copy())
@@ -49,6 +51,8 @@ class ProductCreate(BaseModel):
 
 class ProductUpdate(BaseModel):
     name: NonEmptyStr | None = Field(default=None, max_length=255)
+    description: OptionalStrippedStr = Field(default=None, max_length=2000)
+    has_commission: bool | None = None
     tag_ids: list[UUID] | None = None
     price: Money | None = None
     commission: Money | None = None
@@ -59,6 +63,8 @@ class ProductPublic(BaseModel):
 
     id: UUID
     name: str
+    description: str | None = None
+    has_commission: bool
     organization_id: UUID
     price: Money
     commission: Money
@@ -121,6 +127,8 @@ def product_to_public(product: Product) -> ProductPublic:
     return ProductPublic(
         id=product.id,
         name=product.name,
+        description=product.description,
+        has_commission=product.has_commission,
         organization_id=product.organization_id,
         price=Money(amount=product.price, currency=product.currency),
         commission=Money(

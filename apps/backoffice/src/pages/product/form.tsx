@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
 
 import {
+  CommissionField,
   Field,
   FieldError,
   FieldLabel,
@@ -12,6 +13,7 @@ import {
   Input,
   MoneyField,
   TagsField,
+  Textarea,
   imageFieldDefaultValue,
   imageFieldSchema,
   moneyDefault,
@@ -27,6 +29,8 @@ export const productFormSchema = z.object({
     .trim()
     .min(1, 'El nombre es obligatorio')
     .max(255, 'Máximo 255 caracteres'),
+  description: z.string().trim().max(2000, 'Máximo 2000 caracteres'),
+  has_commission: z.boolean(),
   tag_ids: z.array(z.string().uuid()),
   price: moneySchema,
   commission: moneySchema,
@@ -37,6 +41,8 @@ export type ProductFormValues = z.infer<typeof productFormSchema>
 
 export const productFormDefaultValues: ProductFormValues = {
   name: '',
+  description: '',
+  has_commission: true,
   tag_ids: [],
   price: moneyDefault(),
   commission: moneyDefault(),
@@ -132,20 +138,29 @@ export function ProductForm({
 
         <FormFieldCell>
           <Controller
-            name="commission"
+            name="has_commission"
             control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="product-commission">Comisión</FieldLabel>
-                <MoneyField
-                  id="product-commission"
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  disabled={isSubmitting}
-                  aria-invalid={fieldState.invalid}
-                />
-                {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
-              </Field>
+            render={({ field: hasCommissionField }) => (
+              <Controller
+                name="commission"
+                control={form.control}
+                render={({ field: commissionField, fieldState }) => (
+                  <>
+                    <CommissionField
+                      id="product-commission"
+                      hasCommission={hasCommissionField.value}
+                      onHasCommissionChange={hasCommissionField.onChange}
+                      commission={commissionField.value}
+                      onCommissionChange={commissionField.onChange}
+                      disabled={isSubmitting}
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid ? (
+                      <FieldError errors={[fieldState.error]} />
+                    ) : null}
+                  </>
+                )}
+              />
             )}
           />
         </FormFieldCell>
@@ -168,6 +183,28 @@ export function ProductForm({
                   aria-invalid={fieldState.invalid}
                   placeholder="Añadir etiquetas…"
                   searchPlaceholder="Buscar o crear etiqueta…"
+                />
+                {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+              </Field>
+            )}
+          />
+        </FormFieldCell>
+
+        <FormFieldCell fullWidth>
+          <Controller
+            name="description"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="product-description">Descripción</FieldLabel>
+                <Textarea
+                  {...field}
+                  id="product-description"
+                  maxLength={2000}
+                  rows={4}
+                  disabled={isSubmitting}
+                  aria-invalid={fieldState.invalid}
+                  placeholder="Descripción opcional del producto…"
                 />
                 {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
               </Field>

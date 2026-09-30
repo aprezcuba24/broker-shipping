@@ -7,6 +7,7 @@ import {
   componentColumn,
   createdAtColumn,
   currencyMoneyColumn,
+  formatMoney,
   imageColumn,
   textColumn,
   updatedAtColumn,
@@ -33,7 +34,15 @@ export function buildProductColumns({
       <span>{providerNameById.get(row.organization_id) ?? '—'}</span>
     )),
     currencyMoneyColumn<ProductPublic>({ id: 'price', header: 'Precio' }),
-    currencyMoneyColumn<ProductPublic>({ id: 'commission', header: 'Comisión' }),
+    componentColumn<ProductPublic>('commission', 'Comisión', (row) =>
+      row.has_commission === false ? (
+        <span>Libre</span>
+      ) : (
+        <span className="tabular-nums text-sm">
+          {formatMoney(row.commission)}
+        </span>
+      ),
+    ),
     componentColumn<ProductPublic>('tags', 'Etiquetas', (row) => (
       <BadgeList
         items={(row.tags ?? []).map((tag) => ({ id: tag.id, label: tag.name }))}
