@@ -17,7 +17,7 @@ import { PageMessage } from '../components/page-message'
 import { PageWrapper } from '../components/page-wrapper'
 import { CustomerProfileCard } from '../customer/customer-profile-card'
 import { PhoneReputation } from '../customer/phone-reputation'
-import { centsToInputValue, cn } from '../lib/utils'
+import { centsToInputValue, cn, sumSellerCommissions } from '../lib/utils'
 import { OrderStatusBadge } from './status'
 
 function CurrencyAmountList({
@@ -49,17 +49,28 @@ function CurrencyAmountList({
   )
 }
 
-function OrderTotalsBreakdown({ totals }: { totals: OrderTotals }) {
+function OrderTotalsBreakdown({
+  totals,
+  commissions,
+}: {
+  totals: OrderTotals
+  commissions: Money[]
+}) {
   const products = totals.products ?? []
   const messaging = totals.messaging ?? []
   const total = totals.total ?? []
 
-  if (products.length === 0 && messaging.length === 0 && total.length === 0) {
+  if (
+    products.length === 0 &&
+    messaging.length === 0 &&
+    commissions.length === 0 &&
+    total.length === 0
+  ) {
     return '—'
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
       <div className="space-y-1.5">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">
           Productos
@@ -71,6 +82,12 @@ function OrderTotalsBreakdown({ totals }: { totals: OrderTotals }) {
           Mensajería
         </p>
         <CurrencyAmountList amounts={messaging} className="sm:justify-center" />
+      </div>
+      <div className="space-y-1.5 sm:text-center">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">
+          Comisiones
+        </p>
+        <CurrencyAmountList amounts={commissions} className="sm:justify-center" />
       </div>
       <div className="space-y-1.5 sm:text-right">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">
@@ -106,9 +123,17 @@ const orderDetailSellerField: DetailSectionField<OrderPublic> = {
 
 const orderDetailTotalsField: DetailSectionField<OrderPublic> = {
   title: 'Totales',
-  accessor: (order) => order.totals,
+  accessor: (order) => order,
   fullWidth: true,
-  format: (value) => <OrderTotalsBreakdown totals={value as OrderTotals} />,
+  format: (value) => {
+    const order = value as OrderPublic
+    return (
+      <OrderTotalsBreakdown
+        totals={order.totals ?? {}}
+        commissions={sumSellerCommissions(order.items ?? [])}
+      />
+    )
+  },
 }
 
 /** Provider (backoffice) summary fields — includes seller. */

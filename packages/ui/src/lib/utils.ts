@@ -39,16 +39,48 @@ export function formatMoney(moneyOrCents: Money | number, currency?: string): st
   return `${centsToInputValue(moneyOrCents)} ${(currency ?? '').toUpperCase()}`
 }
 
-/** Order-item commission parts → "1.50 USD + 3.00 CUP", or the legacy single amount. */
-export function formatSellerCommissions(item: {
+type SellerCommissionItem = {
   seller_commission: Money
   seller_commissions?: Money[] | null
-}): string {
+}
+
+/** Unit commission parts: multi-currency list, or the legacy single amount. */
+export function sellerCommissionParts(item: SellerCommissionItem): Money[] {
   const parts = item.seller_commissions ?? []
-  if (parts.length > 0) {
-    return parts.map((money) => formatMoney(money)).join(' + ')
+  if (parts.length > 0) return parts
+  return [item.seller_commission]
+}
+
+/** Order-item commission parts → "1.50 USD + 3.00 CUP", or the legacy single amount. */
+export function formatSellerCommissions(item: SellerCommissionItem): string {
+  return sellerCommissionParts(item)
+    .map((money) => formatMoney(money))
+    .join(' + ')
+}
+
+/** Line commissions × quantity, grouped by currency. Skips canceled items and zero amounts. */
+export function sumSellerCommissions(
+  items: Array<
+    SellerCommissionItem & {
+      quantity: number
+      status: string
+    }
+  >,
+): Money[] {
+  const byCurrency = new Map<Money['currency'], number>()
+
+  for (const item of items) {
+    if (item.status === 'canceled') continue
+    for (const part of sellerCommissionParts(item)) {
+      if (part.amount <= 0) continue
+      const line = part.amount * item.quantity
+      byCurrency.set(part.currency, (byCurrency.get(part.currency) ?? 0) + line)
+    }
   }
-  return formatMoney(item.seller_commission)
+
+  return [...byCurrency.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([currency, amount]) => ({ amount, currency }))
 }
 
 /** Zod schema for money stored as integer cents. */

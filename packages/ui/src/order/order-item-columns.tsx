@@ -5,6 +5,14 @@ import type { ColumnDef } from '../components/data-table/types'
 import { formatMoney, formatSellerCommissions } from '../lib/utils'
 import { OrderItemStatusBadge } from './status'
 
+const commissionColumn = componentColumn<OrderItemPublic>(
+  'commission',
+  'Comisión',
+  (row) => (
+    <span className="tabular-nums text-sm">{formatSellerCommissions(row)}</span>
+  ),
+)
+
 export function buildSellerOrderItemColumns(): ColumnDef<OrderItemPublic>[] {
   return [
     imageColumn<OrderItemPublic>({
@@ -30,11 +38,7 @@ export function buildSellerOrderItemColumns(): ColumnDef<OrderItemPublic>[] {
         {formatMoney(row.seller_provider_price)}
       </span>
     )),
-    componentColumn<OrderItemPublic>('commission', 'Comisión', (row) => (
-      <span className="tabular-nums text-sm">
-        {formatSellerCommissions(row)}
-      </span>
-    )),
+    commissionColumn,
     componentColumn<OrderItemPublic>('subtotal', 'Subtotal', (row) => (
       <span className="tabular-nums text-sm font-medium">
         {formatMoney(
@@ -67,6 +71,7 @@ export function buildProviderOrderItemColumns(): ColumnDef<OrderItemPublic>[] {
         {formatMoney(row.seller_provider_price)}
       </span>
     )),
+    commissionColumn,
     componentColumn<OrderItemPublic>('subtotal', 'Subtotal', (row) => (
       <span className="tabular-nums text-sm font-medium">
         {formatMoney(
