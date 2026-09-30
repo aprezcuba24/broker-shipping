@@ -198,7 +198,7 @@ export function MessagingSettingsPage() {
 
   useEffect(() => {
     if (settingsQuery.data) {
-      setAccepts(settingsQuery.data.accepts_unconfigured_neighborhoods)
+      setAccepts(settingsQuery.data.accepts_unconfigured_neighborhoods ?? false)
     }
   }, [settingsQuery.data])
 

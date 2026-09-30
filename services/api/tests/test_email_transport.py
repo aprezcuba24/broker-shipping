@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+from app.branding import PRODUCT_NAME
 from app.config import Settings
 from app.services.email import transport as email_transport
 
@@ -62,7 +63,7 @@ def test_local_smtp_wins_even_with_minio_aws_keys() -> None:
 
 def test_from_address_adds_product_display_name() -> None:
     cfg = _settings(mail_from="noreply@vendelo360.app")
-    assert email_transport._from_address(cfg) == "vendelo360 <noreply@vendelo360.app>"
+    assert email_transport._from_address(cfg) == f"{PRODUCT_NAME} <noreply@vendelo360.app>"
 
 
 def test_from_address_keeps_existing_display_name() -> None:
@@ -138,7 +139,7 @@ async def test_send_uses_ses_for_production(
     assert "endpoint_url" not in call_kwargs
     send_email.assert_awaited_once()
     payload = send_email.await_args.kwargs
-    assert payload["FromEmailAddress"] == "vendelo360 <noreply@vendelo360.app>"
+    assert payload["FromEmailAddress"] == f"{PRODUCT_NAME} <noreply@vendelo360.app>"
     assert payload["Destination"] == {"ToAddresses": ["user@example.com"]}
     assert payload["Content"]["Simple"]["Subject"]["Data"] == "Verify"
     assert payload["Content"]["Simple"]["Body"]["Text"]["Data"] == "Click"

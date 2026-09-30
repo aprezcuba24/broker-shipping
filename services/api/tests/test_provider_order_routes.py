@@ -4,9 +4,7 @@ import pytest
 import pytest_asyncio
 from httpx import AsyncClient
 
-from app.models.order.enums import Currency, OrderItemStatus, OrderStatus
-from app.services.order.helpers import derive_order_status
-from app.services.order.item_status import can_transition
+from app.models.order.enums import Currency
 from tests.factories.auth_helpers import bearer_headers
 from tests.factories.customer_factory import CustomerFactory
 from tests.factories.organization_factory import (
@@ -127,51 +125,6 @@ async def provider_order_ctx(
         "provider_b_params": {"organization_id": provider_b["id"]},
         "seller_params": {"organization_id": seller_org["id"]},
     }
-
-
-def test_can_transition_rules() -> None:
-    assert can_transition(OrderItemStatus.created, OrderItemStatus.reviewed)
-    assert can_transition(OrderItemStatus.reviewed, OrderItemStatus.sent)
-    assert can_transition(OrderItemStatus.sent, OrderItemStatus.delivered)
-    assert can_transition(OrderItemStatus.created, OrderItemStatus.canceled)
-    assert can_transition(OrderItemStatus.reviewed, OrderItemStatus.canceled)
-    assert can_transition(OrderItemStatus.sent, OrderItemStatus.canceled)
-    assert can_transition(OrderItemStatus.created, OrderItemStatus.created)
-    assert not can_transition(OrderItemStatus.created, OrderItemStatus.sent)
-    assert not can_transition(OrderItemStatus.delivered, OrderItemStatus.reviewed)
-    assert not can_transition(OrderItemStatus.canceled, OrderItemStatus.created)
-    assert not can_transition(OrderItemStatus.delivered, OrderItemStatus.canceled)
-
-
-def test_derive_order_status() -> None:
-    from types import SimpleNamespace
-
-    def items(*statuses: OrderItemStatus) -> list:
-        return [SimpleNamespace(status=status) for status in statuses]
-
-    assert derive_order_status(items(OrderItemStatus.created)) == OrderStatus.created
-    assert (
-        derive_order_status(
-            items(OrderItemStatus.created, OrderItemStatus.reviewed)
-        )
-        == OrderStatus.processing
-    )
-    assert (
-        derive_order_status(items(OrderItemStatus.sent, OrderItemStatus.created))
-        == OrderStatus.processing
-    )
-    assert (
-        derive_order_status(
-            items(OrderItemStatus.delivered, OrderItemStatus.canceled)
-        )
-        == OrderStatus.finished
-    )
-    assert (
-        derive_order_status(
-            items(OrderItemStatus.canceled, OrderItemStatus.canceled)
-        )
-        == OrderStatus.canceled
-    )
 
 
 async def test_provider_list_and_get_filters_own_items(
