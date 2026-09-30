@@ -33,17 +33,20 @@ function buildSharedOrderColumns(): ColumnDef<OrderPublic>[] {
     componentColumn<OrderPublic>('status', 'Estado', (row) => (
       <OrderStatusBadge status={row.status} />
     )),
-    componentColumn<OrderPublic>('totals', 'Total', (row) => (
-      <div className="space-y-0.5 tabular-nums text-sm">
-        {(row.totals ?? []).length > 0
-          ? (row.totals ?? []).map((total) => (
-              <div key={total.currency}>
-                {formatMoney(total.amount, total.currency)}
-              </div>
-            ))
-          : '—'}
-      </div>
-    )),
+    componentColumn<OrderPublic>('totals', 'Total', (row) => {
+      const totals = row.totals?.total ?? []
+      return (
+        <div className="space-y-0.5 tabular-nums text-sm">
+          {totals.length > 0
+            ? totals.map((total) => (
+                <div key={total.currency}>
+                  {formatMoney(total.amount, total.currency)}
+                </div>
+              ))
+            : '—'}
+        </div>
+      )
+    }),
     createdAtColumn<OrderPublic>({ header: 'Creada' }),
     actionsColumn<OrderPublic>((row) => (
       <BtnList>

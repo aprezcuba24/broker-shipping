@@ -1,6 +1,8 @@
 import {
   formatDateTime,
+  type Money,
   type OrderPublic,
+  type OrderTotals,
 } from '@broker/api'
 import { ClipboardList, ArrowLeft } from 'lucide-react'
 import type { ReactNode } from 'react'
@@ -15,8 +17,70 @@ import { PageMessage } from '../components/page-message'
 import { PageWrapper } from '../components/page-wrapper'
 import { CustomerProfileCard } from '../customer/customer-profile-card'
 import { PhoneReputation } from '../customer/phone-reputation'
-import { formatMoney } from '../lib/utils'
+import { centsToInputValue, cn } from '../lib/utils'
 import { OrderStatusBadge } from './status'
+
+function CurrencyAmountList({
+  amounts,
+  emphasize = false,
+  className,
+}: {
+  amounts: Money[]
+  emphasize?: boolean
+  className?: string
+}) {
+  if (amounts.length === 0) {
+    return <span className="text-sm text-on-surface-variant">—</span>
+  }
+
+  return (
+    <div className={cn('flex flex-wrap gap-x-4 gap-y-2 tabular-nums', className)}>
+      {amounts.map((row) => (
+        <div key={row.currency}>
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">
+            {row.currency.toUpperCase()}
+          </div>
+          <div className={emphasize ? 'text-sm font-semibold' : 'text-sm font-medium'}>
+            {centsToInputValue(row.amount)}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function OrderTotalsBreakdown({ totals }: { totals: OrderTotals }) {
+  const products = totals.products ?? []
+  const messaging = totals.messaging ?? []
+  const total = totals.total ?? []
+
+  if (products.length === 0 && messaging.length === 0 && total.length === 0) {
+    return '—'
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
+      <div className="space-y-1.5">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">
+          Productos
+        </p>
+        <CurrencyAmountList amounts={products} />
+      </div>
+      <div className="space-y-1.5 sm:text-center">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">
+          Mensajería
+        </p>
+        <CurrencyAmountList amounts={messaging} className="sm:justify-center" />
+      </div>
+      <div className="space-y-1.5 sm:text-right">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">
+          Total
+        </p>
+        <CurrencyAmountList amounts={total} emphasize className="sm:justify-end" />
+      </div>
+    </div>
+  )
+}
 
 const orderDetailCodeField: DetailSectionField<OrderPublic> = {
   title: 'Código',
@@ -44,19 +108,7 @@ const orderDetailTotalsField: DetailSectionField<OrderPublic> = {
   title: 'Totales',
   accessor: (order) => order.totals,
   fullWidth: true,
-  format: (value) => {
-    const totals = value as OrderPublic['totals']
-    if (!totals || totals.length === 0) return '—'
-    return (
-      <div className="flex flex-wrap gap-x-4 gap-y-1 font-medium tabular-nums">
-        {totals.map((total) => (
-          <div key={total.currency}>
-            {formatMoney(total.amount, total.currency)}
-          </div>
-        ))}
-      </div>
-    )
-  },
+  format: (value) => <OrderTotalsBreakdown totals={value as OrderTotals} />,
 }
 
 /** Provider (backoffice) summary fields — includes seller. */

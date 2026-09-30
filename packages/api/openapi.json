@@ -8234,11 +8234,7 @@
             "title": "Messaging"
           },
           "totals": {
-            "items": {
-              "$ref": "#/components/schemas/Money"
-            },
-            "type": "array",
-            "title": "Totals"
+            "$ref": "#/components/schemas/OrderTotals"
           },
           "customer": {
             "anyOf": [
@@ -8329,6 +8325,34 @@
           "created_at"
         ],
         "title": "OrderSummaryPublic"
+      },
+      "OrderTotals": {
+        "properties": {
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/Money"
+            },
+            "type": "array",
+            "title": "Products"
+          },
+          "messaging": {
+            "items": {
+              "$ref": "#/components/schemas/Money"
+            },
+            "type": "array",
+            "title": "Messaging"
+          },
+          "total": {
+            "items": {
+              "$ref": "#/components/schemas/Money"
+            },
+            "type": "array",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "title": "OrderTotals",
+        "description": "Order money totals broken down by source, each grouped by currency."
       },
       "OrganizationCreate": {
         "properties": {

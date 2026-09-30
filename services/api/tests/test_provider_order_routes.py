@@ -189,7 +189,11 @@ async def test_provider_list_and_get_filters_own_items(
     assert page["items"][0]["id"] == provider_order_ctx["order_id"]
     assert len(page["items"][0]["items"]) == 1
     assert page["items"][0]["items"][0]["product_id"] == provider_order_ctx["product_a_id"]
-    assert page["items"][0]["totals"] == [{"currency": "cup", "amount": 2000}]
+    assert page["items"][0]["totals"] == {
+        "products": [{"currency": "cup", "amount": 2000}],
+        "messaging": [],
+        "total": [{"currency": "cup", "amount": 2000}],
+    }
     assert page["items"][0]["customer"]["name"] == provider_order_ctx["customer_name"]
     assert page["items"][0]["customer"]["ci"] == provider_order_ctx["customer_ci"]
     assert page["items"][0]["customer"]["phone"] == provider_order_ctx["customer_phone"]
@@ -207,7 +211,11 @@ async def test_provider_list_and_get_filters_own_items(
     assert body["items"][0]["provider_organization_id"] == provider_order_ctx[
         "provider_a_id"
     ]
-    assert body["totals"] == [{"currency": "cup", "amount": 2000}]
+    assert body["totals"] == {
+        "products": [{"currency": "cup", "amount": 2000}],
+        "messaging": [],
+        "total": [{"currency": "cup", "amount": 2000}],
+    }
     assert body["customer"]["name"] == provider_order_ctx["customer_name"]
     assert body["customer"]["ci"] == provider_order_ctx["customer_ci"]
     assert body["customer"]["phone"] == provider_order_ctx["customer_phone"]

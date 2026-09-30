@@ -178,7 +178,9 @@ async def test_create_order_adds_messaging_line_when_priced(
     assert line["provider_organization_id"] == ctx["provider_a_id"]
     assert line["neighborhood_id"] == ctx["neighborhood_id"]
     assert line["price"] == {"amount": 750, "currency": "cup"}
-    assert {"amount": 3750, "currency": "cup"} in body["totals"]
+    assert body["totals"]["products"] == [{"amount": 3000, "currency": "cup"}]
+    assert body["totals"]["messaging"] == [{"amount": 750, "currency": "cup"}]
+    assert body["totals"]["total"] == [{"amount": 3750, "currency": "cup"}]
 
 
 async def test_create_order_blocked_without_price_and_accepts_false(
@@ -229,7 +231,11 @@ async def test_create_order_without_price_when_accepts_true(
     assert r.status_code == 201
     body = r.json()
     assert body["messaging"] == []
-    assert body["totals"] == [{"amount": 2000, "currency": "cup"}]
+    assert body["totals"] == {
+        "products": [{"amount": 2000, "currency": "cup"}],
+        "messaging": [],
+        "total": [{"amount": 2000, "currency": "cup"}],
+    }
     return body
 
 
@@ -267,7 +273,11 @@ async def test_provider_manual_create_and_patch_messaging(
     messaging = r_add.json()["messaging"]
     assert len(messaging) == 1
     assert messaging[0]["price"] == {"amount": 900, "currency": "cup"}
-    assert {"amount": 1900, "currency": "cup"} in r_add.json()["totals"]
+    assert r_add.json()["totals"] == {
+        "products": [{"amount": 1000, "currency": "cup"}],
+        "messaging": [{"amount": 900, "currency": "cup"}],
+        "total": [{"amount": 1900, "currency": "cup"}],
+    }
     messaging_id = messaging[0]["id"]
 
     r_dup = await client.post(
@@ -290,7 +300,11 @@ async def test_provider_manual_create_and_patch_messaging(
         "amount": 1200,
         "currency": "cup",
     }
-    assert {"amount": 2200, "currency": "cup"} in r_patch.json()["totals"]
+    assert r_patch.json()["totals"] == {
+        "products": [{"amount": 1000, "currency": "cup"}],
+        "messaging": [{"amount": 1200, "currency": "cup"}],
+        "total": [{"amount": 2200, "currency": "cup"}],
+    }
 
     seller_get = await client.get(
         f"/orders/seller/{order_id}",

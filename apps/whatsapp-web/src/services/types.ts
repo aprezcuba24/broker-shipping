@@ -61,7 +61,11 @@ export type OrderPublic = {
   created_at: string
   updated_at: string | null
   items?: OrderItemPublic[]
-  totals?: OrderCurrencyTotal[]
+  totals?: {
+    products?: OrderCurrencyTotal[]
+    messaging?: OrderCurrencyTotal[]
+    total?: OrderCurrencyTotal[]
+  }
   customer?: CustomerPublic | null
 }
 

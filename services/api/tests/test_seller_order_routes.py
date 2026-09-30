@@ -181,7 +181,7 @@ async def test_create_order_with_mixed_currencies(
     assert body["customer"]["address"]["municipality_name"] == "Plaza"
     assert body["customer"]["address"]["neighborhood_name"] == "Vedado"
 
-    totals = {t["currency"]: t["amount"] for t in body["totals"]}
+    totals = {t["currency"]: t["amount"] for t in body["totals"]["total"]}
     assert totals == {"cup": 2000, "usd": 2550}
 
 
@@ -207,7 +207,11 @@ async def test_create_order_defaults_seller_provider_price(
     body = r.json()
     assert body["items"][0]["unit_provider_price"] == {"amount": 800, "currency": "cup"}
     assert body["items"][0]["seller_provider_price"] == {"amount": 800, "currency": "cup"}
-    assert body["totals"] == [{"amount": 2400, "currency": "cup"}]
+    assert body["totals"] == {
+        "products": [{"amount": 2400, "currency": "cup"}],
+        "messaging": [],
+        "total": [{"amount": 2400, "currency": "cup"}],
+    }
 
 
 async def test_create_order_increments_code_per_seller(
@@ -331,7 +335,7 @@ async def test_list_and_get_orders(
     assert page["page"] == 1
     assert len(page["items"]) == 1
     assert page["items"][0]["id"] == order_id
-    assert {t["currency"]: t["amount"] for t in page["items"][0]["totals"]} == {
+    assert {t["currency"]: t["amount"] for t in page["items"][0]["totals"]["total"]} == {
         "cup": 2000,
         "usd": 2500,
     }
@@ -345,7 +349,7 @@ async def test_list_and_get_orders(
     body = detail.json()
     assert body["id"] == order_id
     assert len(body["items"]) == 2
-    assert {t["currency"]: t["amount"] for t in body["totals"]} == {
+    assert {t["currency"]: t["amount"] for t in body["totals"]["total"]} == {
         "cup": 2000,
         "usd": 2500,
     }
@@ -563,7 +567,7 @@ async def test_preview_order_with_mixed_currencies(
     assert usd_item["unit_provider_price"] == {"amount": 2000, "currency": "usd"}
     assert usd_item["customer_change"] == {"amount": 0, "currency": "usd"}
 
-    totals = {t["currency"]: t["amount"] for t in body["totals"]}
+    totals = {t["currency"]: t["amount"] for t in body["totals"]["total"]}
     assert totals == {"cup": 2000, "usd": 2550}
 
 
@@ -586,7 +590,11 @@ async def test_preview_order_defaults_seller_provider_price(
     body = r.json()
     assert body["items"][0]["unit_provider_price"] == {"amount": 800, "currency": "cup"}
     assert body["items"][0]["seller_provider_price"] == {"amount": 800, "currency": "cup"}
-    assert body["totals"] == [{"amount": 2400, "currency": "cup"}]
+    assert body["totals"] == {
+        "products": [{"amount": 2400, "currency": "cup"}],
+        "messaging": [],
+        "total": [{"amount": 2400, "currency": "cup"}],
+    }
 
 
 async def test_preview_order_rejects_unlinked_product(

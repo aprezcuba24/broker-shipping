@@ -198,7 +198,7 @@ async def list_recent_orders(
                 created_at=order.created_at,
                 totals=[
                     Money(amount=t.amount, currency=t.currency)
-                    for t in totals
+                    for t in totals.total
                 ],
                 customer_name=order.customer_name or None,
             )

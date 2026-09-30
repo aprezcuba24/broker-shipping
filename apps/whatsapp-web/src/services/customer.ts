@@ -51,7 +51,7 @@ async function enrichLastOrder(order: OrderPublic): Promise<LastOrder> {
     status: order.status,
     createdAt: order.created_at,
     updatedAt: order.updated_at,
-    totals: order.totals ?? [],
+    totals: order.totals?.total ?? [],
     items: items.map((item) => ({
       id: item.id,
       productId: item.product_id,

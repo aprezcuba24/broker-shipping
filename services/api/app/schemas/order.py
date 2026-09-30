@@ -10,8 +10,16 @@ from app.schemas.messaging import OrderMessagingPublic
 from app.schemas.money import Money
 from app.schemas.organization import OrganizationPublic
 
-# Semantic alias: order totals are Money values grouped by currency.
+# Semantic alias: currency bucket within order totals.
 OrderCurrencyTotal = Money
+
+
+class OrderTotals(BaseModel):
+    """Order money totals broken down by source, each grouped by currency."""
+
+    products: list[OrderCurrencyTotal] = Field(default_factory=list)
+    messaging: list[OrderCurrencyTotal] = Field(default_factory=list)
+    total: list[OrderCurrencyTotal] = Field(default_factory=list)
 
 
 class OrderItemCreate(BaseModel):
@@ -81,6 +89,6 @@ class OrderPublic(BaseModel):
     updated_at: datetime | None
     items: list[OrderItemPublic] = Field(default_factory=list)
     messaging: list[OrderMessagingPublic] = Field(default_factory=list)
-    totals: list[OrderCurrencyTotal] = Field(default_factory=list)
+    totals: OrderTotals = Field(default_factory=OrderTotals)
     customer: CustomerPublic | None = None
     seller_organization: OrganizationPublic | None = None

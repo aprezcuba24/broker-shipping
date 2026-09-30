@@ -171,6 +171,7 @@ export * from './orderPublicUpdatedAt';
 export * from './orderStatus';
 export * from './orderSummaryPublic';
 export * from './orderSummaryPublicCustomerName';
+export * from './orderTotals';
 export * from './organizationCreate';
 export * from './organizationPublic';
 export * from './organizationPublicUpdatedAt';

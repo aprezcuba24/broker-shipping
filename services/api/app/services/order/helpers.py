@@ -17,26 +17,44 @@ from app.models.organization.enums import OrganizationType
 from app.schemas.customer import AddressPublic, CustomerPublic
 from app.schemas.messaging import OrderMessagingPublic
 from app.schemas.money import Money
-from app.schemas.order import OrderCurrencyTotal, OrderItemPublic, OrderPublic
+from app.schemas.order import OrderItemPublic, OrderPublic, OrderTotals
 from app.schemas.organization import OrganizationPublic
 from app.types import PurchaseTier
 
 _NIL_UUID = UUID(int=0)
 
 
-def compute_order_totals(
-    items: list[OrderItem],
-    messaging: list[OrderMessaging] | None = None,
-) -> list[OrderCurrencyTotal]:
-    amounts: dict[Currency, int] = defaultdict(int)
-    for item in items:
-        amounts[item.currency] += item.seller_provider_price * item.quantity
-    for line in messaging or []:
-        amounts[line.currency] += line.amount
+def _money_by_currency(amounts: dict[Currency, int]) -> list[Money]:
     return [
         Money(amount=amount, currency=currency)
         for currency, amount in sorted(amounts.items(), key=lambda pair: pair[0].value)
+        if amount
     ]
+
+
+def compute_order_totals(
+    items: list[OrderItem],
+    messaging: list[OrderMessaging] | None = None,
+) -> OrderTotals:
+    products: dict[Currency, int] = defaultdict(int)
+    for item in items:
+        products[item.currency] += item.seller_provider_price * item.quantity
+
+    messaging_amounts: dict[Currency, int] = defaultdict(int)
+    for line in messaging or []:
+        messaging_amounts[line.currency] += line.amount
+
+    total: dict[Currency, int] = defaultdict(int)
+    for currency, amount in products.items():
+        total[currency] += amount
+    for currency, amount in messaging_amounts.items():
+        total[currency] += amount
+
+    return OrderTotals(
+        products=_money_by_currency(products),
+        messaging=_money_by_currency(messaging_amounts),
+        total=_money_by_currency(total),
+    )
 
 
 def attach_order_view(
@@ -282,7 +300,7 @@ def order_to_public(order: Order) -> OrderPublic:
         updated_at=order.updated_at,
         items=[order_item_to_public(item) for item in items],
         messaging=[order_messaging_to_public(line) for line in messaging],
-        totals=list(totals),
+        totals=totals,
         customer=customer,
         seller_organization=seller_organization,
     )

@@ -8,7 +8,7 @@ import type { OrderStatus } from './orderStatus';
 import type { OrderPublicUpdatedAt } from './orderPublicUpdatedAt';
 import type { OrderItemPublic } from './orderItemPublic';
 import type { OrderMessagingPublic } from './orderMessagingPublic';
-import type { Money } from './money';
+import type { OrderTotals } from './orderTotals';
 import type { OrderPublicCustomer } from './orderPublicCustomer';
 import type { OrderPublicSellerOrganization } from './orderPublicSellerOrganization';
 
@@ -22,7 +22,7 @@ export interface OrderPublic {
   updated_at: OrderPublicUpdatedAt;
   items?: OrderItemPublic[];
   messaging?: OrderMessagingPublic[];
-  totals?: Money[];
+  totals?: OrderTotals;
   customer?: OrderPublicCustomer;
   seller_organization?: OrderPublicSellerOrganization;
 }
