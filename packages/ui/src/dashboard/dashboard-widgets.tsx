@@ -1,4 +1,4 @@
-import type { CurrencyAmount, OrderStatus, StatusCount } from '@broker/api'
+import type { CurrencyAmount, Money, OrderStatus, StatusCount } from '@broker/api'
 import { formatDateTime } from '@broker/api'
 import type { LucideIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -228,8 +228,7 @@ export function RecentOrdersCard({
 
 export type RecentCommissionRow = {
   id: string
-  amount: number
-  currency: string
+  amount: Money
   created_at: string
   counterpartyLabel?: string
 }
@@ -264,7 +263,7 @@ export function RecentCommissionsCard({
                 >
                   <div className="min-w-0">
                     <div className="font-medium tabular-nums">
-                      {formatMoney(row.amount, row.currency)}
+                      {formatMoney(row.amount)}
                     </div>
                     <p className="truncate text-xs text-muted-foreground">
                       {row.counterpartyLabel ?? '—'} · {formatDateTime(row.created_at)}

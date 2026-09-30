@@ -51,7 +51,7 @@ async def assign_delivered_item(
         .where(
             Commission.order_id == item.order_id,
             Commission.provider_organization_id == item.provider_organization_id,
-            Commission.currency == item.currency,
+            Commission.currency == item.commission_currency,
             Commission.is_paid.is_(False),
         )
         .with_for_update()
@@ -65,7 +65,7 @@ async def assign_delivered_item(
             provider_organization_id=item.provider_organization_id,
             seller_organization_id=order.seller_organization_id,
             amount=delta,
-            currency=item.currency,
+            currency=item.commission_currency,
             is_paid=False,
         )
         session.add(commission)

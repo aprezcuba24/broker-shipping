@@ -4,13 +4,13 @@
  * Vendelo360 API
  * OpenAPI spec version: 0.1.0
  */
+import type { OrderItemCreateSellerProviderPrice } from './orderItemCreateSellerProviderPrice';
+import type { OrderItemCreateCustomerChange } from './orderItemCreateCustomerChange';
 
 export interface OrderItemCreate {
   product_id: string;
   /** */
   quantity: number;
-  /** @minimum 0 */
-  seller_provider_price?: number;
-  /** @minimum 0 */
-  customer_change?: number;
+  seller_provider_price?: OrderItemCreateSellerProviderPrice;
+  customer_change?: OrderItemCreateCustomerChange;
 }

@@ -17,7 +17,7 @@ from app.schemas.dashboard import (
     OrderSummaryPublic,
     StatusCount,
 )
-from app.schemas.order import OrderCurrencyTotal
+from app.schemas.money import Money
 from app.services.order.helpers import (
     attach_items_and_totals,
     compute_order_totals,
@@ -63,7 +63,7 @@ def currency_amounts_from_rows(
     rows: list[tuple[Currency, int]],
 ) -> list[CurrencyAmount]:
     return [
-        CurrencyAmount(currency=currency, amount=int(amount or 0))
+        Money(amount=int(amount or 0), currency=currency)
         for currency, amount in sorted(rows, key=lambda pair: pair[0].value)
         if amount
     ]
@@ -197,7 +197,7 @@ async def list_recent_orders(
                 status=order.status,
                 created_at=order.created_at,
                 totals=[
-                    OrderCurrencyTotal(currency=t.currency, amount=t.amount)
+                    Money(amount=t.amount, currency=t.currency)
                     for t in totals
                 ],
                 customer_name=order.customer_name or None,
@@ -221,8 +221,7 @@ async def list_recent_pending_commissions(
     return [
         CommissionSummaryPublic(
             id=c.id,
-            amount=c.amount,
-            currency=c.currency,
+            amount=Money(amount=c.amount, currency=c.currency),
             provider_organization_id=c.provider_organization_id,
             seller_organization_id=c.seller_organization_id,
             created_at=c.created_at,

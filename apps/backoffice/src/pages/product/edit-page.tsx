@@ -21,10 +21,11 @@ import { useProductImagePersist } from './persist-image'
 function productToFormValues(product: ProductPublic): ProductFormValues {
   return {
     name: product.name,
+    description: product.description ?? '',
+    has_commission: product.has_commission,
     tag_ids: product.tags?.map((tag) => tag.id) ?? [],
     price: product.price,
     commission: product.commission,
-    currency: product.currency,
     image: {
       url: product.image_url ?? null,
       file: null,
@@ -63,10 +64,13 @@ export function ProductEditPage() {
         productId,
         data: {
           name: data.name,
+          description: data.description || null,
+          has_commission: data.has_commission,
           tag_ids: data.tag_ids,
           price: data.price,
-          commission: data.commission,
-          currency: data.currency,
+          commission: data.has_commission
+            ? data.commission
+            : { ...data.commission, amount: 0 },
         },
         params: {} as PatchProductProductsProviderProductIdPatchParams,
       })

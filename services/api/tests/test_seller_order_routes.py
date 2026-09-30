@@ -135,13 +135,13 @@ async def test_create_order_with_mixed_currencies(
                 {
                     "product_id": seller_order_ctx["product_cup_id"],
                     "quantity": 2,
-                    "seller_provider_price": 1000,
-                    "customer_change": 100,
+                    "seller_provider_price": {"amount": 1000, "currency": "cup"},
+                    "customer_change": {"amount": 100, "currency": "cup"},
                 },
                 {
                     "product_id": seller_order_ctx["product_usd_id"],
                     "quantity": 1,
-                    "seller_provider_price": 2550,
+                    "seller_provider_price": {"amount": 2550, "currency": "usd"},
                 },
             ],
         },
@@ -158,11 +158,10 @@ async def test_create_order_with_mixed_currencies(
     assert cup_item["provider_organization_id"] == seller_order_ctx["provider_cup_id"]
     assert cup_item["product_name"] == "Arroz"
     assert cup_item["provider_organization_name"] == "Provider CUP"
-    assert cup_item["currency"] == "cup"
-    assert cup_item["seller_commission"] == 150
-    assert cup_item["unit_provider_price"] == 800
-    assert cup_item["seller_provider_price"] == 1000
-    assert cup_item["customer_change"] == 100
+    assert cup_item["seller_commission"] == {"amount": 150, "currency": "cup"}
+    assert cup_item["unit_provider_price"] == {"amount": 800, "currency": "cup"}
+    assert cup_item["seller_provider_price"] == {"amount": 1000, "currency": "cup"}
+    assert cup_item["customer_change"] == {"amount": 100, "currency": "cup"}
     assert cup_item["quantity"] == 2
     assert cup_item["status"] == "created"
 
@@ -170,10 +169,9 @@ async def test_create_order_with_mixed_currencies(
     assert usd_item["provider_organization_id"] == seller_order_ctx["provider_usd_id"]
     assert usd_item["product_name"] == "Phone"
     assert usd_item["provider_organization_name"] == "Provider USD"
-    assert usd_item["currency"] == "usd"
-    assert usd_item["seller_commission"] == 500
-    assert usd_item["unit_provider_price"] == 2000
-    assert usd_item["customer_change"] == 0
+    assert usd_item["seller_commission"] == {"amount": 500, "currency": "usd"}
+    assert usd_item["unit_provider_price"] == {"amount": 2000, "currency": "usd"}
+    assert usd_item["customer_change"] == {"amount": 0, "currency": "usd"}
 
     assert body["customer"]["name"] == "Maria Garcia"
     assert body["customer"]["ci"] == "85010112345"
@@ -207,9 +205,9 @@ async def test_create_order_defaults_seller_provider_price(
     )
     assert r.status_code == 201
     body = r.json()
-    assert body["items"][0]["unit_provider_price"] == 800
-    assert body["items"][0]["seller_provider_price"] == 800
-    assert body["totals"] == [{"currency": "cup", "amount": 2400}]
+    assert body["items"][0]["unit_provider_price"] == {"amount": 800, "currency": "cup"}
+    assert body["items"][0]["seller_provider_price"] == {"amount": 800, "currency": "cup"}
+    assert body["totals"] == [{"amount": 2400, "currency": "cup"}]
 
 
 async def test_create_order_increments_code_per_seller(
@@ -222,7 +220,7 @@ async def test_create_order_increments_code_per_seller(
             {
                 "product_id": seller_order_ctx["product_cup_id"],
                 "quantity": 1,
-                "seller_provider_price": 1000,
+                "seller_provider_price": {"amount": 1000, "currency": "cup"},
             },
         ],
     }
@@ -309,12 +307,12 @@ async def test_list_and_get_orders(
                 {
                     "product_id": seller_order_ctx["product_cup_id"],
                     "quantity": 2,
-                    "seller_provider_price": 1000,
+                    "seller_provider_price": {"amount": 1000, "currency": "cup"},
                 },
                 {
                     "product_id": seller_order_ctx["product_usd_id"],
                     "quantity": 1,
-                    "seller_provider_price": 2500,
+                    "seller_provider_price": {"amount": 2500, "currency": "usd"},
                 },
             ],
         },
@@ -371,7 +369,7 @@ async def test_seller_cannot_see_other_seller_order(
                 {
                     "product_id": seller_order_ctx["product_cup_id"],
                     "quantity": 1,
-                    "seller_provider_price": 1000,
+                    "seller_provider_price": {"amount": 1000, "currency": "cup"},
                 },
             ],
         },
@@ -428,7 +426,7 @@ async def test_create_order_validation_errors(
                 {
                     "product_id": seller_order_ctx["product_cup_id"],
                     "quantity": 1,
-                    "seller_provider_price": -100,
+                    "seller_provider_price": {"amount": -100, "currency": "cup"},
                 },
             ],
         },
@@ -445,7 +443,7 @@ async def test_create_order_validation_errors(
                 {
                     "product_id": seller_order_ctx["product_cup_id"],
                     "quantity": 1,
-                    "customer_change": -1,
+                    "customer_change": {"amount": -1, "currency": "cup"},
                 },
             ],
         },
@@ -532,13 +530,13 @@ async def test_preview_order_with_mixed_currencies(
             {
                 "product_id": seller_order_ctx["product_cup_id"],
                 "quantity": 2,
-                "seller_provider_price": 1000,
-                "customer_change": 100,
+                "seller_provider_price": {"amount": 1000, "currency": "cup"},
+                "customer_change": {"amount": 100, "currency": "cup"},
             },
             {
                 "product_id": seller_order_ctx["product_usd_id"],
                 "quantity": 1,
-                "seller_provider_price": 2550,
+                "seller_provider_price": {"amount": 2550, "currency": "usd"},
             },
         ],
     )
@@ -552,20 +550,18 @@ async def test_preview_order_with_mixed_currencies(
     by_product = {item["product_id"]: item for item in body["items"]}
     cup_item = by_product[seller_order_ctx["product_cup_id"]]
     assert cup_item["provider_organization_id"] == seller_order_ctx["provider_cup_id"]
-    assert cup_item["currency"] == "cup"
-    assert cup_item["seller_commission"] == 150
-    assert cup_item["unit_provider_price"] == 800
-    assert cup_item["seller_provider_price"] == 1000
-    assert cup_item["customer_change"] == 100
+    assert cup_item["seller_commission"] == {"amount": 150, "currency": "cup"}
+    assert cup_item["unit_provider_price"] == {"amount": 800, "currency": "cup"}
+    assert cup_item["seller_provider_price"] == {"amount": 1000, "currency": "cup"}
+    assert cup_item["customer_change"] == {"amount": 100, "currency": "cup"}
     assert cup_item["quantity"] == 2
     assert cup_item["status"] == "created"
 
     usd_item = by_product[seller_order_ctx["product_usd_id"]]
     assert usd_item["provider_organization_id"] == seller_order_ctx["provider_usd_id"]
-    assert usd_item["currency"] == "usd"
-    assert usd_item["seller_commission"] == 500
-    assert usd_item["unit_provider_price"] == 2000
-    assert usd_item["customer_change"] == 0
+    assert usd_item["seller_commission"] == {"amount": 500, "currency": "usd"}
+    assert usd_item["unit_provider_price"] == {"amount": 2000, "currency": "usd"}
+    assert usd_item["customer_change"] == {"amount": 0, "currency": "usd"}
 
     totals = {t["currency"]: t["amount"] for t in body["totals"]}
     assert totals == {"cup": 2000, "usd": 2550}
@@ -588,9 +584,9 @@ async def test_preview_order_defaults_seller_provider_price(
     )
     assert r.status_code == 200
     body = r.json()
-    assert body["items"][0]["unit_provider_price"] == 800
-    assert body["items"][0]["seller_provider_price"] == 800
-    assert body["totals"] == [{"currency": "cup", "amount": 2400}]
+    assert body["items"][0]["unit_provider_price"] == {"amount": 800, "currency": "cup"}
+    assert body["items"][0]["seller_provider_price"] == {"amount": 800, "currency": "cup"}
+    assert body["totals"] == [{"amount": 2400, "currency": "cup"}]
 
 
 async def test_preview_order_rejects_unlinked_product(
@@ -645,7 +641,7 @@ async def test_preview_order_does_not_persist(
             {
                 "product_id": seller_order_ctx["product_cup_id"],
                 "quantity": 1,
-                "seller_provider_price": 1000,
+                "seller_provider_price": {"amount": 1000, "currency": "cup"},
             },
         ],
     )
@@ -675,7 +671,7 @@ async def test_list_orders_search_by_code_name_phone_ci(
                 {
                     "product_id": seller_order_ctx["product_cup_id"],
                     "quantity": 1,
-                    "seller_provider_price": 1000,
+                    "seller_provider_price": {"amount": 1000, "currency": "cup"},
                 },
             ],
         },
@@ -699,7 +695,7 @@ async def test_list_orders_search_by_code_name_phone_ci(
                 {
                     "product_id": seller_order_ctx["product_cup_id"],
                     "quantity": 1,
-                    "seller_provider_price": 1000,
+                    "seller_provider_price": {"amount": 1000, "currency": "cup"},
                 },
             ],
         },
@@ -757,7 +753,7 @@ async def test_list_orders_filter_by_status(
                 {
                     "product_id": seller_order_ctx["product_cup_id"],
                     "quantity": 1,
-                    "seller_provider_price": 1000,
+                    "seller_provider_price": {"amount": 1000, "currency": "cup"},
                 },
             ],
         },
@@ -775,7 +771,7 @@ async def test_list_orders_filter_by_status(
                 {
                     "product_id": seller_order_ctx["product_cup_id"],
                     "quantity": 1,
-                    "seller_provider_price": 1000,
+                    "seller_provider_price": {"amount": 1000, "currency": "cup"},
                 },
             ],
         },
@@ -834,7 +830,7 @@ async def test_order_keeps_customer_and_product_snapshot_after_edits(
                 {
                     "product_id": seller_order_ctx["product_cup_id"],
                     "quantity": 1,
-                    "seller_provider_price": 1000,
+                    "seller_provider_price": {"amount": 1000, "currency": "cup"},
                 },
             ],
         },

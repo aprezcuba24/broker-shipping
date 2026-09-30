@@ -20,10 +20,13 @@ export function ProductCreatePage() {
       const product = await createMutation.mutateAsync({
         data: {
           name: data.name,
+          description: data.description || null,
+          has_commission: data.has_commission,
           tag_ids: data.tag_ids,
           price: data.price,
-          commission: data.commission,
-          currency: data.currency,
+          commission: data.has_commission
+            ? data.commission
+            : { ...data.commission, amount: 0 },
         },
         params: {} as CreateProductProductsProviderPostParams,
       })

@@ -97,7 +97,7 @@ async def _create_order(client: AsyncClient, ctx: dict, quantity: int = 3) -> di
                 {
                     "product_id": ctx["product_id"],
                     "quantity": quantity,
-                    "seller_provider_price": 900,
+                    "seller_provider_price": {"amount": 900, "currency": "cup"},
                 },
             ],
         },
@@ -146,7 +146,7 @@ async def test_order_created_event_insufficient_stock_is_409(
                 {
                     "product_id": stock_listener_ctx["product_id"],
                     "quantity": 11,
-                    "seller_provider_price": 900,
+                    "seller_provider_price": {"amount": 900, "currency": "cup"},
                 },
             ],
         },

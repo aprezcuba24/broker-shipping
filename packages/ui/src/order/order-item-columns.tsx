@@ -20,22 +20,22 @@ export function buildSellerOrderItemColumns(): ColumnDef<OrderItemPublic>[] {
     componentColumn<OrderItemPublic>('quantity', 'Cant.', (row) => (
       <span className="tabular-nums text-sm">{row.quantity}</span>
     )),
-    componentColumn<OrderItemPublic>('currency', 'Moneda', (row) => (
-      <span className="tabular-nums text-sm">{row.currency.toUpperCase()}</span>
-    )),
     componentColumn<OrderItemPublic>('price', 'Precio', (row) => (
       <span className="tabular-nums text-sm">
-        {formatMoney(row.seller_provider_price, row.currency)}
+        {formatMoney(row.seller_provider_price)}
       </span>
     )),
     componentColumn<OrderItemPublic>('commission', 'Comisión', (row) => (
       <span className="tabular-nums text-sm">
-        {formatMoney(row.seller_commission, row.currency)}
+        {formatMoney(row.seller_commission)}
       </span>
     )),
     componentColumn<OrderItemPublic>('subtotal', 'Subtotal', (row) => (
       <span className="tabular-nums text-sm font-medium">
-        {formatMoney(row.seller_provider_price * row.quantity, row.currency)}
+        {formatMoney(
+          row.seller_provider_price.amount * row.quantity,
+          row.seller_provider_price.currency,
+        )}
       </span>
     )),
     componentColumn<OrderItemPublic>('status', 'Estado', (row) => (
@@ -52,17 +52,17 @@ export function buildProviderOrderItemColumns(): ColumnDef<OrderItemPublic>[] {
     componentColumn<OrderItemPublic>('quantity', 'Cant.', (row) => (
       <span className="tabular-nums text-sm">{row.quantity}</span>
     )),
-    componentColumn<OrderItemPublic>('currency', 'Moneda', (row) => (
-      <span className="tabular-nums text-sm">{row.currency.toUpperCase()}</span>
-    )),
     componentColumn<OrderItemPublic>('price', 'Precio', (row) => (
       <span className="tabular-nums text-sm">
-        {formatMoney(row.unit_provider_price, row.currency)}
+        {formatMoney(row.unit_provider_price)}
       </span>
     )),
     componentColumn<OrderItemPublic>('subtotal', 'Subtotal', (row) => (
       <span className="tabular-nums text-sm font-medium">
-        {formatMoney(row.unit_provider_price * row.quantity, row.currency)}
+        {formatMoney(
+          row.unit_provider_price.amount * row.quantity,
+          row.unit_provider_price.currency,
+        )}
       </span>
     )),
     componentColumn<OrderItemPublic>('status', 'Estado', (row) => (

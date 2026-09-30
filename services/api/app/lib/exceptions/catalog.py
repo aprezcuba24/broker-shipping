@@ -207,6 +207,11 @@ ERRORS: dict[str, ErrorDef] = {
         status_code=422,
         template="Hay errores de validación en la solicitud.",
     ),
+    "currency_mismatch": ErrorDef(
+        code="currency_mismatch",
+        status_code=422,
+        template="La moneda no coincide con la del producto.",
+    ),
 }
 
 ORDER_ITEM_STATUS_LABELS: dict[str, str] = {

@@ -51,6 +51,10 @@ async def _create_linked_order(
                 organization_id=provider["id"],
                 name=spec["name"],
                 currency=spec.get("currency", Currency.cup),
+                commission_currency=spec.get(
+                    "commission_currency",
+                    spec.get("currency", Currency.cup),
+                ),
                 commission=spec["commission"],
                 price=spec.get("price", 1000),
             )
@@ -67,7 +71,12 @@ async def _create_linked_order(
                 {
                     "product_id": product["id"],
                     "quantity": products[i].get("quantity", 1),
-                    "seller_provider_price": products[i].get("price", 1000),
+                    "seller_provider_price": {
+                        "amount": products[i].get("price", 1000),
+                        "currency": (
+                            products[i].get("currency", Currency.cup).value
+                        ),
+                    },
                 }
                 for i, product in enumerate(created_products)
             ],
@@ -252,6 +261,44 @@ async def test_assign_creates_new_commission_after_paid(
     assert second.id != first.id
     assert second.is_paid is False
     assert second.amount == 75
+
+
+async def test_assign_uses_commission_currency_when_different_from_price(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    product_factory: ProductFactory,
+    customer_factory: CustomerFactory,
+) -> None:
+    ctx = await _create_linked_order(
+        client,
+        db_session,
+        user_factory,
+        organization_factory,
+        product_factory,
+        customer_factory,
+        products=[
+            {
+                "name": "Mixed",
+                "commission": 250,
+                "currency": Currency.cup,
+                "commission_currency": Currency.usd,
+                "quantity": 2,
+                "price": 1000,
+            },
+        ],
+    )
+    item = ctx["items"][0]
+    assert item["unit_provider_price"] == {"amount": 1000, "currency": "cup"}
+    assert item["seller_commission"] == {"amount": 250, "currency": "usd"}
+
+    item_id = UUID(item["id"])
+    await _mark_item_delivered(db_session, item_id)
+    commission = await assign_service.assign_delivered_item(db_session, item_id)
+    assert commission is not None
+    assert commission.currency == Currency.usd
+    assert commission.amount == 500  # 250 * 2
 
 
 async def test_assign_is_idempotent(

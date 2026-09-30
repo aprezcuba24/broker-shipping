@@ -407,7 +407,7 @@ async def test_delete_customer_with_orders_returns_409(
                 {
                     "product_id": product["id"],
                     "quantity": 1,
-                    "seller_provider_price": 1000,
+                    "seller_provider_price": {"amount": 1000, "currency": "cup"},
                 },
             ],
         },
@@ -723,7 +723,7 @@ async def test_list_orders_filter_by_customer_id(
                     {
                         "product_id": product["id"],
                         "quantity": 1,
-                        "seller_provider_price": 1000,
+                        "seller_provider_price": {"amount": 1000, "currency": "cup"},
                     },
                 ],
             },

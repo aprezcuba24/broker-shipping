@@ -1,9 +1,10 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { z } from 'zod'
+import { Currency, type Money } from '@broker/api'
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(...inputs))
 }
 
 const MONEY_INPUT_PATTERN = /^\d+(\.\d{1,2})?$/
@@ -28,10 +29,28 @@ export function isValidMoneyInput(value: string): boolean {
   return MONEY_INPUT_PATTERN.test(trimmed) && Number(trimmed) >= 0
 }
 
-/** Centavos → "12.50 CUP" for display. */
-export function formatMoney(cents: number, currency: string): string {
-  return `${centsToInputValue(cents)} ${currency.toUpperCase()}`
+/** Centavos + currency → "12.50 CUP" for display. */
+export function formatMoney(money: Money): string
+export function formatMoney(cents: number, currency: string): string
+export function formatMoney(moneyOrCents: Money | number, currency?: string): string {
+  if (typeof moneyOrCents === 'object' && moneyOrCents !== null) {
+    return `${centsToInputValue(moneyOrCents.amount)} ${moneyOrCents.currency.toUpperCase()}`
+  }
+  return `${centsToInputValue(moneyOrCents)} ${(currency ?? '').toUpperCase()}`
 }
 
 /** Zod schema for money stored as integer cents. */
 export const moneyCentsSchema = z.number().int().min(0)
+
+/** Zod schema for API Money: `{ amount, currency }`. */
+export const moneySchema = z.object({
+  amount: moneyCentsSchema,
+  currency: z.enum([Currency.cup, Currency.usd]),
+})
+
+export type MoneyValue = z.infer<typeof moneySchema>
+
+/** Default Money value (0 cents in the given currency). */
+export function moneyDefault(currency: Currency = Currency.cup): MoneyValue {
+  return { amount: 0, currency }
+}

@@ -4,6 +4,7 @@ import {
   BadgeList,
   BtnLink,
   BtnList,
+  CommissionValue,
   componentColumn,
   createdAtColumn,
   currencyMoneyColumn,
@@ -33,7 +34,12 @@ export function buildProductColumns({
       <span>{providerNameById.get(row.organization_id) ?? '—'}</span>
     )),
     currencyMoneyColumn<ProductPublic>({ id: 'price', header: 'Precio' }),
-    currencyMoneyColumn<ProductPublic>({ id: 'commission', header: 'Comisión' }),
+    componentColumn<ProductPublic>('commission', 'Comisión', (row) => (
+      <CommissionValue
+        hasCommission={row.has_commission}
+        commission={row.commission}
+      />
+    )),
     componentColumn<ProductPublic>('tags', 'Etiquetas', (row) => (
       <BadgeList
         items={(row.tags ?? []).map((tag) => ({ id: tag.id, label: tag.name }))}

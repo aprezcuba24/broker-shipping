@@ -5,7 +5,7 @@ from fastapi import APIRouter
 from app.deps import SessionDep
 from app.lib.persistence.pagination import PaginationDep
 from app.lib.security.deps import ProviderOrgDep
-from app.schemas.commission import CommissionMarkPaid, CommissionPublic
+from app.schemas.commission import CommissionMarkPaid, CommissionPublic, commission_to_public
 from app.schemas.pagination import Page
 from app.services.commission import provider as provider_commission_service
 
@@ -25,7 +25,7 @@ async def list_commissions(
         pagination=pagination,
         is_paid=is_paid,
     )
-    return Page.from_mapped(result, pagination, CommissionPublic.model_validate)
+    return Page.from_mapped(result, pagination, commission_to_public)
 
 
 @router.get("/{commission_id}", response_model=CommissionPublic)
@@ -39,7 +39,7 @@ async def get_commission(
         commission_id,
         organization.id,
     )
-    return CommissionPublic.model_validate(commission)
+    return commission_to_public(commission)
 
 
 @router.patch("/{commission_id}", response_model=CommissionPublic)
@@ -55,4 +55,4 @@ async def mark_commission_paid(
         commission_id,
         organization.id,
     )
-    return CommissionPublic.model_validate(commission)
+    return commission_to_public(commission)

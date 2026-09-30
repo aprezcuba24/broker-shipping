@@ -31,7 +31,7 @@ export function buildCommissionDetailFields({
         const commission = value as CommissionPublic
         return (
           <span className="font-medium tabular-nums">
-            {formatMoney(commission.amount, commission.currency)}
+            {formatMoney(commission.amount)}
           </span>
         )
       },
@@ -126,7 +126,7 @@ export function CommissionDetailPage({
 
   return (
     <PageWrapper
-      title={formatMoney(commission.amount, commission.currency)}
+      title={formatMoney(commission.amount)}
       description={description}
       icon={CircleDollarSign}
       leading={

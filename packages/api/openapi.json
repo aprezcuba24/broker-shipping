@@ -6306,11 +6306,7 @@
             "title": "Seller Organization Id"
           },
           "amount": {
-            "type": "integer",
-            "title": "Amount"
-          },
-          "currency": {
-            "$ref": "#/components/schemas/Currency"
+            "$ref": "#/components/schemas/Money"
           },
           "is_paid": {
             "type": "boolean",
@@ -6361,7 +6357,6 @@
           "provider_organization_id",
           "seller_organization_id",
           "amount",
-          "currency",
           "is_paid",
           "paid_at",
           "created_at",
@@ -6377,11 +6372,7 @@
             "title": "Id"
           },
           "amount": {
-            "type": "integer",
-            "title": "Amount"
-          },
-          "currency": {
-            "$ref": "#/components/schemas/Currency"
+            "$ref": "#/components/schemas/Money"
           },
           "provider_organization_id": {
             "type": "string",
@@ -6403,7 +6394,6 @@
         "required": [
           "id",
           "amount",
-          "currency",
           "provider_organization_id",
           "seller_organization_id",
           "created_at"
@@ -6417,23 +6407,6 @@
           "usd"
         ],
         "title": "Currency"
-      },
-      "CurrencyAmount": {
-        "properties": {
-          "currency": {
-            "$ref": "#/components/schemas/Currency"
-          },
-          "amount": {
-            "type": "integer",
-            "title": "Amount"
-          }
-        },
-        "type": "object",
-        "required": [
-          "currency",
-          "amount"
-        ],
-        "title": "CurrencyAmount"
       },
       "CustomerCreate": {
         "properties": {
@@ -7023,6 +6996,25 @@
         ],
         "title": "MessageResponse"
       },
+      "Money": {
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Amount"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/Currency"
+          }
+        },
+        "type": "object",
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "title": "Money",
+        "description": "Monetary value in integer cents with its currency."
+      },
       "MunicipalityCreate": {
         "properties": {
           "name": {
@@ -7277,23 +7269,6 @@
         ],
         "title": "OrderCreate"
       },
-      "OrderCurrencyTotal": {
-        "properties": {
-          "currency": {
-            "$ref": "#/components/schemas/Currency"
-          },
-          "amount": {
-            "type": "integer",
-            "title": "Amount"
-          }
-        },
-        "type": "object",
-        "required": [
-          "currency",
-          "amount"
-        ],
-        "title": "OrderCurrencyTotal"
-      },
       "OrderItemCreate": {
         "properties": {
           "product_id": {
@@ -7307,16 +7282,24 @@
             "title": "Quantity"
           },
           "seller_provider_price": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Seller Provider Price",
-            "default": 0
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "customer_change": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Customer Change",
-            "default": 0
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -7370,30 +7353,23 @@
             "default": ""
           },
           "unit_provider_price": {
-            "type": "integer",
-            "title": "Unit Provider Price"
+            "$ref": "#/components/schemas/Money"
           },
           "seller_provider_price": {
-            "type": "integer",
-            "title": "Seller Provider Price"
+            "$ref": "#/components/schemas/Money"
           },
           "customer_change": {
-            "type": "integer",
-            "title": "Customer Change"
+            "$ref": "#/components/schemas/Money"
           },
           "quantity": {
             "type": "integer",
             "title": "Quantity"
           },
-          "currency": {
-            "$ref": "#/components/schemas/Currency"
-          },
           "status": {
             "$ref": "#/components/schemas/OrderItemStatus"
           },
           "seller_commission": {
-            "type": "integer",
-            "title": "Seller Commission"
+            "$ref": "#/components/schemas/Money"
           },
           "created_at": {
             "type": "string",
@@ -7423,7 +7399,6 @@
           "seller_provider_price",
           "customer_change",
           "quantity",
-          "currency",
           "status",
           "seller_commission",
           "created_at",
@@ -7504,7 +7479,7 @@
           },
           "totals": {
             "items": {
-              "$ref": "#/components/schemas/OrderCurrencyTotal"
+              "$ref": "#/components/schemas/Money"
             },
             "type": "array",
             "title": "Totals"
@@ -7573,7 +7548,7 @@
           },
           "totals": {
             "items": {
-              "$ref": "#/components/schemas/OrderCurrencyTotal"
+              "$ref": "#/components/schemas/Money"
             },
             "type": "array",
             "title": "Totals"
@@ -8321,6 +8296,23 @@
             "maxLength": 255,
             "title": "Name"
           },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "has_commission": {
+            "type": "boolean",
+            "title": "Has Commission",
+            "default": true
+          },
           "tag_ids": {
             "items": {
               "type": "string",
@@ -8330,20 +8322,10 @@
             "title": "Tag Ids"
           },
           "price": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Price",
-            "default": 0
+            "$ref": "#/components/schemas/Money"
           },
           "commission": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Commission",
-            "default": 0
-          },
-          "currency": {
-            "$ref": "#/components/schemas/Currency",
-            "default": "cup"
+            "$ref": "#/components/schemas/Money"
           }
         },
         "type": "object",
@@ -8426,21 +8408,31 @@
             "type": "string",
             "title": "Name"
           },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "has_commission": {
+            "type": "boolean",
+            "title": "Has Commission"
+          },
           "organization_id": {
             "type": "string",
             "format": "uuid",
             "title": "Organization Id"
           },
           "price": {
-            "type": "integer",
-            "title": "Price"
+            "$ref": "#/components/schemas/Money"
           },
           "commission": {
-            "type": "integer",
-            "title": "Commission"
-          },
-          "currency": {
-            "$ref": "#/components/schemas/Currency"
+            "$ref": "#/components/schemas/Money"
           },
           "stock": {
             "type": "integer",
@@ -8490,10 +8482,10 @@
         "required": [
           "id",
           "name",
+          "has_commission",
           "organization_id",
           "price",
           "commission",
-          "currency",
           "stock",
           "reserved",
           "created_at",
@@ -8711,6 +8703,29 @@
             ],
             "title": "Name"
           },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "has_commission": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Has Commission"
+          },
           "tag_ids": {
             "anyOf": [
               {
@@ -8729,31 +8744,17 @@
           "price": {
             "anyOf": [
               {
-                "type": "integer",
-                "minimum": 0.0
+                "$ref": "#/components/schemas/Money"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Price"
+            ]
           },
           "commission": {
             "anyOf": [
               {
-                "type": "integer",
-                "minimum": 0.0
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Commission"
-          },
-          "currency": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Currency"
+                "$ref": "#/components/schemas/Money"
               },
               {
                 "type": "null"
@@ -8824,21 +8825,21 @@
           },
           "sales_by_currency": {
             "items": {
-              "$ref": "#/components/schemas/CurrencyAmount"
+              "$ref": "#/components/schemas/Money"
             },
             "type": "array",
             "title": "Sales By Currency"
           },
           "commissions_pending": {
             "items": {
-              "$ref": "#/components/schemas/CurrencyAmount"
+              "$ref": "#/components/schemas/Money"
             },
             "type": "array",
             "title": "Commissions Pending"
           },
           "commissions_paid": {
             "items": {
-              "$ref": "#/components/schemas/CurrencyAmount"
+              "$ref": "#/components/schemas/Money"
             },
             "type": "array",
             "title": "Commissions Paid"
@@ -9050,21 +9051,21 @@
           },
           "sales_by_currency": {
             "items": {
-              "$ref": "#/components/schemas/CurrencyAmount"
+              "$ref": "#/components/schemas/Money"
             },
             "type": "array",
             "title": "Sales By Currency"
           },
           "commissions_pending": {
             "items": {
-              "$ref": "#/components/schemas/CurrencyAmount"
+              "$ref": "#/components/schemas/Money"
             },
             "type": "array",
             "title": "Commissions Pending"
           },
           "commissions_paid": {
             "items": {
-              "$ref": "#/components/schemas/CurrencyAmount"
+              "$ref": "#/components/schemas/Money"
             },
             "type": "array",
             "title": "Commissions Paid"

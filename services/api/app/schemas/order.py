@@ -4,16 +4,20 @@ from uuid import UUID
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
 
-from app.models.order.enums import Currency, OrderItemStatus, OrderStatus
+from app.models.order.enums import OrderItemStatus, OrderStatus
 from app.schemas.customer import CustomerPublic
+from app.schemas.money import Money
 from app.schemas.organization import OrganizationPublic
+
+# Semantic alias: order totals are Money values grouped by currency.
+OrderCurrencyTotal = Money
 
 
 class OrderItemCreate(BaseModel):
     product_id: UUID
     quantity: int = Field(gt=0)
-    seller_provider_price: int = Field(default=0, ge=0)
-    customer_change: int = Field(default=0, ge=0)
+    seller_provider_price: Money | None = None
+    customer_change: Money | None = None
 
 
 def _assert_unique_product_ids(items: list[OrderItemCreate]) -> list[OrderItemCreate]:
@@ -54,20 +58,14 @@ class OrderItemPublic(BaseModel):
     product_image_url: str | None = None
     provider_organization_id: UUID
     provider_organization_name: str = ""
-    unit_provider_price: int
-    seller_provider_price: int
-    customer_change: int
+    unit_provider_price: Money
+    seller_provider_price: Money
+    customer_change: Money
     quantity: int
-    currency: Currency
     status: OrderItemStatus
-    seller_commission: int
+    seller_commission: Money
     created_at: datetime
     updated_at: datetime | None
-
-
-class OrderCurrencyTotal(BaseModel):
-    currency: Currency
-    amount: int
 
 
 class OrderPublic(BaseModel):

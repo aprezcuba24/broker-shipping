@@ -41,18 +41,19 @@ async def test_create_list_get_patch_delete_product(
         headers=headers,
         json={
             "name": "  Arroz 1kg  ",
-            "price": 1250,
-            "commission": 125,
-            "currency": "cup",
+            "description": "  Arroz blanco  ",
+            "price": {"amount": 1250, "currency": "cup"},
+            "commission": {"amount": 125, "currency": "cup"},
         },
     )
     assert r_create.status_code == 201
     body = r_create.json()
     assert body["name"] == "Arroz 1kg"
+    assert body["description"] == "Arroz blanco"
+    assert body["has_commission"] is True
     assert body["organization_id"] == provider_context["organization_id"]
-    assert body["price"] == 1250
-    assert body["commission"] == 125
-    assert body["currency"] == "cup"
+    assert body["price"] == {"amount": 1250, "currency": "cup"}
+    assert body["commission"] == {"amount": 125, "currency": "cup"}
     assert body["stock"] == 0
     assert body["reserved"] == 0
     assert body["tags"] == []
@@ -70,8 +71,10 @@ async def test_create_list_get_patch_delete_product(
     assert body_list["page_size"] == 20
     assert body_list["pages"] == 1
     assert [p["id"] for p in body_list["items"]] == [product_id]
-    assert body_list["items"][0]["price"] == 1250
-    assert body_list["items"][0]["commission"] == 125
+    assert body_list["items"][0]["price"] == {"amount": 1250, "currency": "cup"}
+    assert body_list["items"][0]["commission"] == {"amount": 125, "currency": "cup"}
+    assert body_list["items"][0]["description"] == "Arroz blanco"
+    assert body_list["items"][0]["has_commission"] is True
 
     r_get = await client.get(
         f"/products/provider/{product_id}",
@@ -87,17 +90,18 @@ async def test_create_list_get_patch_delete_product(
         headers=headers,
         json={
             "name": "Arroz premium",
-            "price": 1500,
-            "commission": 200,
-            "currency": "usd",
+            "description": "Premium",
+            "price": {"amount": 1500, "currency": "usd"},
+            "commission": {"amount": 200, "currency": "usd"},
         },
     )
     assert r_patch.status_code == 200
     patched = r_patch.json()
     assert patched["name"] == "Arroz premium"
-    assert patched["price"] == 1500
-    assert patched["commission"] == 200
-    assert patched["currency"] == "usd"
+    assert patched["description"] == "Premium"
+    assert patched["has_commission"] is True
+    assert patched["price"] == {"amount": 1500, "currency": "usd"}
+    assert patched["commission"] == {"amount": 200, "currency": "usd"}
 
     r_delete = await client.delete(
         f"/products/provider/{product_id}",
@@ -112,6 +116,80 @@ async def test_create_list_get_patch_delete_product(
         headers=headers,
     )
     assert r_missing.status_code == 404
+
+
+async def test_create_product_with_independent_price_and_commission_currencies(
+    client: AsyncClient,
+    provider_context: dict,
+) -> None:
+    r = await client.post(
+        "/products/provider/",
+        params=provider_context["params"],
+        headers=provider_context["headers"],
+        json={
+            "name": "Mixed money",
+            "price": {"amount": 1000, "currency": "cup"},
+            "commission": {"amount": 5, "currency": "usd"},
+        },
+    )
+    assert r.status_code == 201
+    body = r.json()
+    assert body["price"] == {"amount": 1000, "currency": "cup"}
+    assert body["commission"] == {"amount": 5, "currency": "usd"}
+    assert body["has_commission"] is True
+
+
+async def test_create_and_patch_product_without_commission(
+    client: AsyncClient,
+    provider_context: dict,
+) -> None:
+    headers = provider_context["headers"]
+    params = provider_context["params"]
+
+    r_create = await client.post(
+        "/products/provider/",
+        params=params,
+        headers=headers,
+        json={
+            "name": "Libre",
+            "has_commission": False,
+            "price": {"amount": 1000, "currency": "cup"},
+            "commission": {"amount": 500, "currency": "cup"},
+        },
+    )
+    assert r_create.status_code == 201
+    created = r_create.json()
+    assert created["has_commission"] is False
+    assert created["commission"] == {"amount": 0, "currency": "cup"}
+    product_id = created["id"]
+
+    r_enable = await client.patch(
+        f"/products/provider/{product_id}",
+        params=params,
+        headers=headers,
+        json={
+            "has_commission": True,
+            "commission": {"amount": 150, "currency": "usd"},
+        },
+    )
+    assert r_enable.status_code == 200
+    enabled = r_enable.json()
+    assert enabled["has_commission"] is True
+    assert enabled["commission"] == {"amount": 150, "currency": "usd"}
+
+    r_disable = await client.patch(
+        f"/products/provider/{product_id}",
+        params=params,
+        headers=headers,
+        json={
+            "has_commission": False,
+            "commission": {"amount": 999, "currency": "usd"},
+        },
+    )
+    assert r_disable.status_code == 200
+    disabled = r_disable.json()
+    assert disabled["has_commission"] is False
+    assert disabled["commission"] == {"amount": 0, "currency": "usd"}
 
 
 async def test_provider_cannot_access_other_org_product(

@@ -69,12 +69,17 @@ async def create_product(
         organization_id,
         data.tag_ids,
     )
+    has_commission = data.has_commission
+    commission_amount = data.commission.amount if has_commission else 0
     product = Product(
         name=data.name,
+        description=data.description,
+        has_commission=has_commission,
         organization_id=organization_id,
-        price=data.price,
-        commission=data.commission,
-        currency=data.currency,
+        price=data.price.amount,
+        currency=data.price.currency,
+        commission=commission_amount,
+        commission_currency=data.commission.currency,
     )
     session.add(product)
     await session.flush()
@@ -104,7 +109,19 @@ async def update_product(
             data.tag_ids,
         )
         await product_tag_service.set_product_tags(session, product.id, tag_ids)
-    apply_partial_update(product, data, exclude={"tag_ids"})
+    apply_partial_update(
+        product,
+        data,
+        exclude={"tag_ids", "price", "commission"},
+    )
+    if data.price is not None:
+        product.price = data.price.amount
+        product.currency = data.price.currency
+    if data.commission is not None:
+        product.commission = data.commission.amount
+        product.commission_currency = data.commission.currency
+    if not product.has_commission:
+        product.commission = 0
     session.add(product)
     await session.commit()
     await session.refresh(product)

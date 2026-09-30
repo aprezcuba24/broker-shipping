@@ -59,7 +59,6 @@ async function enrichLastOrder(order: OrderPublic): Promise<LastOrder> {
       providerOrganizationId: item.provider_organization_id,
       providerName: item.provider_organization_name ?? null,
       quantity: item.quantity,
-      currency: item.currency,
       unitPrice: item.seller_provider_price,
       commission: item.seller_commission,
       customerChange: item.customer_change,

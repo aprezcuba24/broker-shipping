@@ -13,6 +13,8 @@ class Product(OrganizationEntityModel, table=True):
     )
 
     name: str = Field(max_length=255, index=True)
+    description: str | None = Field(default=None, max_length=2000)
+    has_commission: bool = Field(default=True)
     currency: Currency = Field(
         default=Currency.cup,
         sa_column=Column(
@@ -32,6 +34,18 @@ class Product(OrganizationEntityModel, table=True):
     commission: int = Field(
         default=0,
         sa_column=Column(BigInteger, nullable=False, server_default="0"),
+    )
+    commission_currency: Currency = Field(
+        default=Currency.cup,
+        sa_column=Column(
+            SAEnum(
+                Currency,
+                values_callable=lambda x: [e.value for e in x],
+                name="currency",
+            ),
+            nullable=False,
+            server_default="cup",
+        ),
     )
     stock: int = Field(default=0, ge=0)
     reserved: int = Field(default=0, ge=0)
