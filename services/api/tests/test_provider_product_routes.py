@@ -57,7 +57,10 @@ async def test_create_list_get_patch_delete_product(
     assert body["stock"] == 0
     assert body["reserved"] == 0
     assert body["tags"] == []
+    assert isinstance(body["public_code"], str)
+    assert len(body["public_code"]) == 4
     product_id = body["id"]
+    public_code = body["public_code"]
 
     r_list = await client.get(
         "/products/provider/",
@@ -75,6 +78,7 @@ async def test_create_list_get_patch_delete_product(
     assert body_list["items"][0]["commission"] == {"amount": 125, "currency": "cup"}
     assert body_list["items"][0]["description"] == "Arroz blanco"
     assert body_list["items"][0]["has_commission"] is True
+    assert body_list["items"][0]["public_code"] == public_code
 
     r_get = await client.get(
         f"/products/provider/{product_id}",
@@ -83,6 +87,7 @@ async def test_create_list_get_patch_delete_product(
     )
     assert r_get.status_code == 200
     assert r_get.json()["name"] == "Arroz 1kg"
+    assert r_get.json()["public_code"] == public_code
 
     r_patch = await client.patch(
         f"/products/provider/{product_id}",
@@ -102,6 +107,7 @@ async def test_create_list_get_patch_delete_product(
     assert patched["has_commission"] is True
     assert patched["price"] == {"amount": 1500, "currency": "usd"}
     assert patched["commission"] == {"amount": 200, "currency": "usd"}
+    assert patched["public_code"] == public_code
 
     r_delete = await client.delete(
         f"/products/provider/{product_id}",

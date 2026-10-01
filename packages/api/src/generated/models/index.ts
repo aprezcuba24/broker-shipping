@@ -268,6 +268,7 @@ export * from './sellerProductSalePriceUpdate';
 export * from './sellerProductSalePriceUpdateSalePrice';
 export * from './sellerProductUpdate';
 export * from './sellerProductUpdateSalePrice';
+export * from './shareChannel';
 export * from './statusCount';
 export * from './stockMovementDirection';
 export * from './stockMovementKind';

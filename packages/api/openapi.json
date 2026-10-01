@@ -9388,6 +9388,10 @@
             "type": "string",
             "title": "Name"
           },
+          "public_code": {
+            "type": "string",
+            "title": "Public Code"
+          },
           "description": {
             "anyOf": [
               {
@@ -9472,6 +9476,7 @@
         "required": [
           "id",
           "name",
+          "public_code",
           "has_commission",
           "organization_id",
           "price",
@@ -10439,6 +10444,19 @@
           "token"
         ],
         "title": "VerifyEmailRequest"
+      },
+      "ShareChannel": {
+        "type": "string",
+        "enum": [
+          "IG",
+          "FB",
+          "TT",
+          "WA",
+          "YT",
+          "OT"
+        ],
+        "title": "ShareChannel",
+        "description": "Social channel prefix for product WhatsApp share codes and attribution metrics."
       }
     },
     "securitySchemes": {

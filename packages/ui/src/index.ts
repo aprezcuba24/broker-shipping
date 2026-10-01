@@ -509,6 +509,11 @@ export type {
   SellerProductPriceBadgeProduct,
   SellerProductPriceBadgeProps,
 } from './product/seller-product-price-badge'
+export {
+  buildProductShareCode,
+  buildProductShareMessage,
+} from './product/share-code'
+export type { ProductSharePayload } from './product/share-code'
 
 export {
   COMMISSION_PAID_FILTER_OPTIONS,
