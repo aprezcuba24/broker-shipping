@@ -1,6 +1,6 @@
 # Vendelo360 — Facebook
 
-Extensión Chrome/Chromium (Manifest V3) que inyecta un **panel a la derecha** en Facebook (igual que la de WhatsApp Web) para preparar publicaciones de productos del broker. El texto incluye un enlace de WhatsApp con el nombre del producto y el código `FB-{public_code}`. **Publicar lo pulsas tú** en Facebook.
+Extensión Chrome/Chromium (Manifest V3) que inyecta un **panel a la derecha** en Facebook (igual que la de WhatsApp Web) para preparar publicaciones de productos del broker. El texto incluye un enlace de WhatsApp con el nombre del producto y el código `FB{public_code}`. **Publicar lo pulsas tú** en Facebook.
 
 ## Requisitos
 

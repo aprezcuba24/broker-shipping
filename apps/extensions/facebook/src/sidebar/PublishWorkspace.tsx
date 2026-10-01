@@ -4,6 +4,7 @@ import { sendMessage } from '../auth/messaging'
 import { PUBLISH_DRAFT_STORAGE_KEY } from '../constants'
 import type { FacebookGroup, ProductSummary } from '../auth/types'
 import {
+  buildFacebookShareCode,
   buildPostHtml,
   buildPostText,
   buildWhatsAppProductLink,
@@ -315,7 +316,9 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
                 )}
                 <div>
                   <p className="product-name">{product.name}</p>
-                  <p className="product-code">FB-{product.public_code}</p>
+                  <p className="product-code">
+                    {buildFacebookShareCode(product.public_code)}
+                  </p>
                 </div>
               </button>
             </li>
@@ -363,8 +366,8 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
               />
               {waLink ? (
                 <p className="preview-link" title={waLink}>
-                  Texto del enlace WA: {selected.name} (FB-
-                  {selected.public_code})
+                  Texto del enlace WA: {selected.name} (
+                  {buildFacebookShareCode(selected.public_code)})
                 </p>
               ) : null}
             </div>

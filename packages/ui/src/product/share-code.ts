@@ -11,7 +11,7 @@ export function buildProductShareCode(
   channel: ShareChannel,
   publicCode: string,
 ): string {
-  return `${channel}-${publicCode}`
+  return `${channel}${publicCode}`
 }
 
 export function buildProductShareMessage(
@@ -26,28 +26,42 @@ export function buildProductShareMessage(
   }
 }
 
+function splitShareTerm(term: string): [string, string] | null {
+  const trimmed = term.trim()
+  if (!trimmed) return null
+
+  const dash = trimmed.indexOf('-')
+  if (dash > 0) {
+    const prefix = trimmed.slice(0, dash).toUpperCase()
+    const remainder = trimmed.slice(dash + 1).trim()
+    if (CHANNEL_PREFIXES.has(prefix) && remainder) {
+      return [prefix, remainder]
+    }
+  }
+
+  if (trimmed.length > 2) {
+    const prefix = trimmed.slice(0, 2).toUpperCase()
+    const remainder = trimmed.slice(2).trim()
+    if (CHANNEL_PREFIXES.has(prefix) && remainder) {
+      return [prefix, remainder]
+    }
+  }
+
+  return null
+}
+
 export function extractPublicCodeFromSearch(term: string): string {
   const trimmed = term.trim()
   if (!trimmed) return trimmed
-  const dash = trimmed.indexOf('-')
-  if (dash <= 0) return trimmed
-  const prefix = trimmed.slice(0, dash).toUpperCase()
-  const remainder = trimmed.slice(dash + 1).trim()
-  if (CHANNEL_PREFIXES.has(prefix) && remainder) {
-    return remainder
-  }
+  const split = splitShareTerm(trimmed)
+  if (split) return split[1]
   return trimmed
 }
 
 export function extractShareChannelFromSearch(term: string): ShareChannel | null {
-  const trimmed = term.trim()
-  if (!trimmed) return null
-  const dash = trimmed.indexOf('-')
-  if (dash <= 0) return null
-  const prefix = trimmed.slice(0, dash).toUpperCase()
-  const remainder = trimmed.slice(dash + 1).trim()
-  if (!remainder || !CHANNEL_PREFIXES.has(prefix)) return null
-  return prefix as ShareChannel
+  const split = splitShareTerm(term)
+  if (!split) return null
+  return split[0] as ShareChannel
 }
 
 /** Return the original search term when it is a valid share code for the product. */

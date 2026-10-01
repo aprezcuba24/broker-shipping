@@ -11,12 +11,12 @@ export function normalizePhoneDigits(phone: string): string {
   return phone.replace(/\D/g, '')
 }
 
-/** Build Facebook share code: FB-{publicCode}. */
+/** Build Facebook share code: FB{publicCode}. */
 export function buildFacebookShareCode(publicCode: string): string {
-  return `FB-${publicCode}`
+  return `FB${publicCode}`
 }
 
-/** Product label in the WhatsApp prefill: "Name (FB-CODE)". */
+/** Product label in the WhatsApp prefill: "Name (FBCODE)". */
 export function buildWhatsAppProductText(
   productName: string,
   publicCode: string,
@@ -69,7 +69,7 @@ type PostLine = {
  * Precio
  * <blank>
  * Contactar por Whatsapp
- * https://wa.me/...?text=Name%20(FB-CODE)   ← same string as href (clickable)
+ * https://wa.me/...?text=Name%20(FBCODE)   ← same string as href (clickable)
  * <blank>
  * Description
  */
@@ -127,7 +127,7 @@ export function buildPostText(
 
 /**
  * Rich HTML: wa.me URL as both href and link text so Facebook keeps it clickable.
- * Prefill text is Name (FB-CODE).
+ * Prefill text is Name (FBCODE).
  */
 export function buildPostHtml(
   productName: string,
