@@ -23,6 +23,11 @@ type CartsByOrganization = Record<string, CartItem[]>
 type CartState = {
   cartsByOrganization: CartsByOrganization
   addProduct: (sellerOrgId: string, product: CartProductSnapshot) => void
+  addProductWithQuantity: (
+    sellerOrgId: string,
+    product: CartProductSnapshot,
+    quantity: number,
+  ) => void
   increment: (sellerOrgId: string, productId: string) => void
   decrement: (sellerOrgId: string, productId: string) => void
   removeProduct: (sellerOrgId: string, productId: string) => void
@@ -86,6 +91,23 @@ export const useCartStore = create<CartState>()(
               )
             }
             return [...items, { product, quantity: 1 }]
+          }),
+        }))
+      },
+
+      addProductWithQuantity: (sellerOrgId, product, quantity) => {
+        const qty = Math.max(1, Math.floor(quantity))
+        set((state) => ({
+          cartsByOrganization: updateItems(state.cartsByOrganization, sellerOrgId, (items) => {
+            const existing = items.find((i) => i.product.id === product.id)
+            if (existing) {
+              return items.map((i) =>
+                i.product.id === product.id
+                  ? { ...i, quantity: i.quantity + qty, product }
+                  : i,
+              )
+            }
+            return [...items, { product, quantity: qty }]
           }),
         }))
       },

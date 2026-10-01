@@ -31,8 +31,8 @@ export function ProductFilters({
       <DebouncedInput
         value={filters.name}
         onDebouncedChange={(value) => setFilter('name', value)}
-        placeholder="Buscar producto…"
-        aria-label="Buscar por nombre"
+        placeholder="Buscar por nombre o código…"
+        aria-label="Buscar por nombre o código"
         className="min-w-0 flex-1"
       />
       <div className="min-w-0 flex-1 sm:min-w-[220px] sm:max-w-sm">

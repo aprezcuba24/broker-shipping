@@ -479,6 +479,44 @@ async def test_list_products_name_filter_with_pagination(
     assert "Arroz" in body["items"][0]["name"]
 
 
+async def test_list_products_filter_by_public_code(
+    client: AsyncClient,
+    provider_context: dict,
+    product_factory: ProductFactory,
+) -> None:
+    org_id = provider_context["organization_id"]
+    target = await product_factory.build(
+        organization_id=org_id,
+        name="Target product",
+        public_code="4F2K",
+    )
+    await product_factory.build(
+        organization_id=org_id,
+        name="Other product",
+        public_code="9XYZ",
+    )
+
+    r_bare = await client.get(
+        "/products/provider/",
+        params={**provider_context["params"], "name": "4F2K"},
+        headers=provider_context["headers"],
+    )
+    assert r_bare.status_code == 200
+    bare_body = r_bare.json()
+    assert bare_body["total"] == 1
+    assert bare_body["items"][0]["id"] == target["id"]
+
+    r_share = await client.get(
+        "/products/provider/",
+        params={**provider_context["params"], "name": "ig-4f2k"},
+        headers=provider_context["headers"],
+    )
+    assert r_share.status_code == 200
+    share_body = r_share.json()
+    assert share_body["total"] == 1
+    assert share_body["items"][0]["id"] == target["id"]
+
+
 async def test_create_product_with_tag_ids(
     client: AsyncClient,
     provider_context: dict,

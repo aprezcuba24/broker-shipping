@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from uuid import UUID
 
+from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
 from app.lib.exceptions import raise_api_error
 from app.lib.persistence import get_entity
 from app.lib.persistence.pagination import paginate
+from app.lib.product_share import extract_public_code_from_search
 from app.lib.security.access import is_super_admin
 from app.lib.utils import utc_now
 from app.models.product.product import Product
@@ -85,7 +87,15 @@ async def list_accessible_products(
 
     stmt = select(Product).where(col(Product.organization_id).in_(provider_ids))
     if name:
-        stmt = stmt.where(col(Product.name).ilike(f"%{name}%"))
+        term = name.strip()
+        if term:
+            code = extract_public_code_from_search(term)
+            stmt = stmt.where(
+                or_(
+                    col(Product.name).ilike(f"%{term}%"),
+                    col(Product.public_code).ilike(f"%{code}%"),
+                )
+            )
     stmt = stmt.order_by(Product.name)
     result = await paginate(session, stmt, pagination)
     await product_tag_service.attach_tags_to_products(session, result.items)

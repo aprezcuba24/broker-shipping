@@ -158,10 +158,11 @@ function MovementProductField({
         onItemSelect={handleItemSelect}
         onSearchChange={handleSearchChange}
         isLoading={productsQuery.isFetching}
-        placeholder="Buscar producto…"
+        placeholder="Buscar por nombre o código…"
         minQueryMessage="Escribe para buscar"
         emptyMessage="No se encontraron productos."
         disabled={disabled}
+        aria-label="Buscar por nombre o código"
         aria-invalid={invalid}
       />
       {invalid ? <FieldError errors={[error as { message?: string }]} /> : null}
