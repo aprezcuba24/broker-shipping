@@ -4,6 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.order.enums import OrderStatus
+from app.models.product.enums import ShareChannel
 from app.schemas.money import Money
 from app.schemas.order import OrderCurrencyTotal
 from app.types import DashboardPeriod
@@ -15,6 +16,13 @@ CurrencyAmount = Money
 class StatusCount(BaseModel):
     status: str
     count: int
+
+
+class ShareChannelConversionPublic(BaseModel):
+    channel: ShareChannel
+    orders_arrived: int
+    orders_finished: int
+    conversion_rate: float
 
 
 class OrderSummaryPublic(BaseModel):
@@ -56,6 +64,9 @@ class SellerDashboardPublic(BaseModel):
 
     recent_orders: list[OrderSummaryPublic]
     recent_pending_commissions: list[CommissionSummaryPublic]
+    share_conversions: list[ShareChannelConversionPublic] = Field(
+        default_factory=list
+    )
 
 
 class ProviderDashboardPublic(BaseModel):

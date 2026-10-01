@@ -10,6 +10,7 @@ import type { StatusCount } from './statusCount';
 import type { Money } from './money';
 import type { OrderSummaryPublic } from './orderSummaryPublic';
 import type { CommissionSummaryPublic } from './commissionSummaryPublic';
+import type { ShareChannelConversionPublic } from './shareChannelConversionPublic';
 
 export interface SellerDashboardPublic {
   period: SellerDashboardPublicPeriod;
@@ -26,4 +27,5 @@ export interface SellerDashboardPublic {
   commissions_paid: Money[];
   recent_orders: OrderSummaryPublic[];
   recent_pending_commissions: CommissionSummaryPublic[];
+  share_conversions?: ShareChannelConversionPublic[];
 }

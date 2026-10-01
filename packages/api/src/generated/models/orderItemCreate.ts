@@ -6,6 +6,7 @@
  */
 import type { OrderItemCreateSellerProviderPrice } from './orderItemCreateSellerProviderPrice';
 import type { OrderItemCreateCustomerChange } from './orderItemCreateCustomerChange';
+import type { OrderItemCreateShareCode } from './orderItemCreateShareCode';
 
 export interface OrderItemCreate {
   product_id: string;
@@ -13,4 +14,5 @@ export interface OrderItemCreate {
   quantity: number;
   seller_provider_price?: OrderItemCreateSellerProviderPrice;
   customer_change?: OrderItemCreateCustomerChange;
+  share_code?: OrderItemCreateShareCode;
 }

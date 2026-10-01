@@ -13,6 +13,7 @@ from sqlmodel import Field
 
 from app.lib.persistence.entity_model import EntityModel
 from app.models.order.enums import Currency, OrderItemStatus
+from app.models.product.enums import ShareChannel
 
 
 class OrderItem(EntityModel, table=True):
@@ -102,5 +103,16 @@ class OrderItem(EntityModel, table=True):
             ForeignKey("commission.id", ondelete="SET NULL"),
             nullable=True,
             index=True,
+        ),
+    )
+    share_channel: ShareChannel | None = Field(
+        default=None,
+        sa_column=Column(
+            SAEnum(
+                ShareChannel,
+                values_callable=lambda x: [e.value for e in x],
+                name="sharechannel",
+            ),
+            nullable=True,
         ),
     )

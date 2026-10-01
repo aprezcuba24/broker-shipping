@@ -287,3 +287,73 @@ export const DASHBOARD_ORDER_STATUS_LABELS: Record<string, string> = {
 export const DASHBOARD_ITEM_STATUS_LABELS: Record<string, string> = {
   ...ORDER_ITEM_STATUS_LABEL,
 }
+
+export const DASHBOARD_SHARE_CHANNEL_LABELS: Record<string, string> = {
+  IG: 'Instagram',
+  FB: 'Facebook',
+  TT: 'TikTok',
+  WA: 'WhatsApp',
+  YT: 'YouTube',
+  OT: 'Otra',
+}
+
+export type ShareChannelConversionRow = {
+  channel: string
+  orders_arrived: number
+  orders_finished: number
+  conversion_rate: number
+}
+
+export function ShareConversionsCard({
+  rows,
+}: {
+  rows: ShareChannelConversionRow[]
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Conversión por red</CardTitle>
+        <CardDescription>
+          Órdenes llegadas y completadas cuando se buscó el producto con código de
+          red
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {rows.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Aún no hay órdenes llegadas por un código de red en este período.
+          </p>
+        ) : (
+          rows.map((row) => {
+            const ratePct = Math.round(row.conversion_rate * 100)
+            return (
+              <div key={row.channel} className="space-y-1">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium">
+                    {DASHBOARD_SHARE_CHANNEL_LABELS[row.channel] ?? row.channel}
+                  </span>
+                  <span className="tabular-nums text-muted-foreground">
+                    {row.orders_finished}/{row.orders_arrived}
+                    <span className="ml-1 text-xs">({ratePct}%)</span>
+                  </span>
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-foreground/70"
+                    style={{ width: `${ratePct}%` }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {row.orders_arrived} llegada
+                  {row.orders_arrived === 1 ? '' : 's'} · {row.orders_finished}{' '}
+                  completada
+                  {row.orders_finished === 1 ? '' : 's'}
+                </p>
+              </div>
+            )
+          })
+        )}
+      </CardContent>
+    </Card>
+  )
+}

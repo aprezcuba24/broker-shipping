@@ -5,7 +5,9 @@ from uuid import UUID
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
 
 from app.models.order.enums import OrderItemStatus, OrderStatus
+from app.models.product.enums import ShareChannel
 from app.schemas.customer import CustomerPublic
+from app.schemas.fields import OptionalStrippedStr
 from app.schemas.messaging import OrderMessagingPublic
 from app.schemas.money import Money
 from app.schemas.organization import OrganizationPublic
@@ -27,6 +29,7 @@ class OrderItemCreate(BaseModel):
     quantity: int = Field(gt=0)
     seller_provider_price: Money | None = None
     customer_change: Money | None = None
+    share_code: OptionalStrippedStr = None
 
 
 def _assert_unique_product_ids(items: list[OrderItemCreate]) -> list[OrderItemCreate]:
@@ -74,6 +77,7 @@ class OrderItemPublic(BaseModel):
     status: OrderItemStatus
     seller_commission: Money
     seller_commissions: list[Money] = Field(default_factory=list)
+    share_channel: ShareChannel | None = None
     created_at: datetime
     updated_at: datetime | None
 

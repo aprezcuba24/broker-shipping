@@ -12,6 +12,7 @@ import {
   PageWrapper,
   RecentCommissionsCard,
   RecentOrdersCard,
+  ShareConversionsCard,
   StatusBreakdownCard,
   useActiveOrganization,
   type DashboardPeriodValue,
@@ -141,6 +142,8 @@ export function HomePage() {
               labels={DASHBOARD_ITEM_STATUS_LABELS}
             />
           </div>
+
+          <ShareConversionsCard rows={data.share_conversions ?? []} />
 
           <div className="grid gap-4 lg:grid-cols-2">
             <RecentOrdersCard

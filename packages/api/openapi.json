@@ -8154,6 +8154,17 @@
                 "type": "null"
               }
             ]
+          },
+          "share_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Share Code"
           }
         },
         "type": "object",
@@ -8231,6 +8242,16 @@
             },
             "type": "array",
             "title": "Seller Commissions"
+          },
+          "share_channel": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShareChannel"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "created_at": {
             "type": "string",
@@ -10078,6 +10099,13 @@
             },
             "type": "array",
             "title": "Recent Pending Commissions"
+          },
+          "share_conversions": {
+            "items": {
+              "$ref": "#/components/schemas/ShareChannelConversionPublic"
+            },
+            "type": "array",
+            "title": "Share Conversions"
           }
         },
         "type": "object",
@@ -10115,6 +10143,46 @@
         "type": "object",
         "title": "SellerProductUpdate",
         "description": "Seller overlay fields for a provider product.\n\nOmitted fields are left unchanged. ``sale_price=null`` clears the overlay\nprice so the provider price is used."
+      },
+      "ShareChannel": {
+        "type": "string",
+        "enum": [
+          "IG",
+          "FB",
+          "TT",
+          "WA",
+          "YT",
+          "OT"
+        ],
+        "title": "ShareChannel",
+        "description": "Social channel prefix for product WhatsApp share codes and attribution metrics."
+      },
+      "ShareChannelConversionPublic": {
+        "properties": {
+          "channel": {
+            "$ref": "#/components/schemas/ShareChannel"
+          },
+          "orders_arrived": {
+            "type": "integer",
+            "title": "Orders Arrived"
+          },
+          "orders_finished": {
+            "type": "integer",
+            "title": "Orders Finished"
+          },
+          "conversion_rate": {
+            "type": "number",
+            "title": "Conversion Rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "channel",
+          "orders_arrived",
+          "orders_finished",
+          "conversion_rate"
+        ],
+        "title": "ShareChannelConversionPublic"
       },
       "StatusCount": {
         "properties": {
@@ -10444,19 +10512,6 @@
           "token"
         ],
         "title": "VerifyEmailRequest"
-      },
-      "ShareChannel": {
-        "type": "string",
-        "enum": [
-          "IG",
-          "FB",
-          "TT",
-          "WA",
-          "YT",
-          "OT"
-        ],
-        "title": "ShareChannel",
-        "description": "Social channel prefix for product WhatsApp share codes and attribution metrics."
       }
     },
     "securitySchemes": {

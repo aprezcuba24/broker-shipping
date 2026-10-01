@@ -512,6 +512,9 @@ export type {
 export {
   buildProductShareCode,
   buildProductShareMessage,
+  extractPublicCodeFromSearch,
+  extractShareChannelFromSearch,
+  resolveShareCodeForProduct,
 } from './product/share-code'
 export type { ProductSharePayload } from './product/share-code'
 
@@ -545,10 +548,12 @@ export {
   DASHBOARD_PERIOD_OPTIONS,
   DASHBOARD_ORDER_STATUS_LABELS,
   DASHBOARD_ITEM_STATUS_LABELS,
+  DASHBOARD_SHARE_CHANNEL_LABELS,
   DashboardPeriodSelector,
   DashboardAlert,
   KpiCard,
   StatusBreakdownCard,
+  ShareConversionsCard,
   RecentOrdersCard,
   RecentCommissionsCard,
   formatCurrencyAmounts,
@@ -557,6 +562,7 @@ export type {
   DashboardPeriodValue,
   RecentOrderRow,
   RecentCommissionRow,
+  ShareChannelConversionRow,
 } from './dashboard/dashboard-widgets'
 
 export { SettingsOptionCard } from './settings/settings-option-card'

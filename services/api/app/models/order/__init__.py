@@ -8,12 +8,14 @@ from app.models.order.enums import Currency, OrderItemStatus, OrderStatus
 from app.models.order.order import Order
 from app.models.order.order_item import OrderItem
 from app.models.order.order_messaging import OrderMessaging
+from app.models.order.share_conversion import OrderShareConversion
 
 DOMAIN_MODELS: tuple[type[SQLModel], ...] = (
     Order,
     OrderItem,
     OrderMessaging,
     OrderItemCommissionComponent,
+    OrderShareConversion,
 )
 
 __all__ = [
@@ -25,5 +27,6 @@ __all__ = [
     "OrderItemCommissionComponent",
     "OrderItemStatus",
     "OrderMessaging",
+    "OrderShareConversion",
     "OrderStatus",
 ]

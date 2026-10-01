@@ -37,17 +37,17 @@ export function useCart() {
   )
 
   const addProduct = useCallback(
-    (product: CartProductSnapshot) => {
+    (product: CartProductSnapshot, shareCode?: string) => {
       if (!sellerOrgId) return
-      addProductAction(sellerOrgId, product)
+      addProductAction(sellerOrgId, product, shareCode)
     },
     [addProductAction, sellerOrgId],
   )
 
   const addProductWithQuantity = useCallback(
-    (product: CartProductSnapshot, quantity: number) => {
+    (product: CartProductSnapshot, quantity: number, shareCode?: string) => {
       if (!sellerOrgId) return
-      addProductWithQuantityAction(sellerOrgId, product, quantity)
+      addProductWithQuantityAction(sellerOrgId, product, quantity, shareCode)
     },
     [addProductWithQuantityAction, sellerOrgId],
   )

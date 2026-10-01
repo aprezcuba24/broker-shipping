@@ -39,8 +39,12 @@ export function ProductPage() {
   })
 
   const columns = useMemo(
-    () => buildProductColumns({ providerNameById }),
-    [providerNameById],
+    () =>
+      buildProductColumns({
+        providerNameById,
+        searchTerm: list.filters.name || undefined,
+      }),
+    [providerNameById, list.filters.name],
   )
 
   const items = query.data?.items ?? []

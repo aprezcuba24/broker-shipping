@@ -281,6 +281,7 @@ def order_item_to_public(item: OrderItem) -> OrderItemPublic:
             currency=item.commission_currency,
         ),
         seller_commissions=compute_seller_commissions(item),
+        share_channel=item.share_channel,
         created_at=item.created_at,
         updated_at=item.updated_at,
     )

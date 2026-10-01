@@ -3,7 +3,7 @@ import {
   type ListProductsProductsSellerGetParams,
   type ProductPublic,
 } from '@broker/api'
-import { Button, EntityAutocomplete, Input } from '@broker/ui'
+import { Button, EntityAutocomplete, Input, resolveShareCodeForProduct } from '@broker/ui'
 import { Plus } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 
@@ -19,6 +19,7 @@ function toCartSnapshot(product: ProductPublic): CartProductSnapshot {
     has_commission: product.has_commission,
     price: product.price,
     sale_price: product.sale_price,
+    public_code: product.public_code,
   }
 }
 
@@ -93,7 +94,11 @@ export function CartProductSearch() {
 
   const handleAdd = () => {
     if (!selectedProduct || !sellerOrgId) return
-    addProductWithQuantity(toCartSnapshot(selectedProduct), quantity)
+    addProductWithQuantity(
+      toCartSnapshot(selectedProduct),
+      quantity,
+      resolveShareCodeForProduct(trimmedSearch, selectedProduct.public_code),
+    )
     setSelectedId('')
     setSelectedProduct(null)
     setSearch('')
