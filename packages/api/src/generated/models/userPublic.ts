@@ -4,11 +4,13 @@
  * Vendelo360 API
  * OpenAPI spec version: 0.1.0
  */
+import type { UserPublicPhone } from './userPublicPhone';
 
 export interface UserPublic {
   id: string;
   name: string;
   email: string;
+  phone?: UserPublicPhone;
   is_super_admin: boolean;
   email_verified: boolean;
   created_at: string;

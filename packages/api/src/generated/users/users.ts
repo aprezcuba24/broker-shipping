@@ -32,6 +32,7 @@ import type {
   ResetPasswordRequest,
   TokenResponse,
   UserLogin,
+  UserProfileUpdate,
   UserPublic,
   UserRegister,
   VerifyEmailRequest
@@ -521,6 +522,69 @@ export function useMeUsersMeGet<TData = Awaited<ReturnType<typeof meUsersMeGet>>
 
 
 /**
+ * @summary Update Me
+ */
+export const updateMeUsersMePatch = (
+    userProfileUpdate: UserProfileUpdate,
+ options?: SecondParameter<typeof brokerFetch>,) => {
+      
+      
+      return brokerFetch<UserPublic>(
+      {url: `/users/me`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: userProfileUpdate
+    },
+      options);
+    }
+  
+
+
+export const getUpdateMeUsersMePatchMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMeUsersMePatch>>, TError,{data: UserProfileUpdate}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateMeUsersMePatch>>, TError,{data: UserProfileUpdate}, TContext> => {
+
+const mutationKey = ['updateMeUsersMePatch'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateMeUsersMePatch>>, {data: UserProfileUpdate}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateMeUsersMePatch(data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateMeUsersMePatchMutationResult = NonNullable<Awaited<ReturnType<typeof updateMeUsersMePatch>>>
+    export type UpdateMeUsersMePatchMutationBody = UserProfileUpdate
+    export type UpdateMeUsersMePatchMutationError = HTTPValidationError
+
+    /**
+ * @summary Update Me
+ */
+export const useUpdateMeUsersMePatch = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMeUsersMePatch>>, TError,{data: UserProfileUpdate}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateMeUsersMePatch>>,
+        TError,
+        {data: UserProfileUpdate},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdateMeUsersMePatchMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * @summary My Organizations
  */
 export const myOrganizationsUsersMyOrganizationsGet = (

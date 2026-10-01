@@ -321,6 +321,8 @@ export {
 } from './components/ui/select'
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './components/ui/tabs'
 
+export { ProfilePage } from './profile/profile-page'
+
 export { AppLayout } from './components/layout/app-layout'
 export { Sidebar } from './components/layout/sidebar'
 export { TopHeader } from './components/layout/top-header'

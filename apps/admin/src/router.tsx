@@ -1,4 +1,5 @@
 import { RequireAuth } from '@broker/api'
+import { ProfilePage } from '@broker/ui'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AdminLayout } from './layouts/admin-layout'
 import { HomePage } from './pages/home'
@@ -17,6 +18,7 @@ export default function App() {
           }
         >
           <Route index element={<HomePage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

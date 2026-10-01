@@ -1,4 +1,5 @@
-import { ChevronDown, LogOut, Menu, Search } from 'lucide-react'
+import { ChevronDown, LogOut, Menu, Search, UserRound } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +26,8 @@ export function TopHeader({
   headerExtra,
   headerActions,
 }: TopHeaderProps) {
+  const navigate = useNavigate()
+
   return (
     <header className="bg-surface-container-low/80 backdrop-blur-md sticky top-0 z-40 flex justify-between items-center w-full px-3 sm:px-6 py-3">
       <div className="flex flex-1 min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
@@ -87,14 +90,16 @@ export function TopHeader({
               </div>
             </DropdownMenuLabel>
             {userMenuExtra}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => void navigate('/profile')}>
+              <UserRound />
+              Mi perfil
+            </DropdownMenuItem>
             {onLogout ? (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={() => onLogout()}>
-                  <LogOut />
-                  Salir
-                </DropdownMenuItem>
-              </>
+              <DropdownMenuItem onSelect={() => onLogout()}>
+                <LogOut />
+                Salir
+              </DropdownMenuItem>
             ) : null}
           </DropdownMenuContent>
         </DropdownMenu>
