@@ -1,0 +1,13 @@
+{
+  "name": "@broker/extension-auth",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.287",
+    "typescript": "~6.0.2"
+  }
+}

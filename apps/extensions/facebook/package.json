@@ -1,11 +1,12 @@
 {
-  "name": "@broker/whatsapp-web",
+  "name": "@broker/facebook",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "node scripts/build.mjs --watch",
     "build": "tsc --noEmit && node scripts/build.mjs",
+    "test": "node --experimental-strip-types --test src/**/*.test.ts",
     "lint": "eslint ."
   },
   "dependencies": {

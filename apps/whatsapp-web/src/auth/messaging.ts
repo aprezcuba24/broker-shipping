@@ -3,10 +3,10 @@ import type {
   ExtensionResponse,
   LookupResponse,
   BlacklistResponse,
-  SessionPublic,
   SessionResponse,
   UpdateStatusResponse,
 } from './types'
+import type { SessionPublic } from '@broker/extension-auth'
 import type { BlacklistReason } from '../services/phone-blacklist'
 
 export function sendMessage(message: ExtensionMessage): Promise<ExtensionResponse> {

@@ -1,5 +1,5 @@
-import type { SellerOrganization, SessionUser } from '../auth/types'
 import { apiRequest } from './http'
+import type { SellerOrganization, SessionUser } from './types'
 
 export async function loginRequest(
   email: string,
@@ -13,11 +13,18 @@ export async function loginRequest(
 }
 
 export async function fetchMe(accessToken: string): Promise<SessionUser> {
-  const data = await apiRequest<{ id: string; name: string; email: string }>(
-    '/users/me',
-    { token: accessToken },
-  )
-  return { id: data.id, name: data.name, email: data.email }
+  const data = await apiRequest<{
+    id: string
+    name: string
+    email: string
+    phone?: string | null
+  }>('/users/me', { token: accessToken })
+  return {
+    id: data.id,
+    name: data.name,
+    email: data.email,
+    phone: data.phone ?? null,
+  }
 }
 
 type OrgApi = {

@@ -27,11 +27,8 @@ export function PopupApp() {
   useEffect(() => {
     void sendMessage({ type: 'GET_SESSION' }).then((response) => {
       const next = sessionFrom(response)
-      if (next) {
-        applySession(next)
-      } else {
-        setView('login')
-      }
+      if (next) applySession(next)
+      else setView('login')
     })
   }, [applySession])
 
@@ -40,11 +37,7 @@ export function PopupApp() {
     setError(null)
     setSubmitting(true)
     try {
-      const response = await sendMessage({
-        type: 'LOGIN',
-        email,
-        password,
-      })
+      const response = await sendMessage({ type: 'LOGIN', email, password })
       if (!response.ok) {
         setError(response.error)
         return
@@ -67,14 +60,7 @@ export function PopupApp() {
     setJustLoggedIn(false)
     const response = await sendMessage({ type: 'LOGOUT' })
     const next = sessionFrom(response)
-    if (next) {
-      applySession(next)
-    }
-  }
-
-  async function onCloseAndReturnToWhatsApp() {
-    await sendMessage({ type: 'FOCUS_WHATSAPP' })
-    window.close()
+    if (next) applySession(next)
   }
 
   if (view === 'loading') {
@@ -90,7 +76,7 @@ export function PopupApp() {
       <div className="popup">
         <header className="popup-header">
           <div className="brand-icon" aria-hidden>
-            <ChatIcon />
+            <FbIcon />
           </div>
           <div>
             <h1 className="title">Vendelo360</h1>
@@ -100,7 +86,7 @@ export function PopupApp() {
 
         {justLoggedIn ? (
           <p className="success">
-            Sesión iniciada. Abre WhatsApp Web para continuar.
+            Sesión iniciada. Abre Facebook: el panel aparece a la derecha.
           </p>
         ) : null}
 
@@ -110,13 +96,6 @@ export function PopupApp() {
         </div>
 
         <div className="actions">
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => void onCloseAndReturnToWhatsApp()}
-          >
-            Cerrar y regresar a WhatsApp
-          </button>
           <button type="button" className="btn btn-secondary" onClick={() => void onLogout()}>
             Cerrar sesión
           </button>
@@ -129,7 +108,7 @@ export function PopupApp() {
     <div className="popup">
       <header className="popup-header">
         <div className="brand-icon" aria-hidden>
-          <ChatIcon />
+          <FbIcon />
         </div>
         <div>
           <h1 className="title">Vendelo360</h1>
@@ -161,7 +140,11 @@ export function PopupApp() {
           />
         </label>
 
-        {error ? <p className="error" role="alert">{error}</p> : null}
+        {error ? (
+          <p className="error" role="alert">
+            {error}
+          </p>
+        ) : null}
 
         <button type="submit" className="btn btn-primary" disabled={submitting}>
           {submitting ? 'Entrando…' : 'Iniciar sesión'}
@@ -171,20 +154,10 @@ export function PopupApp() {
   )
 }
 
-function ChatIcon() {
+function FbIcon() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M14 8h3V4h-3c-2.8 0-5 2.2-5 5v2H6v4h3v7h4v-7h3.2L17 11h-4V9c0-.6.4-1 1-1z" />
     </svg>
   )
 }

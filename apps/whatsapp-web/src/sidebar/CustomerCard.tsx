@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { SELLER_APP_URL } from '../auth/constants'
+import { SELLER_APP_URL } from '@broker/extension-auth'
 import type { ChatKind } from '../detect-chat'
 import type { CustomerProfile } from '../customer'
 import { normalizePhone } from '../phone'

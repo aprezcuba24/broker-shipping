@@ -17,8 +17,7 @@ export function AuthGate({ session, onSelectOrg, onOpenAuth }: Props) {
       <div className="gate">
         <h2 className="gate-title">Sin organización vendedora</h2>
         <p className="gate-text">
-          Tu cuenta no pertenece a ninguna organización de tipo vendedor. Crea o
-          únete a una desde la web de vendedores.
+          Tu cuenta no pertenece a ninguna organización de tipo vendedor.
         </p>
         <a
           className="btn-gate"
@@ -37,10 +36,7 @@ export function AuthGate({ session, onSelectOrg, onOpenAuth }: Props) {
 
   if (session.status === 'needsOrgSelection') {
     return (
-      <OrgPicker
-        organizations={session.organizations}
-        onSelectOrg={onSelectOrg}
-      />
+      <OrgPicker organizations={session.organizations} onSelectOrg={onSelectOrg} />
     )
   }
 
@@ -75,13 +71,14 @@ function OrgPicker({
     <div className="gate">
       <h2 className="gate-title">Elige tu organización</h2>
       <p className="gate-text">
-        Tienes más de una organización vendedora. Selecciona con cuál trabajar en
-        WhatsApp.
+        Tienes más de una organización vendedora. Selecciona con cuál publicar.
       </p>
       <ul className="org-list" role="radiogroup" aria-label="Organizaciones">
         {organizations.map((org) => (
           <li key={org.id}>
-            <label className={`org-option${selected === org.id ? ' is-selected' : ''}`}>
+            <label
+              className={`org-option${selected === org.id ? ' is-selected' : ''}`}
+            >
               <input
                 type="radio"
                 name="seller-org"
@@ -94,7 +91,7 @@ function OrgPicker({
           </li>
         ))}
       </ul>
-      {error ? <p className="gate-error">{error}</p> : null}
+      {error ? <p className="error">{error}</p> : null}
       <button
         type="button"
         className="btn-gate"
@@ -112,7 +109,7 @@ export function LoggedOutGate({ onOpenAuth }: { onOpenAuth: () => void }) {
     <div className="gate">
       <h2 className="gate-title">Inicia sesión</h2>
       <p className="gate-text">
-        Accede con tu cuenta de vendedor para ver la ficha del cliente en WhatsApp.
+        Accede con tu cuenta de vendedor para publicar productos en Facebook.
       </p>
       <button type="button" className="btn-gate" onClick={onOpenAuth}>
         Iniciar sesión
