@@ -28,6 +28,7 @@ export function buildProductColumns({
   searchTerm,
 }: BuildProductColumnsOptions): ColumnDef<ProductPublic>[] {
   return [
+    textColumn<ProductPublic>({ id: 'public_code', header: 'Código' }),
     imageColumn<ProductPublic>({
       src: (row) => row.image_url,
       alt: (row) => row.name,
