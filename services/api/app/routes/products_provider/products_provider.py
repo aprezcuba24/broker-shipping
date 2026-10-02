@@ -9,23 +9,23 @@ from app.lib.security.deps import ProviderOrgDep
 from app.schemas.pagination import Page
 from app.schemas.product import (
     ProductCreate,
-    ProductPublic,
+    ProductProviderPublic,
     ProductUpdate,
-    product_to_public,
+    product_to_provider_public,
 )
 from app.services import product as product_service
 
 router = APIRouter(prefix="/products/provider", tags=["products"])
 
 
-@router.get("/", response_model=Page[ProductPublic])
+@router.get("/", response_model=Page[ProductProviderPublic])
 async def list_products(
     organization: ProviderOrgDep,
     session: SessionDep,
     pagination: PaginationDep,
     name: str | None = None,
     tag_ids: Annotated[list[UUID] | None, Query()] = None,
-) -> Page[ProductPublic]:
+) -> Page[ProductProviderPublic]:
     result = await product_service.list_products_for_organization(
         session,
         organization.id,
@@ -33,47 +33,47 @@ async def list_products(
         name=name,
         tag_ids=tag_ids,
     )
-    return Page.from_mapped(result, pagination, product_to_public)
+    return Page.from_mapped(result, pagination, product_to_provider_public)
 
 
-@router.get("/{product_id}", response_model=ProductPublic)
+@router.get("/{product_id}", response_model=ProductProviderPublic)
 async def get_product(
     product_id: UUID,
     organization: ProviderOrgDep,
     session: SessionDep,
-) -> ProductPublic:
+) -> ProductProviderPublic:
     product = await product_service.get_product_for_organization(
         session,
         product_id,
         organization.id,
     )
-    return product_to_public(product)
+    return product_to_provider_public(product)
 
 
-@router.post("/", response_model=ProductPublic, status_code=201)
+@router.post("/", response_model=ProductProviderPublic, status_code=201)
 async def create_product(
     body: ProductCreate,
     organization: ProviderOrgDep,
     session: SessionDep,
-) -> ProductPublic:
+) -> ProductProviderPublic:
     product = await product_service.create_product(session, organization.id, body)
-    return product_to_public(product)
+    return product_to_provider_public(product)
 
 
-@router.patch("/{product_id}", response_model=ProductPublic)
+@router.patch("/{product_id}", response_model=ProductProviderPublic)
 async def patch_product(
     product_id: UUID,
     body: ProductUpdate,
     organization: ProviderOrgDep,
     session: SessionDep,
-) -> ProductPublic:
+) -> ProductProviderPublic:
     product = await product_service.update_product(
         session,
         product_id,
         organization.id,
         body,
     )
-    return product_to_public(product)
+    return product_to_provider_public(product)
 
 
 @router.delete("/{product_id}", status_code=204)

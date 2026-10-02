@@ -43,6 +43,7 @@ ImageContentType = Annotated[
 class ProductCreate(BaseModel):
     name: NonEmptyStr = Field(max_length=255)
     description: OptionalStrippedStr = Field(default=None, max_length=2000)
+    notes: OptionalStrippedStr = Field(default=None, max_length=2000)
     has_commission: bool = True
     tag_ids: list[UUID] = Field(default_factory=list)
     price: Money = Field(default_factory=lambda: _ZERO_CUP.model_copy())
@@ -52,6 +53,7 @@ class ProductCreate(BaseModel):
 class ProductUpdate(BaseModel):
     name: NonEmptyStr | None = Field(default=None, max_length=255)
     description: OptionalStrippedStr = Field(default=None, max_length=2000)
+    notes: OptionalStrippedStr = Field(default=None, max_length=2000)
     has_commission: bool | None = None
     tag_ids: list[UUID] | None = None
     price: Money | None = None
@@ -86,6 +88,12 @@ class ProductPublic(BaseModel):
     updated_at: datetime | None
     tags: list[TagPublic] = Field(default_factory=list)
     image_url: str | None = None
+
+
+class ProductProviderPublic(ProductPublic):
+    """Provider response — includes internal notes hidden from sellers."""
+
+    notes: str | None = None
 
 
 class ProductImagePresignRequest(BaseModel):
@@ -162,3 +170,8 @@ def product_to_public(product: Product) -> ProductPublic:
         tags=list(getattr(product, "tags", []) or []),
         image_url=get_object_storage().build_public_url(product.image_key),
     )
+
+
+def product_to_provider_public(product: Product) -> ProductProviderPublic:
+    base = product_to_public(product)
+    return ProductProviderPublic(**base.model_dump(), notes=product.notes)

@@ -16,6 +16,7 @@ async def create_product(
     name: str | None = None,
     public_code: str | None = None,
     description: str | None = None,
+    notes: str | None = None,
     has_commission: bool | None = None,
     currency: Currency | None = None,
     commission_currency: Currency | None = None,
@@ -34,6 +35,7 @@ async def create_product(
         name=name if name is not None else "Factory product",
         public_code=public_code if public_code is not None else generate_public_code(),
         description=description,
+        notes=notes,
         has_commission=(
             has_commission
             if has_commission is not None
@@ -69,6 +71,7 @@ class ProductFactory:
         name: str | None = None,
         public_code: str | None = None,
         description: str | None = None,
+        notes: str | None = None,
         has_commission: bool | None = None,
         currency: Currency | None = None,
         commission_currency: Currency | None = None,
@@ -84,6 +87,7 @@ class ProductFactory:
             name=final_name,
             public_code=public_code,
             description=description,
+            notes=notes,
             has_commission=has_commission,
             currency=currency,
             commission_currency=commission_currency,

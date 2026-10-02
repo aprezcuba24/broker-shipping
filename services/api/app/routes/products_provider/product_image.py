@@ -11,8 +11,8 @@ from app.schemas.product import (
     ProductImageConfirmRequest,
     ProductImagePresignRequest,
     ProductImagePresignResponse,
-    ProductPublic,
-    product_to_public,
+    ProductProviderPublic,
+    product_to_provider_public,
 )
 from app.services import product_image as product_image_service
 
@@ -58,20 +58,20 @@ async def presign_product_image(
     )
 
 
-@router.put("/{product_id}/image", response_model=ProductPublic)
+@router.put("/{product_id}/image", response_model=ProductProviderPublic)
 async def confirm_product_image(
     product_id: UUID,
     body: ValidatedProductImageConfirm,
     organization: ProviderOrgDep,
     session: SessionDep,
-) -> ProductPublic:
+) -> ProductProviderPublic:
     product = await product_image_service.confirm_product_image(
         session,
         product_id,
         organization.id,
         body,
     )
-    return product_to_public(product)
+    return product_to_provider_public(product)
 
 
 @router.delete("/{product_id}/image", status_code=204)

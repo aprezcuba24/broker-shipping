@@ -7,7 +7,7 @@ import {
   type ConfirmProductImageProductsProviderProductIdImagePutParams,
   type DeleteProductImageProductsProviderProductIdImageDeleteParams,
   type PresignProductImageProductsProviderProductIdImagePresignPostParams,
-  type ProductPublic,
+  type ProductProviderPublic,
 } from '@broker/api'
 import { useResourceImagePersist } from '@broker/ui'
 
@@ -53,7 +53,7 @@ export function useProductImagePersist() {
     )
   }, [])
 
-  const { persist: persistImage } = useResourceImagePersist<ProductPublic>({
+  const { persist: persistImage } = useResourceImagePersist<ProductProviderPublic>({
     presign,
     confirm,
     remove,
@@ -61,9 +61,9 @@ export function useProductImagePersist() {
 
   const persist = useCallback(
     async (
-      product: ProductPublic,
+      product: ProductProviderPublic,
       image: Parameters<typeof persistImage>[1],
-    ): Promise<ProductPublic> => {
+    ): Promise<ProductProviderPublic> => {
       const result = await persistImage(product.id, image)
       if (result) return result
       if (image?.removed && !image.file) {

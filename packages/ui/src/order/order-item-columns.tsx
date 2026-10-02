@@ -1,4 +1,5 @@
 import type { OrderItemPublic } from '@broker/api'
+import { Link } from 'react-router-dom'
 
 import { componentColumn, imageColumn } from '../crud/components/columns'
 import type { ColumnDef } from '../components/data-table/types'
@@ -13,15 +14,25 @@ const commissionColumn = componentColumn<OrderItemPublic>(
   ),
 )
 
+function productNameLink(row: OrderItemPublic) {
+  const label = row.product_name || '—'
+  return (
+    <Link
+      to={`/products/${row.product_id}`}
+      className="text-primary underline-offset-2 hover:underline"
+    >
+      {label}
+    </Link>
+  )
+}
+
 export function buildSellerOrderItemColumns(): ColumnDef<OrderItemPublic>[] {
   return [
     imageColumn<OrderItemPublic>({
       src: (row) => row.product_image_url,
       alt: (row) => row.product_name ?? '',
     }),
-    componentColumn<OrderItemPublic>('product', 'Producto', (row) => (
-      <span>{row.product_name || '—'}</span>
-    )),
+    componentColumn<OrderItemPublic>('product', 'Producto', productNameLink),
     componentColumn<OrderItemPublic>('provider', 'Proveedor', (row) => (
       <span>{row.provider_organization_name || '—'}</span>
     )),
@@ -55,9 +66,7 @@ export function buildSellerOrderItemColumns(): ColumnDef<OrderItemPublic>[] {
 
 export function buildProviderOrderItemColumns(): ColumnDef<OrderItemPublic>[] {
   return [
-    componentColumn<OrderItemPublic>('product', 'Producto', (row) => (
-      <span>{row.product_name || '—'}</span>
-    )),
+    componentColumn<OrderItemPublic>('product', 'Producto', productNameLink),
     componentColumn<OrderItemPublic>('quantity', 'Cant.', (row) => (
       <span className="tabular-nums text-sm">{row.quantity}</span>
     )),

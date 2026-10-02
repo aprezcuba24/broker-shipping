@@ -5,6 +5,7 @@ import { Controller, useForm } from 'react-hook-form'
 import {
   CommissionField,
   Field,
+  FieldDescription,
   FieldError,
   FieldLabel,
   FormFieldCell,
@@ -30,6 +31,7 @@ export const productFormSchema = z.object({
     .min(1, 'El nombre es obligatorio')
     .max(255, 'Máximo 255 caracteres'),
   description: z.string().trim().max(2000, 'Máximo 2000 caracteres'),
+  notes: z.string().trim().max(2000, 'Máximo 2000 caracteres'),
   has_commission: z.boolean(),
   tag_ids: z.array(z.string().uuid()),
   price: moneySchema,
@@ -42,6 +44,7 @@ export type ProductFormValues = z.infer<typeof productFormSchema>
 export const productFormDefaultValues: ProductFormValues = {
   name: '',
   description: '',
+  notes: '',
   has_commission: true,
   tag_ids: [],
   price: moneyDefault(),
@@ -206,6 +209,31 @@ export function ProductForm({
                   aria-invalid={fieldState.invalid}
                   placeholder="Descripción opcional del producto…"
                 />
+                {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+              </Field>
+            )}
+          />
+        </FormFieldCell>
+
+        <FormFieldCell fullWidth>
+          <Controller
+            name="notes"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="product-notes">Notas</FieldLabel>
+                <Textarea
+                  {...field}
+                  id="product-notes"
+                  maxLength={2000}
+                  rows={4}
+                  disabled={isSubmitting}
+                  aria-invalid={fieldState.invalid}
+                  placeholder="Notas internas del producto…"
+                />
+                <FieldDescription className="text-xs">
+                  Solo visible para proveedores
+                </FieldDescription>
                 {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
               </Field>
             )}

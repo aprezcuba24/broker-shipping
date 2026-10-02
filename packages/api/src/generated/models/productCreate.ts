@@ -5,12 +5,14 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ProductCreateDescription } from './productCreateDescription';
+import type { ProductCreateNotes } from './productCreateNotes';
 import type { Money } from './money';
 
 export interface ProductCreate {
   /** @maxLength 255 */
   name: string;
   description?: ProductCreateDescription;
+  notes?: ProductCreateNotes;
   has_commission?: boolean;
   tag_ids?: string[];
   price?: Money;
