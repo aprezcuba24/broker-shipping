@@ -58,6 +58,7 @@ async def _resolve_linked_products(
         select(Product).where(
             col(Product.id).in_(product_ids),
             col(Product.organization_id).in_(provider_ids),
+            Product.discarded_at.is_(None),
         )
     )
     products = {product.id: product for product in result.scalars().all()}

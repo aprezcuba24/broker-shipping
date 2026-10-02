@@ -13,8 +13,13 @@ from app.lib.persistence.pagination import paginate
 from app.lib.product_share import extract_public_code_from_search
 from app.lib.public_code import generate_public_code
 from app.lib.storage.deps import get_object_storage
+from app.lib.utils import utc_now
+from app.models.order.order_item import OrderItem
 from app.models.product.product import Product
 from app.models.product.product_tag import ProductTag
+from app.models.product_stock_movement.product_stock_movement_item import (
+    ProductStockMovementItem,
+)
 from app.schemas.pagination import PageResult, PaginationParams
 from app.schemas.product import ProductCreate, ProductUpdate
 from app.services import product_tag as product_tag_service
@@ -43,6 +48,25 @@ async def _allocate_public_code(session: AsyncSession) -> str:
     raise RuntimeError("Unable to allocate unique product public_code")
 
 
+async def _product_has_history(
+    session: AsyncSession,
+    product_id: UUID,
+) -> bool:
+    has_orders = await session.scalar(
+        select(
+            exists().where(OrderItem.product_id == product_id)
+        )
+    )
+    if has_orders:
+        return True
+    has_movements = await session.scalar(
+        select(
+            exists().where(ProductStockMovementItem.product_id == product_id)
+        )
+    )
+    return bool(has_movements)
+
+
 async def list_products_for_organization(
     session: AsyncSession,
     organization_id: UUID,
@@ -51,7 +75,10 @@ async def list_products_for_organization(
     name: str | None = None,
     tag_ids: list[UUID] | None = None,
 ) -> PageResult[Product]:
-    stmt = select(Product).where(Product.organization_id == organization_id)
+    stmt = select(Product).where(
+        Product.organization_id == organization_id,
+        Product.discarded_at.is_(None),
+    )
     if name:
         term = name.strip()
         if term:
@@ -135,11 +162,10 @@ async def update_product(
     organization_id: UUID,
     data: ProductUpdate,
 ) -> Product:
-    product = await get_entity(
+    product = await get_product_for_organization(
         session,
-        Product,
-        id=product_id,
-        organization_id=organization_id,
+        product_id,
+        organization_id,
     )
     if data.tag_ids is not None:
         tag_ids = await product_tag_service.get_tag_ids_for_organization(
@@ -183,6 +209,15 @@ async def delete_product(
         id=product_id,
         organization_id=organization_id,
     )
+    if product.discarded_at is not None:
+        raise_api_error("not_found")
+    if await _product_has_history(session, product.id):
+        product.discarded_at = utc_now()
+        product.updated_at = utc_now()
+        session.add(product)
+        await session.commit()
+        return
+
     if product.image_key and not await order_item_image_key_in_use(
         session, product.image_key
     ):

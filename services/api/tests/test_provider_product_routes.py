@@ -1,11 +1,17 @@
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient
 
+from app.models.order.enums import Currency
+from app.models.product.product import Product
 from tests.factories.auth_helpers import bearer_headers
-from tests.factories.organization_factory import OrganizationFactory
+from tests.factories.customer_factory import CustomerFactory
+from tests.factories.organization_factory import (
+    OrganizationFactory,
+    link_provider_to_seller,
+)
 from tests.factories.product_factory import ProductFactory
 from tests.factories.tag_factory import TagFactory
 from tests.factories.user_factory import UserFactory
@@ -728,3 +734,217 @@ async def test_list_products_filters_by_all_tag_ids(
     assert r_none.status_code == 200
     assert r_none.json()["items"] == []
     assert r_none.json()["total"] == 0
+
+
+async def test_delete_product_without_history_hard_deletes(
+    client: AsyncClient,
+    provider_context: dict,
+    db_session,
+    product_factory: ProductFactory,
+) -> None:
+    product = await product_factory.build(
+        organization_id=provider_context["organization_id"],
+        name="Sin historial",
+    )
+    product_id = product["id"]
+
+    r_delete = await client.delete(
+        f"/products/provider/{product_id}",
+        params=provider_context["params"],
+        headers=provider_context["headers"],
+    )
+    assert r_delete.status_code == 204
+
+    r_list = await client.get(
+        "/products/provider/",
+        params=provider_context["params"],
+        headers=provider_context["headers"],
+    )
+    assert r_list.status_code == 200
+    assert product_id not in {p["id"] for p in r_list.json()["items"]}
+
+    r_get = await client.get(
+        f"/products/provider/{product_id}",
+        params=provider_context["params"],
+        headers=provider_context["headers"],
+    )
+    assert r_get.status_code == 404
+
+    db_session.expire_all()
+    row = await db_session.get(Product, UUID(str(product_id)))
+    assert row is None
+
+
+async def test_delete_product_with_order_discards(
+    client: AsyncClient,
+    db_session,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    product_factory: ProductFactory,
+    customer_factory: CustomerFactory,
+) -> None:
+    provider_user = await user_factory.build()
+    seller_user = await user_factory.build()
+    provider_org = await organization_factory.build(user_id=provider_user["id"])
+    seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
+    await link_provider_to_seller(
+        db_session,
+        provider_organization_id=provider_org["id"],
+        seller_organization_id=seller_org["id"],
+    )
+    product = await product_factory.build(
+        organization_id=provider_org["id"],
+        name="Con pedido",
+        currency=Currency.cup,
+        price=800,
+        commission=100,
+        stock=10,
+    )
+    customer = await customer_factory.build(seller_organization_id=seller_org["id"])
+
+    provider_headers = bearer_headers(user_id=provider_user["id"])
+    provider_params = {"organization_id": provider_org["id"]}
+    seller_headers = bearer_headers(user_id=seller_user["id"])
+    seller_params = {"organization_id": seller_org["id"]}
+
+    r_order = await client.post(
+        "/orders/seller/",
+        params=seller_params,
+        headers=seller_headers,
+        json={
+            "customer_id": customer["id"],
+            "items": [
+                {
+                    "product_id": product["id"],
+                    "quantity": 2,
+                    "seller_provider_price": {"amount": 900, "currency": "cup"},
+                },
+            ],
+        },
+    )
+    assert r_order.status_code == 201
+
+    r_delete = await client.delete(
+        f"/products/provider/{product['id']}",
+        params=provider_params,
+        headers=provider_headers,
+    )
+    assert r_delete.status_code == 204
+
+    db_session.expire_all()
+    row = await db_session.get(Product, UUID(str(product["id"])))
+    assert row is not None
+    assert row.discarded_at is not None
+
+    r_list = await client.get(
+        "/products/provider/",
+        params=provider_params,
+        headers=provider_headers,
+    )
+    assert r_list.status_code == 200
+    assert product["id"] not in {p["id"] for p in r_list.json()["items"]}
+
+    r_get = await client.get(
+        f"/products/provider/{product['id']}",
+        params=provider_params,
+        headers=provider_headers,
+    )
+    assert r_get.status_code == 200
+    assert r_get.json()["id"] == product["id"]
+    assert r_get.json()["name"] == "Con pedido"
+
+    r_seller_list = await client.get(
+        "/products/seller/",
+        params=seller_params,
+        headers=seller_headers,
+    )
+    assert r_seller_list.status_code == 200
+    assert product["id"] not in {p["id"] for p in r_seller_list.json()["items"]}
+
+    r_seller_get = await client.get(
+        f"/products/seller/{product['id']}",
+        params=seller_params,
+        headers=seller_headers,
+    )
+    assert r_seller_get.status_code == 200
+    assert r_seller_get.json()["id"] == product["id"]
+
+    r_delete_again = await client.delete(
+        f"/products/provider/{product['id']}",
+        params=provider_params,
+        headers=provider_headers,
+    )
+    assert r_delete_again.status_code == 404
+
+    r_new_order = await client.post(
+        "/orders/seller/",
+        params=seller_params,
+        headers=seller_headers,
+        json={
+            "customer_id": customer["id"],
+            "items": [
+                {
+                    "product_id": product["id"],
+                    "quantity": 1,
+                    "seller_provider_price": {"amount": 900, "currency": "cup"},
+                },
+            ],
+        },
+    )
+    assert r_new_order.status_code == 404
+
+
+async def test_delete_product_with_stock_movement_discards(
+    client: AsyncClient,
+    provider_context: dict,
+    db_session,
+    product_factory: ProductFactory,
+) -> None:
+    product = await product_factory.build(
+        organization_id=provider_context["organization_id"],
+        name="Con movimiento",
+        stock=0,
+    )
+
+    r_movement = await client.post(
+        "/product-stock-movements/provider/",
+        params=provider_context["params"],
+        headers=provider_context["headers"],
+        json={
+            "kind": "reception",
+            "items": [{"product_id": product["id"], "quantity": 5}],
+        },
+    )
+    assert r_movement.status_code == 201
+
+    r_delete = await client.delete(
+        f"/products/provider/{product['id']}",
+        params=provider_context["params"],
+        headers=provider_context["headers"],
+    )
+    assert r_delete.status_code == 204
+
+    db_session.expire_all()
+    row = await db_session.get(Product, UUID(str(product["id"])))
+    assert row is not None
+    assert row.discarded_at is not None
+    assert row.stock == 5
+
+    r_list = await client.get(
+        "/products/provider/",
+        params=provider_context["params"],
+        headers=provider_context["headers"],
+    )
+    assert r_list.status_code == 200
+    assert product["id"] not in {p["id"] for p in r_list.json()["items"]}
+
+    r_movement_again = await client.post(
+        "/product-stock-movements/provider/",
+        params=provider_context["params"],
+        headers=provider_context["headers"],
+        json={
+            "kind": "reception",
+            "items": [{"product_id": product["id"], "quantity": 1}],
+        },
+    )
+    assert r_movement_again.status_code == 404
