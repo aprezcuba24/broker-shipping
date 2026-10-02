@@ -52,13 +52,14 @@ Hasta tener la cuenta y el ID, la sección de WhatsApp en **Configurar** muestra
 
 ## 3. Build de producción
 
-Desde la raíz del monorepo, con URLs reales:
+Las URLs van en `apps/extensions/whatsapp/.env` (plantilla en `.env.example`). El build las lee de ahí; si falta alguna, usa el `.env` de la raíz. Exportarlas en el shell las pisa.
 
 ```bash
-export VITE_API_URL=https://api.vendelo360.app
-export VITE_SELLER_URL=https://gestores.vendelo360.app
+# apps/extensions/whatsapp/.env
+VITE_API_URL=https://api.vendelo360.app
+VITE_SELLER_URL=https://gestores.vendelo360.app
 # opcional pero recomendado para ID estable en Load unpacked:
-# export VITE_WHATSAPP_EXTENSION_KEY='...'
+# VITE_WHATSAPP_EXTENSION_KEY=...
 
 pnpm install
 pnpm --filter @broker/whatsapp-web build
