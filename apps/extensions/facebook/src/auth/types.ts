@@ -19,17 +19,34 @@ export type ProductSummary = {
   sale_price: { amount: number; currency: string } | null
 }
 
-export type PreparePostPayload = {
-  groupUrl: string
+export type PreparedTab = {
+  tabId: number
   groupName: string
+  groupUrl: string
+}
+
+export type PreparePostsPayload = {
   text: string
   html: string
   imageUrl: string | null
+  groups: FacebookGroup[]
 }
 
+export type RetryPostsPayload = {
+  text: string
+  html: string
+  imageUrl: string | null
+  tabs: PreparedTab[]
+}
 
-export type PreparePostResult =
-  | { ok: true; filled: boolean; imageAttached: boolean; message: string }
+export type PreparePostsResult =
+  | {
+      ok: true
+      prepared: number
+      failed: number
+      message: string
+      tabs: PreparedTab[]
+    }
   | { ok: false; error: string }
 
 export type ExtensionMessage =
@@ -37,13 +54,20 @@ export type ExtensionMessage =
   | { type: 'OPEN_AUTH' }
   | { type: 'SEARCH_PRODUCTS'; query: string }
   | { type: 'GET_GROUPS' }
-  | { type: 'PREPARE_POST'; payload: PreparePostPayload }
-  | { type: 'FILL_COMPOSER'; text: string; html: string; imageBase64: string | null; imageMime: string | null }
+  | { type: 'PREPARE_POSTS'; payload: PreparePostsPayload }
+  | { type: 'RETRY_POSTS'; payload: RetryPostsPayload }
+  | {
+      type: 'FILL_COMPOSER'
+      text: string
+      html: string
+      imageBase64: string | null
+      imageMime: string | null
+    }
 
 export type ExtensionResponse =
   | { ok: true; session: SessionPublic }
   | { ok: true; products: ProductSummary[] }
   | { ok: true; groups: FacebookGroup[] }
-  | PreparePostResult
-  | { ok: true; filled: boolean; imageAttached: boolean }
+  | PreparePostsResult
+  | { ok: true; filled: boolean; imageAttached: boolean; dialogVisible?: boolean }
   | { ok: false; error: string }

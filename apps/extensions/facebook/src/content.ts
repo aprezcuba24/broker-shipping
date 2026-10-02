@@ -19,6 +19,9 @@ type FillResult = {
 
 const BANNER_ID = 'vendelo-fb-banner'
 
+/** Prevent overlapping fills (e.g. multiple content-script copies after extension reload). */
+let fillInFlight: Promise<FillResult> | null = null
+
 function showBanner(message: string, tone: 'info' | 'warn' = 'info'): void {
   document.getElementById(BANNER_ID)?.remove()
   const el = document.createElement('div')
@@ -309,9 +312,6 @@ async function openCreatePostDialog(): Promise<HTMLElement | null> {
   return null
 }
 
-/** Prevent overlapping fills (e.g. multiple content-script copies after extension reload). */
-let fillInFlight: Promise<FillResult> | null = null
-
 async function fillComposer(message: FillMessage): Promise<FillResult> {
   if (fillInFlight) return fillInFlight
 
@@ -335,7 +335,7 @@ async function fillComposer(message: FillMessage): Promise<FillResult> {
       const dialog = await openCreatePostDialog()
       if (!dialog) {
         showBanner(
-          'No se abrió el diálogo «Crear publicación». Ábrelo a mano y pega el texto (Ctrl+V).',
+          'No se abrió el diálogo «Crear publicación». Usa Reintentar en el panel o ábrelo a mano y pega (Ctrl+V).',
           'warn',
         )
         restoreSidebar()
@@ -345,7 +345,7 @@ async function fillComposer(message: FillMessage): Promise<FillResult> {
       const box = findComposerBoxInDialog(dialog)
       if (!box) {
         showBanner(
-          'Se abrió el diálogo pero no hay cuadro de texto. Pega con Ctrl+V.',
+          'Se abrió el diálogo pero no hay cuadro de texto. Usa Reintentar en el panel o pega con Ctrl+V.',
           'warn',
         )
         return { ok: true, filled: false, imageAttached: false, dialogVisible: true }
@@ -376,13 +376,13 @@ async function fillComposer(message: FillMessage): Promise<FillResult> {
         )
       } else if (filled && !dialogStillOpen) {
         showBanner(
-          'El texto se escribió pero el diálogo se cerró. Ábrelo de nuevo y pega con Ctrl+V.',
+          'El texto se escribió pero el diálogo se cerró. Usa Reintentar en el panel o ábrelo y pega con Ctrl+V.',
           'warn',
         )
         filled = false
       } else {
         showBanner(
-          'No se pudo escribir el texto. En el diálogo, pega con Ctrl+V y publica.',
+          'No se pudo escribir el texto. Usa Reintentar en el panel o pega con Ctrl+V y publica.',
           'warn',
         )
       }

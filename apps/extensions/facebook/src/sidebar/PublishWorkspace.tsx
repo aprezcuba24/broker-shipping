@@ -2,7 +2,7 @@ import { useEffect, useEffectEvent, useMemo, useState } from 'react'
 import { SELLER_APP_URL, type SessionPublic } from '@broker/extension-auth'
 import { sendMessage } from '../auth/messaging'
 import { PUBLISH_DRAFT_STORAGE_KEY } from '../constants'
-import type { FacebookGroup, ProductSummary } from '../auth/types'
+import type { FacebookGroup, PreparedTab, ProductSummary } from '../auth/types'
 import {
   buildFacebookShareCode,
   buildPostHtml,
@@ -23,7 +23,7 @@ type PublishDraft = {
   products: ProductSummary[]
   selected: ProductSummary | null
   caption: string
-  groupIndex: number
+  selectedGroupIndexes: number[]
   doneGroupIndexes: number[]
 }
 
@@ -34,8 +34,12 @@ const EMPTY_DRAFT: PublishDraft = {
   products: [],
   selected: null,
   caption: '',
-  groupIndex: 0,
+  selectedGroupIndexes: [],
   doneGroupIndexes: [],
+}
+
+function allIndexes(length: number): number[] {
+  return Array.from({ length }, (_, i) => i)
 }
 
 export function PublishWorkspace({ session, onSelectOrg }: Props) {
@@ -45,33 +49,60 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
   const [selected, setSelected] = useState<ProductSummary | null>(null)
   const [caption, setCaption] = useState('')
   const [groups, setGroups] = useState<FacebookGroup[]>([])
-  const [groupIndex, setGroupIndex] = useState(0)
+  const [selectedGroupIndexes, setSelectedGroupIndexes] = useState<number[]>([])
   const [doneGroupIndexes, setDoneGroupIndexes] = useState<number[]>([])
   const [status, setStatus] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [searching, setSearching] = useState(false)
   const [preparing, setPreparing] = useState(false)
+  const [retrying, setRetrying] = useState(false)
+  const [lastOpenedTabs, setLastOpenedTabs] = useState<PreparedTab[]>([])
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [hydrated, setHydrated] = useState(false)
+  const [groupsReady, setGroupsReady] = useState(false)
+  const [selectionSeeded, setSelectionSeeded] = useState(false)
 
   useEffect(() => {
     void chrome.storage.local.get(PUBLISH_DRAFT_STORAGE_KEY).then((data) => {
-      const draft = data[PUBLISH_DRAFT_STORAGE_KEY] as PublishDraft | undefined
+      const draft = data[PUBLISH_DRAFT_STORAGE_KEY] as
+        | Partial<PublishDraft>
+        | undefined
       if (draft && typeof draft === 'object') {
         setQuery(typeof draft.query === 'string' ? draft.query : '')
         setProducts(Array.isArray(draft.products) ? draft.products : [])
         setSelected(draft.selected ?? null)
         setCaption(typeof draft.caption === 'string' ? draft.caption : '')
-        setGroupIndex(
-          typeof draft.groupIndex === 'number' ? draft.groupIndex : 0,
-        )
         setDoneGroupIndexes(
           Array.isArray(draft.doneGroupIndexes) ? draft.doneGroupIndexes : [],
         )
+        if (Array.isArray(draft.selectedGroupIndexes)) {
+          setSelectedGroupIndexes(draft.selectedGroupIndexes)
+          setSelectionSeeded(true)
+        }
       }
       setHydrated(true)
     })
   }, [])
+
+  useEffect(() => {
+    void sendMessage({ type: 'GET_GROUPS' }).then((response) => {
+      if (response.ok && 'groups' in response) {
+        setGroups(response.groups)
+      } else if (!response.ok) {
+        setError(response.error)
+      }
+      setGroupsReady(true)
+    })
+  }, [])
+
+  // Default: all groups selected once on first load (not after a cleared selection).
+  useEffect(() => {
+    if (!hydrated || !groupsReady || groups.length === 0 || selectionSeeded) {
+      return
+    }
+    setSelectedGroupIndexes(allIndexes(groups.length))
+    setSelectionSeeded(true)
+  }, [hydrated, groupsReady, groups.length, selectionSeeded])
 
   useEffect(() => {
     if (!hydrated) return
@@ -80,7 +111,7 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
       products,
       selected,
       caption,
-      groupIndex,
+      selectedGroupIndexes,
       doneGroupIndexes,
     }
     void chrome.storage.local.set({ [PUBLISH_DRAFT_STORAGE_KEY]: draft })
@@ -90,19 +121,9 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
     products,
     selected,
     caption,
-    groupIndex,
+    selectedGroupIndexes,
     doneGroupIndexes,
   ])
-
-  useEffect(() => {
-    void sendMessage({ type: 'GET_GROUPS' }).then((response) => {
-      if (response.ok && 'groups' in response) {
-        setGroups(response.groups)
-      } else if (!response.ok) {
-        setError(response.error)
-      }
-    })
-  }, [])
 
   const searchProducts = useEffectEvent(async (q: string) => {
     const trimmed = q.trim()
@@ -180,6 +201,14 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
     )
   }, [caption, selected, phone])
 
+  const publishTargets = useMemo(
+    () =>
+      selectedGroupIndexes.filter(
+        (index) => index >= 0 && index < groups.length,
+      ),
+    [selectedGroupIndexes, groups.length],
+  )
+
   function selectProduct(product: ProductSummary) {
     setSelected(product)
     setCaption(product.description?.trim() ?? '')
@@ -192,51 +221,55 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
     setQuery('')
     setProducts([])
     setDoneGroupIndexes([])
-    setGroupIndex(0)
+    setSelectedGroupIndexes(allIndexes(groups.length))
+    setLastOpenedTabs([])
     setDetailsOpen(false)
     setStatus(null)
     setError(null)
-    void chrome.storage.local.set({ [PUBLISH_DRAFT_STORAGE_KEY]: EMPTY_DRAFT })
+    void chrome.storage.local.set({
+      [PUBLISH_DRAFT_STORAGE_KEY]: {
+        ...EMPTY_DRAFT,
+        selectedGroupIndexes: allIndexes(groups.length),
+      },
+    })
   }
 
-  async function prepareCurrentGroup() {
+  function toggleGroup(index: number) {
+    setSelectedGroupIndexes((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index],
+    )
+    setStatus(null)
+    setError(null)
+  }
+
+  async function publishToSelectedGroups() {
     if (!selected || !phone) return
-    const group = groups[groupIndex]
-    if (!group) {
-      setError('No hay grupos en config/groups.json')
+    if (publishTargets.length === 0) {
+      setError('Selecciona al menos un grupo')
       return
     }
+
+    const targetGroups = publishTargets
+      .map((index) => groups[index])
+      .filter((g): g is FacebookGroup => Boolean(g))
+
+    if (targetGroups.length === 0) {
+      setError('No hay grupos válidos seleccionados')
+      return
+    }
+
     setError(null)
     setStatus(null)
     setPreparing(true)
 
-    // Persist next-group draft BEFORE navigation remounts the sidebar.
-    const nextDone = doneGroupIndexes.includes(groupIndex)
-      ? doneGroupIndexes
-      : [...doneGroupIndexes, groupIndex]
-    const nextIndex =
-      groupIndex < groups.length - 1 ? groupIndex + 1 : groupIndex
-    const draft: PublishDraft = {
-      query,
-      products,
-      selected,
-      caption,
-      groupIndex: nextIndex,
-      doneGroupIndexes: nextDone,
-    }
-    await chrome.storage.local.set({ [PUBLISH_DRAFT_STORAGE_KEY]: draft })
-    setDoneGroupIndexes(nextDone)
-    setGroupIndex(nextIndex)
-
     try {
       const response = await sendMessage({
-        type: 'PREPARE_POST',
+        type: 'PREPARE_POSTS',
         payload: {
-          groupUrl: group.url,
-          groupName: group.name,
           text: postText,
           html: postHtml,
           imageUrl: selected.image_url,
+          groups: targetGroups,
         },
       })
       if (!response.ok) {
@@ -244,8 +277,54 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
         return
       }
       if ('message' in response) setStatus(response.message)
+      if ('tabs' in response && Array.isArray(response.tabs)) {
+        setLastOpenedTabs(response.tabs)
+      }
+
+      // Mark attempted groups as done and uncheck them for a second pass on others.
+      const nextDone = [
+        ...new Set([...doneGroupIndexes, ...publishTargets]),
+      ].sort((a, b) => a - b)
+      setDoneGroupIndexes(nextDone)
+      setSelectedGroupIndexes((prev) =>
+        prev.filter((i) => !publishTargets.includes(i)),
+      )
     } finally {
       setPreparing(false)
+    }
+  }
+
+  async function retryLastTabs() {
+    if (!selected || !phone) return
+    if (lastOpenedTabs.length === 0) {
+      setError('Primero publica al menos un grupo')
+      return
+    }
+
+    setError(null)
+    setStatus(null)
+    setRetrying(true)
+
+    try {
+      const response = await sendMessage({
+        type: 'RETRY_POSTS',
+        payload: {
+          text: postText,
+          html: postHtml,
+          imageUrl: selected.image_url,
+          tabs: lastOpenedTabs,
+        },
+      })
+      if (!response.ok) {
+        setError(response.error)
+        return
+      }
+      if ('message' in response) setStatus(response.message)
+      if ('tabs' in response && Array.isArray(response.tabs)) {
+        setLastOpenedTabs(response.tabs)
+      }
+    } finally {
+      setRetrying(false)
     }
   }
 
@@ -386,28 +465,25 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
         </p>
       ) : (
         <ul className="group-list">
-          {groups.map((group, index) => (
-            <li key={`${group.url}-${index}`}>
-              <button
-                type="button"
-                className={`group-item${index === groupIndex ? ' current' : ''}${doneGroupIndexes.includes(index) ? ' done' : ''}`}
-                onClick={() => {
-                  setGroupIndex(index)
-                  setStatus(null)
-                  setError(null)
-                }}
-              >
-                <span>{group.name}</span>
-                <span className="muted">
-                  {doneGroupIndexes.includes(index)
-                    ? 'Hecho'
-                    : index === groupIndex
-                      ? 'Actual'
-                      : ''}
-                </span>
-              </button>
-            </li>
-          ))}
+          {groups.map((group, index) => {
+            const checked = selectedGroupIndexes.includes(index)
+            const done = doneGroupIndexes.includes(index)
+            return (
+              <li key={`${group.url}-${index}`}>
+                <label
+                  className={`group-item${checked ? ' selected' : ''}${done ? ' done' : ''}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggleGroup(index)}
+                  />
+                  <span className="group-item-name">{group.name}</span>
+                  {done ? <span className="muted">Hecho</span> : null}
+                </label>
+              </li>
+            )
+          })}
         </ul>
       )}
 
@@ -426,10 +502,33 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
         <button
           type="button"
           className="btn-primary"
-          disabled={!selected || preparing || groups.length === 0}
-          onClick={() => void prepareCurrentGroup()}
+          disabled={
+            !selected || preparing || retrying || publishTargets.length === 0
+          }
+          onClick={() => void publishToSelectedGroups()}
         >
-          {preparing ? 'Preparando…' : 'Preparar en este grupo'}
+          {preparing
+            ? 'Abriendo grupos…'
+            : publishTargets.length > 1
+              ? `Publicar en ${publishTargets.length} grupos`
+              : 'Publicar'}
+        </button>
+        <button
+          type="button"
+          className="btn-secondary"
+          disabled={
+            !selected ||
+            preparing ||
+            retrying ||
+            lastOpenedTabs.length === 0
+          }
+          onClick={() => void retryLastTabs()}
+        >
+          {retrying
+            ? 'Reintentando…'
+            : lastOpenedTabs.length > 1
+              ? `Reintentar (${lastOpenedTabs.length} pestañas)`
+              : 'Reintentar'}
         </button>
       </div>
     </>

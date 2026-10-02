@@ -471,14 +471,31 @@
   border-color: color-mix(in srgb, var(--v-primary) 50%, var(--v-border));
 }
 
-.group-item.current {
+.group-item.selected {
   border-color: var(--v-primary);
   background: color-mix(in srgb, var(--v-primary) 10%, var(--v-card));
-  font-weight: 600;
 }
 
 .group-item.done {
   opacity: 0.55;
+}
+
+.group-item input[type='checkbox'] {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--v-primary);
+  cursor: pointer;
+}
+
+.group-item-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
+}
+
+.group-item.selected .group-item-name {
+  font-weight: 600;
 }
 
 .error {

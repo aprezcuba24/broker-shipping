@@ -321,16 +321,29 @@ body {
   border-radius: 8px;
   border: 1px solid var(--v-border);
   font-size: 13px;
+  cursor: pointer;
 }
 
-.group-item.current {
+.group-item.selected {
   border-color: var(--v-primary);
   background: color-mix(in srgb, var(--v-primary) 10%, var(--v-card));
-  font-weight: 600;
 }
 
 .group-item.done {
   opacity: 0.55;
+}
+
+.group-item input[type='checkbox'] {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--v-primary);
+}
+
+.group-item-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
 }
 
 .section-title {

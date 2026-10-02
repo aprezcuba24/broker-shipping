@@ -50,7 +50,10 @@ Edita [`config/groups.json`](config/groups.json) y vuelve a compilar:
 4. **Load unpacked** → selecciona `apps/extensions/facebook/dist` (si ya estaba cargada, **Reload**)
 5. Abre o recarga Facebook: a la **derecha** aparece el panel Vendelo360 (como en WhatsApp)
 6. Si no hay sesión, pulsa **Iniciar sesión** en el panel (abre el popup)
-7. Busca un producto → **Preparar en este grupo** → en Facebook pulsa **Publicar**
+7. Busca un producto → edita el texto si quieres → marca los grupos (todos vienen seleccionados) → **Publicar**
+8. La extensión abre **una pestaña por grupo** con el diálogo listo; en cada una pulsa **Publicar** en Facebook
+9. Si hace falta, pulsa **Reintentar** en el panel (sin refrescar las pestañas; funciona aunque el intento anterior haya ido bien)
+10. Para un segundo lote, marca los grupos que no usaste antes y vuelve a pulsar **Publicar**
 
 Antes de probar, edita `config/groups.json` con URLs reales de grupos y vuelve a compilar. El API debe estar levantado.
 
