@@ -185,6 +185,16 @@ async def update_user_profile(
     user: User,
     data: UserProfileUpdate,
 ) -> User:
+    if data.phone is not None:
+        existing = await get_entity(
+            session,
+            User,
+            phone=data.phone,
+            required=False,
+        )
+        if existing is not None and existing.id != user.id:
+            raise_api_error("user_phone_conflict")
+
     user.phone = data.phone
     session.add(user)
     await session.commit()

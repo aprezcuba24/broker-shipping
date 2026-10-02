@@ -50,6 +50,7 @@ class PhoneBlacklist(EntityModel, table=True):
         ),
     )
     note: str | None = Field(default=None, max_length=500)
+    modus_operandi: str | None = Field(default=None, max_length=500)
     withdrawn_at: datetime | None = Field(
         default=None,
         sa_column=Column(DateTime, nullable=True),
