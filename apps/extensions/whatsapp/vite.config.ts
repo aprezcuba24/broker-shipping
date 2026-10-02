@@ -10,7 +10,7 @@ function writeManifestPlugin(mode: string): Plugin {
     name: 'vendelo-write-manifest',
     // After publicDir copy so our generated file is the final one.
     closeBundle() {
-      const env = loadEnv(mode, path.resolve(rootDir, '../..'), '')
+      const env = loadEnv(mode, path.resolve(rootDir, '../../..'), '')
       if (env.VITE_API_URL) {
         process.env.VITE_API_URL = env.VITE_API_URL
       }
@@ -33,7 +33,7 @@ function writeManifestPlugin(mode: string): Plugin {
 
 /** Content script build (IIFE). Run first; empties dist/. */
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, path.resolve(rootDir, '../..'), '')
+  const env = loadEnv(mode, path.resolve(rootDir, '../../..'), '')
   const apiUrl = env.VITE_API_URL || process.env.VITE_API_URL || 'http://localhost:8000'
   const sellerUrl =
     env.VITE_SELLER_URL ||

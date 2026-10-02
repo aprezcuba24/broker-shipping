@@ -17,7 +17,7 @@
     "db:reset": "cd services/api && uv run python scripts/db_reset.py",
     "rpc:schema": "cd services/api && uv run python scripts/export_openapi.py",
     "rpc:client": "pnpm --filter @broker/api codegen",
-    "build": "pnpm -r --filter './apps/*' run build",
+    "build": "pnpm -r --filter './apps/**' run build",
     "format": "pnpm format:ts",
     "format:check": "pnpm format:ts:check",
     "format:ts": "prettier --write \"apps/**/*.{ts,tsx,js,jsx,json,css,md,astro}\" \"packages/**/*.{ts,tsx,js,jsx,json,css,md}\"",

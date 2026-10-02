@@ -8,7 +8,7 @@ import { rootDir } from './manifest.shared.ts'
  * Does not empty dist/ so content.js, icons, and fonts are kept.
  */
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, path.resolve(rootDir, '../..'), '')
+  const env = loadEnv(mode, path.resolve(rootDir, '../../..'), '')
   const apiUrl = env.VITE_API_URL || process.env.VITE_API_URL || 'http://localhost:8000'
   const sellerUrl =
     env.VITE_SELLER_URL ||

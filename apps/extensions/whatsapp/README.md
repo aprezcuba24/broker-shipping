@@ -19,7 +19,7 @@ pnpm install
 pnpm --filter @broker/whatsapp-web build
 ```
 
-Salida: `apps/whatsapp-web/dist/` (incluye `manifest.json`, `content.js`, `icons/` y `fonts/`).
+Salida: `apps/extensions/whatsapp/dist/` (incluye `manifest.json`, `content.js`, `icons/` y `fonts/`).
 
 Modo watch (rebuild al editar):
 
@@ -34,7 +34,7 @@ Tras cada build, en `chrome://extensions` usa **Reload** en la extensión.
 
 Los vendedores instalan desde la **Chrome Web Store** (ficha unlisted). En la app seller, **Configurar** (`/settings`) abre esa ficha y comprueba si la extensión ya está instalada.
 
-Procedimiento para publicar y actualizar (cuenta developer, zip, versiones): **[docs/publicar_extension.md](../../docs/publicar_extension.md)**. Chrome reparte las actualizaciones solo; no uses Load unpacked en producción.
+Procedimiento para publicar y actualizar (cuenta developer, zip, versiones): **[docs/publicar_extension.md](../../../docs/publicar_extension.md)**. Chrome reparte las actualizaciones solo; no uses Load unpacked en producción.
 
 ## Instalar en Chrome (desarrollo local — Load unpacked)
 
@@ -47,7 +47,7 @@ Procedimiento para publicar y actualizar (cuenta developer, zip, versiones): **[
 4. Pulsa **Load unpacked**.
 5. Selecciona la carpeta **`dist`** (no `src` ni la raíz de la app):
    ```
-   …/apps/whatsapp-web/dist
+   …/apps/extensions/whatsapp/dist
    ```
 6. Comprueba que la extensión aparece como **Vendelo360** y está **Enabled**.
 7. Abre o **recarga por completo** `https://web.whatsapp.com` (F5 o cerrar pestaña y abrir de nuevo).
@@ -116,7 +116,7 @@ VITE_SELLER_URL=http://localhost:5174   # enlace “web de vendedores” + exter
 pnpm --filter @broker/whatsapp-web build
 ```
 
-Publicación en la tienda y variables `VITE_WHATSAPP_EXTENSION_*`: [docs/publicar_extension.md](../../docs/publicar_extension.md).
+Publicación en la tienda y variables `VITE_WHATSAPP_EXTENSION_*`: [docs/publicar_extension.md](../../../docs/publicar_extension.md).
 
 ## Ficha CRM (cliente por teléfono)
 
@@ -163,7 +163,7 @@ Si tras un rediseño el nombre deja de detectarse, inspecciona el header en DevT
 ## Estructura
 
 ```
-apps/whatsapp-web/
+apps/extensions/whatsapp/
   popup.html            # entrada del popup de auth
   manifest.shared.ts    # genera dist/manifest.json en el build
   public/icons|fonts/
