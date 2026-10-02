@@ -1,8 +1,11 @@
+from uuid import UUID
+
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient
 
 from app.models.order.enums import Currency
+from app.models.product.product import Product
 from tests.factories.auth_helpers import bearer_headers
 from tests.factories.customer_factory import CustomerFactory
 from tests.factories.organization_factory import (
@@ -272,3 +275,53 @@ async def test_duplicate_product_in_preview_is_422(
         ],
     )
     assert r.status_code == 422
+
+
+async def test_cancel_order_releases_stock_after_product_discarded(
+    client: AsyncClient,
+    stock_order_ctx: dict,
+    db_session,
+) -> None:
+    r_create = await client.post(
+        "/orders/seller/",
+        params=stock_order_ctx["seller_params"],
+        headers=stock_order_ctx["seller_bearer"],
+        json={
+            "customer_id": stock_order_ctx["customer_id"],
+            "items": [
+                {
+                    "product_id": stock_order_ctx["product_id"],
+                    "quantity": 3,
+                    "seller_provider_price": {"amount": 900, "currency": "cup"},
+                },
+            ],
+        },
+    )
+    assert r_create.status_code == 201
+    order_id = r_create.json()["id"]
+
+    r_delete = await client.delete(
+        f"/products/provider/{stock_order_ctx['product_id']}",
+        params=stock_order_ctx["provider_params"],
+        headers=stock_order_ctx["provider_bearer"],
+    )
+    assert r_delete.status_code == 204
+
+    r_cancel = await client.patch(
+        f"/orders/provider/{order_id}/items",
+        params=stock_order_ctx["provider_params"],
+        headers=stock_order_ctx["provider_bearer"],
+        json={"status": "canceled"},
+    )
+    assert r_cancel.status_code == 200
+    assert r_cancel.json()["status"] == "canceled"
+
+    db_session.expire_all()
+    product = await db_session.get(
+        Product,
+        UUID(str(stock_order_ctx["product_id"])),
+    )
+    assert product is not None
+    assert product.discarded_at is not None
+    assert product.stock == 10
+    assert product.reserved == 0

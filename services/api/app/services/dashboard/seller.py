@@ -97,7 +97,10 @@ async def get_seller_dashboard(
     if provider_ids:
         products_available_total = int(
             await session.scalar(
-                select(func.count()).where(Product.organization_id.in_(provider_ids))
+                select(func.count()).where(
+                    Product.organization_id.in_(provider_ids),
+                    Product.discarded_at.is_(None),
+                )
             )
             or 0
         )

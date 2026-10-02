@@ -85,7 +85,10 @@ async def list_accessible_products(
     if not provider_ids:
         return PageResult(items=[], total=0)
 
-    stmt = select(Product).where(col(Product.organization_id).in_(provider_ids))
+    stmt = select(Product).where(
+        col(Product.organization_id).in_(provider_ids),
+        Product.discarded_at.is_(None),
+    )
     if name:
         term = name.strip()
         if term:

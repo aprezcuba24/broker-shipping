@@ -61,7 +61,8 @@ async def get_provider_dashboard(
     products_total = int(
         await session.scalar(
             select(func.count()).where(
-                Product.organization_id == provider_organization_id
+                Product.organization_id == provider_organization_id,
+                Product.discarded_at.is_(None),
             )
         )
         or 0

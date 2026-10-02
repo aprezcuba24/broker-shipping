@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import BigInteger, CheckConstraint, Column, Enum as SAEnum
 from sqlmodel import Field
 
@@ -52,3 +54,4 @@ class Product(OrganizationEntityModel, table=True):
     stock: int = Field(default=0, ge=0)
     reserved: int = Field(default=0, ge=0)
     image_key: str | None = Field(default=None, max_length=512)
+    discarded_at: datetime | None = Field(default=None)

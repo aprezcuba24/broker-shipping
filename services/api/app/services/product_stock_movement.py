@@ -84,6 +84,7 @@ async def create_movement(
         select(Product).where(
             col(Product.id).in_(product_ids),
             Product.organization_id == organization_id,
+            Product.discarded_at.is_(None),
         )
     )
     products = {product.id: product for product in result.scalars().all()}
