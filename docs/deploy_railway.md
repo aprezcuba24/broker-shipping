@@ -127,9 +127,9 @@ Tres Workers (assets-only), mismo monorepo:
 
 | Worker (`name` en wrangler) | App | Build | Deploy | Custom domain |
 |-----------------------------|-----|-------|--------|---------------|
-| `vendeya-landing` | [`apps/landing`](../apps/landing) | ver abajo | `npx wrangler deploy --config apps/landing/wrangler.jsonc` | `vendelo360.app` + `www` → apex |
-| `vendeya-proveedores` | [`apps/backoffice`](../apps/backoffice) | ver abajo | `npx wrangler deploy --config apps/backoffice/wrangler.jsonc` | `proveedores.vendelo360.app` |
-| `vendeya-gestores` | [`apps/seller`](../apps/seller) | ver abajo | `npx wrangler deploy --config apps/seller/wrangler.jsonc` | `gestores.vendelo360.app` |
+| `vendeya-landing` | [`apps/landing`](../apps/landing) | ver abajo | `npx wrangler deploy` | `vendelo360.app` + `www` → apex |
+| `vendeya-proveedores` | [`apps/backoffice`](../apps/backoffice) | ver abajo | `npx wrangler deploy` | `proveedores.vendelo360.app` |
+| `vendeya-gestores` | [`apps/seller`](../apps/seller) | ver abajo | `npx wrangler deploy` | `gestores.vendelo360.app` |
 
 Cada app tiene su [`wrangler.jsonc`](../apps/landing/wrangler.jsonc): solo `assets.directory = "./dist"` (relativo al fichero). **No** pongas `main` (eso es código Worker; sin assets solo servirías Hello World).
 
@@ -143,12 +143,12 @@ Cada app tiene su [`wrangler.jsonc`](../apps/landing/wrangler.jsonc): solo `asse
 |-------|--------|
 | Root directory | vacío / `/` (raíz del monorepo; pnpm workspaces) |
 | Build command | `pnpm install && pnpm --filter @broker/landing build` |
-| Deploy command | `npx wrangler deploy --config apps/landing/wrangler.jsonc` |
-| Non-production deploy (si aparece) | `npx wrangler versions upload --config apps/landing/wrangler.jsonc` |
+| Deploy command | `npx wrangler deploy` |
+| Preview / non-production | `npx wrangler versions upload` |
 
-`--config apps/.../wrangler.jsonc` es **obligatorio** en monorepos: sin él, `npx wrangler deploy` falla con *“run in the root of a workspace instead of targeting a specific project”*.
+El build de cada app (`pnpm --filter … build`) copia su `wrangler.jsonc` a la raíz del repo, con `assets.directory` apuntando a `apps/<app>/dist`. Sin ese fichero, Wrangler (que corre en la raíz) falla con *Missing entry-point to Worker script or to assets directory*. `--config apps/.../wrangler.jsonc` sigue siendo válido si el comando de deploy lo pasa explícitamente.
 
-Proveedores / gestores: mismos campos cambiando el filtro pnpm y la ruta del `--config`.
+Proveedores / gestores: mismos campos cambiando el filtro pnpm (`@broker/backoffice`, `@broker/seller`).
 
 ### 3.2 Variables de build
 
@@ -167,7 +167,7 @@ Proveedores / gestores: mismos campos cambiando el filtro pnpm y la ruta del `--
 ### 3.4 Si ya desplegaste y ves Hello World
 
 1. Confirma que el commit en Git incluye `apps/landing/wrangler.jsonc`.
-2. En Settings del Worker: Deploy command = `npx wrangler deploy --config apps/landing/wrangler.jsonc`.
+2. En Settings del Worker: Deploy command = `npx wrangler deploy` y Preview = `npx wrangler versions upload`. El build tiene que ser `pnpm --filter @broker/landing build` para publicar `wrangler.jsonc` en la raíz.
 3. Redeploy. El log **no** debe desplegar un script `main`; debe subir assets desde `apps/landing/dist`.
 
 ### 3.5 Orden de publicación

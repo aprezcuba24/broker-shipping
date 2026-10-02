@@ -51,6 +51,9 @@ celerybeat.pid
 # -----------------------------------------------------------------------------
 # Build / bundlers (Vite, Astro, etc.)
 # -----------------------------------------------------------------------------
+# Generated at the repo root by scripts/publish-wrangler-config.mjs so
+# `wrangler versions upload` from Workers Builds can find the assets config.
+/wrangler.jsonc
 dist
 **/dist
 .astro

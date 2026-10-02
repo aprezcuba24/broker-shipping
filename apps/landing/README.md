@@ -32,7 +32,7 @@ pnpm --filter @broker/landing build
 Salida: `dist/`. En Cloudflare (Workers & Pages → Static Assets):
 
 - Build: `pnpm install && pnpm --filter @broker/landing build`
-- Deploy: `npx wrangler deploy --config apps/landing/wrangler.jsonc`
+- Deploy: `npx wrangler deploy` (el build deja `wrangler.jsonc` en la raíz del monorepo)
 - Dominio apex: `vendeya.app`
 
 Detalle: [`docs/deploy_railway.md`](../../docs/deploy_railway.md).
