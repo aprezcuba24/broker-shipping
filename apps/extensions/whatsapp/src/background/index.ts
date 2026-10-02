@@ -101,6 +101,7 @@ async function handleAddToBlacklist(params: {
   phone: string
   reason: BlacklistReason
   note?: string
+  modus_operandi?: string
 }): Promise<BlacklistResponse> {
   const ready = await requireReadySession()
   if (!ready.ok) return ready
@@ -110,6 +111,7 @@ async function handleAddToBlacklist(params: {
       phone: params.phone,
       reason: params.reason,
       note: params.note,
+      modus_operandi: params.modus_operandi,
       accessToken: ready.accessToken,
       organizationId: ready.organizationId,
     })
@@ -193,6 +195,7 @@ chrome.runtime.onMessage.addListener(
               phone: message.phone,
               reason: message.reason,
               note: message.note,
+              modus_operandi: message.modus_operandi,
             })
             break
           case 'REMOVE_FROM_BLACKLIST':

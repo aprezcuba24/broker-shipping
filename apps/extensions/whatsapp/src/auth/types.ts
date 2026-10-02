@@ -26,6 +26,7 @@ export type ExtensionMessage =
       phone: string
       reason: BlacklistReason
       note?: string
+      modus_operandi?: string
     }
   | { type: 'REMOVE_FROM_BLACKLIST'; phone: string }
   | { type: 'GET_UPDATE_STATUS' }

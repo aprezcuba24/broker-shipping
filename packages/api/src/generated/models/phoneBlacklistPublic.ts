@@ -6,6 +6,7 @@
  */
 import type { PhoneBlacklistReason } from './phoneBlacklistReason';
 import type { PhoneBlacklistPublicNote } from './phoneBlacklistPublicNote';
+import type { PhoneBlacklistPublicModusOperandi } from './phoneBlacklistPublicModusOperandi';
 import type { PhoneBlacklistPublicWithdrawnAt } from './phoneBlacklistPublicWithdrawnAt';
 import type { PhoneBlacklistPublicUpdatedAt } from './phoneBlacklistPublicUpdatedAt';
 
@@ -16,6 +17,7 @@ export interface PhoneBlacklistPublic {
   created_by_user_id: string;
   reason: PhoneBlacklistReason;
   note: PhoneBlacklistPublicNote;
+  modus_operandi: PhoneBlacklistPublicModusOperandi;
   withdrawn_at: PhoneBlacklistPublicWithdrawnAt;
   created_at: string;
   updated_at: PhoneBlacklistPublicUpdatedAt;

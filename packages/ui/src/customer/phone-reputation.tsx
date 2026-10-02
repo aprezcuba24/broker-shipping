@@ -64,13 +64,14 @@ export function PhoneReputation({
       blacklistBusy={busy}
       onAddToBlacklist={
         interactive
-          ? async ({ reason, note }) => {
+          ? async ({ reason, note, modus_operandi }) => {
               try {
                 await addMutation.mutateAsync({
                   data: {
                     phone,
                     reason: reason as PhoneBlacklistReason,
                     note,
+                    modus_operandi,
                   },
                   params: {} as CreatePhoneBlacklistEntryPhoneBlacklistPostParams,
                 })

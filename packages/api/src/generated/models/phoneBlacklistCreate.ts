@@ -6,10 +6,12 @@
  */
 import type { PhoneBlacklistReason } from './phoneBlacklistReason';
 import type { PhoneBlacklistCreateNote } from './phoneBlacklistCreateNote';
+import type { PhoneBlacklistCreateModusOperandi } from './phoneBlacklistCreateModusOperandi';
 
 export interface PhoneBlacklistCreate {
   /** @maxLength 50 */
   phone: string;
   reason: PhoneBlacklistReason;
   note?: PhoneBlacklistCreateNote;
+  modus_operandi?: PhoneBlacklistCreateModusOperandi;
 }

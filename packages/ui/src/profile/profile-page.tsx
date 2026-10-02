@@ -57,6 +57,8 @@ export function ProfilePage() {
       await queryClient.invalidateQueries({ queryKey: getMeUsersMeGetQueryKey() })
       notify.updated('Perfil', 'm')
     } catch (error) {
+      const message = formatApiError(error, 'No se pudo guardar el perfil')
+      form.setError('phone', { message })
       notify.error(error, 'No se pudo guardar el perfil')
     }
   })

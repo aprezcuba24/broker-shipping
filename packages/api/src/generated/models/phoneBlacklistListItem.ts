@@ -6,6 +6,7 @@
  */
 import type { PhoneBlacklistReason } from './phoneBlacklistReason';
 import type { PhoneBlacklistListItemNote } from './phoneBlacklistListItemNote';
+import type { PhoneBlacklistListItemModusOperandi } from './phoneBlacklistListItemModusOperandi';
 import type { PhoneBlacklistListItemCustomer } from './phoneBlacklistListItemCustomer';
 
 export interface PhoneBlacklistListItem {
@@ -14,6 +15,7 @@ export interface PhoneBlacklistListItem {
   organization_id: string;
   reason: PhoneBlacklistReason;
   note: PhoneBlacklistListItemNote;
+  modus_operandi: PhoneBlacklistListItemModusOperandi;
   created_at: string;
   other_count?: number;
   customer?: PhoneBlacklistListItemCustomer;

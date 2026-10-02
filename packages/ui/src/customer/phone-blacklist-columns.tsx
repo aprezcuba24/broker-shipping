@@ -70,6 +70,14 @@ export function buildPhoneBlacklistColumns({
               {row.note}
             </span>
           ) : null}
+          {row.modus_operandi ? (
+            <span
+              className="truncate text-xs text-muted-foreground"
+              title={row.modus_operandi}
+            >
+              {row.modus_operandi}
+            </span>
+          ) : null}
         </div>
       ),
     },
