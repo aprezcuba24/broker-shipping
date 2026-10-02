@@ -2,7 +2,7 @@ import {
   getListProductsProductsProviderGetQueryKey,
   useCreateProductProductsProviderPost,
   type CreateProductProductsProviderPostParams,
-  type ProductPublic,
+  type ProductProviderPublic,
 } from '@broker/api'
 import { EntityFormPage, notify, useEntityFormMutation } from '@broker/ui'
 import { Package } from 'lucide-react'
@@ -15,12 +15,13 @@ export function ProductCreatePage() {
   const { persist } = useProductImagePersist()
 
   const create = useEntityFormMutation({
-    mutate: async (values: ProductFormValues): Promise<ProductPublic> => {
+    mutate: async (values: ProductFormValues): Promise<ProductProviderPublic> => {
       const { image, ...data } = values
       const product = await createMutation.mutateAsync({
         data: {
           name: data.name,
           description: data.description || null,
+          notes: data.notes || null,
           has_commission: data.has_commission,
           tag_ids: data.tag_ids,
           price: data.price,

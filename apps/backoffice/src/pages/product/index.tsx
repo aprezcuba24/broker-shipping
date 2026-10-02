@@ -4,8 +4,8 @@ import {
   useListProductsProductsProviderGet,
   type DeleteProductProductsProviderProductIdDeleteParams,
   type ListProductsProductsProviderGetParams,
-  type PageProductPublic,
-  type ProductPublic,
+  type PageProductProviderPublic,
+  type ProductProviderPublic,
 } from '@broker/api'
 import {
   BtnLink,
@@ -37,9 +37,9 @@ export function ProductPage() {
   const deleteMutation = useDeleteProductProductsProviderProductIdDelete()
 
   const crud = useCrudController<
-    ProductPublic,
+    ProductProviderPublic,
     ProductFormValues,
-    PageProductPublic,
+    PageProductProviderPublic,
     never,
     never,
     {

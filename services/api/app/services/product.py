@@ -112,6 +112,7 @@ async def create_product(
         name=data.name,
         public_code=await _allocate_public_code(session),
         description=data.description,
+        notes=data.notes,
         has_commission=has_commission,
         organization_id=organization_id,
         price=data.price.amount,

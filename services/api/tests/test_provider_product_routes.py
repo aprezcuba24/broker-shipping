@@ -42,6 +42,7 @@ async def test_create_list_get_patch_delete_product(
         json={
             "name": "  Arroz 1kg  ",
             "description": "  Arroz blanco  ",
+            "notes": "  Solo para el proveedor  ",
             "price": {"amount": 1250, "currency": "cup"},
             "commission": {"amount": 125, "currency": "cup"},
         },
@@ -50,6 +51,7 @@ async def test_create_list_get_patch_delete_product(
     body = r_create.json()
     assert body["name"] == "Arroz 1kg"
     assert body["description"] == "Arroz blanco"
+    assert body["notes"] == "Solo para el proveedor"
     assert body["has_commission"] is True
     assert body["organization_id"] == provider_context["organization_id"]
     assert body["price"] == {"amount": 1250, "currency": "cup"}
@@ -77,6 +79,7 @@ async def test_create_list_get_patch_delete_product(
     assert body_list["items"][0]["price"] == {"amount": 1250, "currency": "cup"}
     assert body_list["items"][0]["commission"] == {"amount": 125, "currency": "cup"}
     assert body_list["items"][0]["description"] == "Arroz blanco"
+    assert body_list["items"][0]["notes"] == "Solo para el proveedor"
     assert body_list["items"][0]["has_commission"] is True
     assert body_list["items"][0]["public_code"] == public_code
 
@@ -87,6 +90,7 @@ async def test_create_list_get_patch_delete_product(
     )
     assert r_get.status_code == 200
     assert r_get.json()["name"] == "Arroz 1kg"
+    assert r_get.json()["notes"] == "Solo para el proveedor"
     assert r_get.json()["public_code"] == public_code
 
     r_patch = await client.patch(
@@ -96,6 +100,7 @@ async def test_create_list_get_patch_delete_product(
         json={
             "name": "Arroz premium",
             "description": "Premium",
+            "notes": "Nota actualizada",
             "price": {"amount": 1500, "currency": "usd"},
             "commission": {"amount": 200, "currency": "usd"},
         },
@@ -104,6 +109,7 @@ async def test_create_list_get_patch_delete_product(
     patched = r_patch.json()
     assert patched["name"] == "Arroz premium"
     assert patched["description"] == "Premium"
+    assert patched["notes"] == "Nota actualizada"
     assert patched["has_commission"] is True
     assert patched["price"] == {"amount": 1500, "currency": "usd"}
     assert patched["commission"] == {"amount": 200, "currency": "usd"}

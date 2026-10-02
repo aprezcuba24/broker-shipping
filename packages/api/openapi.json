@@ -626,7 +626,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Page_ProductPublic_"
+                  "$ref": "#/components/schemas/Page_ProductProviderPublic_"
                 }
               }
             }
@@ -685,7 +685,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProductPublic"
+                  "$ref": "#/components/schemas/ProductProviderPublic"
                 }
               }
             }
@@ -746,7 +746,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProductPublic"
+                  "$ref": "#/components/schemas/ProductProviderPublic"
                 }
               }
             }
@@ -815,7 +815,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProductPublic"
+                  "$ref": "#/components/schemas/ProductProviderPublic"
                 }
               }
             }
@@ -1009,7 +1009,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProductPublic"
+                  "$ref": "#/components/schemas/ProductProviderPublic"
                 }
               }
             }
@@ -8895,6 +8895,42 @@
         ],
         "title": "Page[PhoneBlacklistListItem]"
       },
+      "Page_ProductProviderPublic_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProductProviderPublic"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size",
+          "pages"
+        ],
+        "title": "Page[ProductProviderPublic]"
+      },
       "Page_ProductPublic_": {
         "properties": {
           "items": {
@@ -9309,6 +9345,18 @@
             ],
             "title": "Description"
           },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
           "has_commission": {
             "type": "boolean",
             "title": "Has Commission",
@@ -9397,6 +9445,129 @@
           "expires_in"
         ],
         "title": "ProductImagePresignResponse"
+      },
+      "ProductProviderPublic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "public_code": {
+            "type": "string",
+            "title": "Public Code"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "has_commission": {
+            "type": "boolean",
+            "title": "Has Commission"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "price": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "commission": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "sale_price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stock": {
+            "type": "integer",
+            "title": "Stock"
+          },
+          "reserved": {
+            "type": "integer",
+            "title": "Reserved"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/TagPublic"
+            },
+            "type": "array",
+            "title": "Tags"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "public_code",
+          "has_commission",
+          "organization_id",
+          "price",
+          "commission",
+          "stock",
+          "reserved",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ProductProviderPublic",
+        "description": "Provider response \u2014 includes internal notes hidden from sellers."
       },
       "ProductPublic": {
         "properties": {
@@ -9730,6 +9901,18 @@
               }
             ],
             "title": "Description"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
           },
           "has_commission": {
             "anyOf": [

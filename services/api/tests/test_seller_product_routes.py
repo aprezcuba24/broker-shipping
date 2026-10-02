@@ -90,6 +90,39 @@ async def test_seller_get_product(
     assert r.json()["name"] == "Linked product"
 
 
+async def test_seller_product_response_omits_notes(
+    client: AsyncClient,
+    db_session,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    product_factory: ProductFactory,
+) -> None:
+    provider_user = await user_factory.build()
+    seller_user = await user_factory.build()
+    provider_org = await organization_factory.build(user_id=provider_user["id"])
+    seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
+    await link_provider_to_seller(
+        db_session,
+        provider_organization_id=provider_org["id"],
+        seller_organization_id=seller_org["id"],
+    )
+    product = await product_factory.build(
+        organization_id=provider_org["id"],
+        name="Private notes product",
+        notes="Interno del proveedor",
+    )
+
+    r = await client.get(
+        f"/products/seller/{product['id']}",
+        params={"organization_id": seller_org["id"]},
+        headers=bearer_headers(user_id=seller_user["id"]),
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["name"] == "Private notes product"
+    assert "notes" not in body
+
+
 async def test_seller_cannot_post_product(
     client: AsyncClient,
     seller_linked_product: dict,

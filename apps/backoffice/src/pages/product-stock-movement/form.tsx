@@ -5,7 +5,7 @@ import {
   StockMovementKind,
   useListProductsProductsProviderGet,
   type ListProductsProductsProviderGetParams,
-  type ProductPublic,
+  type ProductProviderPublic,
 } from '@broker/api'
 import {
   Button,
@@ -140,7 +140,7 @@ function MovementProductField({
   }, [])
 
   const handleItemSelect = useCallback(
-    (product: ProductPublic) => {
+    (product: ProductProviderPublic) => {
       onLabelCache({ id: product.id, name: product.name })
     },
     [onLabelCache],

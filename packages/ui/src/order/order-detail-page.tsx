@@ -8,6 +8,7 @@ import { ClipboardList, ArrowLeft } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import { BtnLink } from '../components/btn-link'
+import { CopyTextButton } from '../components/copy-text-button'
 import {
   DetailSection,
   type DetailSectionField,
@@ -18,6 +19,7 @@ import { PageWrapper } from '../components/page-wrapper'
 import { CustomerProfileCard } from '../customer/customer-profile-card'
 import { PhoneReputation } from '../customer/phone-reputation'
 import { centsToInputValue, cn, sumSellerCommissions } from '../lib/utils'
+import { formatOrderClipboardText } from './format-order-clipboard'
 import { OrderStatusBadge } from './status'
 
 function CurrencyAmountList({
@@ -208,6 +210,12 @@ function OrderDetailLayout({
           aria-label="Volver a órdenes"
         />
       }
+      buttons={[
+        <CopyTextButton
+          key="copy-order"
+          text={formatOrderClipboardText(order)}
+        />,
+      ]}
     >
       <div className="space-y-6">
         {topContent}

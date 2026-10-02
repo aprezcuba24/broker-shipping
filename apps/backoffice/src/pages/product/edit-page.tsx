@@ -5,7 +5,7 @@ import {
   usePatchProductProductsProviderProductIdPatch,
   type GetProductProductsProviderProductIdGetParams,
   type PatchProductProductsProviderProductIdPatchParams,
-  type ProductPublic,
+  type ProductProviderPublic,
 } from '@broker/api'
 import {
   EntityEditFormPage,
@@ -18,10 +18,11 @@ import { useParams } from 'react-router-dom'
 import { ProductForm, type ProductFormValues } from './form'
 import { useProductImagePersist } from './persist-image'
 
-function productToFormValues(product: ProductPublic): ProductFormValues {
+function productToFormValues(product: ProductProviderPublic): ProductFormValues {
   return {
     name: product.name,
     description: product.description ?? '',
+    notes: product.notes ?? '',
     has_commission: product.has_commission,
     tag_ids: product.tags?.map((tag) => tag.id) ?? [],
     price: product.price,
@@ -34,7 +35,7 @@ function productToFormValues(product: ProductPublic): ProductFormValues {
   }
 }
 
-function productInitialTags(product: ProductPublic) {
+function productInitialTags(product: ProductProviderPublic) {
   return (product.tags ?? []).map((tag) => ({ id: tag.id, name: tag.name }))
 }
 
@@ -58,13 +59,14 @@ export function ProductEditPage() {
   const { persist } = useProductImagePersist()
 
   const update = useEntityFormMutation({
-    mutate: async (values: ProductFormValues): Promise<ProductPublic> => {
+    mutate: async (values: ProductFormValues): Promise<ProductProviderPublic> => {
       const { image, ...data } = values
       const product = await patchMutation.mutateAsync({
         productId,
         data: {
           name: data.name,
           description: data.description || null,
+          notes: data.notes || null,
           has_commission: data.has_commission,
           tag_ids: data.tag_ids,
           price: data.price,

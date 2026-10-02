@@ -1,4 +1,4 @@
-import type { ProductPublic } from '@broker/api'
+import type { ProductProviderPublic } from '@broker/api'
 import {
   actionsColumn,
   BadgeList,
@@ -18,38 +18,38 @@ import {
 import { Eye } from 'lucide-react'
 
 export type BuildProductColumnsOptions = {
-  onDelete: (item: ProductPublic) => unknown | Promise<unknown>
+  onDelete: (item: ProductProviderPublic) => unknown | Promise<unknown>
   isDeleting?: boolean
 }
 
 export function buildProductColumns({
   onDelete,
   isDeleting = false,
-}: BuildProductColumnsOptions): ColumnDef<ProductPublic>[] {
+}: BuildProductColumnsOptions): ColumnDef<ProductProviderPublic>[] {
   return [
-    textColumn<ProductPublic>({ id: 'public_code', header: 'Código' }),
-    imageColumn<ProductPublic>({
+    textColumn<ProductProviderPublic>({ id: 'public_code', header: 'Código' }),
+    imageColumn<ProductProviderPublic>({
       src: (row) => row.image_url,
       alt: (row) => row.name,
     }),
-    textColumn<ProductPublic>({ id: 'name', header: 'Nombre' }),
-    currencyMoneyColumn<ProductPublic>({ id: 'price', header: 'Precio' }),
-    componentColumn<ProductPublic>('commission', 'Comisión', (row) => (
+    textColumn<ProductProviderPublic>({ id: 'name', header: 'Nombre' }),
+    currencyMoneyColumn<ProductProviderPublic>({ id: 'price', header: 'Precio' }),
+    componentColumn<ProductProviderPublic>('commission', 'Comisión', (row) => (
       <CommissionValue
         hasCommission={row.has_commission}
         commission={row.commission}
       />
     )),
-    numberColumn<ProductPublic>({ id: 'stock', header: 'Stock' }),
-    numberColumn<ProductPublic>({ id: 'reserved', header: 'Reservado' }),
-    componentColumn<ProductPublic>('tags', 'Etiquetas', (row) => (
+    numberColumn<ProductProviderPublic>({ id: 'stock', header: 'Stock' }),
+    numberColumn<ProductProviderPublic>({ id: 'reserved', header: 'Reservado' }),
+    componentColumn<ProductProviderPublic>('tags', 'Etiquetas', (row) => (
       <BadgeList
         items={(row.tags ?? []).map((tag) => ({ id: tag.id, label: tag.name }))}
       />
     ), { hideOn: 'sm' }),
-    createdAtColumn<ProductPublic>({ hideInCard: true }),
-    updatedAtColumn<ProductPublic>({ hideInCard: true }),
-    actionsColumn<ProductPublic>((row) => (
+    createdAtColumn<ProductProviderPublic>({ hideInCard: true }),
+    updatedAtColumn<ProductProviderPublic>({ hideInCard: true }),
+    actionsColumn<ProductProviderPublic>((row) => (
       <BtnList>
         <BtnLink
           to={`/products/${row.id}`}

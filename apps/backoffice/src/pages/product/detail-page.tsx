@@ -22,6 +22,7 @@ export function ProductDetailPage() {
       isLoading={!productId || productQuery.isLoading}
       isError={productQuery.isError}
       product={product}
+      notes={product ? (product.notes ?? null) : undefined}
       description="Detalle del producto de tu catálogo."
       buttons={
         product

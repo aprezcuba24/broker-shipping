@@ -33,6 +33,7 @@ import type {
   HTTPValidationError,
   ListProductsProductsProviderGetParams,
   ListProductsProductsSellerGetParams,
+  PageProductProviderPublic,
   PageProductPublic,
   PatchProductProductsProviderProductIdPatchParams,
   PresignProductImageProductsProviderProductIdImagePresignPostParams,
@@ -40,6 +41,7 @@ import type {
   ProductImageConfirmRequest,
   ProductImagePresignRequest,
   ProductImagePresignResponse,
+  ProductProviderPublic,
   ProductPublic,
   ProductUpdate,
   SellerProductUpdate,
@@ -62,7 +64,7 @@ export const listProductsProductsProviderGet = (
 ) => {
       
       
-      return brokerFetch<PageProductPublic>(
+      return brokerFetch<PageProductProviderPublic>(
       {url: `/products/provider/`, method: 'GET',
         params, signal
     },
@@ -156,7 +158,7 @@ export const createProductProductsProviderPost = (
 ) => {
       
       
-      return brokerFetch<ProductPublic>(
+      return brokerFetch<ProductProviderPublic>(
       {url: `/products/provider/`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: productCreate,
@@ -222,7 +224,7 @@ export const getProductProductsProviderProductIdGet = (
 ) => {
       
       
-      return brokerFetch<ProductPublic>(
+      return brokerFetch<ProductProviderPublic>(
       {url: `/products/provider/${productId}`, method: 'GET',
         params, signal
     },
@@ -322,7 +324,7 @@ export const patchProductProductsProviderProductIdPatch = (
  options?: SecondParameter<typeof brokerFetch>,) => {
       
       
-      return brokerFetch<ProductPublic>(
+      return brokerFetch<ProductProviderPublic>(
       {url: `/products/provider/${productId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: productUpdate,
@@ -518,7 +520,7 @@ export const confirmProductImageProductsProviderProductIdImagePut = (
  options?: SecondParameter<typeof brokerFetch>,) => {
       
       
-      return brokerFetch<ProductPublic>(
+      return brokerFetch<ProductProviderPublic>(
       {url: `/products/provider/${productId}/image`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: productImageConfirmRequest,

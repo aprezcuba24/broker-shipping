@@ -179,10 +179,24 @@ export function linkColumn<TData>(
       cell ??
       ((row) => {
         const key = rest.accessor ?? rest.id
-        const label = getLabel?.(row) ?? (row as Record<string, unknown>)[key]
+        const label: ReactNode =
+          getLabel?.(row) ??
+          ((row as Record<string, unknown>)[key] as ReactNode | undefined)
+        let content: ReactNode
+        if (label == null || label === '') {
+          content = '—'
+        } else if (
+          typeof label === 'string' ||
+          typeof label === 'number' ||
+          typeof label === 'boolean'
+        ) {
+          content = String(label)
+        } else {
+          content = label
+        }
         return (
           <Link to={getHref(row)} className="text-primary underline-offset-2 hover:underline">
-            {label == null || label === '' ? '—' : String(label)}
+            {content}
           </Link>
         )
       }),

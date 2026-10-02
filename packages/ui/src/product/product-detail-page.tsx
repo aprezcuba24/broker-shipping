@@ -18,6 +18,8 @@ export type ProductDetailPageProps = {
   isLoading: boolean
   isError: boolean
   product: ProductPublic | undefined
+  /** When set (including null/empty), shows the provider-only notes field. */
+  notes?: string | null
   backTo?: string
   description?: string
   buttons?: ReactNode[] | null
@@ -54,12 +56,16 @@ function DetailField({
 function ProductDetailBody({
   product,
   providerName,
+  notes,
 }: {
   product: ProductPublic
   providerName?: string
+  notes?: string | null
 }) {
   const tags = product.tags ?? []
   const description = product.description?.trim()
+  const showNotes = notes !== undefined
+  const notesText = notes?.trim()
 
   return (
     <div className="space-y-3">
@@ -129,6 +135,16 @@ function ProductDetailBody({
             '—'
           )}
         </DetailField>
+
+        {showNotes ? (
+          <DetailField label="Notas" fullWidth>
+            {notesText ? (
+              <p className="whitespace-pre-wrap">{notesText}</p>
+            ) : (
+              '—'
+            )}
+          </DetailField>
+        ) : null}
       </FormSection>
 
       <FormSection title="Inventario">
@@ -153,6 +169,7 @@ function ProductDetailLayout({
   isLoading,
   isError,
   product,
+  notes,
   backTo = '/products',
   description = 'Detalle del producto.',
   buttons,
@@ -191,7 +208,11 @@ function ProductDetailLayout({
       buttons={buttons}
     >
       <div className="space-y-6">
-        <ProductDetailBody product={product} providerName={providerName} />
+        <ProductDetailBody
+          product={product}
+          providerName={providerName}
+          notes={notes}
+        />
         {children}
       </div>
     </PageWrapper>
