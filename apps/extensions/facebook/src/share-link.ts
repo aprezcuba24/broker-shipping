@@ -16,12 +16,12 @@ export function buildFacebookShareCode(publicCode: string): string {
   return `FB${publicCode}`
 }
 
-/** Product label in the WhatsApp prefill: "Name (FBCODE)". */
+/** Product label in the WhatsApp prefill: "Hola quiero comprar Name (FBCODE)". */
 export function buildWhatsAppProductText(
   productName: string,
   publicCode: string,
 ): string {
-  return `${productName} (${buildFacebookShareCode(publicCode)})`
+  return `Hola quiero comprar ${productName} (${buildFacebookShareCode(publicCode)})`
 }
 
 /** WhatsApp deep link with product name and FB share code. */
@@ -127,7 +127,7 @@ export function buildPostText(
 
 /**
  * Rich HTML: wa.me URL as both href and link text so Facebook keeps it clickable.
- * Prefill text is Name (FBCODE).
+ * Prefill text is Hola quiero comprar Name (FBCODE).
  */
 export function buildPostHtml(
   productName: string,

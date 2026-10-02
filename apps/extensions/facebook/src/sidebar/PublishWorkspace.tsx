@@ -8,6 +8,7 @@ import {
   buildPostHtml,
   buildPostText,
   buildWhatsAppProductLink,
+  buildWhatsAppProductText,
 } from '../share-link'
 
 type AuthenticatedSession = Exclude<SessionPublic, { status: 'loggedOut' }>
@@ -366,8 +367,11 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
               />
               {waLink ? (
                 <p className="preview-link" title={waLink}>
-                  Texto del enlace WA: {selected.name} (
-                  {buildFacebookShareCode(selected.public_code)})
+                  Texto del enlace WA:{' '}
+                  {buildWhatsAppProductText(
+                    selected.name,
+                    selected.public_code,
+                  )}
                 </p>
               ) : null}
             </div>

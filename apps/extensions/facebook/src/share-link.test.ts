@@ -20,7 +20,7 @@ describe('share-link', () => {
   it('builds WhatsApp product text with name and code only', () => {
     assert.equal(
       buildWhatsAppProductText('Arroz premium', '4F2K'),
-      'Arroz premium (FB4F2K)',
+      'Hola quiero comprar Arroz premium (FB4F2K)',
     )
   })
 
@@ -28,7 +28,7 @@ describe('share-link', () => {
     const link = buildWhatsAppProductLink('5355555555', 'Arroz premium', '4F2K')
     assert.equal(
       link,
-      `https://wa.me/5355555555?text=${encodeURIComponent('Arroz premium (FB4F2K)')}`,
+      `https://wa.me/5355555555?text=${encodeURIComponent('Hola quiero comprar Arroz premium (FB4F2K)')}`,
     )
   })
 
