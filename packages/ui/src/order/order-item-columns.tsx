@@ -1,10 +1,40 @@
 import type { OrderItemPublic } from '@broker/api'
-import { Link } from 'react-router-dom'
 
-import { componentColumn, imageColumn } from '../crud/components/columns'
+import {
+  badgeColumn,
+  componentColumn,
+  currencyMoneyColumn,
+  imageColumn,
+  linkColumn,
+  moneyColumn,
+  numberColumn,
+  textColumn,
+} from '../crud/components/columns'
 import type { ColumnDef } from '../components/data-table/types'
 import { formatMoney, formatSellerCommissions } from '../lib/utils'
 import { OrderItemStatusBadge } from './status'
+
+const productColumn = linkColumn<OrderItemPublic>({
+  id: 'product',
+  header: 'Producto',
+  getHref: (row) => `/products/${row.product_id}`,
+  getLabel: (row) => row.product_name,
+})
+
+const quantityColumn = numberColumn<OrderItemPublic>({
+  id: 'quantity',
+  header: 'Cant.',
+})
+
+const providerPriceColumn = currencyMoneyColumn<OrderItemPublic>({
+  id: 'unit_provider_price',
+  header: 'Precio proveedor',
+})
+
+const sellerPriceColumn = currencyMoneyColumn<OrderItemPublic>({
+  id: 'seller_provider_price',
+  header: 'Precio vendedor',
+})
 
 const commissionColumn = componentColumn<OrderItemPublic>(
   'commission',
@@ -14,17 +44,11 @@ const commissionColumn = componentColumn<OrderItemPublic>(
   ),
 )
 
-function productNameLink(row: OrderItemPublic) {
-  const label = row.product_name || '—'
-  return (
-    <Link
-      to={`/products/${row.product_id}`}
-      className="text-primary underline-offset-2 hover:underline"
-    >
-      {label}
-    </Link>
-  )
-}
+const statusColumn = badgeColumn<OrderItemPublic>({
+  id: 'status',
+  header: 'Estado',
+  renderBadge: (row) => <OrderItemStatusBadge status={row.status} />,
+})
 
 export function buildSellerOrderItemColumns(): ColumnDef<OrderItemPublic>[] {
   return [
@@ -32,65 +56,50 @@ export function buildSellerOrderItemColumns(): ColumnDef<OrderItemPublic>[] {
       src: (row) => row.product_image_url,
       alt: (row) => row.product_name ?? '',
     }),
-    componentColumn<OrderItemPublic>('product', 'Producto', productNameLink),
-    componentColumn<OrderItemPublic>('provider', 'Proveedor', (row) => (
-      <span>{row.provider_organization_name || '—'}</span>
-    )),
-    componentColumn<OrderItemPublic>('quantity', 'Cant.', (row) => (
-      <span className="tabular-nums text-sm">{row.quantity}</span>
-    )),
-    componentColumn<OrderItemPublic>('provider_price', 'Precio proveedor', (row) => (
-      <span className="tabular-nums text-sm">
-        {formatMoney(row.unit_provider_price)}
-      </span>
-    )),
-    componentColumn<OrderItemPublic>('seller_price', 'Precio vendedor', (row) => (
-      <span className="tabular-nums text-sm">
-        {formatMoney(row.seller_provider_price)}
-      </span>
-    )),
+    productColumn,
+    textColumn<OrderItemPublic>({
+      id: 'provider_organization_name',
+      header: 'Proveedor',
+    }),
+    quantityColumn,
+    providerPriceColumn,
+    sellerPriceColumn,
     commissionColumn,
-    componentColumn<OrderItemPublic>('subtotal', 'Subtotal', (row) => (
-      <span className="tabular-nums text-sm font-medium">
-        {formatMoney(
-          row.seller_provider_price.amount * row.quantity,
-          row.seller_provider_price.currency,
-        )}
-      </span>
-    )),
-    componentColumn<OrderItemPublic>('status', 'Estado', (row) => (
-      <OrderItemStatusBadge status={row.status} />
-    )),
+    moneyColumn<OrderItemPublic>({
+      id: 'subtotal',
+      header: 'Subtotal',
+      cell: (row) => (
+        <span className="tabular-nums text-sm font-medium">
+          {formatMoney(
+            row.seller_provider_price.amount * row.quantity,
+            row.seller_provider_price.currency,
+          )}
+        </span>
+      ),
+    }),
+    statusColumn,
   ]
 }
 
 export function buildProviderOrderItemColumns(): ColumnDef<OrderItemPublic>[] {
   return [
-    componentColumn<OrderItemPublic>('product', 'Producto', productNameLink),
-    componentColumn<OrderItemPublic>('quantity', 'Cant.', (row) => (
-      <span className="tabular-nums text-sm">{row.quantity}</span>
-    )),
-    componentColumn<OrderItemPublic>('provider_price', 'Precio proveedor', (row) => (
-      <span className="tabular-nums text-sm">
-        {formatMoney(row.unit_provider_price)}
-      </span>
-    )),
-    componentColumn<OrderItemPublic>('seller_price', 'Precio vendedor', (row) => (
-      <span className="tabular-nums text-sm">
-        {formatMoney(row.seller_provider_price)}
-      </span>
-    )),
+    productColumn,
+    quantityColumn,
+    providerPriceColumn,
+    sellerPriceColumn,
     commissionColumn,
-    componentColumn<OrderItemPublic>('subtotal', 'Subtotal', (row) => (
-      <span className="tabular-nums text-sm font-medium">
-        {formatMoney(
-          row.unit_provider_price.amount * row.quantity,
-          row.unit_provider_price.currency,
-        )}
-      </span>
-    )),
-    componentColumn<OrderItemPublic>('status', 'Estado', (row) => (
-      <OrderItemStatusBadge status={row.status} />
-    )),
+    moneyColumn<OrderItemPublic>({
+      id: 'subtotal',
+      header: 'Subtotal',
+      cell: (row) => (
+        <span className="tabular-nums text-sm font-medium">
+          {formatMoney(
+            row.unit_provider_price.amount * row.quantity,
+            row.unit_provider_price.currency,
+          )}
+        </span>
+      ),
+    }),
+    statusColumn,
   ]
 }
