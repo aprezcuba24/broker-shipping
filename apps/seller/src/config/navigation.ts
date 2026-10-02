@@ -14,7 +14,7 @@ import { PRODUCT_NAME, type NavItem, type SidebarBrand } from '@broker/ui'
 
 export const sellerBrand: SidebarBrand = {
   title: PRODUCT_NAME,
-  subtitle: 'Vendedores',
+  subtitle: 'Gestores',
   icon: ShoppingBag,
 }
 
