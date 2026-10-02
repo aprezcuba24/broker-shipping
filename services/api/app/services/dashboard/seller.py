@@ -16,6 +16,7 @@ from app.models.user.user import User
 from app.schemas.dashboard import SellerDashboardPublic
 from app.services import provider_seller_link as link_service
 from app.services.dashboard import helpers as dash
+from app.services.order import share_conversion as share_conversion_service
 from app.types import DashboardPeriod
 
 
@@ -117,6 +118,13 @@ async def get_seller_dashboard(
         session,
         org_filter=commission_filter,
     )
+    share_conversions = (
+        await share_conversion_service.summarize_share_conversions_for_seller(
+            session,
+            seller_organization_id,
+            period_start=period_start,
+        )
+    )
 
     return SellerDashboardPublic(
         period=period,
@@ -133,4 +141,5 @@ async def get_seller_dashboard(
         commissions_paid=commissions_paid,
         recent_orders=recent_orders,
         recent_pending_commissions=recent_pending_commissions,
+        share_conversions=share_conversions,
     )

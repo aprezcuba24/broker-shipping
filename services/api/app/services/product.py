@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from sqlalchemy import exists
+from sqlalchemy import exists, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col, select
 
@@ -10,6 +10,8 @@ from app.lib.exceptions import raise_api_error
 from app.lib.persistence import get_entity
 from app.lib.persistence.apply_update import apply_partial_update
 from app.lib.persistence.pagination import paginate
+from app.lib.product_share import extract_public_code_from_search
+from app.lib.public_code import generate_public_code
 from app.lib.storage.deps import get_object_storage
 from app.models.product.product import Product
 from app.models.product.product_tag import ProductTag
@@ -17,6 +19,8 @@ from app.schemas.pagination import PageResult, PaginationParams
 from app.schemas.product import ProductCreate, ProductUpdate
 from app.services import product_tag as product_tag_service
 from app.services.order.helpers import order_item_image_key_in_use
+
+_PUBLIC_CODE_ATTEMPTS = 16
 
 
 def _ensure_commission_positive_when_enabled(
@@ -26,6 +30,17 @@ def _ensure_commission_positive_when_enabled(
 ) -> None:
     if has_commission and commission_amount <= 0:
         raise_api_error("commission_must_be_positive")
+
+
+async def _allocate_public_code(session: AsyncSession) -> str:
+    for _ in range(_PUBLIC_CODE_ATTEMPTS):
+        code = generate_public_code()
+        existing = await session.scalar(
+            select(Product.id).where(Product.public_code == code).limit(1)
+        )
+        if existing is None:
+            return code
+    raise RuntimeError("Unable to allocate unique product public_code")
 
 
 async def list_products_for_organization(
@@ -38,7 +53,15 @@ async def list_products_for_organization(
 ) -> PageResult[Product]:
     stmt = select(Product).where(Product.organization_id == organization_id)
     if name:
-        stmt = stmt.where(col(Product.name).ilike(f"%{name}%"))
+        term = name.strip()
+        if term:
+            code = extract_public_code_from_search(term)
+            stmt = stmt.where(
+                or_(
+                    col(Product.name).ilike(f"%{term}%"),
+                    col(Product.public_code).ilike(f"%{code}%"),
+                )
+            )
     if tag_ids:
         unique_tag_ids = list(dict.fromkeys(tag_ids))
         for tag_id in unique_tag_ids:
@@ -87,6 +110,7 @@ async def create_product(
     )
     product = Product(
         name=data.name,
+        public_code=await _allocate_public_code(session),
         description=data.description,
         has_commission=has_commission,
         organization_id=organization_id,

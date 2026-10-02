@@ -10,6 +10,7 @@ from app.schemas.auth import (
     ResetPasswordRequest,
     TokenResponse,
     UserLogin,
+    UserProfileUpdate,
     UserPublic,
     UserRegister,
     VerifyEmailRequest,
@@ -22,6 +23,7 @@ from app.services.auth import (
     request_password_reset,
     resend_verification_email,
     reset_password,
+    update_user_profile,
     verify_email,
 )
 
@@ -93,6 +95,16 @@ async def login(
 @router.get("/me", response_model=UserPublic)
 async def me(user: CurrentUserDep) -> UserPublic:
     return UserPublic.model_validate(user)
+
+
+@router.patch("/me", response_model=UserPublic)
+async def update_me(
+    body: UserProfileUpdate,
+    user: CurrentUserDep,
+    session: SessionDep,
+) -> UserPublic:
+    updated = await update_user_profile(session, user, body)
+    return UserPublic.model_validate(updated)
 
 
 @router.get("/my-organizations", response_model=list[OrganizationPublic])

@@ -1,4 +1,4 @@
-import { Button } from '@broker/ui'
+import { Button, resolveShareCodeForProduct } from '@broker/ui'
 import { Minus, Plus, ShoppingCart, Trash2 } from 'lucide-react'
 
 import { useCart } from '@/hooks/use-cart'
@@ -10,9 +10,13 @@ import {
 
 export type ProductCartControlProps = {
   product: CartProductSnapshot
+  searchTerm?: string
 }
 
-export function ProductCartControl({ product }: ProductCartControlProps) {
+export function ProductCartControl({
+  product,
+  searchTerm,
+}: ProductCartControlProps) {
   const { sellerOrgId, addProduct, increment, decrement, removeProduct } = useCart()
 
   const quantity = useCartStore((s) =>
@@ -28,7 +32,12 @@ export function ProductCartControl({ product }: ProductCartControlProps) {
         icon={ShoppingCart}
         label=""
         aria-label={`Añadir ${product.name} al carrito`}
-        onClick={() => addProduct(product)}
+        onClick={() =>
+          addProduct(
+            product,
+            resolveShareCodeForProduct(searchTerm, product.public_code),
+          )
+        }
         disabled={!sellerOrgId}
       />
     )

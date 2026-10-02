@@ -21,6 +21,7 @@ from app.schemas.pagination import PageResult, PaginationParams
 from app.events.types import OrderCreatedEvent
 from app.lib.exceptions import raise_api_error
 from app.lib.events import emit
+from app.lib.product_share import resolve_share_channel
 from app.services import provider_seller_link as link_service
 from app.services import stock as stock_service
 from app.services.customer.helpers import attach_addresses_to_customers
@@ -33,6 +34,7 @@ from app.services.order.helpers import (
     attach_order_relations,
     order_search_clause,
 )
+from app.services.order import share_conversion as share_conversion_service
 from app.services.seller_product import load_sale_prices
 
 _NIL_UUID = UUID(int=0)
@@ -253,6 +255,10 @@ async def _build_order(
                     if product.has_commission
                     else product.currency
                 ),
+                share_channel=resolve_share_channel(
+                    item_data.share_code,
+                    product.public_code,
+                ),
             )
         )
     return order, items, products
@@ -322,6 +328,12 @@ async def create_order(
     session.add_all(messaging)
     await session.flush()
     await create_components_for_items(session, items, products)
+    await share_conversion_service.create_share_conversions_for_order(
+        session,
+        order_id=order.id,
+        seller_organization_id=seller_organization_id,
+        items=items,
+    )
     await emit(
         OrderCreatedEvent(order_id=order.id),
         session=session,

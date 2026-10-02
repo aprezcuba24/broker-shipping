@@ -17,7 +17,20 @@ def _normalize_phone_required(value: str) -> str:
     return normalized
 
 
+def _normalize_phone_optional(value: str | None) -> str | None:
+    stripped = strip_optional(value)
+    if stripped is None:
+        return None
+    normalized = normalize_phone(stripped)
+    if normalized is None:
+        raise ValueError("invalid phone number")
+    return normalized
+
+
 NormalizedEmail = Annotated[EmailStr, AfterValidator(lambda v: normalize_email(str(v)))]
 NonEmptyStr = Annotated[str, AfterValidator(strip_required)]
 OptionalStrippedStr = Annotated[str | None, AfterValidator(strip_optional)]
 NormalizedPhone = Annotated[str, AfterValidator(_normalize_phone_required)]
+OptionalNormalizedPhone = Annotated[
+    str | None, AfterValidator(_normalize_phone_optional)
+]

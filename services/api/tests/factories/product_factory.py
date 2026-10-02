@@ -4,6 +4,7 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.lib.public_code import generate_public_code
 from app.models.order.enums import Currency
 from app.models.product.product import Product
 
@@ -13,6 +14,7 @@ async def create_product(
     *,
     organization_id: UUID | str,
     name: str | None = None,
+    public_code: str | None = None,
     description: str | None = None,
     has_commission: bool | None = None,
     currency: Currency | None = None,
@@ -30,6 +32,7 @@ async def create_product(
     commission_amount = commission if commission is not None else 0
     entity = Product(
         name=name if name is not None else "Factory product",
+        public_code=public_code if public_code is not None else generate_public_code(),
         description=description,
         has_commission=(
             has_commission
@@ -64,6 +67,7 @@ class ProductFactory:
         *,
         organization_id: UUID | str,
         name: str | None = None,
+        public_code: str | None = None,
         description: str | None = None,
         has_commission: bool | None = None,
         currency: Currency | None = None,
@@ -78,6 +82,7 @@ class ProductFactory:
             self._session,
             organization_id=organization_id,
             name=final_name,
+            public_code=public_code,
             description=description,
             has_commission=has_commission,
             currency=currency,

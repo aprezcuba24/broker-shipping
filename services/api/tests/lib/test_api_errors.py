@@ -76,6 +76,7 @@ def test_reserve_stock_insufficient_includes_product_params() -> None:
         id=uuid4(),
         organization_id=uuid4(),
         name="Aceite",
+        public_code="A1B2",
         stock=3,
         reserved=0,
         created_at=datetime.now(timezone.utc).replace(tzinfo=None),

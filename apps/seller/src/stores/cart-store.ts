@@ -11,18 +11,30 @@ export type CartProductSnapshot = Pick<
   | 'has_commission'
   | 'price'
   | 'sale_price'
+  | 'public_code'
 >
 
 export type CartItem = {
   product: CartProductSnapshot
   quantity: number
+  shareCode?: string
 }
 
 type CartsByOrganization = Record<string, CartItem[]>
 
 type CartState = {
   cartsByOrganization: CartsByOrganization
-  addProduct: (sellerOrgId: string, product: CartProductSnapshot) => void
+  addProduct: (
+    sellerOrgId: string,
+    product: CartProductSnapshot,
+    shareCode?: string,
+  ) => void
+  addProductWithQuantity: (
+    sellerOrgId: string,
+    product: CartProductSnapshot,
+    quantity: number,
+    shareCode?: string,
+  ) => void
   increment: (sellerOrgId: string, productId: string) => void
   decrement: (sellerOrgId: string, productId: string) => void
   removeProduct: (sellerOrgId: string, productId: string) => void
@@ -39,6 +51,13 @@ function updateItems(
     ...carts,
     [sellerOrgId]: updater(current),
   }
+}
+
+function mergeShareCode(
+  existing: string | undefined,
+  incoming: string | undefined,
+): string | undefined {
+  return existing ?? incoming
 }
 
 export function getCartItems(
@@ -74,18 +93,59 @@ export const useCartStore = create<CartState>()(
     (set) => ({
       cartsByOrganization: {},
 
-      addProduct: (sellerOrgId, product) => {
+      addProduct: (sellerOrgId, product, shareCode) => {
         set((state) => ({
           cartsByOrganization: updateItems(state.cartsByOrganization, sellerOrgId, (items) => {
             const existing = items.find((i) => i.product.id === product.id)
             if (existing) {
               return items.map((i) =>
                 i.product.id === product.id
-                  ? { ...i, quantity: i.quantity + 1, product }
+                  ? {
+                      ...i,
+                      quantity: i.quantity + 1,
+                      product,
+                      shareCode: mergeShareCode(i.shareCode, shareCode),
+                    }
                   : i,
               )
             }
-            return [...items, { product, quantity: 1 }]
+            return [
+              ...items,
+              {
+                product,
+                quantity: 1,
+                ...(shareCode ? { shareCode } : {}),
+              },
+            ]
+          }),
+        }))
+      },
+
+      addProductWithQuantity: (sellerOrgId, product, quantity, shareCode) => {
+        const qty = Math.max(1, Math.floor(quantity))
+        set((state) => ({
+          cartsByOrganization: updateItems(state.cartsByOrganization, sellerOrgId, (items) => {
+            const existing = items.find((i) => i.product.id === product.id)
+            if (existing) {
+              return items.map((i) =>
+                i.product.id === product.id
+                  ? {
+                      ...i,
+                      quantity: i.quantity + qty,
+                      product,
+                      shareCode: mergeShareCode(i.shareCode, shareCode),
+                    }
+                  : i,
+              )
+            }
+            return [
+              ...items,
+              {
+                product,
+                quantity: qty,
+                ...(shareCode ? { shareCode } : {}),
+              },
+            ]
           }),
         }))
       },

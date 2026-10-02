@@ -19,7 +19,7 @@ from app.lib.utils import utc_now
 from app.models.organization.organization import Organization
 from app.models.organization.user_organization import UserOrganization
 from app.models.user.user import User
-from app.schemas.auth import UserLogin, UserRegister
+from app.schemas.auth import UserLogin, UserProfileUpdate, UserRegister
 from app.types import ClientApp
 
 _RESEND_OK_MESSAGE = (
@@ -179,6 +179,18 @@ async def reset_password(session: AsyncSession, token: str, password: str) -> Us
     await session.commit()
     await session.refresh(user)
     return user
+
+async def update_user_profile(
+    session: AsyncSession,
+    user: User,
+    data: UserProfileUpdate,
+) -> User:
+    user.phone = data.phone
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+    return user
+
 
 async def list_user_organizations(
     session: AsyncSession,

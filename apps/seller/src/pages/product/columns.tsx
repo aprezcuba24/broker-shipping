@@ -20,12 +20,15 @@ import { ProductCartControl } from '@/components/product-cart-control'
 
 export type BuildProductColumnsOptions = {
   providerNameById: Map<string, string>
+  searchTerm?: string
 }
 
 export function buildProductColumns({
   providerNameById,
+  searchTerm,
 }: BuildProductColumnsOptions): ColumnDef<ProductPublic>[] {
   return [
+    textColumn<ProductPublic>({ id: 'public_code', header: 'Código' }),
     imageColumn<ProductPublic>({
       src: (row) => row.image_url,
       alt: (row) => row.name,
@@ -58,7 +61,7 @@ export function buildProductColumns({
     componentColumn<ProductPublic>(
       'cart',
       'Carrito',
-      (row) => <ProductCartControl product={row} />,
+      (row) => <ProductCartControl product={row} searchTerm={searchTerm} />,
       { cardFooter: true },
     ),
     actionsColumn<ProductPublic>((row) => (

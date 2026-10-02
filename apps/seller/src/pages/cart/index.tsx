@@ -4,6 +4,7 @@ import {
   Button,
   DataTable,
   EntityFormDialog,
+  PageEmptyState,
   PageWrapper,
 } from '@broker/ui'
 import { Package, ShoppingCart } from 'lucide-react'
@@ -21,6 +22,7 @@ import {
 
 import { CartOrderTotals } from './cart-order-totals'
 import { CartPreviewProvider } from './cart-preview-context'
+import { CartProductSearch } from './cart-product-search'
 import { computeCartTotals } from './cart-utils'
 import { buildCartColumns } from './columns'
 
@@ -94,40 +96,42 @@ export function CartPage() {
             ]
           : null
       }
-      empty={
-        hasItems
-          ? null
-          : {
-              message:
-                'No hay productos en el carrito. Explora el catálogo y añade los que necesites.',
-              action: (
-                <BtnLink to="/products" variant="outline" icon={Package}>
-                  Ver productos
-                </BtnLink>
-              ),
-            }
-      }
     >
       <div className="space-y-4">
-        <CartPreviewProvider previewByProductId={previewByProductId}>
-          <DataTable
-            columns={columns}
-            data={items}
-            getRowId={(row) => row.product.id}
-            pagination={{
-              page: 1,
-              total: items.length,
-              onPageChange: () => {},
-            }}
+        <CartProductSearch />
+
+        {hasItems ? (
+          <>
+            <CartPreviewProvider previewByProductId={previewByProductId}>
+              <DataTable
+                columns={columns}
+                data={items}
+                getRowId={(row) => row.product.id}
+                pagination={{
+                  page: 1,
+                  total: items.length,
+                  onPageChange: () => {},
+                }}
+              />
+            </CartPreviewProvider>
+            <CartOrderTotals
+              totals={totals}
+              isInitialLoading={isInitialLoading}
+              isRefreshing={isRefreshing}
+              errorMessage={errorMessage}
+              hasOrder={Boolean(order)}
+            />
+          </>
+        ) : (
+          <PageEmptyState
+            message="No hay productos en el carrito. Búscalos arriba o explora el catálogo."
+            action={
+              <BtnLink to="/products" variant="outline" icon={Package}>
+                Ver productos
+              </BtnLink>
+            }
           />
-        </CartPreviewProvider>
-        <CartOrderTotals
-          totals={totals}
-          isInitialLoading={isInitialLoading}
-          isRefreshing={isRefreshing}
-          errorMessage={errorMessage}
-          hasOrder={Boolean(order)}
-        />
+        )}
       </div>
 
       <EntityFormDialog<CustomerFormValues>

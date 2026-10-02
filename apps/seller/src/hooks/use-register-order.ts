@@ -37,6 +37,7 @@ export function useRegisterOrder(
             product_id: item.product.id,
             quantity: item.quantity,
             seller_provider_price: preview.seller_provider_price,
+            ...(item.shareCode ? { share_code: item.shareCode } : {}),
           }
         })
 

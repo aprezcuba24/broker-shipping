@@ -321,6 +321,8 @@ export {
 } from './components/ui/select'
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './components/ui/tabs'
 
+export { ProfilePage } from './profile/profile-page'
+
 export { AppLayout } from './components/layout/app-layout'
 export { Sidebar } from './components/layout/sidebar'
 export { TopHeader } from './components/layout/top-header'
@@ -507,6 +509,14 @@ export type {
   SellerProductPriceBadgeProduct,
   SellerProductPriceBadgeProps,
 } from './product/seller-product-price-badge'
+export {
+  buildProductShareCode,
+  buildProductShareMessage,
+  extractPublicCodeFromSearch,
+  extractShareChannelFromSearch,
+  resolveShareCodeForProduct,
+} from './product/share-code'
+export type { ProductSharePayload } from './product/share-code'
 
 export {
   COMMISSION_PAID_FILTER_OPTIONS,
@@ -538,10 +548,12 @@ export {
   DASHBOARD_PERIOD_OPTIONS,
   DASHBOARD_ORDER_STATUS_LABELS,
   DASHBOARD_ITEM_STATUS_LABELS,
+  DASHBOARD_SHARE_CHANNEL_LABELS,
   DashboardPeriodSelector,
   DashboardAlert,
   KpiCard,
   StatusBreakdownCard,
+  ShareConversionsCard,
   RecentOrdersCard,
   RecentCommissionsCard,
   formatCurrencyAmounts,
@@ -550,6 +562,7 @@ export type {
   DashboardPeriodValue,
   RecentOrderRow,
   RecentCommissionRow,
+  ShareChannelConversionRow,
 } from './dashboard/dashboard-widgets'
 
 export { SettingsOptionCard } from './settings/settings-option-card'

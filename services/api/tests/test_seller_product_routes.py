@@ -211,6 +211,56 @@ async def test_seller_list_filter_by_name(
     assert names == ["Laptop Alpha", "Laptop Beta"]
 
 
+async def test_seller_list_filter_by_public_code(
+    client: AsyncClient,
+    db_session,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    product_factory: ProductFactory,
+) -> None:
+    provider_user = await user_factory.build()
+    seller_user = await user_factory.build()
+    provider_org = await organization_factory.build(user_id=provider_user["id"])
+    seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
+    await link_provider_to_seller(
+        db_session,
+        provider_organization_id=provider_org["id"],
+        seller_organization_id=seller_org["id"],
+    )
+    target = await product_factory.build(
+        organization_id=provider_org["id"],
+        name="Coded product",
+        public_code="4F2K",
+    )
+    await product_factory.build(
+        organization_id=provider_org["id"],
+        name="Other product",
+        public_code="9XYZ",
+    )
+    headers = bearer_headers(user_id=seller_user["id"])
+    params = {"organization_id": seller_org["id"]}
+
+    r_bare = await client.get(
+        "/products/seller/",
+        params={**params, "name": "4F2K"},
+        headers=headers,
+    )
+    assert r_bare.status_code == 200
+    bare_body = r_bare.json()
+    assert bare_body["total"] == 1
+    assert bare_body["items"][0]["id"] == target["id"]
+
+    r_share = await client.get(
+        "/products/seller/",
+        params={**params, "name": "ig-4f2k"},
+        headers=headers,
+    )
+    assert r_share.status_code == 200
+    share_body = r_share.json()
+    assert share_body["total"] == 1
+    assert share_body["items"][0]["id"] == target["id"]
+
+
 async def test_seller_list_filter_by_provider_id(
     client: AsyncClient,
     seller_filter_context: dict,

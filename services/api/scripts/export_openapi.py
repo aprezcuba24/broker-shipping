@@ -15,8 +15,19 @@ _OUTPUT = _API_ROOT.parent.parent / "packages" / "api" / "openapi.json"
 
 def main() -> None:
     from app.main import app
+    from app.models.product.enums import ShareChannel
 
     schema = app.openapi()
+    # Expose ShareChannel to the TS client before metrics endpoints exist.
+    schema.setdefault("components", {}).setdefault("schemas", {})["ShareChannel"] = {
+        "type": "string",
+        "enum": [member.value for member in ShareChannel],
+        "title": "ShareChannel",
+        "description": (
+            "Social channel prefix for product WhatsApp share codes "
+            "and attribution metrics."
+        ),
+    }
     _OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     _OUTPUT.write_text(json.dumps(schema, indent=2) + "\n", encoding="utf-8")
     print(f"Wrote {_OUTPUT}")

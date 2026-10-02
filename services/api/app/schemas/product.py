@@ -73,6 +73,7 @@ class ProductPublic(BaseModel):
 
     id: UUID
     name: str
+    public_code: str
     description: str | None = None
     has_commission: bool
     organization_id: UUID
@@ -144,6 +145,7 @@ def product_to_public(product: Product) -> ProductPublic:
     return ProductPublic(
         id=product.id,
         name=product.name,
+        public_code=product.public_code,
         description=product.description,
         has_commission=product.has_commission,
         organization_id=product.organization_id,

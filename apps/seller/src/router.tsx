@@ -1,13 +1,16 @@
-import { OrganizationType, RequireAuth } from '@broker/api'
+import { OrganizationType, RequireAuth, useAuth } from '@broker/api'
 import {
   ActiveOrganizationProvider,
   MunicipalityAdminPage,
   NeighborhoodAdminPage,
   OrganizationScopedApiProvider,
+  PageLoading,
+  ProfilePage,
   ProvinceAdminPage,
   RequireOrganization,
   RequireSuperAdmin,
   SuperAdminLayout,
+  useActiveOrganization,
 } from '@broker/ui'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { SellerLayout } from './layouts/seller-layout'
@@ -30,6 +33,30 @@ import { VerifyEmailPage } from './pages/verify-email'
 import { ForgotPasswordPage } from './pages/forgot-password'
 import { ResetPasswordPage } from './pages/reset-password'
 import { SettingsPage } from './pages/settings'
+
+/** Profile is user-scoped: keep org shell when available, super-admin shell otherwise. */
+function SellerProfileLayout() {
+  const { user } = useAuth()
+  const { organizations, isLoading, activeOrganization } = useActiveOrganization()
+
+  if (isLoading) {
+    return <PageLoading title="Cargando…" />
+  }
+
+  if (user?.is_super_admin && organizations.length === 0) {
+    return <SuperAdminLayout />
+  }
+
+  if (activeOrganization) {
+    return (
+      <OrganizationScopedApiProvider baseUrl={import.meta.env.VITE_API_URL}>
+        <SellerLayout />
+      </OrganizationScopedApiProvider>
+    )
+  }
+
+  return <SellerLayout />
+}
 
 export default function App() {
   return (
@@ -59,6 +86,17 @@ export default function App() {
             </RequireAuth>
           }
         />
+        <Route
+          element={
+            <RequireAuth loginPath="/login">
+              <ActiveOrganizationProvider organizationType={OrganizationType.seller}>
+                <SellerProfileLayout />
+              </ActiveOrganizationProvider>
+            </RequireAuth>
+          }
+        >
+          <Route path="/profile" element={<ProfilePage />} />
+        </Route>
         <Route
           element={
             <RequireAuth loginPath="/login">

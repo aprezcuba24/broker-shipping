@@ -14,6 +14,7 @@ import type { ProductPublicImageUrl } from './productPublicImageUrl';
 export interface ProductPublic {
   id: string;
   name: string;
+  public_code: string;
   description?: ProductPublicDescription;
   has_commission: boolean;
   organization_id: string;

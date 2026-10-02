@@ -122,6 +122,7 @@ async def test_seller_dashboard_happy_path(
     by_status = {row["status"]: row["count"] for row in data["orders_by_status"]}
     assert by_status["finished"] == 1
     assert by_status["created"] == 0
+    assert data["share_conversions"] == []
 
 
 async def test_seller_dashboard_requires_organization_id(

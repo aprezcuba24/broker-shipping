@@ -79,7 +79,7 @@ function ProductDetailBody({
 
       <FormSection title="Datos del producto">
         <DetailField label="Nombre" fullWidth>
-          {product.name}
+          {product.name} ({product.public_code})
         </DetailField>
 
         {providerName !== undefined ? (
@@ -176,7 +176,7 @@ function ProductDetailLayout({
 
   return (
     <PageWrapper
-      title={product.name}
+      title={`${product.name} (${product.public_code})`}
       description={description}
       icon={Package}
       leading={

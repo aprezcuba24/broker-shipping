@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from app.schemas.fields import NonEmptyStr, NormalizedEmail
+from app.schemas.fields import NonEmptyStr, NormalizedEmail, OptionalNormalizedPhone
 from app.types import ClientApp
 
 
@@ -19,12 +19,17 @@ class UserLogin(BaseModel):
     password: str
 
 
+class UserProfileUpdate(BaseModel):
+    phone: OptionalNormalizedPhone = Field(default=None, max_length=50)
+
+
 class UserPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
     name: str
     email: EmailStr
+    phone: str | None = None
     is_super_admin: bool
     email_verified: bool
     created_at: datetime

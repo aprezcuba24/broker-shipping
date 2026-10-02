@@ -7,6 +7,7 @@
 import type { OrderItemPublicProductImageUrl } from './orderItemPublicProductImageUrl';
 import type { Money } from './money';
 import type { OrderItemStatus } from './orderItemStatus';
+import type { OrderItemPublicShareChannel } from './orderItemPublicShareChannel';
 import type { OrderItemPublicUpdatedAt } from './orderItemPublicUpdatedAt';
 
 export interface OrderItemPublic {
@@ -24,6 +25,7 @@ export interface OrderItemPublic {
   status: OrderItemStatus;
   seller_commission: Money;
   seller_commissions?: Money[];
+  share_channel?: OrderItemPublicShareChannel;
   created_at: string;
   updated_at: OrderItemPublicUpdatedAt;
 }

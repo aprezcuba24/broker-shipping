@@ -1,6 +1,6 @@
 # Publicar la extensión Vendelo360 (Chrome Web Store)
 
-Guía operativa para la primera publicación y las actualizaciones siguientes. La extensión vive en [`apps/whatsapp-web`](../apps/whatsapp-web). Chrome **no** instala un `.crx` propio desde la web del seller ni auto-actualiza una carga «Load unpacked».
+Guía operativa para la primera publicación y las actualizaciones siguientes. La extensión vive en [`apps/extensions/whatsapp`](../apps/extensions/whatsapp). Chrome **no** instala un `.crx` propio desde la web del seller ni auto-actualiza una carga «Load unpacked».
 
 Flujo de los vendedores: la app seller (**Configurar** → `/settings`) abre la ficha de la tienda → el vendedor pulsa «Añadir a Chrome» → Chrome actualiza solo en segundo plano.
 
@@ -42,7 +42,7 @@ El ID de la extensión lo fija la clave privada del paquete. Para que Load unpac
    VITE_WHATSAPP_EXTENSION_ID=abcdefghijklmnopqrstuvwxyzabcdef
    ```
 
-   El build de la extensión lee `VITE_WHATSAPP_EXTENSION_KEY` y, si está definida, la escribe en `manifest.json` como `key`. Ver [`manifest.shared.ts`](../apps/whatsapp-web/manifest.shared.ts).
+   El build de la extensión lee `VITE_WHATSAPP_EXTENSION_KEY` y, si está definida, la escribe en `manifest.json` como `key`. Ver [`manifest.shared.ts`](../apps/extensions/whatsapp/manifest.shared.ts).
 
 5. Añade `*.pem` a tu `.gitignore` local / secret store. El repo ya no debe contener la clave privada.
 
@@ -64,7 +64,7 @@ pnpm install
 pnpm --filter @broker/whatsapp-web build
 ```
 
-Salida: `apps/whatsapp-web/dist/` (`manifest.json`, `content.js`, `background.js`, `popup.html`, `icons/`, `fonts/`, …).
+Salida: `apps/extensions/whatsapp/dist/` (`manifest.json`, `content.js`, `background.js`, `popup.html`, `icons/`, `fonts/`, …).
 
 Comprueba que `dist/manifest.json` tenga:
 
@@ -77,7 +77,7 @@ Comprueba que `dist/manifest.json` tenga:
 El zip debe contener los **archivos de `dist/` en la raíz** (no la carpeta `dist` como único hijo):
 
 ```bash
-cd apps/whatsapp-web/dist
+cd apps/extensions/whatsapp/dist
 zip -r ../vendelo360-extension.zip .
 ```
 
@@ -127,7 +127,7 @@ La primera revisión puede tardar días. Cuando esté aprobada:
 
 Cada release:
 
-1. Sube `version` en [`apps/whatsapp-web/manifest.shared.ts`](../apps/whatsapp-web/manifest.shared.ts) (semver; debe ser mayor que la publicada).
+1. Sube `version` en [`apps/extensions/whatsapp/manifest.shared.ts`](../apps/extensions/whatsapp/manifest.shared.ts) (semver; debe ser mayor que la publicada).
 2. Build de producción y zip (sección 3).
 3. En la misma ficha del Dashboard → **Package** → sube el zip nuevo → Submit.
 4. Tras la revisión (suele ser más rápida que la primera), Chrome reparte la versión a los clientes en horas. El vendedor **no** abre `chrome://extensions`.
@@ -167,5 +167,5 @@ Load unpacked **no** recibe estas actualizaciones: solo sirve para desarrollo lo
 
 - [Chrome Web Store — Publish](https://developer.chrome.com/docs/webstore/publish)
 - [Manifest V3](https://developer.chrome.com/docs/extensions/mv3/intro/)
-- Desarrollo local: [`apps/whatsapp-web/README.md`](../apps/whatsapp-web/README.md)
+- Desarrollo local: [`apps/extensions/whatsapp/README.md`](../apps/extensions/whatsapp/README.md)
 - Deploy de portales: [`docs/deploy_railway.md`](./deploy_railway.md)

@@ -328,6 +328,53 @@
             "APIKeyHeader": []
           }
         ]
+      },
+      "patch": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Update Me",
+        "operationId": "update_me_users_me_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserProfileUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ]
       }
     },
     "/users/my-organizations": {
@@ -8107,6 +8154,17 @@
                 "type": "null"
               }
             ]
+          },
+          "share_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Share Code"
           }
         },
         "type": "object",
@@ -8184,6 +8242,16 @@
             },
             "type": "array",
             "title": "Seller Commissions"
+          },
+          "share_channel": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShareChannel"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "created_at": {
             "type": "string",
@@ -9341,6 +9409,10 @@
             "type": "string",
             "title": "Name"
           },
+          "public_code": {
+            "type": "string",
+            "title": "Public Code"
+          },
           "description": {
             "anyOf": [
               {
@@ -9425,6 +9497,7 @@
         "required": [
           "id",
           "name",
+          "public_code",
           "has_commission",
           "organization_id",
           "price",
@@ -10026,6 +10099,13 @@
             },
             "type": "array",
             "title": "Recent Pending Commissions"
+          },
+          "share_conversions": {
+            "items": {
+              "$ref": "#/components/schemas/ShareChannelConversionPublic"
+            },
+            "type": "array",
+            "title": "Share Conversions"
           }
         },
         "type": "object",
@@ -10063,6 +10143,46 @@
         "type": "object",
         "title": "SellerProductUpdate",
         "description": "Seller overlay fields for a provider product.\n\nOmitted fields are left unchanged. ``sale_price=null`` clears the overlay\nprice so the provider price is used."
+      },
+      "ShareChannel": {
+        "type": "string",
+        "enum": [
+          "IG",
+          "FB",
+          "TT",
+          "WA",
+          "YT",
+          "OT"
+        ],
+        "title": "ShareChannel",
+        "description": "Social channel prefix for product WhatsApp share codes and attribution metrics."
+      },
+      "ShareChannelConversionPublic": {
+        "properties": {
+          "channel": {
+            "$ref": "#/components/schemas/ShareChannel"
+          },
+          "orders_arrived": {
+            "type": "integer",
+            "title": "Orders Arrived"
+          },
+          "orders_finished": {
+            "type": "integer",
+            "title": "Orders Finished"
+          },
+          "conversion_rate": {
+            "type": "number",
+            "title": "Conversion Rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "channel",
+          "orders_arrived",
+          "orders_finished",
+          "conversion_rate"
+        ],
+        "title": "ShareChannelConversionPublic"
       },
       "StatusCount": {
         "properties": {
@@ -10233,6 +10353,24 @@
         ],
         "title": "UserLogin"
       },
+      "UserProfileUpdate": {
+        "properties": {
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          }
+        },
+        "type": "object",
+        "title": "UserProfileUpdate"
+      },
       "UserPublic": {
         "properties": {
           "id": {
@@ -10248,6 +10386,17 @@
             "type": "string",
             "format": "email",
             "title": "Email"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
           },
           "is_super_admin": {
             "type": "boolean",

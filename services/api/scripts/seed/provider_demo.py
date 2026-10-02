@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.lib.public_code import generate_public_code
 from app.lib.security.passwords import hash_password
 from app.lib.utils import utc_now
 from app.models.order.enums import Currency
@@ -49,6 +50,7 @@ async def run(session: AsyncSession) -> None:
         [
             Product(
                 name=PRODUCT_NAME_CUP,
+                public_code=generate_public_code(),
                 organization_id=org.id,
                 price=10000,
                 commission=500,
@@ -56,6 +58,7 @@ async def run(session: AsyncSession) -> None:
             ),
             Product(
                 name=PRODUCT_NAME_USD,
+                public_code=generate_public_code(),
                 organization_id=org.id,
                 price=2500,
                 commission=250,
