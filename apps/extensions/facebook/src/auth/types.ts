@@ -19,33 +19,38 @@ export type ProductSummary = {
   sale_price: { amount: number; currency: string } | null
 }
 
-export type PreparedTab = {
+/** Product queued for posting, with editable caption snapshot. */
+export type QueuedProduct = {
+  product: ProductSummary
+  caption: string
+}
+
+/** Per-tab publish session stored when Comenzar opens group tabs. */
+export type TabPublishSession = {
   tabId: number
   groupName: string
   groupUrl: string
+  products: QueuedProduct[]
+  phone: string
 }
 
-export type PreparePostsPayload = {
-  text: string
-  html: string
-  imageUrl: string | null
+export type OpenGroupsPayload = {
   groups: FacebookGroup[]
+  products: QueuedProduct[]
+  phone: string
 }
 
-export type RetryPostsPayload = {
-  text: string
-  html: string
-  imageUrl: string | null
-  tabs: PreparedTab[]
+export type FillProductPayload = {
+  tabId: number
+  productId: string
 }
 
-export type PreparePostsResult =
+export type OpenGroupsResult =
   | {
       ok: true
-      prepared: number
-      failed: number
+      opened: number
       message: string
-      tabs: PreparedTab[]
+      tabs: Array<{ tabId: number; groupName: string; groupUrl: string }>
     }
   | { ok: false; error: string }
 
@@ -54,8 +59,9 @@ export type ExtensionMessage =
   | { type: 'OPEN_AUTH' }
   | { type: 'SEARCH_PRODUCTS'; query: string }
   | { type: 'GET_GROUPS' }
-  | { type: 'PREPARE_POSTS'; payload: PreparePostsPayload }
-  | { type: 'RETRY_POSTS'; payload: RetryPostsPayload }
+  | { type: 'OPEN_GROUPS'; payload: OpenGroupsPayload }
+  | { type: 'GET_TAB_SESSION' }
+  | { type: 'FILL_PRODUCT'; payload: FillProductPayload }
   | {
       type: 'FILL_COMPOSER'
       text: string
@@ -68,6 +74,7 @@ export type ExtensionResponse =
   | { ok: true; session: SessionPublic }
   | { ok: true; products: ProductSummary[] }
   | { ok: true; groups: FacebookGroup[] }
-  | PreparePostsResult
+  | OpenGroupsResult
+  | { ok: true; tabSession: TabPublishSession | null }
   | { ok: true; filled: boolean; imageAttached: boolean; dialogVisible?: boolean }
   | { ok: false; error: string }

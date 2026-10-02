@@ -10,12 +10,17 @@ import {
 import type {
   ExtensionMessage,
   ExtensionResponse,
-  PreparedTab,
-  PreparePostsPayload,
-  RetryPostsPayload,
+  FillProductPayload,
+  OpenGroupsPayload,
+  QueuedProduct,
+  TabPublishSession,
 } from '../auth/types'
+import { TAB_SESSIONS_STORAGE_KEY } from '../constants'
 import { loadGroupsConfig } from '../services/groups'
 import { searchSellerProducts } from '../services/products'
+import { buildPostHtml, buildPostText } from '../share-link'
+
+type TabSessionsMap = Record<string, TabPublishSession>
 
 async function handleOpenAuth(): Promise<ExtensionResponse> {
   const url = chrome.runtime.getURL('popup.html')
@@ -59,6 +64,41 @@ async function handleGetGroups(): Promise<ExtensionResponse> {
   }
 }
 
+async function readTabSessions(): Promise<TabSessionsMap> {
+  const data = await chrome.storage.local.get(TAB_SESSIONS_STORAGE_KEY)
+  const raw = data[TAB_SESSIONS_STORAGE_KEY]
+  if (!raw || typeof raw !== 'object') return {}
+  return raw as TabSessionsMap
+}
+
+async function writeTabSessions(sessions: TabSessionsMap): Promise<void> {
+  await chrome.storage.local.set({ [TAB_SESSIONS_STORAGE_KEY]: sessions })
+}
+
+async function setTabSession(session: TabPublishSession): Promise<void> {
+  const sessions = await readTabSessions()
+  sessions[String(session.tabId)] = session
+  await writeTabSessions(sessions)
+}
+
+async function removeTabSession(tabId: number): Promise<void> {
+  const sessions = await readTabSessions()
+  const key = String(tabId)
+  if (!(key in sessions)) return
+  delete sessions[key]
+  await writeTabSessions(sessions)
+}
+
+async function handleGetTabSession(
+  tabId: number | undefined,
+): Promise<ExtensionResponse> {
+  if (tabId == null) {
+    return { ok: true, tabSession: null }
+  }
+  const sessions = await readTabSessions()
+  return { ok: true, tabSession: sessions[String(tabId)] ?? null }
+}
+
 async function arrayBufferToBase64(buffer: ArrayBuffer): Promise<string> {
   const bytes = new Uint8Array(buffer)
   let binary = ''
@@ -81,6 +121,16 @@ async function downloadImage(
   } catch {
     return null
   }
+}
+
+async function resolveImage(
+  imageUrl: string | null,
+): Promise<{ base64: string | null; mime: string | null }> {
+  if (!imageUrl) return { base64: null, mime: null }
+  const image = await downloadImage(imageUrl)
+  return image
+    ? { base64: image.base64, mime: image.mime }
+    : { base64: null, mime: null }
 }
 
 function waitForTabComplete(tabId: number, timeoutMs = 15000): Promise<void> {
@@ -121,7 +171,7 @@ async function fillTabComposer(
   imageBase64: string | null,
   imageMime: string | null,
   options: { waitForLoad: boolean } = { waitForLoad: true },
-): Promise<boolean> {
+): Promise<{ filled: boolean; imageAttached: boolean; dialogVisible: boolean }> {
   if (options.waitForLoad) {
     await waitForTabComplete(tabId)
     await new Promise((resolve) => setTimeout(resolve, 2000))
@@ -144,9 +194,19 @@ async function fillTabComposer(
             'dialogVisible' in r
               ? Boolean((r as { dialogVisible?: boolean }).dialogVisible)
               : r.filled
-          return Boolean(r.filled && dialogOk)
+          const imageAttached =
+            'imageAttached' in r
+              ? Boolean((r as { imageAttached?: boolean }).imageAttached)
+              : false
+          return {
+            filled: Boolean(r.filled && dialogOk),
+            imageAttached,
+            dialogVisible: Boolean(dialogOk),
+          }
         }
-        if (!r.ok) return false
+        if (!r.ok) {
+          return { filled: false, imageAttached: false, dialogVisible: false }
+        }
       }
       break
     } catch (err) {
@@ -157,50 +217,32 @@ async function fillTabComposer(
   if (lastError) {
     console.warn(`[Vendelo360 Facebook] fill failed for «${groupName}»`, lastError)
   }
-  return false
+  return { filled: false, imageAttached: false, dialogVisible: false }
 }
 
-async function resolveImage(
-  imageUrl: string | null,
-): Promise<{ base64: string | null; mime: string | null }> {
-  if (!imageUrl) return { base64: null, mime: null }
-  const image = await downloadImage(imageUrl)
-  return image
-    ? { base64: image.base64, mime: image.mime }
-    : { base64: null, mime: null }
+function cloneQueuedProducts(products: QueuedProduct[]): QueuedProduct[] {
+  return products.map((item) => ({
+    product: { ...item.product },
+    caption: item.caption,
+  }))
 }
 
-function summarizePrepare(
-  prepared: number,
-  failed: number,
-  total: number,
-  firstName: string,
-): string {
-  if (failed === 0) {
-    return total === 1
-      ? `Listo en «${firstName}». Revisa el diálogo y pulsa Publicar.`
-      : `Listo en ${prepared} grupos. Revisa cada pestaña y pulsa Publicar.`
-  }
-  if (prepared === 0) {
-    return total === 1
-      ? `No se abrió el diálogo en «${firstName}». Usa Reintentar en el panel.`
-      : `No se preparó ningún grupo (${failed} fallos). Usa Reintentar en el panel.`
-  }
-  return `Preparados ${prepared} de ${total}. Usa Reintentar en el panel si hace falta.`
-}
-
-async function handlePreparePosts(
-  payload: PreparePostsPayload,
+async function handleOpenGroups(
+  payload: OpenGroupsPayload,
 ): Promise<ExtensionResponse> {
   if (payload.groups.length === 0) {
     return { ok: false, error: 'Selecciona al menos un grupo' }
   }
+  if (payload.products.length === 0) {
+    return { ok: false, error: 'Añade al menos un producto' }
+  }
+  if (!payload.phone.trim()) {
+    return { ok: false, error: 'Teléfono requerido' }
+  }
 
-  const { base64: imageBase64, mime: imageMime } = await resolveImage(
-    payload.imageUrl,
-  )
-
-  const opened: PreparedTab[] = []
+  const opened: Array<{ tabId: number; groupName: string; groupUrl: string }> =
+    []
+  const products = cloneQueuedProducts(payload.products)
 
   for (const group of payload.groups) {
     const tab = await chrome.tabs.create({
@@ -208,6 +250,15 @@ async function handlePreparePosts(
       active: false,
     })
     if (tab.id == null) continue
+
+    const session: TabPublishSession = {
+      tabId: tab.id,
+      groupName: group.name,
+      groupUrl: group.url,
+      products,
+      phone: payload.phone,
+    }
+    await setTabSession(session)
     opened.push({
       tabId: tab.id,
       groupName: group.name,
@@ -226,117 +277,88 @@ async function handlePreparePosts(
     await chrome.windows.update(firstTab.windowId, { focused: true })
   }
 
-  let prepared = 0
-  let failed = 0
-
-  for (const tab of opened) {
-    const ok = await fillTabComposer(
-      tab.tabId,
-      tab.groupName,
-      payload.text,
-      payload.html,
-      imageBase64,
-      imageMime,
-      { waitForLoad: true },
-    )
-    if (ok) prepared += 1
-    else failed += 1
-  }
-
   return {
     ok: true,
-    prepared,
-    failed,
+    opened: opened.length,
     tabs: opened,
-    message: summarizePrepare(
-      prepared,
-      failed,
-      opened.length,
-      first.groupName,
-    ),
+    message:
+      opened.length === 1
+        ? `Abierta «${first.groupName}». Usa Publicar en cada producto.`
+        : `Abiertas ${opened.length} pestañas. En cada grupo, usa Publicar en cada producto.`,
   }
 }
 
-async function tabStillOpen(tabId: number): Promise<boolean> {
-  try {
-    await chrome.tabs.get(tabId)
-    return true
-  } catch {
-    return false
-  }
-}
-
-async function handleRetryPosts(
-  payload: RetryPostsPayload,
+async function handleFillProduct(
+  payload: FillProductPayload,
+  senderTabId: number | undefined,
 ): Promise<ExtensionResponse> {
-  if (payload.tabs.length === 0) {
-    return { ok: false, error: 'No hay pestañas de grupos para reintentar' }
+  const tabId = senderTabId ?? payload.tabId
+  const sessions = await readTabSessions()
+  const session = sessions[String(tabId)]
+  if (!session) {
+    return { ok: false, error: 'No hay sesión de publicación en esta pestaña' }
   }
 
-  const { base64: imageBase64, mime: imageMime } = await resolveImage(
-    payload.imageUrl,
+  const queued = session.products.find(
+    (item) => item.product.id === payload.productId,
+  )
+  if (!queued) {
+    return { ok: false, error: 'Producto no encontrado en la sesión' }
+  }
+
+  const { product, caption } = queued
+  const text = buildPostText(
+    product.name,
+    caption,
+    session.phone,
+    product.public_code,
+    product.price,
+    product.sale_price,
+  )
+  const html = buildPostHtml(
+    product.name,
+    caption,
+    session.phone,
+    product.public_code,
+    product.price,
+    product.sale_price,
   )
 
-  const resolved: PreparedTab[] = []
-  for (const tab of payload.tabs) {
-    if (await tabStillOpen(tab.tabId)) {
-      resolved.push(tab)
-      continue
+  const { base64: imageBase64, mime: imageMime } = await resolveImage(
+    product.image_url,
+  )
+
+  const result = await fillTabComposer(
+    tabId,
+    session.groupName,
+    text,
+    html,
+    imageBase64,
+    imageMime,
+    { waitForLoad: false },
+  )
+
+  if (!result.filled) {
+    return {
+      ok: false,
+      error: `No se abrió el diálogo en «${session.groupName}». Vuelve a pulsar Publicar.`,
     }
-    // Tab was closed — open it again without treating this as a full publish.
-    const created = await chrome.tabs.create({
-      url: tab.groupUrl,
-      active: false,
-    })
-    if (created.id == null) continue
-    resolved.push({
-      tabId: created.id,
-      groupName: tab.groupName,
-      groupUrl: tab.groupUrl,
-    })
-  }
-
-  if (resolved.length === 0) {
-    return { ok: false, error: 'No se pudieron abrir las pestañas para reintentar' }
-  }
-
-  const first = resolved[0]!
-  await chrome.tabs.update(first.tabId, { active: true })
-
-  let prepared = 0
-  let failed = 0
-
-  for (const tab of resolved) {
-    const wasRecreated = !payload.tabs.some((t) => t.tabId === tab.tabId)
-    const ok = await fillTabComposer(
-      tab.tabId,
-      tab.groupName,
-      payload.text,
-      payload.html,
-      imageBase64,
-      imageMime,
-      { waitForLoad: wasRecreated },
-    )
-    if (ok) prepared += 1
-    else failed += 1
   }
 
   return {
     ok: true,
-    prepared,
-    failed,
-    tabs: resolved,
-    message: summarizePrepare(
-      prepared,
-      failed,
-      resolved.length,
-      first.groupName,
-    ),
+    filled: result.filled,
+    imageAttached: result.imageAttached,
+    dialogVisible: result.dialogVisible,
   }
 }
 
+chrome.tabs.onRemoved.addListener((tabId) => {
+  void removeTabSession(tabId)
+})
+
 chrome.runtime.onMessage.addListener(
-  (message: ExtensionMessage, _sender, sendResponse) => {
+  (message: ExtensionMessage, sender, sendResponse) => {
     void (async () => {
       let response: ExtensionResponse
       if (isSessionAuthMessage(message)) {
@@ -352,11 +374,14 @@ chrome.runtime.onMessage.addListener(
           case 'GET_GROUPS':
             response = await handleGetGroups()
             break
-          case 'PREPARE_POSTS':
-            response = await handlePreparePosts(message.payload)
+          case 'OPEN_GROUPS':
+            response = await handleOpenGroups(message.payload)
             break
-          case 'RETRY_POSTS':
-            response = await handleRetryPosts(message.payload)
+          case 'GET_TAB_SESSION':
+            response = await handleGetTabSession(sender.tab?.id)
+            break
+          case 'FILL_PRODUCT':
+            response = await handleFillProduct(message.payload, sender.tab?.id)
             break
           default:
             response = { ok: false, error: 'Mensaje desconocido' }

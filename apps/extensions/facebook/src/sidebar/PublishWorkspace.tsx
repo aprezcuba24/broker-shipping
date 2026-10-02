@@ -1,12 +1,19 @@
-import { useEffect, useEffectEvent, useMemo, useState } from 'react'
+import { useEffect, useEffectEvent, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { SELLER_APP_URL, type SessionPublic } from '@broker/extension-auth'
 import { sendMessage } from '../auth/messaging'
-import { PUBLISH_DRAFT_STORAGE_KEY } from '../constants'
-import type { FacebookGroup, PreparedTab, ProductSummary } from '../auth/types'
+import {
+  PUBLISH_DRAFT_STORAGE_KEY,
+  TAB_SESSIONS_STORAGE_KEY,
+} from '../constants'
+import type {
+  FacebookGroup,
+  ProductSummary,
+  QueuedProduct,
+  TabPublishSession,
+} from '../auth/types'
 import {
   buildFacebookShareCode,
   buildPostHtml,
-  buildPostText,
   buildWhatsAppProductLink,
   buildWhatsAppProductText,
 } from '../share-link'
@@ -19,48 +26,175 @@ type Props = {
 }
 
 type PublishDraft = {
-  query: string
-  products: ProductSummary[]
-  selected: ProductSummary | null
-  caption: string
+  queue: QueuedProduct[]
+  expandedProductId: string | null
   selectedGroupIndexes: number[]
-  doneGroupIndexes: number[]
 }
 
 const SEARCH_DEBOUNCE_MS = 350
 
 const EMPTY_DRAFT: PublishDraft = {
-  query: '',
-  products: [],
-  selected: null,
-  caption: '',
+  queue: [],
+  expandedProductId: null,
   selectedGroupIndexes: [],
-  doneGroupIndexes: [],
 }
 
 function allIndexes(length: number): number[] {
   return Array.from({ length }, (_, i) => i)
 }
 
+function PublishMode({
+  tabSession,
+  onStatus,
+  onError,
+}: {
+  tabSession: TabPublishSession
+  onStatus: (message: string | null) => void
+  onError: (message: string | null) => void
+}) {
+  const [fillingId, setFillingId] = useState<string | null>(null)
+  const [readyIds, setReadyIds] = useState<string[]>([])
+
+  async function publishProduct(productId: string) {
+    onError(null)
+    onStatus(null)
+    setFillingId(productId)
+    try {
+      const response = await sendMessage({
+        type: 'FILL_PRODUCT',
+        payload: { tabId: tabSession.tabId, productId },
+      })
+      if (!response.ok) {
+        onError(response.error)
+        return
+      }
+      if ('filled' in response && response.filled) {
+        setReadyIds((prev) =>
+          prev.includes(productId) ? prev : [...prev, productId],
+        )
+        onStatus('Diálogo listo. Revisa y pulsa Publicar en Facebook.')
+      }
+    } finally {
+      setFillingId(null)
+    }
+  }
+
+  function resetPublishButtons() {
+    setReadyIds([])
+    setFillingId(null)
+    onError(null)
+    onStatus(null)
+  }
+
+  return (
+    <>
+      <div className="selected-row">
+        <p className="section-title">Publicar en «{tabSession.groupName}»</p>
+        {readyIds.length > 0 ? (
+          <button
+            type="button"
+            className="btn-text"
+            onClick={resetPublishButtons}
+          >
+            Reset
+          </button>
+        ) : null}
+      </div>
+      <p className="muted publish-hint">
+        Pulsa Publicar en cada producto para abrir el diálogo de Facebook.
+      </p>
+      <ul className="queue-list">
+        {tabSession.products.map(({ product }) => {
+          const ready = readyIds.includes(product.id)
+          const filling = fillingId === product.id
+          return (
+            <li key={product.id} className="queue-item">
+              <div className="queue-item-main">
+                {product.image_url ? (
+                  <img
+                    className="product-thumb"
+                    src={product.image_url}
+                    alt=""
+                  />
+                ) : (
+                  <div className="product-thumb" />
+                )}
+                <div className="queue-item-info">
+                  <p className="product-name">{product.name}</p>
+                  <p className="product-code">
+                    {buildFacebookShareCode(product.public_code)}
+                  </p>
+                  {ready ? (
+                    <span className="queue-ready">Listo</span>
+                  ) : null}
+                </div>
+              </div>
+              {ready ? null : (
+                <button
+                  type="button"
+                  className="btn-publish-item"
+                  disabled={fillingId !== null}
+                  onClick={() => void publishProduct(product.id)}
+                >
+                  {filling ? 'Abriendo…' : 'Publicar'}
+                </button>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+    </>
+  )
+}
+
 export function PublishWorkspace({ session, onSelectOrg }: Props) {
   const phone = session.user.phone
   const [query, setQuery] = useState('')
   const [products, setProducts] = useState<ProductSummary[]>([])
-  const [selected, setSelected] = useState<ProductSummary | null>(null)
-  const [caption, setCaption] = useState('')
+  const [queue, setQueue] = useState<QueuedProduct[]>([])
+  const [expandedProductId, setExpandedProductId] = useState<string | null>(
+    null,
+  )
   const [groups, setGroups] = useState<FacebookGroup[]>([])
   const [selectedGroupIndexes, setSelectedGroupIndexes] = useState<number[]>([])
-  const [doneGroupIndexes, setDoneGroupIndexes] = useState<number[]>([])
   const [status, setStatus] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [searching, setSearching] = useState(false)
-  const [preparing, setPreparing] = useState(false)
-  const [retrying, setRetrying] = useState(false)
-  const [lastOpenedTabs, setLastOpenedTabs] = useState<PreparedTab[]>([])
-  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [opening, setOpening] = useState(false)
   const [hydrated, setHydrated] = useState(false)
   const [groupsReady, setGroupsReady] = useState(false)
   const [selectionSeeded, setSelectionSeeded] = useState(false)
+  const [tabSession, setTabSession] = useState<TabPublishSession | null>(null)
+  const [tabSessionReady, setTabSessionReady] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [highlightIndex, setHighlightIndex] = useState(-1)
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const autocompleteRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    void sendMessage({ type: 'GET_TAB_SESSION' }).then((response) => {
+      if (response.ok && 'tabSession' in response) {
+        setTabSession(response.tabSession)
+      }
+      setTabSessionReady(true)
+    })
+  }, [])
+
+  useEffect(() => {
+    function onStorageChanged(
+      changes: Record<string, chrome.storage.StorageChange>,
+      area: string,
+    ) {
+      if (area !== 'local' || !(TAB_SESSIONS_STORAGE_KEY in changes)) return
+      void sendMessage({ type: 'GET_TAB_SESSION' }).then((response) => {
+        if (response.ok && 'tabSession' in response) {
+          setTabSession(response.tabSession)
+        }
+      })
+    }
+    chrome.storage.onChanged.addListener(onStorageChanged)
+    return () => chrome.storage.onChanged.removeListener(onStorageChanged)
+  }, [])
 
   useEffect(() => {
     void chrome.storage.local.get(PUBLISH_DRAFT_STORAGE_KEY).then((data) => {
@@ -68,12 +202,13 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
         | Partial<PublishDraft>
         | undefined
       if (draft && typeof draft === 'object') {
-        setQuery(typeof draft.query === 'string' ? draft.query : '')
-        setProducts(Array.isArray(draft.products) ? draft.products : [])
-        setSelected(draft.selected ?? null)
-        setCaption(typeof draft.caption === 'string' ? draft.caption : '')
-        setDoneGroupIndexes(
-          Array.isArray(draft.doneGroupIndexes) ? draft.doneGroupIndexes : [],
+        if (Array.isArray(draft.queue)) {
+          setQueue(draft.queue)
+        }
+        setExpandedProductId(
+          typeof draft.expandedProductId === 'string'
+            ? draft.expandedProductId
+            : null,
         )
         if (Array.isArray(draft.selectedGroupIndexes)) {
           setSelectedGroupIndexes(draft.selectedGroupIndexes)
@@ -85,6 +220,22 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
   }, [])
 
   useEffect(() => {
+    if (!searchOpen) return
+    function onPointerDown(event: MouseEvent) {
+      const root = autocompleteRef.current
+      if (!root) return
+      // Shadow DOM retargets event.target to the host; use composedPath.
+      if (!event.composedPath().includes(root)) {
+        setSearchOpen(false)
+        setHighlightIndex(-1)
+      }
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    return () => document.removeEventListener('mousedown', onPointerDown)
+  }, [searchOpen])
+
+  useEffect(() => {
+    if (tabSession) return
     void sendMessage({ type: 'GET_GROUPS' }).then((response) => {
       if (response.ok && 'groups' in response) {
         setGroups(response.groups)
@@ -93,44 +244,38 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
       }
       setGroupsReady(true)
     })
-  }, [])
+  }, [tabSession])
 
   // Default: all groups selected once on first load (not after a cleared selection).
   useEffect(() => {
-    if (!hydrated || !groupsReady || groups.length === 0 || selectionSeeded) {
+    if (
+      tabSession ||
+      !hydrated ||
+      !groupsReady ||
+      groups.length === 0 ||
+      selectionSeeded
+    ) {
       return
     }
     setSelectedGroupIndexes(allIndexes(groups.length))
     setSelectionSeeded(true)
-  }, [hydrated, groupsReady, groups.length, selectionSeeded])
+  }, [tabSession, hydrated, groupsReady, groups.length, selectionSeeded])
 
   useEffect(() => {
-    if (!hydrated) return
+    if (!hydrated || tabSession) return
     const draft: PublishDraft = {
-      query,
-      products,
-      selected,
-      caption,
+      queue,
+      expandedProductId,
       selectedGroupIndexes,
-      doneGroupIndexes,
     }
     void chrome.storage.local.set({ [PUBLISH_DRAFT_STORAGE_KEY]: draft })
-  }, [
-    hydrated,
-    query,
-    products,
-    selected,
-    caption,
-    selectedGroupIndexes,
-    doneGroupIndexes,
-  ])
+  }, [hydrated, tabSession, queue, expandedProductId, selectedGroupIndexes])
 
   const searchProducts = useEffectEvent(async (q: string) => {
     const trimmed = q.trim()
     if (!trimmed) {
       setProducts([])
       setSearching(false)
-      setStatus(null)
       return
     }
     setError(null)
@@ -142,15 +287,13 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
       })
       if (!response.ok) {
         setError(response.error)
+        setProducts([])
         return
       }
       if ('products' in response) {
         setProducts(response.products)
-        setStatus(
-          response.products.length === 0
-            ? 'No hay productos con ese nombre.'
-            : null,
-        )
+        setSearchOpen(true)
+        setHighlightIndex(0)
       }
     } finally {
       setSearching(false)
@@ -158,11 +301,12 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
   })
 
   useEffect(() => {
-    if (!hydrated) return
+    if (!hydrated || tabSession) return
     const trimmed = query.trim()
     if (!trimmed) {
       setProducts([])
       setSearching(false)
+      setHighlightIndex(-1)
       return
     }
     setSearching(true)
@@ -170,36 +314,19 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
       void searchProducts(query)
     }, SEARCH_DEBOUNCE_MS)
     return () => window.clearTimeout(handle)
-  }, [query, hydrated])
+  }, [query, hydrated, tabSession])
 
-  const waLink = useMemo(() => {
-    if (!selected || !phone) return null
-    return buildWhatsAppProductLink(phone, selected.name, selected.public_code)
-  }, [selected, phone])
+  const queuedIds = useMemo(
+    () => new Set(queue.map((item) => item.product.id)),
+    [queue],
+  )
 
-  const postText = useMemo(() => {
-    if (!selected || !phone) return ''
-    return buildPostText(
-      selected.name,
-      caption,
-      phone,
-      selected.public_code,
-      selected.price,
-      selected.sale_price,
-    )
-  }, [caption, selected, phone])
+  const suggestions = useMemo(
+    () => products.filter((product) => !queuedIds.has(product.id)),
+    [products, queuedIds],
+  )
 
-  const postHtml = useMemo(() => {
-    if (!selected || !phone) return ''
-    return buildPostHtml(
-      selected.name,
-      caption,
-      phone,
-      selected.public_code,
-      selected.price,
-      selected.sale_price,
-    )
-  }, [caption, selected, phone])
+  const showDropdown = searchOpen && query.trim().length > 0
 
   const publishTargets = useMemo(
     () =>
@@ -209,21 +336,47 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
     [selectedGroupIndexes, groups.length],
   )
 
-  function selectProduct(product: ProductSummary) {
-    setSelected(product)
-    setCaption(product.description?.trim() ?? '')
-    setDetailsOpen(false)
-  }
-
-  function clearDraft() {
-    setSelected(null)
-    setCaption('')
+  function addProductToQueue(product: ProductSummary) {
+    setQueue((prev) => {
+      if (prev.some((item) => item.product.id === product.id)) return prev
+      return [
+        ...prev,
+        {
+          product,
+          caption: product.description?.trim() ?? '',
+        },
+      ]
+    })
     setQuery('')
     setProducts([])
-    setDoneGroupIndexes([])
+    setSearchOpen(false)
+    setHighlightIndex(-1)
+    setError(null)
+    setStatus(`Añadido: ${product.name}`)
+    requestAnimationFrame(() => searchInputRef.current?.focus())
+  }
+
+  function removeFromQueue(productId: string) {
+    setQueue((prev) => prev.filter((item) => item.product.id !== productId))
+    setExpandedProductId((prev) => (prev === productId ? null : prev))
+  }
+
+  function updateCaption(productId: string, caption: string) {
+    setQueue((prev) =>
+      prev.map((item) =>
+        item.product.id === productId ? { ...item, caption } : item,
+      ),
+    )
+  }
+
+  function clearQueue() {
+    setQueue([])
+    setExpandedProductId(null)
+    setQuery('')
+    setProducts([])
+    setSearchOpen(false)
+    setHighlightIndex(-1)
     setSelectedGroupIndexes(allIndexes(groups.length))
-    setLastOpenedTabs([])
-    setDetailsOpen(false)
     setStatus(null)
     setError(null)
     void chrome.storage.local.set({
@@ -242,8 +395,50 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
     setError(null)
   }
 
-  async function publishToSelectedGroups() {
-    if (!selected || !phone) return
+  function onSearchKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (!showDropdown) return
+
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      setSearchOpen(false)
+      setHighlightIndex(-1)
+      return
+    }
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      if (suggestions.length === 0) return
+      setHighlightIndex((prev) =>
+        prev < suggestions.length - 1 ? prev + 1 : 0,
+      )
+      return
+    }
+
+    if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      if (suggestions.length === 0) return
+      setHighlightIndex((prev) =>
+        prev <= 0 ? suggestions.length - 1 : prev - 1,
+      )
+      return
+    }
+
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      const picked =
+        highlightIndex >= 0
+          ? suggestions[highlightIndex]
+          : suggestions[0]
+      if (picked) addProductToQueue(picked)
+    }
+  }
+
+  async function startOpeningGroups() {
+    if (!phone) return
+    if (queue.length === 0) {
+      setError('Añade al menos un producto')
+      return
+    }
     if (publishTargets.length === 0) {
       setError('Selecciona al menos un grupo')
       return
@@ -260,16 +455,15 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
 
     setError(null)
     setStatus(null)
-    setPreparing(true)
+    setOpening(true)
 
     try {
       const response = await sendMessage({
-        type: 'PREPARE_POSTS',
+        type: 'OPEN_GROUPS',
         payload: {
-          text: postText,
-          html: postHtml,
-          imageUrl: selected.image_url,
           groups: targetGroups,
+          products: queue,
+          phone,
         },
       })
       if (!response.ok) {
@@ -277,54 +471,8 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
         return
       }
       if ('message' in response) setStatus(response.message)
-      if ('tabs' in response && Array.isArray(response.tabs)) {
-        setLastOpenedTabs(response.tabs)
-      }
-
-      // Mark attempted groups as done and uncheck them for a second pass on others.
-      const nextDone = [
-        ...new Set([...doneGroupIndexes, ...publishTargets]),
-      ].sort((a, b) => a - b)
-      setDoneGroupIndexes(nextDone)
-      setSelectedGroupIndexes((prev) =>
-        prev.filter((i) => !publishTargets.includes(i)),
-      )
     } finally {
-      setPreparing(false)
-    }
-  }
-
-  async function retryLastTabs() {
-    if (!selected || !phone) return
-    if (lastOpenedTabs.length === 0) {
-      setError('Primero publica al menos un grupo')
-      return
-    }
-
-    setError(null)
-    setStatus(null)
-    setRetrying(true)
-
-    try {
-      const response = await sendMessage({
-        type: 'RETRY_POSTS',
-        payload: {
-          text: postText,
-          html: postHtml,
-          imageUrl: selected.image_url,
-          tabs: lastOpenedTabs,
-        },
-      })
-      if (!response.ok) {
-        setError(response.error)
-        return
-      }
-      if ('message' in response) setStatus(response.message)
-      if ('tabs' in response && Array.isArray(response.tabs)) {
-        setLastOpenedTabs(response.tabs)
-      }
-    } finally {
-      setRetrying(false)
+      setOpening(false)
     }
   }
 
@@ -347,6 +495,32 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
     )
   }
 
+  if (!tabSessionReady) {
+    return <div className="empty">Cargando…</div>
+  }
+
+  if (tabSession) {
+    return (
+      <>
+        <PublishMode
+          tabSession={tabSession}
+          onStatus={setStatus}
+          onError={setError}
+        />
+        {error ? (
+          <p className="error" role="alert">
+            {error}
+          </p>
+        ) : null}
+        {status ? (
+          <p className="success" role="status">
+            {status}
+          </p>
+        ) : null}
+      </>
+    )
+  }
+
   return (
     <>
       {session.organizations.length > 1 ? (
@@ -366,95 +540,190 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
       ) : null}
 
       <p className="section-title">Producto</p>
-      <div className="search-wrap">
-        <input
-          className="search-input"
-          type="search"
-          placeholder="Buscar por nombre…"
-          aria-label="Buscar producto"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        {searching ? (
-          <span className="search-spinner" aria-label="Buscando" role="status" />
+      <div className="autocomplete" ref={autocompleteRef}>
+        <div className="search-wrap">
+          <input
+            ref={searchInputRef}
+            className="search-input"
+            type="search"
+            role="combobox"
+            aria-expanded={showDropdown}
+            aria-controls="product-autocomplete-list"
+            aria-autocomplete="list"
+            aria-activedescendant={
+              highlightIndex >= 0 && suggestions[highlightIndex]
+                ? `product-option-${suggestions[highlightIndex]!.id}`
+                : undefined
+            }
+            placeholder="Buscar y añadir productos…"
+            aria-label="Buscar producto"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value)
+              setSearchOpen(true)
+            }}
+            onFocus={() => {
+              if (query.trim()) setSearchOpen(true)
+            }}
+            onKeyDown={onSearchKeyDown}
+            autoComplete="off"
+          />
+          {searching ? (
+            <span
+              className="search-spinner"
+              aria-label="Buscando"
+              role="status"
+            />
+          ) : null}
+        </div>
+        {showDropdown ? (
+          <ul
+            id="product-autocomplete-list"
+            className="autocomplete-dropdown"
+            role="listbox"
+          >
+            {searching && products.length === 0 ? (
+              <li className="autocomplete-empty">Buscando…</li>
+            ) : suggestions.length === 0 ? (
+              <li className="autocomplete-empty">
+                {products.length > 0
+                  ? 'Todos los resultados ya están en la cola'
+                  : 'No hay productos con ese nombre'}
+              </li>
+            ) : (
+              suggestions.map((product, index) => (
+                <li key={product.id} role="presentation">
+                  <button
+                    type="button"
+                    id={`product-option-${product.id}`}
+                    role="option"
+                    aria-selected={index === highlightIndex}
+                    className={`autocomplete-option${index === highlightIndex ? ' is-active' : ''}`}
+                    onMouseEnter={() => setHighlightIndex(index)}
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      addProductToQueue(product)
+                    }}
+                  >
+                    {product.image_url ? (
+                      <img
+                        className="product-thumb"
+                        src={product.image_url}
+                        alt=""
+                      />
+                    ) : (
+                      <div className="product-thumb" />
+                    )}
+                    <div>
+                      <p className="product-name">{product.name}</p>
+                      <p className="product-code">
+                        {buildFacebookShareCode(product.public_code)}
+                      </p>
+                    </div>
+                  </button>
+                </li>
+              ))
+            )}
+          </ul>
         ) : null}
       </div>
 
-      {products.length > 0 ? (
-        <ul className="product-list">
-          {products.map((product) => (
-            <li key={product.id}>
-              <button
-                type="button"
-                className={`product-item${selected?.id === product.id ? ' selected' : ''}`}
-                onClick={() => selectProduct(product)}
-              >
-                {product.image_url ? (
-                  <img className="product-thumb" src={product.image_url} alt="" />
-                ) : (
-                  <div className="product-thumb" />
-                )}
-                <div>
-                  <p className="product-name">{product.name}</p>
-                  <p className="product-code">
-                    {buildFacebookShareCode(product.public_code)}
-                  </p>
-                </div>
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-
-      {selected ? (
+      {queue.length > 0 ? (
         <>
           <div className="selected-row">
-            <p className="muted selected-name">
-              <strong>{selected.name}</strong>
-            </p>
-            <button
-              type="button"
-              className="btn-text"
-              onClick={clearDraft}
-            >
-              Cambiar
+            <p className="section-title">Cola ({queue.length})</p>
+            <button type="button" className="btn-text" onClick={clearQueue}>
+              Vaciar
             </button>
           </div>
-          <button
-            type="button"
-            className="details-toggle"
-            aria-expanded={detailsOpen}
-            onClick={() => setDetailsOpen((open) => !open)}
-          >
-            {detailsOpen
-              ? 'Ocultar descripción y vista previa'
-              : 'Editar descripción / vista previa'}
-          </button>
-          {detailsOpen ? (
-            <div className="details-panel">
-              <label className="field">
-                <span>Descripción</span>
-                <textarea
-                  value={caption}
-                  onChange={(e) => setCaption(e.target.value)}
-                />
-              </label>
-              <p className="section-title">Vista previa del post</p>
-              <div
-                className="card preview-card"
-                dangerouslySetInnerHTML={{ __html: postHtml }}
-              />
-              {waLink ? (
-                <p className="preview-link" title={waLink}>
-                  Texto del enlace WA:{' '}
-                  {buildWhatsAppProductText(
-                    selected.name,
-                    selected.public_code,
-                  )}
-                </p>
-              ) : null}
-            </div>
-          ) : null}
+          <ul className="queue-list">
+            {queue.map(({ product, caption }) => {
+              const expanded = expandedProductId === product.id
+              const waLink = buildWhatsAppProductLink(
+                phone,
+                product.name,
+                product.public_code,
+              )
+              const postHtml = buildPostHtml(
+                product.name,
+                caption,
+                phone,
+                product.public_code,
+                product.price,
+                product.sale_price,
+              )
+              return (
+                <li key={product.id} className="queue-card">
+                  <div className="queue-item">
+                    <div className="queue-item-main">
+                      {product.image_url ? (
+                        <img
+                          className="product-thumb"
+                          src={product.image_url}
+                          alt=""
+                        />
+                      ) : (
+                        <div className="product-thumb" />
+                      )}
+                      <div className="queue-item-info">
+                        <p className="product-name">{product.name}</p>
+                        <p className="product-code">
+                          {buildFacebookShareCode(product.public_code)}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn-text"
+                      onClick={() => removeFromQueue(product.id)}
+                    >
+                      Quitar
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    className="details-toggle"
+                    aria-expanded={expanded}
+                    onClick={() =>
+                      setExpandedProductId((prev) =>
+                        prev === product.id ? null : product.id,
+                      )
+                    }
+                  >
+                    {expanded
+                      ? 'Ocultar descripción y vista previa'
+                      : 'Editar descripción / vista previa'}
+                  </button>
+                  {expanded ? (
+                    <div className="details-panel">
+                      <label className="field">
+                        <span>Descripción</span>
+                        <textarea
+                          value={caption}
+                          onChange={(e) =>
+                            updateCaption(product.id, e.target.value)
+                          }
+                        />
+                      </label>
+                      <p className="section-title">Vista previa del post</p>
+                      <div
+                        className="card preview-card"
+                        dangerouslySetInnerHTML={{ __html: postHtml }}
+                      />
+                      <p className="preview-link" title={waLink}>
+                        Texto del enlace WA:{' '}
+                        {buildWhatsAppProductText(
+                          product.name,
+                          product.public_code,
+                        )}
+                      </p>
+                    </div>
+                  ) : null}
+                </li>
+              )
+            })}
+          </ul>
         </>
       ) : null}
 
@@ -467,11 +736,10 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
         <ul className="group-list">
           {groups.map((group, index) => {
             const checked = selectedGroupIndexes.includes(index)
-            const done = doneGroupIndexes.includes(index)
             return (
               <li key={`${group.url}-${index}`}>
                 <label
-                  className={`group-item${checked ? ' selected' : ''}${done ? ' done' : ''}`}
+                  className={`group-item${checked ? ' selected' : ''}`}
                 >
                   <input
                     type="checkbox"
@@ -479,7 +747,6 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
                     onChange={() => toggleGroup(index)}
                   />
                   <span className="group-item-name">{group.name}</span>
-                  {done ? <span className="muted">Hecho</span> : null}
                 </label>
               </li>
             )
@@ -503,32 +770,15 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
           type="button"
           className="btn-primary"
           disabled={
-            !selected || preparing || retrying || publishTargets.length === 0
+            queue.length === 0 || opening || publishTargets.length === 0
           }
-          onClick={() => void publishToSelectedGroups()}
+          onClick={() => void startOpeningGroups()}
         >
-          {preparing
+          {opening
             ? 'Abriendo grupos…'
             : publishTargets.length > 1
-              ? `Publicar en ${publishTargets.length} grupos`
-              : 'Publicar'}
-        </button>
-        <button
-          type="button"
-          className="btn-secondary"
-          disabled={
-            !selected ||
-            preparing ||
-            retrying ||
-            lastOpenedTabs.length === 0
-          }
-          onClick={() => void retryLastTabs()}
-        >
-          {retrying
-            ? 'Reintentando…'
-            : lastOpenedTabs.length > 1
-              ? `Reintentar (${lastOpenedTabs.length} pestañas)`
-              : 'Reintentar'}
+              ? `Comenzar en ${publishTargets.length} grupos`
+              : 'Comenzar'}
         </button>
       </div>
     </>
