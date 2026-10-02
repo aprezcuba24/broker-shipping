@@ -77,6 +77,8 @@ export type { ImageFieldValue } from './lib/image-field'
 
 export { Button } from './components/button'
 export type { ButtonProps } from './components/button'
+export { CopyTextButton } from './components/copy-text-button'
+export type { CopyTextButtonProps } from './components/copy-text-button'
 export { ButtonModal } from './components/button-modal'
 export type { ButtonModalProps } from './components/button-modal'
 export {
