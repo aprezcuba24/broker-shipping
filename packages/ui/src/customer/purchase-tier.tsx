@@ -88,6 +88,7 @@ export type PurchaseTierProps = {
   onAddToBlacklist?: (input: {
     reason: BlacklistReason
     note?: string
+    modus_operandi?: string
   }) => void | Promise<void>
   onRemoveFromBlacklist?: () => void | Promise<void>
   blacklistBusy?: boolean
@@ -106,6 +107,7 @@ export function PurchaseTier({
   const [addOpen, setAddOpen] = useState(false)
   const [reason, setReason] = useState<BlacklistReason>('fraud')
   const [note, setNote] = useState('')
+  const [modusOperandi, setModusOperandi] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   const canAdd = Boolean(onAddToBlacklist) && blacklist !== 'yes'
@@ -120,10 +122,12 @@ export function PurchaseTier({
       await onAddToBlacklist({
         reason,
         note: note.trim() || undefined,
+        modus_operandi: modusOperandi.trim() || undefined,
       })
       setAddOpen(false)
       setReason('fraud')
       setNote('')
+      setModusOperandi('')
     } finally {
       setSubmitting(false)
     }
@@ -274,6 +278,16 @@ export function PurchaseTier({
                 />
               </div>
             ) : null}
+            <div className="grid gap-1.5">
+              <Label htmlFor="blacklist-modus-operandi">Modus operandi</Label>
+              <Input
+                id="blacklist-modus-operandi"
+                value={modusOperandi}
+                onChange={(event) => setModusOperandi(event.target.value)}
+                maxLength={500}
+                placeholder="Cómo actúa o qué hace este número"
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button

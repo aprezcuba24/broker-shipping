@@ -75,6 +75,7 @@ async def test_add_and_status_yes(
     assert entry["reason"] == "fraud"
     assert entry["organization_id"] == blacklist_ctx["seller_org_id"]
     assert entry["withdrawn_at"] is None
+    assert entry["modus_operandi"] is None
 
     status = await client.get(
         "/phone-blacklist/status",
@@ -87,6 +88,33 @@ async def test_add_and_status_yes(
     assert body["own_entry_id"] == entry["id"]
     assert body["other_count"] == 0
 
+
+async def test_add_with_modus_operandi(
+    client: AsyncClient,
+    blacklist_ctx: dict,
+) -> None:
+    created = await client.post(
+        "/phone-blacklist/",
+        params=blacklist_ctx["seller_params"],
+        headers=blacklist_ctx["seller_bearer"],
+        json={
+            "phone": "51234001",
+            "reason": "fraud",
+            "modus_operandi": "  Paga con cheques sin fondos  ",
+        },
+    )
+    assert created.status_code == 201
+    entry = created.json()
+    assert entry["modus_operandi"] == "Paga con cheques sin fondos"
+
+    listed = await client.get(
+        "/phone-blacklist/",
+        params={**blacklist_ctx["seller_params"], "phone": "51234001"},
+        headers=blacklist_ctx["seller_bearer"],
+    )
+    assert listed.status_code == 200
+    assert listed.json()["total"] == 1
+    assert listed.json()["items"][0]["modus_operandi"] == "Paga con cheques sin fondos"
 
 async def test_other_org_sees_reported(
     client: AsyncClient,

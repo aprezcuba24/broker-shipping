@@ -55,11 +55,11 @@ Procedimiento para publicar y actualizar (cuenta developer, zip, versiones): **[
 9. A la derecha deberías ver el panel **Vendelo360** con el contacto detectado.
 10. Cambia a otro chat: el panel debe actualizarse al nuevo contacto.
 
-Variables útiles en el build (raíz del monorepo):
+Variables en [`apps/extensions/whatsapp/.env`](.env) (copia de [`.env.example`](.env.example)). El build las embebe en el bundle y en `manifest.json`. Si falta alguna, se usa el `.env` de la raíz del monorepo. Una variable ya exportada en el shell pisa el archivo.
 
 ```bash
-VITE_API_URL=http://localhost:8000
-VITE_SELLER_URL=http://localhost:5174
+VITE_API_URL=https://api.vendelo360.app
+VITE_SELLER_URL=https://gestores.vendelo360.app
 # Tras publicar en la tienda (ver docs/publicar_extension.md):
 # VITE_WHATSAPP_EXTENSION_KEY=...   # mismo ID que la ficha
 # VITE_WHATSAPP_EXTENSION_ID=...    # en el build del seller
@@ -108,11 +108,11 @@ La UI React vive en un **Shadow DOM** para no pelear con los estilos de WhatsApp
 
 La sesión (JWT + org activa) se guarda en `chrome.storage.local`, no en el `localStorage` de WhatsApp. El content script nunca muestra el formulario de contraseña ni ve el JWT: las llamadas al API las hace solo el **service worker**.
 
-Variables de entorno al build (raíz del monorepo o shell):
+Variables de entorno al build (`apps/extensions/whatsapp/.env`):
 
 ```bash
-VITE_API_URL=http://localhost:8000
-VITE_SELLER_URL=http://localhost:5174   # enlace “web de vendedores” + externally_connectable
+VITE_API_URL=https://api.vendelo360.app
+VITE_SELLER_URL=https://gestores.vendelo360.app   # enlace “web de vendedores” + externally_connectable
 pnpm --filter @broker/whatsapp-web build
 ```
 

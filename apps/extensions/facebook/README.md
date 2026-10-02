@@ -57,15 +57,14 @@ Edita [`config/groups.json`](config/groups.json) y vuelve a compilar:
 
 Antes de probar, edita `config/groups.json` con URLs reales de grupos y vuelve a compilar. El API debe estar levantado.
 
-Variables útiles:
+Variables en [`apps/extensions/facebook/.env`](.env) (copia de [`.env.example`](.env.example)). El build las embebe en el bundle y en `manifest.json`. Si falta alguna, se usa el `.env` de la raíz del monorepo. Una variable ya exportada en el shell pisa el archivo.
 
 ```bash
-VITE_API_URL=http://localhost:8000
-VITE_SELLER_URL=http://localhost:5174
-# Misma base pública de imágenes que el backend (opcional; se lee del .env del monorepo):
-# S3_PUBLIC_BASE_URL=http://localhost:19000/broker-local
+VITE_API_URL=https://api.vendelo360.app
+VITE_SELLER_URL=https://gestores.vendelo360.app
+VITE_CDN_URL=https://vendeya-prod.s3.us-east-1.amazonaws.com
 ```
 
-Las fotos salen del broker (`image_url` en `GET /products/seller`). Esa URL suele apuntar al object storage, no a la API. En el build, el origen de `S3_PUBLIC_BASE_URL` se añade a `host_permissions` para que el service worker pueda descargar la imagen y adjuntarla en Facebook. Si falta, la extensión prepara el texto igual y te pide adjuntar la foto a mano.
+Las fotos salen del broker (`image_url` en `GET /products/seller`). Esa URL suele apuntar al object storage, no a la API. En el build, el origen de `VITE_CDN_URL` (o, si falta, `S3_PUBLIC_BASE_URL` del `.env` de la raíz) se añade a `host_permissions` para que el service worker pueda descargar la imagen y adjuntarla en Facebook. Si falta, la extensión prepara el texto igual y te pide adjuntar la foto a mano.
 
 La autenticación de vendedor vive en `@broker/extension-auth` (compartida con la extensión de WhatsApp).

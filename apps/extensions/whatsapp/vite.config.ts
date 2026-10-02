@@ -1,16 +1,16 @@
 import react from '@vitejs/plugin-react'
 import fs from 'node:fs'
 import path from 'node:path'
-import { defineConfig, loadEnv, type Plugin } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
-import { buildManifest, rootDir } from './manifest.shared.ts'
+import { buildManifest, loadBuildEnv, rootDir } from './manifest.shared.ts'
 
 function writeManifestPlugin(mode: string): Plugin {
   return {
     name: 'vendelo-write-manifest',
     // After publicDir copy so our generated file is the final one.
     closeBundle() {
-      const env = loadEnv(mode, path.resolve(rootDir, '../../..'), '')
+      const env = loadBuildEnv(mode)
       if (env.VITE_API_URL) {
         process.env.VITE_API_URL = env.VITE_API_URL
       }
@@ -33,7 +33,7 @@ function writeManifestPlugin(mode: string): Plugin {
 
 /** Content script build (IIFE). Run first; empties dist/. */
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, path.resolve(rootDir, '../../..'), '')
+  const env = loadBuildEnv(mode)
   const apiUrl = env.VITE_API_URL || process.env.VITE_API_URL || 'http://localhost:8000'
   const sellerUrl =
     env.VITE_SELLER_URL ||

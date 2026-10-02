@@ -1,14 +1,14 @@
 import react from '@vitejs/plugin-react'
 import path from 'node:path'
-import { defineConfig, loadEnv } from 'vite'
-import { rootDir } from './manifest.shared.ts'
+import { defineConfig } from 'vite'
+import { loadBuildEnv, rootDir } from './manifest.shared.ts'
 
 /**
  * Service worker + popup build. Run after the content script build.
  * Does not empty dist/ so content.js and icons are kept.
  */
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, path.resolve(rootDir, '../../..'), '')
+  const env = loadBuildEnv(mode)
   const apiUrl = env.VITE_API_URL || process.env.VITE_API_URL || 'http://localhost:8000'
   const sellerUrl =
     env.VITE_SELLER_URL ||

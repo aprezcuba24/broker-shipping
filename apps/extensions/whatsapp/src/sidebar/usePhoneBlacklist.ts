@@ -16,7 +16,11 @@ export type PhoneBlacklistState = {
   otherCount: number
   busy: boolean
   error: string | null
-  add: (input: { reason: BlacklistReason; note?: string }) => Promise<void>
+  add: (input: {
+    reason: BlacklistReason
+    note?: string
+    modus_operandi?: string
+  }) => Promise<void>
   remove: () => Promise<void>
 }
 
@@ -78,10 +82,15 @@ export function usePhoneBlacklist(
     otherCount,
     busy,
     error,
-    add: async ({ reason, note }) => {
+    add: async ({ reason, note, modus_operandi }) => {
       setBusy(true)
       setError(null)
-      const response = await addToBlacklist({ phone: phoneDigits, reason, note })
+      const response = await addToBlacklist({
+        phone: phoneDigits,
+        reason,
+        note,
+        modus_operandi,
+      })
       if (!response.ok) {
         setError(response.error)
         setBusy(false)

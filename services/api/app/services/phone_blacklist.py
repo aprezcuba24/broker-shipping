@@ -175,6 +175,7 @@ async def list_active_for_organization(
                 organization_id=entry.organization_id,
                 reason=entry.reason,
                 note=entry.note,
+                modus_operandi=entry.modus_operandi,
                 created_at=entry.created_at,
                 other_count=other_counts.get(entry.phone, 0),
                 customer=(
@@ -212,6 +213,7 @@ async def add_to_blacklist(
         created_by_user_id=user_id,
         reason=data.reason,
         note=data.note,
+        modus_operandi=data.modus_operandi,
     )
     session.add(entry)
     await session.commit()

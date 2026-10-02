@@ -9096,6 +9096,18 @@
               }
             ],
             "title": "Note"
+          },
+          "modus_operandi": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modus Operandi"
           }
         },
         "type": "object",
@@ -9165,6 +9177,17 @@
             ],
             "title": "Note"
           },
+          "modus_operandi": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modus Operandi"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -9193,6 +9216,7 @@
           "organization_id",
           "reason",
           "note",
+          "modus_operandi",
           "created_at"
         ],
         "title": "PhoneBlacklistListItem"
@@ -9232,6 +9256,17 @@
             ],
             "title": "Note"
           },
+          "modus_operandi": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modus Operandi"
+          },
           "withdrawn_at": {
             "anyOf": [
               {
@@ -9270,6 +9305,7 @@
           "created_by_user_id",
           "reason",
           "note",
+          "modus_operandi",
           "withdrawn_at",
           "created_at",
           "updated_at"

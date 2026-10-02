@@ -25,7 +25,7 @@ export function AuthPageShell({
   const ariaLabel =
     variant === 'provider'
       ? `Portal de proveedores de ${PRODUCT_NAME}`
-      : `Portal de vendedores de ${PRODUCT_NAME}`
+      : `Portal de gestores de ${PRODUCT_NAME}`
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background">

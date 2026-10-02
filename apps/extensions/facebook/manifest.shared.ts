@@ -1,7 +1,19 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { loadEnv } from 'vite'
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url))
+const repoRoot = path.resolve(rootDir, '../../..')
+
+/**
+ * Env del build. El `.env` de esta extensión pisa el de la raíz del monorepo.
+ * Las variables ya exportadas en el shell pisan ambos archivos.
+ */
+export function loadBuildEnv(mode: string): Record<string, string> {
+  const fromRepo = loadEnv(mode, repoRoot, '')
+  const fromApp = loadEnv(mode, rootDir, '')
+  return { ...fromRepo, ...fromApp }
+}
 
 export function resolveApiOrigin(): string {
   const raw = process.env.VITE_API_URL || 'http://localhost:8000'

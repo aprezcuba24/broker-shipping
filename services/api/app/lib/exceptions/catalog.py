@@ -132,6 +132,11 @@ ERRORS: dict[str, ErrorDef] = {
         status_code=409,
         template="El CI y el teléfono pertenecen a clientes distintos.",
     ),
+    "user_phone_conflict": ErrorDef(
+        code="user_phone_conflict",
+        status_code=409,
+        template="Ese teléfono ya está registrado.",
+    ),
     "invalid_status_transition": ErrorDef(
         code="invalid_status_transition",
         status_code=422,

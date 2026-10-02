@@ -51,12 +51,14 @@ export async function addToBlacklist(params: {
   phone: string
   reason: BlacklistReason
   note?: string
+  modus_operandi?: string
 }): Promise<BlacklistResponse> {
   const response = await sendMessage({
     type: 'ADD_TO_BLACKLIST',
     phone: params.phone,
     reason: params.reason,
     note: params.note,
+    modus_operandi: params.modus_operandi,
   })
   if (response.ok && 'blacklist' in response) return response
   if (!response.ok) return response

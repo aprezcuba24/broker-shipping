@@ -13,7 +13,7 @@ class User(SQLModel, table=True):
     name: str = Field(max_length=255)
     email: str = Field(max_length=255, unique=True, index=True)
     password_hash: str = Field(max_length=255)
-    phone: str | None = Field(default=None, max_length=50)
+    phone: str | None = Field(default=None, max_length=50, unique=True, index=True)
     is_super_admin: bool = Field(default=False, index=True)
     email_verified_at: datetime | None = Field(default=None)
     email_verification_token_hash: str | None = Field(default=None, max_length=64)

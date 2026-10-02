@@ -82,6 +82,7 @@ export function PhoneBlacklistPage({
         phone: string
         reason: PhoneBlacklistReason
         note?: string
+        modus_operandi?: string
       }
       params: CreatePhoneBlacklistEntryPhoneBlacklistPostParams
     },
@@ -106,6 +107,7 @@ export function PhoneBlacklistPage({
             values.reason === PhoneBlacklistReason.other
               ? values.note?.trim() || undefined
               : values.note?.trim() || undefined,
+          modus_operandi: values.modus_operandi?.trim() || undefined,
         },
         params: {} as CreatePhoneBlacklistEntryPhoneBlacklistPostParams,
       }),

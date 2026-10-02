@@ -201,13 +201,16 @@ export * from './patchOrderMessagingOrdersProviderOrderIdMessagingMessagingIdPat
 export * from './patchProductProductsProviderProductIdPatchParams';
 export * from './patchTagTagsProviderTagIdPatchParams';
 export * from './phoneBlacklistCreate';
+export * from './phoneBlacklistCreateModusOperandi';
 export * from './phoneBlacklistCreateNote';
 export * from './phoneBlacklistCustomerSummary';
 export * from './phoneBlacklistCustomerSummaryCi';
 export * from './phoneBlacklistListItem';
 export * from './phoneBlacklistListItemCustomer';
+export * from './phoneBlacklistListItemModusOperandi';
 export * from './phoneBlacklistListItemNote';
 export * from './phoneBlacklistPublic';
+export * from './phoneBlacklistPublicModusOperandi';
 export * from './phoneBlacklistPublicNote';
 export * from './phoneBlacklistPublicUpdatedAt';
 export * from './phoneBlacklistPublicWithdrawnAt';

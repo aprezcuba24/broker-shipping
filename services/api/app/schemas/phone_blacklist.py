@@ -12,6 +12,7 @@ class PhoneBlacklistCreate(BaseModel):
     phone: NormalizedPhone = Field(max_length=50)
     reason: PhoneBlacklistReason
     note: OptionalStrippedStr = Field(default=None, max_length=500)
+    modus_operandi: OptionalStrippedStr = Field(default=None, max_length=500)
 
     @model_validator(mode="after")
     def note_required_for_other(self) -> "PhoneBlacklistCreate":
@@ -29,6 +30,7 @@ class PhoneBlacklistPublic(BaseModel):
     created_by_user_id: UUID
     reason: PhoneBlacklistReason
     note: str | None
+    modus_operandi: str | None
     withdrawn_at: datetime | None
     created_at: datetime
     updated_at: datetime | None
@@ -53,6 +55,7 @@ class PhoneBlacklistListItem(BaseModel):
     organization_id: UUID
     reason: PhoneBlacklistReason
     note: str | None
+    modus_operandi: str | None
     created_at: datetime
     other_count: int = 0
     customer: PhoneBlacklistCustomerSummary | None = None

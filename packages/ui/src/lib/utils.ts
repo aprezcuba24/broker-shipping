@@ -95,6 +95,6 @@ export const moneySchema = z.object({
 export type MoneyValue = z.infer<typeof moneySchema>
 
 /** Default Money value (0 cents in the given currency). */
-export function moneyDefault(currency: Currency = Currency.cup): MoneyValue {
+export function moneyDefault(currency: Currency = Currency.usd): MoneyValue {
   return { amount: 0, currency }
 }

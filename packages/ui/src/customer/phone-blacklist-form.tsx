@@ -31,6 +31,11 @@ export const phoneBlacklistFormSchema = z
       PhoneBlacklistReason.other,
     ]),
     note: z.string().trim().max(500, 'Máximo 500 caracteres').optional(),
+    modus_operandi: z
+      .string()
+      .trim()
+      .max(500, 'Máximo 500 caracteres')
+      .optional(),
   })
   .superRefine((values, ctx) => {
     if (values.reason === PhoneBlacklistReason.other && !values.note?.trim()) {
@@ -48,6 +53,7 @@ export const phoneBlacklistFormDefaultValues: PhoneBlacklistFormValues = {
   phone: '',
   reason: PhoneBlacklistReason.fraud,
   note: '',
+  modus_operandi: '',
 }
 
 export function PhoneBlacklistForm({
@@ -149,6 +155,31 @@ export function PhoneBlacklistForm({
             />
           </FormFieldCell>
         ) : null}
+
+        <FormFieldCell fullWidth>
+          <Controller
+            name="modus_operandi"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="blacklist-modus-operandi">
+                  Modus operandi
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id="blacklist-modus-operandi"
+                  maxLength={500}
+                  placeholder="Cómo actúa o qué hace este número"
+                  disabled={isSubmitting}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid ? (
+                  <FieldError errors={[fieldState.error]} />
+                ) : null}
+              </Field>
+            )}
+          />
+        </FormFieldCell>
       </FormSection>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}

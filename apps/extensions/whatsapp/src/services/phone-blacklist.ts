@@ -49,6 +49,7 @@ export async function addPhoneToBlacklist(params: {
   phone: string
   reason: BlacklistReason
   note?: string
+  modus_operandi?: string
   accessToken: string
   organizationId: string
 }): Promise<PhoneBlacklistEntry> {
@@ -65,6 +66,7 @@ export async function addPhoneToBlacklist(params: {
       phone: phoneDigits,
       reason: params.reason,
       note: params.note,
+      modus_operandi: params.modus_operandi,
     },
   })
 }
