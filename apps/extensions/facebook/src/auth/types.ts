@@ -61,6 +61,7 @@ export type ExtensionMessage =
   | { type: 'GET_GROUPS' }
   | { type: 'OPEN_GROUPS'; payload: OpenGroupsPayload }
   | { type: 'GET_TAB_SESSION' }
+  | { type: 'LEAVE_PUBLISH' }
   | { type: 'FILL_PRODUCT'; payload: FillProductPayload }
   | {
       type: 'FILL_COMPOSER'

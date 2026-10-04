@@ -45,10 +45,14 @@ function allIndexes(length: number): number[] {
 
 function PublishMode({
   tabSession,
+  leaving,
+  onLeave,
   onStatus,
   onError,
 }: {
   tabSession: TabPublishSession
+  leaving: boolean
+  onLeave: () => void
   onStatus: (message: string | null) => void
   onError: (message: string | null) => void
 }) {
@@ -90,15 +94,26 @@ function PublishMode({
     <>
       <div className="selected-row">
         <p className="section-title">Publicar en «{tabSession.groupName}»</p>
-        {readyIds.length > 0 ? (
+        <div className="selected-actions">
           <button
             type="button"
             className="btn-text"
-            onClick={resetPublishButtons}
+            title="Volver a seleccionar productos"
+            disabled={leaving || fillingId !== null}
+            onClick={onLeave}
           >
-            Reset
+            {leaving ? 'Volviendo…' : 'Volver'}
           </button>
-        ) : null}
+          {readyIds.length > 0 ? (
+            <button
+              type="button"
+              className="btn-text"
+              onClick={resetPublishButtons}
+            >
+              Reset
+            </button>
+          ) : null}
+        </div>
       </div>
       <p className="muted publish-hint">
         Pulsa Publicar en cada producto para abrir el diálogo de Facebook.
@@ -166,6 +181,7 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
   const [selectionSeeded, setSelectionSeeded] = useState(false)
   const [tabSession, setTabSession] = useState<TabPublishSession | null>(null)
   const [tabSessionReady, setTabSessionReady] = useState(false)
+  const [leavingPublish, setLeavingPublish] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [highlightIndex, setHighlightIndex] = useState(-1)
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -433,6 +449,22 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
     }
   }
 
+  async function leavePublishMode() {
+    setError(null)
+    setStatus(null)
+    setLeavingPublish(true)
+    try {
+      const response = await sendMessage({ type: 'LEAVE_PUBLISH' })
+      if (!response.ok) {
+        setError(response.error)
+        return
+      }
+      setTabSession(null)
+    } finally {
+      setLeavingPublish(false)
+    }
+  }
+
   async function startOpeningGroups() {
     if (!phone) return
     if (queue.length === 0) {
@@ -504,6 +536,8 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
       <>
         <PublishMode
           tabSession={tabSession}
+          leaving={leavingPublish}
+          onLeave={() => void leavePublishMode()}
           onStatus={setStatus}
           onError={setError}
         />

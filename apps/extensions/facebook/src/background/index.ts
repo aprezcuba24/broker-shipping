@@ -99,6 +99,16 @@ async function handleGetTabSession(
   return { ok: true, tabSession: sessions[String(tabId)] ?? null }
 }
 
+async function handleLeavePublish(
+  tabId: number | undefined,
+): Promise<ExtensionResponse> {
+  if (tabId == null) {
+    return { ok: false, error: 'No hay pestaña activa' }
+  }
+  await removeTabSession(tabId)
+  return { ok: true, tabSession: null }
+}
+
 async function arrayBufferToBase64(buffer: ArrayBuffer): Promise<string> {
   const bytes = new Uint8Array(buffer)
   let binary = ''
@@ -379,6 +389,9 @@ chrome.runtime.onMessage.addListener(
             break
           case 'GET_TAB_SESSION':
             response = await handleGetTabSession(sender.tab?.id)
+            break
+          case 'LEAVE_PUBLISH':
+            response = await handleLeavePublish(sender.tab?.id)
             break
           case 'FILL_PRODUCT':
             response = await handleFillProduct(message.payload, sender.tab?.id)
