@@ -4,7 +4,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Response
 
 from app.deps import SessionDep
-from app.lib.security.deps import require_organization
+from app.lib.security.deps import require_organization_with_product
+from app.types import PlatformProductCode
 from app.models.organization.enums import OrganizationType
 from app.models.organization.organization import Organization
 from app.schemas.invitation import InvitationPublic, MemberIsActivePatch, MemberPublic
@@ -16,7 +17,12 @@ router = APIRouter(prefix="/organizations/provider", tags=["organizations"])
 
 ProviderMemberOrgDep = Annotated[
     Organization,
-    Depends(require_organization(OrganizationType.provider)),
+    Depends(
+        require_organization_with_product(
+            PlatformProductCode.provider_management,
+            OrganizationType.provider,
+        ),
+    ),
 ]
 
 

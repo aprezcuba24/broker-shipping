@@ -5,7 +5,7 @@ from fastapi import APIRouter, Response
 from app.deps import SessionDep
 from app.lib.persistence import get_entity
 from app.lib.persistence.pagination import PaginationDep
-from app.lib.security.deps import ProviderOrgDep
+from app.lib.security.deps import ProviderManagementOrgDep
 from app.models.product.tag import Tag
 from app.schemas.pagination import Page
 from app.schemas.tag import TagCreate, TagPublic, TagUpdate
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/tags/provider", tags=["tags"])
 
 @router.get("/", response_model=Page[TagPublic])
 async def list_tags(
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
     pagination: PaginationDep,
     name: str | None = None,
@@ -35,7 +35,7 @@ async def list_tags(
 @router.get("/{tag_id}", response_model=TagPublic)
 async def get_tag(
     tag_id: UUID,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> TagPublic:
     tag = await get_entity(
@@ -50,7 +50,7 @@ async def get_tag(
 @router.post("/", response_model=TagPublic, status_code=201)
 async def create_tag(
     body: TagCreate,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> TagPublic:
     tag = await tag_service.create_tag(session, organization.id, body)
@@ -61,7 +61,7 @@ async def create_tag(
 async def patch_tag(
     tag_id: UUID,
     body: TagUpdate,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> TagPublic:
     tag = await tag_service.update_tag(
@@ -76,7 +76,7 @@ async def patch_tag(
 @router.delete("/{tag_id}", status_code=204)
 async def delete_tag(
     tag_id: UUID,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> Response:
     await tag_service.delete_tag(session, tag_id, organization.id)

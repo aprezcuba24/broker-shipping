@@ -77,6 +77,11 @@ ERRORS: dict[str, ErrorDef] = {
         status_code=403,
         template="No tienes permiso para realizar esta acción.",
     ),
+    "product_not_enabled": ErrorDef(
+        code="product_not_enabled",
+        status_code=403,
+        template="Esta organización no tiene acceso a {product_name}.",
+    ),
     "not_found": ErrorDef(
         code="not_found",
         status_code=404,

@@ -4,7 +4,7 @@ from fastapi import APIRouter
 
 from app.deps import SessionDep
 from app.lib.persistence.pagination import PaginationDep
-from app.lib.security.deps import ProviderOrgDep
+from app.lib.security.deps import ProviderManagementOrgDep
 from app.models.product_stock_movement.enums import StockMovementKind
 from app.schemas.pagination import Page
 from app.schemas.product_stock_movement import (
@@ -21,7 +21,7 @@ router = APIRouter(
 
 @router.get("/", response_model=Page[ProductStockMovementPublic])
 async def list_movements(
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
     pagination: PaginationDep,
     kind: StockMovementKind | None = None,
@@ -42,7 +42,7 @@ async def list_movements(
 @router.get("/{movement_id}", response_model=ProductStockMovementPublic)
 async def get_movement(
     movement_id: UUID,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> ProductStockMovementPublic:
     movement = await movement_service.get_movement_for_organization(
@@ -56,7 +56,7 @@ async def get_movement(
 @router.post("/", response_model=ProductStockMovementPublic, status_code=201)
 async def create_movement(
     body: ProductStockMovementCreate,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> ProductStockMovementPublic:
     movement = await movement_service.create_movement(

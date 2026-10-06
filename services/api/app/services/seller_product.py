@@ -73,11 +73,18 @@ async def list_accessible_products(
     name: str | None = None,
     provider_id: UUID | None = None,
 ) -> PageResult[Product]:
-    provider_ids = await link_service.resolve_provider_ids(
-        session,
-        user,
-        seller_organization_id,
-    )
+    if seller_organization_id is None:
+        provider_ids = await link_service.resolve_provider_ids_for_seller_management(
+            session,
+            user,
+            seller_organization_id,
+        )
+    else:
+        provider_ids = await link_service.resolve_provider_ids(
+            session,
+            user,
+            seller_organization_id,
+        )
     if provider_id is not None:
         if not is_super_admin(user) and provider_id not in provider_ids:
             raise_api_error("forbidden")
@@ -117,11 +124,18 @@ async def get_accessible_product(
     *,
     seller_organization_id: UUID | None = None,
 ) -> Product:
-    provider_ids = await link_service.resolve_provider_ids(
-        session,
-        user,
-        seller_organization_id,
-    )
+    if seller_organization_id is None:
+        provider_ids = await link_service.resolve_provider_ids_for_seller_management(
+            session,
+            user,
+            seller_organization_id,
+        )
+    else:
+        provider_ids = await link_service.resolve_provider_ids(
+            session,
+            user,
+            seller_organization_id,
+        )
     if not provider_ids:
         raise_api_error("not_found")
 

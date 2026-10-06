@@ -6,6 +6,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.organization.enums import OrganizationType
+from app.services import platform_product as platform_product_service
+from app.types import DEFAULT_PLATFORM_PRODUCT_CODES, PlatformProductCode
 from app.models.organization.organization import Organization
 from app.models.organization.provider_seller_link import ProviderSellerLink
 from app.models.organization.provider_settings import ProviderSettings
@@ -18,6 +20,7 @@ async def create_organization_for_user(
     user_id: UUID | str,
     name: str | None = None,
     org_type: OrganizationType = OrganizationType.provider,
+    platform_product_codes: list[PlatformProductCode] | None = None,
 ) -> dict:
     uid = user_id if isinstance(user_id, UUID) else UUID(str(user_id))
     entity = Organization(name=name or "Test Org", type=org_type)
@@ -32,6 +35,17 @@ async def create_organization_for_user(
     )
     await session.flush()
     await session.commit()
+    codes = (
+        list(DEFAULT_PLATFORM_PRODUCT_CODES)
+        if platform_product_codes is None
+        else platform_product_codes
+    )
+    if codes:
+        await platform_product_service.grant_products_for_organization(
+            session,
+            entity.id,
+            codes=codes,
+        )
     return entity.model_dump(mode="json")
 
 
@@ -100,6 +114,7 @@ class OrganizationFactory:
         user_id: UUID | str,
         name: str | None = None,
         org_type: OrganizationType = OrganizationType.provider,
+        platform_product_codes: list[PlatformProductCode] | None = None,
     ) -> dict:
         self._n += 1
         final_name = name or f"ORG-{self._n:04d}"
@@ -108,6 +123,7 @@ class OrganizationFactory:
             user_id=user_id,
             name=final_name,
             org_type=org_type,
+            platform_product_codes=platform_product_codes,
         )
 
     async def build_seller(
@@ -115,9 +131,11 @@ class OrganizationFactory:
         *,
         user_id: UUID | str,
         name: str | None = None,
+        platform_product_codes: list[PlatformProductCode] | None = None,
     ) -> dict:
         return await self.build(
             user_id=user_id,
             name=name,
             org_type=OrganizationType.seller,
+            platform_product_codes=platform_product_codes,
         )

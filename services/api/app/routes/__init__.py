@@ -9,6 +9,7 @@ from app.routes import (
     messaging_prices_provider,
     messaging_settings_provider,
     phone_blacklist,
+    platform_products,
     product_stock_movements_provider,
     products_provider,
     products_seller,
@@ -48,6 +49,7 @@ router.include_router(locations.router)
 router.include_router(locations_admin.router)
 router.include_router(messaging_prices_provider.router)
 router.include_router(messaging_settings_provider.router)
+router.include_router(platform_products.router)
 router.include_router(organizations.router)
 router.include_router(organizations_provider.router)
 router.include_router(organizations_seller.router)
