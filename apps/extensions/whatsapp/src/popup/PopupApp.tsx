@@ -65,10 +65,16 @@ export function PopupApp() {
   async function onLogout() {
     setError(null)
     setJustLoggedIn(false)
-    const response = await sendMessage({ type: 'LOGOUT' })
-    const next = sessionFrom(response)
-    if (next) {
-      applySession(next)
+    try {
+      const response = await sendMessage({ type: 'LOGOUT' })
+      const next = sessionFrom(response)
+      if (next) {
+        applySession(next)
+        return
+      }
+      setError(!response.ok ? response.error : 'No se pudo cerrar la sesión')
+    } catch {
+      setError('No se pudo cerrar la sesión')
     }
   }
 
@@ -108,6 +114,12 @@ export function PopupApp() {
           <p className="user-name">{session.user.name}</p>
           <p className="user-email">{session.user.email}</p>
         </div>
+
+        {error ? (
+          <p className="error" role="alert">
+            {error}
+          </p>
+        ) : null}
 
         <div className="actions">
           <button

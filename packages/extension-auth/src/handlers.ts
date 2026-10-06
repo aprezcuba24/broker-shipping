@@ -2,7 +2,9 @@ import { fetchMe, fetchSellerOrganizations, loginRequest } from './auth-api'
 import { buildAuthenticatedSession } from './session'
 import {
   clearSession,
+  commitSessionIfCurrent,
   readSession,
+  sessionGenerationNow,
   toSessionPublic,
   writeSession,
 } from './storage'
@@ -91,23 +93,29 @@ export function maybeClearSessionOnAuthError(message: string): Promise<void> {
   return Promise.resolve()
 }
 
-/** Validate stored token on SW start; clear session if expired/invalid. */
+/**
+ * Validate stored token on SW start; clear session if expired/invalid.
+ * Does not overwrite a logout, login, or org change that happened while
+ * `/users/me` was in flight (that call is what wakes the worker on logout).
+ */
 export async function validateStoredSession(): Promise<void> {
+  const since = sessionGenerationNow()
   const session = await readSession()
   if (session.status === 'loggedOut') return
+  const accessToken = session.accessToken
 
   try {
-    const user = await fetchMe(session.accessToken)
-    const organizations = await fetchSellerOrganizations(session.accessToken)
+    const user = await fetchMe(accessToken)
+    const organizations = await fetchSellerOrganizations(accessToken)
     const next = buildAuthenticatedSession({
-      accessToken: session.accessToken,
+      accessToken,
       user,
       organizations,
       previousOrganizationId: session.organizationId,
     })
-    await writeSession(next)
+    await commitSessionIfCurrent(since, accessToken, next)
   } catch {
-    await clearSession()
+    await commitSessionIfCurrent(since, accessToken, { status: 'loggedOut' })
   }
 }
 
