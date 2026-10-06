@@ -75,7 +75,7 @@ class Settings(BaseSettings):
 
     jwt_secret: str = Field(default="change-me-in-production-use-32b+")
     jwt_algorithm: str = Field(default="HS256")
-    jwt_expire_minutes: int = Field(default=60 * 24)
+    jwt_expire_minutes: int = Field(default=60 * 24 * 365)
 
     smtp_host: str = Field(default="localhost")
     smtp_port: int = Field(default=1025)

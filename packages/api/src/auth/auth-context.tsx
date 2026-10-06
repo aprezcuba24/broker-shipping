@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { configureApi } from '../client'
 import {
   getMeUsersMeGetQueryKey,
+  refreshUsersRefreshPost,
   useLoginUsersLoginPost,
   useMeUsersMeGet,
 } from '../generated/users/users'
@@ -16,6 +17,7 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 export function AuthProvider({ storage, baseUrl, children }: AuthProviderProps) {
   const queryClient = useQueryClient()
   const tokenRef = useRef<string | null>(storage.getToken())
+  const didRefreshRef = useRef(false)
   const [token, setToken] = useState<string | null>(() => storage.getToken())
 
   // Sync before children render so React Query fetches use the correct baseUrl
@@ -42,6 +44,27 @@ export function AuthProvider({ storage, baseUrl, children }: AuthProviderProps) 
     storage.setToken(null)
     void queryClient.removeQueries({ queryKey: getMeUsersMeGetQueryKey() })
   }, [meQuery.isError, token, storage, queryClient])
+
+  // Extend session silently while the stored token is still valid.
+  useEffect(() => {
+    if (!token) {
+      didRefreshRef.current = false
+      return
+    }
+    if (!meQuery.isSuccess || didRefreshRef.current) {
+      return
+    }
+    didRefreshRef.current = true
+    void refreshUsersRefreshPost()
+      .then((response) => {
+        tokenRef.current = response.access_token
+        setToken(response.access_token)
+        storage.setToken(response.access_token)
+      })
+      .catch(() => {
+        didRefreshRef.current = false
+      })
+  }, [meQuery.isSuccess, token, storage])
 
   const loginMutation = useLoginUsersLoginPost()
 

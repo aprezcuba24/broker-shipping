@@ -430,6 +430,68 @@ export const useLoginUsersLoginPost = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * @summary Refresh
+ */
+export const refreshUsersRefreshPost = (
+    
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<TokenResponse>(
+      {url: `/users/refresh`, method: 'POST', signal
+    },
+      options);
+    }
+  
+
+
+export const getRefreshUsersRefreshPostMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof refreshUsersRefreshPost>>, TError,void, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof refreshUsersRefreshPost>>, TError,void, TContext> => {
+
+const mutationKey = ['refreshUsersRefreshPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof refreshUsersRefreshPost>>, void> = () => {
+          
+
+          return  refreshUsersRefreshPost(requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RefreshUsersRefreshPostMutationResult = NonNullable<Awaited<ReturnType<typeof refreshUsersRefreshPost>>>
+    
+    export type RefreshUsersRefreshPostMutationError = unknown
+
+    /**
+ * @summary Refresh
+ */
+export const useRefreshUsersRefreshPost = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof refreshUsersRefreshPost>>, TError,void, TContext>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof refreshUsersRefreshPost>>,
+        TError,
+        void,
+        TContext
+      > => {
+
+      const mutationOptions = getRefreshUsersRefreshPostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * @summary Me
  */
 export const meUsersMeGet = (
