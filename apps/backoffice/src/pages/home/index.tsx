@@ -1,4 +1,5 @@
 import {
+  PlatformProductCode,
   useGetProviderDashboardDashboardProviderGet,
   type GetProviderDashboardDashboardProviderGetPeriod,
 } from '@broker/api'
@@ -9,11 +10,13 @@ import {
   DashboardPeriodSelector,
   formatCurrencyAmounts,
   KpiCard,
+  PageLoading,
   PageWrapper,
   RecentCommissionsCard,
   RecentOrdersCard,
   StatusBreakdownCard,
   useActiveOrganization,
+  useOrganizationPlatformProducts,
   type DashboardPeriodValue,
 } from '@broker/ui'
 import {
@@ -25,8 +28,40 @@ import {
   Users,
 } from 'lucide-react'
 import { useState } from 'react'
+import { Navigate } from 'react-router-dom'
 
 export function HomePage() {
+  const { hasProduct, isLoading } = useOrganizationPlatformProducts()
+
+  if (isLoading) {
+    return <PageLoading title="Cargando…" />
+  }
+
+  const hasManagement = hasProduct(PlatformProductCode.provider_management)
+  const hasBlacklist = hasProduct(PlatformProductCode.phone_blacklist)
+
+  if (!hasManagement && hasBlacklist) {
+    return <Navigate to="/phone-blacklist" replace />
+  }
+
+  if (!hasManagement) {
+    return (
+      <PageWrapper
+        title="Inicio"
+        description="Selecciona una opción en el menú."
+        icon={LayoutDashboard}
+        empty={{
+          message:
+            'Esta organización no tiene productos de plataforma habilitados. Puedes gestionar miembros o la configuración desde el menú.',
+        }}
+      />
+    )
+  }
+
+  return <ProviderDashboard />
+}
+
+function ProviderDashboard() {
   const { activeOrganization } = useActiveOrganization()
   const [period, setPeriod] = useState<DashboardPeriodValue>('30d')
 

@@ -347,6 +347,8 @@ export type {
   ActiveOrganizationProviderProps,
   OrganizationKind,
 } from './organization/active-organization-context'
+export { useOrganizationPlatformProducts } from './organization/use-organization-platform-products'
+export { filterNavItemsByProduct } from './organization/filter-nav-items-by-product'
 export { OrganizationSelect } from './organization/organization-select'
 export { OrganizationMenuSection } from './organization/organization-menu-section'
 export { OrganizationScopedApiProvider } from './organization/organization-scoped-api-provider'

@@ -1,7 +1,16 @@
-import { PageWrapper, SettingsOptionCard } from '@broker/ui'
+import { PlatformProductCode } from '@broker/api'
+import {
+  PageWrapper,
+  SettingsOptionCard,
+  useOrganizationPlatformProducts,
+} from '@broker/ui'
 import { Settings, Truck } from 'lucide-react'
 
 export function SettingsPage() {
+  const { hasProduct, isLoading } = useOrganizationPlatformProducts()
+  const showMessaging =
+    !isLoading && hasProduct(PlatformProductCode.provider_management)
+
   return (
     <PageWrapper
       title="Configurar"
@@ -9,12 +18,19 @@ export function SettingsPage() {
       icon={Settings}
     >
       <div className="mx-auto grid max-w-2xl gap-3 sm:grid-cols-1">
-        <SettingsOptionCard
-          to="/settings/messaging"
-          title="Precio mensajería"
-          description="Define el costo de mensajería por barrio y si aceptas barrios sin precio."
-          icon={Truck}
-        />
+        {showMessaging ? (
+          <SettingsOptionCard
+            to="/settings/messaging"
+            title="Precio mensajería"
+            description="Define el costo de mensajería por barrio y si aceptas barrios sin precio."
+            icon={Truck}
+          />
+        ) : !isLoading ? (
+          <p className="text-sm text-muted-foreground">
+            No hay ajustes disponibles para los productos habilitados en esta
+            organización.
+          </p>
+        ) : null}
       </div>
     </PageWrapper>
   )

@@ -1,11 +1,13 @@
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
+import type { PlatformProductCode } from '@broker/api'
 
 export type NavItem = {
   to: string
   label: string
   icon: LucideIcon
   exact?: boolean
+  requiresProduct?: PlatformProductCode
 }
 
 export type SidebarBrand = {
