@@ -78,13 +78,19 @@ export function useExtensionSession() {
   }, [])
 
   const logout = useCallback(async () => {
-    const response = asSessionResponse(await sendMessage({ type: 'LOGOUT' }))
-    if (response?.ok) {
-      setSession(response.session)
-      return response
+    setSession({ status: 'loggedOut' })
+    try {
+      const response = asSessionResponse(await sendMessage({ type: 'LOGOUT' }))
+      if (response?.ok) {
+        setSession(response.session)
+        return response
+      }
+    } catch {
+      // The worker may have cleared storage before the port closed.
     }
-    return response ?? { ok: false as const, error: 'Respuesta inválida' }
-  }, [])
+    await refresh()
+    return { ok: false as const, error: 'No se pudo cerrar la sesión' }
+  }, [refresh])
 
   return { session, loading, openAuth, selectOrg, logout, refresh }
 }

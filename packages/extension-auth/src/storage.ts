@@ -31,12 +31,65 @@ export async function readSession(): Promise<ExtensionSession> {
   return session
 }
 
-export async function writeSession(session: ExtensionSession): Promise<void> {
+/**
+ * Bumped on every login, logout, or org change.
+ * Startup token validation captures this and must not write back if it moved.
+ */
+let sessionGeneration = 0
+let sessionWriteQueue: Promise<void> = Promise.resolve()
+
+function enqueueSessionWrite<T>(task: () => Promise<T>): Promise<T> {
+  const run = sessionWriteQueue.then(task, task)
+  sessionWriteQueue = run.then(
+    () => undefined,
+    () => undefined,
+  )
+  return run
+}
+
+function bumpSessionGeneration(): number {
+  sessionGeneration += 1
+  return sessionGeneration
+}
+
+async function persistSession(session: ExtensionSession): Promise<void> {
   await chrome.storage.local.set({ [SESSION_STORAGE_KEY]: session })
 }
 
-export async function clearSession(): Promise<void> {
-  await chrome.storage.local.set({
-    [SESSION_STORAGE_KEY]: { status: 'loggedOut' } satisfies ExtensionSession,
+export function sessionGenerationNow(): number {
+  return sessionGeneration
+}
+
+export function writeSession(session: ExtensionSession): Promise<void> {
+  const ticket = bumpSessionGeneration()
+  return enqueueSessionWrite(async () => {
+    if (ticket !== sessionGeneration) return
+    await persistSession(session)
+  })
+}
+
+export function clearSession(): Promise<void> {
+  const ticket = bumpSessionGeneration()
+  return enqueueSessionWrite(async () => {
+    if (ticket !== sessionGeneration) return
+    await persistSession({ status: 'loggedOut' })
+  })
+}
+
+/**
+ * Persist a session refreshed from the network only if no login, logout, or
+ * org change happened after `since`. Writes are serialized with clear/write
+ * so a logout that arrives mid-validation always wins.
+ */
+export function commitSessionIfCurrent(
+  since: number,
+  accessToken: string,
+  next: ExtensionSession,
+): Promise<void> {
+  return enqueueSessionWrite(async () => {
+    if (since !== sessionGeneration) return
+    const current = await readSession()
+    if (current.status === 'loggedOut' || current.accessToken !== accessToken) return
+    await persistSession(next)
   })
 }
