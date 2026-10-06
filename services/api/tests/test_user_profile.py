@@ -218,9 +218,7 @@ async def test_register_requires_phone(client: AsyncClient) -> None:
     assert r_blank.status_code == 422
 
 
-async def test_register_stores_phone_trimmed_without_normalization(
-    client: AsyncClient,
-) -> None:
+async def test_register_stores_normalized_phone(client: AsyncClient) -> None:
     r = await client.post(
         "/users/register",
         json={
@@ -232,7 +230,21 @@ async def test_register_stores_phone_trimmed_without_normalization(
         },
     )
     assert r.status_code == 201
-    assert r.json()["phone"] == "+53 5 123-4567"
+    assert r.json()["phone"] == "5351234567"
+
+
+async def test_register_rejects_non_phone_characters(client: AsyncClient) -> None:
+    r = await client.post(
+        "/users/register",
+        json={
+            "name": "Correo Como Teléfono",
+            "email": "emailasphone@example.com",
+            "password": "secret123",
+            "phone": "user@mail.com",
+            "client_app": "seller",
+        },
+    )
+    assert r.status_code == 422
 
 
 async def test_register_rejects_duplicate_phone(
@@ -249,7 +261,7 @@ async def test_register_rejects_duplicate_phone(
         },
     )
     assert r1.status_code == 201
-    assert r1.json()["phone"] == "55512345"
+    assert r1.json()["phone"] == "5355512345"
 
     r2 = await client.post(
         "/users/register",

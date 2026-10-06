@@ -1,3 +1,4 @@
+import { toPhoneDigits } from '@broker/api'
 import {
   ClearFiltersButton,
   DebouncedInput,
@@ -32,6 +33,8 @@ export function CustomerFilters({
       <DebouncedInput
         value={filters.phone}
         onDebouncedChange={(value) => setFilter('phone', value)}
+        transformValue={toPhoneDigits}
+        inputMode="numeric"
         placeholder="Teléfono…"
         aria-label="Filtrar por teléfono"
         className="min-w-0 flex-1 sm:max-w-xs"

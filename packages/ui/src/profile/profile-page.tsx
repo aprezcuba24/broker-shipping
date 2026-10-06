@@ -1,6 +1,7 @@
 import {
   formatApiError,
   getMeUsersMeGetQueryKey,
+  optionalPhoneSchema,
   useAuth,
   useUpdateMeUsersMePatch,
 } from '@broker/api'
@@ -14,6 +15,7 @@ import { z } from 'zod'
 import { Button } from '../components/button'
 import { PageLoading } from '../components/page-loading'
 import { PageWrapper } from '../components/page-wrapper'
+import { PhoneInput } from '../components/phone-input'
 import {
   Card,
   CardContent,
@@ -22,11 +24,10 @@ import {
   CardTitle,
 } from '../components/ui/card'
 import { Field, FieldError, FieldLabel } from '../components/ui/field'
-import { Input } from '../components/ui/input'
 import { notify } from '../lib/notify'
 
 const profileFormSchema = z.object({
-  phone: z.string().trim().max(50, 'Máximo 50 caracteres'),
+  phone: optionalPhoneSchema,
 })
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>
@@ -52,7 +53,7 @@ export function ProfilePage() {
   const onSubmit = form.handleSubmit(async (values) => {
     try {
       await updateMutation.mutateAsync({
-        data: { phone: values.phone.trim() || null },
+        data: { phone: values.phone || null },
       })
       await queryClient.invalidateQueries({ queryKey: getMeUsersMeGetQueryKey() })
       notify.updated('Perfil', 'm')
@@ -86,12 +87,9 @@ export function ProfilePage() {
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="profile-phone">Número de teléfono</FieldLabel>
-                    <Input
+                    <PhoneInput
                       {...field}
                       id="profile-phone"
-                      inputMode="tel"
-                      autoComplete="tel"
-                      maxLength={50}
                       placeholder="Ej. 51234567"
                       disabled={updateMutation.isPending}
                       aria-invalid={fieldState.invalid}

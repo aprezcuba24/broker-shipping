@@ -237,6 +237,8 @@ export {
   CommandSeparator,
 } from './components/ui/command'
 export { Input } from './components/ui/input'
+export { PhoneInput } from './components/phone-input'
+export type { PhoneInputProps } from './components/phone-input'
 export { Label } from './components/ui/label'
 export { Switch } from './components/ui/switch'
 export {

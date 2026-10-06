@@ -1,9 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { PhoneBlacklistReason } from '@broker/api'
+import { PhoneBlacklistReason, phoneSchema } from '@broker/api'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 
 import { FormFieldCell, FormSection } from '../components/form-section'
+import { PhoneInput } from '../components/phone-input'
 import { Field, FieldError, FieldLabel } from '../components/ui/field'
 import { Input } from '../components/ui/input'
 import {
@@ -20,11 +21,7 @@ import { PHONE_BLACKLIST_REASON_LABELS } from './phone-blacklist-labels'
 
 export const phoneBlacklistFormSchema = z
   .object({
-    phone: z
-      .string()
-      .trim()
-      .min(1, 'El teléfono es obligatorio')
-      .max(50, 'Máximo 50 caracteres'),
+    phone: phoneSchema,
     reason: z.enum([
       PhoneBlacklistReason.nonpayment,
       PhoneBlacklistReason.fraud,
@@ -86,12 +83,9 @@ export function PhoneBlacklistForm({
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor="blacklist-phone">Número</FieldLabel>
-                <Input
+                <PhoneInput
                   {...field}
                   id="blacklist-phone"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  maxLength={50}
                   autoFocus
                   placeholder="Ej. 51234567"
                   disabled={isSubmitting}

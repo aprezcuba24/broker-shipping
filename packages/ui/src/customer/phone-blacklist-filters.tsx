@@ -1,3 +1,5 @@
+import { toPhoneDigits } from '@broker/api'
+
 import { DebouncedInput } from '../components/debounced-input'
 import { Label } from '../components/ui/label'
 import {
@@ -39,6 +41,8 @@ export function PhoneBlacklistFilters({
       <DebouncedInput
         value={filters.phone}
         onDebouncedChange={(value) => setFilter('phone', value)}
+        transformValue={toPhoneDigits}
+        inputMode="numeric"
         placeholder="Buscar teléfono…"
         aria-label="Buscar por teléfono"
         className="min-w-0 flex-1"

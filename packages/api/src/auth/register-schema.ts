@@ -1,15 +1,13 @@
 import { z } from 'zod'
 
+import { phoneSchema } from '../lib/phone'
+
 export const clientAppSchema = z.enum(['backoffice', 'seller'])
 
 export const registerSchema = z.object({
   name: z.string().trim().min(1, 'El nombre es obligatorio'),
   email: z.string().trim().email('Introduce un correo válido'),
-  phone: z
-    .string()
-    .trim()
-    .min(1, 'El teléfono es obligatorio')
-    .max(50, 'Máximo 50 caracteres'),
+  phone: phoneSchema,
   password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
 })
 

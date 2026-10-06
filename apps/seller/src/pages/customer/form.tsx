@@ -1,5 +1,8 @@
 import {
+  isValidPhoneDigits,
   listCustomersCustomersSellerGet,
+  phoneSchema,
+  toPhoneDigits,
   type CustomerPublic,
   type ListCustomersCustomersSellerGetParams,
 } from '@broker/api'
@@ -22,6 +25,7 @@ import {
   FormSection,
   Input,
   LocationFields,
+  PhoneInput,
   Textarea,
   type EntityFormHandle,
   type EntityFormProps,
@@ -39,11 +43,7 @@ export const customerFormSchema = z.object({
     .trim()
     .min(1, 'El CI es obligatorio')
     .max(50, 'Máximo 50 caracteres'),
-  phone: z
-    .string()
-    .trim()
-    .min(1, 'El teléfono es obligatorio')
-    .max(50, 'Máximo 50 caracteres'),
+  phone: phoneSchema,
   address: z
     .string()
     .trim()
@@ -68,13 +68,8 @@ export const customerFormDefaultValues: CustomerFormValues = {
 
 type LookupStatus = 'idle' | 'searching' | 'found' | 'not_found' | 'error'
 
-function toPhoneDigits(value: string): string {
-  return value.trim().replace(/^\+/, '').replace(/\D/g, '')
-}
-
-/** Complete local (8) or full (10+) number — backend normalizes 8-digit to 53… */
 function isPhoneReadyForLookup(digits: string): boolean {
-  return digits.length === 8 || digits.length >= 10
+  return isValidPhoneDigits(digits)
 }
 
 function applyCustomerToForm(
@@ -235,18 +230,16 @@ export function CustomerForm({
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor="customer-phone">Teléfono</FieldLabel>
-                <Input
+                <PhoneInput
                   {...field}
                   id="customer-phone"
-                  maxLength={50}
-                  inputMode="tel"
                   autoFocus
                   disabled={isSubmitting}
                   aria-invalid={fieldState.invalid}
                   onBlur={() => {
                     field.onBlur()
                     const digits = toPhoneDigits(field.value)
-                    if (digits.length >= 8) {
+                    if (isPhoneReadyForLookup(digits)) {
                       void runLookup(digits)
                     }
                   }}

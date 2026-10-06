@@ -12,6 +12,7 @@ import {
   FieldLabel,
 } from '../ui/field'
 import { Input } from '../ui/input'
+import { PhoneInput } from '../phone-input'
 import {
   LinkedProviderCallout,
   MEMBER_INVITE_CALLOUT_LABEL,
@@ -143,13 +144,9 @@ export function RegisterForm({
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel htmlFor="phone">Teléfono</FieldLabel>
-                      <Input
+                      <PhoneInput
                         {...field}
                         id="phone"
-                        type="tel"
-                        inputMode="tel"
-                        autoComplete="tel"
-                        maxLength={50}
                         placeholder="Ej. 51234567"
                         aria-invalid={fieldState.invalid}
                       />
