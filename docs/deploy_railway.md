@@ -75,7 +75,7 @@ DATABASE_URL=${{Postgres.DATABASE_URL}}
 
 JWT_SECRET=<genera-al-menos-32-caracteres-aleatorios>
 JWT_ALGORITHM=HS256
-JWT_EXPIRE_MINUTES=1440
+JWT_EXPIRE_MINUTES=525600
 
 # CORS: fijo en código a allow_origins=["*"] (backend multi-cliente; auth = JWT / API keys).
 # No hace falta CORS_ORIGINS en Railway.

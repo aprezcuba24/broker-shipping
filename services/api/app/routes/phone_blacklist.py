@@ -2,7 +2,7 @@ from fastapi import APIRouter, Query, Response
 
 from app.deps import SessionDep
 from app.lib.persistence.pagination import PaginationDep
-from app.lib.security.deps import AnyOrgDep, CurrentUserDep
+from app.lib.security.deps import BlacklistOrgDep, CurrentUserDep
 from app.models.customer.enums import PhoneBlacklistReason
 from app.schemas.pagination import Page
 from app.schemas.phone_blacklist import (
@@ -18,11 +18,12 @@ router = APIRouter(prefix="/phone-blacklist", tags=["phone-blacklist"])
 
 @router.get("/", response_model=Page[PhoneBlacklistListItem])
 async def list_phone_blacklist(
-    organization: AnyOrgDep,
+    organization: BlacklistOrgDep,
     session: SessionDep,
     pagination: PaginationDep,
     phone: str | None = None,
     reason: PhoneBlacklistReason | None = None,
+    own_only: bool = False,
 ) -> Page[PhoneBlacklistListItem]:
     result = await phone_blacklist_service.list_active_for_organization(
         session,
@@ -30,13 +31,14 @@ async def list_phone_blacklist(
         pagination=pagination,
         phone=phone,
         reason=reason,
+        own_only=own_only,
     )
     return Page.from_result(result, pagination)
 
 
 @router.get("/status", response_model=PhoneBlacklistStatusPublic)
 async def get_phone_blacklist_status(
-    organization: AnyOrgDep,
+    organization: BlacklistOrgDep,
     session: SessionDep,
     phone: str = Query(min_length=1),
 ) -> PhoneBlacklistStatusPublic:
@@ -50,7 +52,7 @@ async def get_phone_blacklist_status(
 @router.post("/", response_model=PhoneBlacklistPublic, status_code=201)
 async def create_phone_blacklist_entry(
     body: PhoneBlacklistCreate,
-    organization: AnyOrgDep,
+    organization: BlacklistOrgDep,
     user: CurrentUserDep,
     session: SessionDep,
 ) -> PhoneBlacklistPublic:
@@ -65,7 +67,7 @@ async def create_phone_blacklist_entry(
 
 @router.delete("/", status_code=204)
 async def withdraw_phone_blacklist_entry(
-    organization: AnyOrgDep,
+    organization: BlacklistOrgDep,
     session: SessionDep,
     phone: str = Query(min_length=1),
 ) -> Response:

@@ -14,6 +14,11 @@ from app.deps import SessionDep
 from app.lib.exceptions import raise_api_error
 from app.lib.persistence import get_entity
 from app.lib.security.access import ensure_organization_access, is_super_admin
+from app.lib.security.platform_access import (
+    ensure_any_seller_org_has_product,
+    ensure_organization_access_with_product,
+)
+from app.types import PlatformProductCode
 from app.lib.security.api_keys import split_raw
 from app.lib.security.tokens import decode_access_token
 from app.models.organization.enums import OrganizationType
@@ -113,6 +118,47 @@ async def optional_seller_organization(
     )
 
 
+def require_organization_with_product(
+    product_code: PlatformProductCode,
+    org_type: OrganizationType | None = None,
+) -> Callable[..., Organization]:
+    async def _resolve(
+        organization_id: UUID,
+        user: Annotated[User, Depends(get_current_user)],
+        session: SessionDep,
+    ) -> Organization:
+        return await ensure_organization_access_with_product(
+            session,
+            user,
+            organization_id=organization_id,
+            required_org_type=org_type,
+            product_code=product_code,
+        )
+
+    return _resolve
+
+
+async def optional_seller_management_organization(
+    user: Annotated[User, Depends(get_current_user)],
+    session: SessionDep,
+    organization_id: UUID | None = None,
+) -> Organization | None:
+    if organization_id is None:
+        await ensure_any_seller_org_has_product(
+            session,
+            user,
+            PlatformProductCode.provider_management,
+        )
+        return None
+    return await ensure_organization_access_with_product(
+        session,
+        user,
+        organization_id=organization_id,
+        required_org_type=OrganizationType.seller,
+        product_code=PlatformProductCode.provider_management,
+    )
+
+
 async def require_super_admin(
     user: Annotated[User, Depends(get_current_user)],
 ) -> User:
@@ -139,4 +185,32 @@ SellerOrgDep = Annotated[
 OptionalSellerOrgDep = Annotated[
     Organization | None,
     Depends(optional_seller_organization),
+]
+BlacklistOrgDep = Annotated[
+    Organization,
+    Depends(
+        require_organization_with_product(PlatformProductCode.phone_blacklist),
+    ),
+]
+ProviderManagementOrgDep = Annotated[
+    Organization,
+    Depends(
+        require_organization_with_product(
+            PlatformProductCode.provider_management,
+            OrganizationType.provider,
+        ),
+    ),
+]
+SellerManagementOrgDep = Annotated[
+    Organization,
+    Depends(
+        require_organization_with_product(
+            PlatformProductCode.provider_management,
+            OrganizationType.seller,
+        ),
+    ),
+]
+OptionalSellerManagementOrgDep = Annotated[
+    Organization | None,
+    Depends(optional_seller_management_organization),
 ]

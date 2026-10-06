@@ -4,7 +4,7 @@ from fastapi import APIRouter, Response
 
 from app.deps import SessionDep
 from app.lib.persistence.pagination import PaginationDep
-from app.lib.security.deps import SellerOrgDep
+from app.lib.security.deps import SellerManagementOrgDep
 from app.schemas.customer import CustomerCreate, CustomerPublic, CustomerUpdate
 from app.schemas.pagination import Page
 from app.services.customer import seller as seller_customer_service
@@ -14,7 +14,7 @@ router = APIRouter(prefix="/customers/seller", tags=["customers"])
 
 @router.get("/", response_model=Page[CustomerPublic])
 async def list_customers(
-    organization: SellerOrgDep,
+    organization: SellerManagementOrgDep,
     session: SessionDep,
     pagination: PaginationDep,
     name: str | None = None,
@@ -35,7 +35,7 @@ async def list_customers(
 @router.post("/register", response_model=CustomerPublic, status_code=201)
 async def register_customer(
     body: CustomerCreate,
-    organization: SellerOrgDep,
+    organization: SellerManagementOrgDep,
     session: SessionDep,
 ) -> CustomerPublic:
     customer = await seller_customer_service.register_customer(
@@ -49,7 +49,7 @@ async def register_customer(
 @router.post("/", response_model=CustomerPublic, status_code=201)
 async def create_customer(
     body: CustomerCreate,
-    organization: SellerOrgDep,
+    organization: SellerManagementOrgDep,
     session: SessionDep,
 ) -> CustomerPublic:
     customer = await seller_customer_service.create_customer(
@@ -63,7 +63,7 @@ async def create_customer(
 @router.get("/{customer_id}", response_model=CustomerPublic)
 async def get_customer(
     customer_id: UUID,
-    organization: SellerOrgDep,
+    organization: SellerManagementOrgDep,
     session: SessionDep,
 ) -> CustomerPublic:
     customer = await seller_customer_service.get_customer_for_seller(
@@ -78,7 +78,7 @@ async def get_customer(
 async def patch_customer(
     customer_id: UUID,
     body: CustomerUpdate,
-    organization: SellerOrgDep,
+    organization: SellerManagementOrgDep,
     session: SessionDep,
 ) -> CustomerPublic:
     customer = await seller_customer_service.update_customer(
@@ -93,7 +93,7 @@ async def patch_customer(
 @router.delete("/{customer_id}", status_code=204)
 async def delete_customer(
     customer_id: UUID,
-    organization: SellerOrgDep,
+    organization: SellerManagementOrgDep,
     session: SessionDep,
 ) -> Response:
     await seller_customer_service.delete_customer(

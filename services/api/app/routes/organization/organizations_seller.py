@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Query
 
 from app.deps import SessionDep
-from app.lib.security.deps import CurrentUserDep, SellerOrgDep
+from app.lib.security.deps import CurrentUserDep, SellerManagementOrgDep
 from app.schemas.invitation import InvitationPublic
 from app.schemas.organization import OrganizationPublic
 from app.services import invitation as invitation_service
@@ -57,7 +57,7 @@ async def create_seller_link_request(
 
 @router.get("/providers", response_model=list[OrganizationPublic])
 async def list_providers(
-    organization: SellerOrgDep,
+    organization: SellerManagementOrgDep,
     session: SessionDep,
 ) -> list[OrganizationPublic]:
     providers = await link_service.list_linked_provider_organizations(

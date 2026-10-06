@@ -5,7 +5,7 @@ from fastapi import APIRouter, Query, Response
 
 from app.deps import SessionDep
 from app.lib.persistence.pagination import PaginationDep
-from app.lib.security.deps import ProviderOrgDep
+from app.lib.security.deps import ProviderManagementOrgDep
 from app.schemas.pagination import Page
 from app.schemas.product import (
     ProductCreate,
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/products/provider", tags=["products"])
 
 @router.get("/", response_model=Page[ProductProviderPublic])
 async def list_products(
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
     pagination: PaginationDep,
     name: str | None = None,
@@ -39,7 +39,7 @@ async def list_products(
 @router.get("/{product_id}", response_model=ProductProviderPublic)
 async def get_product(
     product_id: UUID,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> ProductProviderPublic:
     product = await product_service.get_product_for_organization(
@@ -53,7 +53,7 @@ async def get_product(
 @router.post("/", response_model=ProductProviderPublic, status_code=201)
 async def create_product(
     body: ProductCreate,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> ProductProviderPublic:
     product = await product_service.create_product(session, organization.id, body)
@@ -64,7 +64,7 @@ async def create_product(
 async def patch_product(
     product_id: UUID,
     body: ProductUpdate,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> ProductProviderPublic:
     product = await product_service.update_product(
@@ -79,7 +79,7 @@ async def patch_product(
 @router.delete("/{product_id}", status_code=204)
 async def delete_product(
     product_id: UUID,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> Response:
     await product_service.delete_product(session, product_id, organization.id)

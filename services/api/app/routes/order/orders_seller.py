@@ -4,7 +4,7 @@ from fastapi import APIRouter
 
 from app.deps import SessionDep
 from app.lib.persistence.pagination import PaginationDep
-from app.lib.security.deps import CurrentUserDep, SellerOrgDep
+from app.lib.security.deps import CurrentUserDep, SellerManagementOrgDep
 from app.models.order.enums import OrderStatus
 from app.schemas.order import OrderCreate, OrderPreviewItems, OrderPublic
 from app.schemas.pagination import Page
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/orders/seller", tags=["orders"])
 
 @router.get("/", response_model=Page[OrderPublic])
 async def list_orders(
-    organization: SellerOrgDep,
+    organization: SellerManagementOrgDep,
     session: SessionDep,
     pagination: PaginationDep,
     search: str | None = None,
@@ -38,7 +38,7 @@ async def list_orders(
 async def preview_order(
     body: OrderPreviewItems,
     user: CurrentUserDep,
-    organization: SellerOrgDep,
+    organization: SellerManagementOrgDep,
     session: SessionDep,
 ) -> OrderPublic:
     order = await seller_order_service.preview_order(
@@ -53,7 +53,7 @@ async def preview_order(
 @router.get("/{order_id}", response_model=OrderPublic)
 async def get_order(
     order_id: UUID,
-    organization: SellerOrgDep,
+    organization: SellerManagementOrgDep,
     session: SessionDep,
 ) -> OrderPublic:
     order = await seller_order_service.get_order_for_seller(
@@ -68,7 +68,7 @@ async def get_order(
 async def create_order(
     body: OrderCreate,
     user: CurrentUserDep,
-    organization: SellerOrgDep,
+    organization: SellerManagementOrgDep,
     session: SessionDep,
 ) -> OrderPublic:
     order = await seller_order_service.create_order(

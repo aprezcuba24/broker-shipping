@@ -44,10 +44,15 @@ async def register_user(session: AsyncSession, data: UserRegister) -> User:
     if existing is not None:
         raise_api_error("email_already_registered")
 
+    phone_taken = await get_entity(session, User, phone=data.phone, required=False)
+    if phone_taken is not None:
+        raise_api_error("user_phone_conflict")
+
     user = User(
         name=data.name,
         email=data.email,
         password_hash=hash_password(data.password),
+        phone=data.phone,
     )
     raw_token = _set_verification_token(user)
     session.add(user)
@@ -180,20 +185,28 @@ async def reset_password(session: AsyncSession, token: str, password: str) -> Us
     await session.refresh(user)
     return user
 
+async def _ensure_phone_available(
+    session: AsyncSession,
+    user: User,
+    phone: str,
+) -> None:
+    existing = await get_entity(
+        session,
+        User,
+        phone=phone,
+        required=False,
+    )
+    if existing is not None and existing.id != user.id:
+        raise_api_error("user_phone_conflict")
+
+
 async def update_user_profile(
     session: AsyncSession,
     user: User,
     data: UserProfileUpdate,
 ) -> User:
     if data.phone is not None:
-        existing = await get_entity(
-            session,
-            User,
-            phone=data.phone,
-            required=False,
-        )
-        if existing is not None and existing.id != user.id:
-            raise_api_error("user_phone_conflict")
+        await _ensure_phone_available(session, user, data.phone)
 
     user.phone = data.phone
     session.add(user)

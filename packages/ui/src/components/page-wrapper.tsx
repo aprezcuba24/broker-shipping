@@ -12,7 +12,7 @@ export type PageWrapperProps = {
   leading?: ReactNode
   buttons?: ReactNode[] | null
   empty?: PageEmptyStateProps | null
-  children: ReactNode
+  children?: ReactNode
 }
 
 export function PageWrapper({

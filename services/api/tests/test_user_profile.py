@@ -191,3 +191,87 @@ async def test_update_profile_phone_can_be_reassigned_after_clear(
     )
     assert taken.status_code == 200
     assert taken.json()["phone"] == "5355512345"
+
+
+async def test_register_requires_phone(client: AsyncClient) -> None:
+    r = await client.post(
+        "/users/register",
+        json={
+            "name": "Sin Teléfono",
+            "email": "nophone@example.com",
+            "password": "secret123",
+            "client_app": "seller",
+        },
+    )
+    assert r.status_code == 422
+
+    r_blank = await client.post(
+        "/users/register",
+        json={
+            "name": "Sin Teléfono",
+            "email": "nophone2@example.com",
+            "password": "secret123",
+            "phone": "   ",
+            "client_app": "seller",
+        },
+    )
+    assert r_blank.status_code == 422
+
+
+async def test_register_stores_normalized_phone(client: AsyncClient) -> None:
+    r = await client.post(
+        "/users/register",
+        json={
+            "name": "Con Teléfono",
+            "email": "withphone@example.com",
+            "password": "secret123",
+            "phone": "  +53 5 123-4567  ",
+            "client_app": "seller",
+        },
+    )
+    assert r.status_code == 201
+    assert r.json()["phone"] == "5351234567"
+
+
+async def test_register_rejects_non_phone_characters(client: AsyncClient) -> None:
+    r = await client.post(
+        "/users/register",
+        json={
+            "name": "Correo Como Teléfono",
+            "email": "emailasphone@example.com",
+            "password": "secret123",
+            "phone": "user@mail.com",
+            "client_app": "seller",
+        },
+    )
+    assert r.status_code == 422
+
+
+async def test_register_rejects_duplicate_phone(
+    client: AsyncClient,
+) -> None:
+    r1 = await client.post(
+        "/users/register",
+        json={
+            "name": "Primero",
+            "email": "first-phone@example.com",
+            "password": "secret123",
+            "phone": "55512345",
+            "client_app": "seller",
+        },
+    )
+    assert r1.status_code == 201
+    assert r1.json()["phone"] == "5355512345"
+
+    r2 = await client.post(
+        "/users/register",
+        json={
+            "name": "Segundo",
+            "email": "second-phone@example.com",
+            "password": "secret123",
+            "phone": "55512345",
+            "client_app": "seller",
+        },
+    )
+    assert r2.status_code == 409
+    assert r2.json()["code"] == "user_phone_conflict"

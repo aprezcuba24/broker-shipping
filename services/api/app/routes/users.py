@@ -92,6 +92,11 @@ async def login(
     return TokenResponse(access_token=create_access_token(user.id))
 
 
+@router.post("/refresh", response_model=TokenResponse)
+async def refresh(user: CurrentUserDep) -> TokenResponse:
+    return TokenResponse(access_token=create_access_token(user.id))
+
+
 @router.get("/me", response_model=UserPublic)
 async def me(user: CurrentUserDep) -> UserPublic:
     return UserPublic.model_validate(user)

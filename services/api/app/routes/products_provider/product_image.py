@@ -6,7 +6,7 @@ from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
 
 from app.deps import SessionDep
-from app.lib.security.deps import ProviderOrgDep
+from app.lib.security.deps import ProviderManagementOrgDep
 from app.schemas.product import (
     ProductImageConfirmRequest,
     ProductImagePresignRequest,
@@ -21,7 +21,7 @@ router = APIRouter(prefix="/products/provider", tags=["products"])
 
 def _validated_image_confirm(
     product_id: UUID,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     body: Annotated[ProductImageConfirmRequest, Body()],
 ) -> ProductImageConfirmRequest:
     try:
@@ -47,7 +47,7 @@ ValidatedProductImageConfirm = Annotated[
 async def presign_product_image(
     product_id: UUID,
     body: ProductImagePresignRequest,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> ProductImagePresignResponse:
     return await product_image_service.presign_product_image_upload(
@@ -62,7 +62,7 @@ async def presign_product_image(
 async def confirm_product_image(
     product_id: UUID,
     body: ValidatedProductImageConfirm,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> ProductProviderPublic:
     product = await product_image_service.confirm_product_image(
@@ -77,7 +77,7 @@ async def confirm_product_image(
 @router.delete("/{product_id}/image", status_code=204)
 async def delete_product_image(
     product_id: UUID,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> Response:
     await product_image_service.delete_product_image(

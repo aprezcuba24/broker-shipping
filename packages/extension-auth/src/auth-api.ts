@@ -27,6 +27,14 @@ export async function fetchMe(accessToken: string): Promise<SessionUser> {
   }
 }
 
+export async function refreshAccessToken(accessToken: string): Promise<string> {
+  const data = await apiRequest<{ access_token: string }>('/users/refresh', {
+    method: 'POST',
+    token: accessToken,
+  })
+  return data.access_token
+}
+
 type OrgApi = {
   id: string
   name: string

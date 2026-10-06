@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from app.schemas.fields import NonEmptyStr, NormalizedEmail, OptionalNormalizedPhone
+from app.schemas.fields import NonEmptyStr, NormalizedEmail, NormalizedPhone, OptionalNormalizedPhone
 from app.types import ClientApp
 
 
@@ -11,6 +11,7 @@ class UserRegister(BaseModel):
     name: NonEmptyStr = Field(max_length=255)
     email: NormalizedEmail
     password: str = Field(min_length=8, max_length=128)
+    phone: NormalizedPhone = Field(max_length=50)
     client_app: ClientApp
 
 

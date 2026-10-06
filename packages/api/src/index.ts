@@ -5,6 +5,13 @@ export {
   type OrganizationScopedParams,
 } from './client'
 export { formatApiError } from './lib/format-api-error'
+export {
+  isValidPhoneDigits,
+  optionalPhoneSchema,
+  phoneSchema,
+  PHONE_INVALID_MESSAGE,
+  toPhoneDigits,
+} from './lib/phone'
 export { formatAddressLine, formatDateTime } from './lib/utils'
 
 export { loginSchema, type LoginFormValues } from './auth/login-schema'
@@ -46,3 +53,4 @@ export * from './generated/api-keys/api-keys'
 export * from './generated/health/health'
 export * from './generated/demo/demo'
 export * from './generated/dashboard/dashboard'
+export * from './generated/platform-products/platform-products'

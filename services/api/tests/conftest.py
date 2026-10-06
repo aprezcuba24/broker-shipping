@@ -40,6 +40,7 @@ from sqlmodel import SQLModel
 
 from app.db.model_loader import load_all_table_models
 from app.main import app, lifespan
+from app.services import platform_product as platform_product_service
 from tests.factories.api_key_factory import ApiKeyFactory
 from tests.factories.customer_factory import CustomerFactory
 from tests.factories.location_factory import LocationFactory
@@ -60,6 +61,13 @@ async def test_engine() -> AsyncIterator[AsyncEngine]:
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.drop_all)
         await conn.run_sync(SQLModel.metadata.create_all)
+    session_maker = async_sessionmaker(
+        engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
+    async with session_maker() as session:
+        await platform_product_service.ensure_catalog_seeded(session)
     try:
         yield engine
     finally:

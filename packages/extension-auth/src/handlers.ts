@@ -1,4 +1,9 @@
-import { fetchMe, fetchSellerOrganizations, loginRequest } from './auth-api'
+import {
+  fetchMe,
+  fetchSellerOrganizations,
+  loginRequest,
+  refreshAccessToken,
+} from './auth-api'
 import { buildAuthenticatedSession } from './session'
 import {
   clearSession,
@@ -107,8 +112,14 @@ export async function validateStoredSession(): Promise<void> {
   try {
     const user = await fetchMe(accessToken)
     const organizations = await fetchSellerOrganizations(accessToken)
+    let nextAccessToken = accessToken
+    try {
+      nextAccessToken = await refreshAccessToken(accessToken)
+    } catch {
+      // Keep the existing token if refresh fails; /users/me already succeeded.
+    }
     const next = buildAuthenticatedSession({
-      accessToken,
+      accessToken: nextAccessToken,
       user,
       organizations,
       previousOrganizationId: session.organizationId,

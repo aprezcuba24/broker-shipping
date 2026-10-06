@@ -4,7 +4,7 @@ from fastapi import APIRouter
 
 from app.deps import SessionDep
 from app.lib.persistence.pagination import PaginationDep
-from app.lib.security.deps import ProviderOrgDep
+from app.lib.security.deps import ProviderManagementOrgDep
 from app.models.order.enums import OrderStatus
 from app.schemas.messaging import OrderMessagingCreate, OrderMessagingUpdate
 from app.schemas.order import OrderItemStatusUpdate, OrderPublic
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/orders/provider", tags=["orders"])
 
 @router.get("/", response_model=Page[OrderPublic])
 async def list_orders(
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
     pagination: PaginationDep,
     search: str | None = None,
@@ -38,7 +38,7 @@ async def list_orders(
 @router.get("/{order_id}", response_model=OrderPublic)
 async def get_order(
     order_id: UUID,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> OrderPublic:
     order = await provider_order_service.get_order_for_provider(
@@ -53,7 +53,7 @@ async def get_order(
 async def update_items_status(
     order_id: UUID,
     body: OrderItemStatusUpdate,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> OrderPublic:
     order = await provider_order_service.update_provider_items_status(
@@ -69,7 +69,7 @@ async def update_items_status(
 async def create_order_messaging(
     order_id: UUID,
     body: OrderMessagingCreate,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> OrderPublic:
     order = await provider_order_service.create_order_messaging(
@@ -86,7 +86,7 @@ async def patch_order_messaging(
     order_id: UUID,
     messaging_id: UUID,
     body: OrderMessagingUpdate,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> OrderPublic:
     order = await provider_order_service.update_order_messaging(

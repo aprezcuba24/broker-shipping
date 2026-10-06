@@ -2,7 +2,7 @@ from fastapi import APIRouter, Response
 from uuid import UUID
 
 from app.deps import SessionDep
-from app.lib.security.deps import ProviderOrgDep
+from app.lib.security.deps import ProviderManagementOrgDep
 from app.schemas.messaging import (
     MessagingPriceCreate,
     MessagingPricePublic,
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/messaging-prices/provider", tags=["messaging"])
 
 @router.get("/", response_model=list[MessagingPricePublic])
 async def list_messaging_prices(
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> list[MessagingPricePublic]:
     prices = await messaging_price_service.list_messaging_prices(
@@ -28,7 +28,7 @@ async def list_messaging_prices(
 @router.post("/", response_model=MessagingPricePublic, status_code=201)
 async def create_messaging_price(
     body: MessagingPriceCreate,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> MessagingPricePublic:
     price = await messaging_price_service.create_messaging_price(
@@ -43,7 +43,7 @@ async def create_messaging_price(
 async def patch_messaging_price(
     price_id: UUID,
     body: MessagingPriceUpdate,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> MessagingPricePublic:
     price = await messaging_price_service.update_messaging_price(
@@ -58,7 +58,7 @@ async def patch_messaging_price(
 @router.delete("/{price_id}", status_code=204)
 async def delete_messaging_price(
     price_id: UUID,
-    organization: ProviderOrgDep,
+    organization: ProviderManagementOrgDep,
     session: SessionDep,
 ) -> Response:
     await messaging_price_service.delete_messaging_price(

@@ -4,7 +4,7 @@ from fastapi import APIRouter
 
 from app.deps import SessionDep
 from app.lib.persistence.pagination import PaginationDep
-from app.lib.security.deps import CurrentUserDep, SellerOrgDep
+from app.lib.security.deps import CurrentUserDep, SellerManagementOrgDep
 from app.schemas.pagination import Page
 from app.schemas.tag import TagPublic
 from app.services import seller_tag as seller_tag_service
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/tags/seller", tags=["tags"])
 @router.get("/", response_model=Page[TagPublic])
 async def list_tags(
     user: CurrentUserDep,
-    organization: SellerOrgDep,
+    organization: SellerManagementOrgDep,
     session: SessionDep,
     pagination: PaginationDep,
     name: str | None = None,
@@ -36,7 +36,7 @@ async def list_tags(
 async def get_tag(
     tag_id: UUID,
     user: CurrentUserDep,
-    organization: SellerOrgDep,
+    organization: SellerManagementOrgDep,
     session: SessionDep,
 ) -> TagPublic:
     tag = await seller_tag_service.get_accessible_tag(

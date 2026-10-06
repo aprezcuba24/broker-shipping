@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select'
+import { Textarea } from '../components/ui/textarea'
 import { cn } from '../lib/utils'
 
 export type PurchaseTierValue = 0 | 1 | 5 | 10
@@ -108,6 +109,7 @@ export function PurchaseTier({
   const [reason, setReason] = useState<BlacklistReason>('fraud')
   const [note, setNote] = useState('')
   const [modusOperandi, setModusOperandi] = useState('')
+  const [noteError, setNoteError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
   const canAdd = Boolean(onAddToBlacklist) && blacklist !== 'yes'
@@ -116,7 +118,11 @@ export function PurchaseTier({
 
   async function handleAdd() {
     if (!onAddToBlacklist) return
-    if (reason === 'other' && !note.trim()) return
+    if (reason === 'other' && !note.trim()) {
+      setNoteError('La nota es obligatoria cuando el motivo es otro')
+      return
+    }
+    setNoteError(null)
     setSubmitting(true)
     try {
       await onAddToBlacklist({
@@ -128,6 +134,7 @@ export function PurchaseTier({
       setReason('fraud')
       setNote('')
       setModusOperandi('')
+      setNoteError(null)
     } finally {
       setSubmitting(false)
     }
@@ -238,7 +245,13 @@ export function PurchaseTier({
         ) : null}
       </div>
 
-      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+      <Dialog
+        open={addOpen}
+        onOpenChange={(open) => {
+          setAddOpen(open)
+          if (!open) setNoteError(null)
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Agregar a lista negra</DialogTitle>
@@ -252,7 +265,10 @@ export function PurchaseTier({
               <Label htmlFor="blacklist-reason">Motivo</Label>
               <Select
                 value={reason}
-                onValueChange={(value) => setReason(value as BlacklistReason)}
+                onValueChange={(value) => {
+                  setReason(value as BlacklistReason)
+                  setNoteError(null)
+                }}
               >
                 <SelectTrigger id="blacklist-reason">
                   <SelectValue />
@@ -272,19 +288,29 @@ export function PurchaseTier({
                 <Input
                   id="blacklist-note"
                   value={note}
-                  onChange={(event) => setNote(event.target.value)}
+                  onChange={(event) => {
+                    setNote(event.target.value)
+                    if (noteError) setNoteError(null)
+                  }}
                   maxLength={500}
                   placeholder="Describe el motivo"
+                  aria-invalid={Boolean(noteError)}
                 />
+                {noteError ? (
+                  <p className="text-sm text-destructive" role="alert">
+                    {noteError}
+                  </p>
+                ) : null}
               </div>
             ) : null}
             <div className="grid gap-1.5">
               <Label htmlFor="blacklist-modus-operandi">Modus operandi</Label>
-              <Input
+              <Textarea
                 id="blacklist-modus-operandi"
                 value={modusOperandi}
                 onChange={(event) => setModusOperandi(event.target.value)}
                 maxLength={500}
+                rows={4}
                 placeholder="Cómo actúa o qué hace este número"
               />
             </div>
@@ -298,11 +324,7 @@ export function PurchaseTier({
             >
               Cancelar
             </Button>
-            <Button
-              type="button"
-              onClick={() => void handleAdd()}
-              disabled={busy || (reason === 'other' && !note.trim())}
-            >
+            <Button type="button" onClick={() => void handleAdd()} disabled={busy}>
               Agregar
             </Button>
           </DialogFooter>

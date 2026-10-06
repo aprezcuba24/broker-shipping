@@ -237,6 +237,8 @@ export {
   CommandSeparator,
 } from './components/ui/command'
 export { Input } from './components/ui/input'
+export { PhoneInput } from './components/phone-input'
+export type { PhoneInputProps } from './components/phone-input'
 export { Label } from './components/ui/label'
 export { Switch } from './components/ui/switch'
 export {
@@ -347,6 +349,8 @@ export type {
   ActiveOrganizationProviderProps,
   OrganizationKind,
 } from './organization/active-organization-context'
+export { useOrganizationPlatformProducts } from './organization/use-organization-platform-products'
+export { filterNavItemsByProduct } from './organization/filter-nav-items-by-product'
 export { OrganizationSelect } from './organization/organization-select'
 export { OrganizationMenuSection } from './organization/organization-menu-section'
 export { OrganizationScopedApiProvider } from './organization/organization-scoped-api-provider'

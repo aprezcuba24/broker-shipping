@@ -15,5 +15,7 @@ export interface UserRegister {
    * @maxLength 128
    */
   password: string;
+  /** @maxLength 50 */
+  phone: string;
   client_app: UserRegisterClientApp;
 }

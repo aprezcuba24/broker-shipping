@@ -301,6 +301,35 @@
         }
       }
     },
+    "/users/refresh": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Refresh",
+        "operationId": "refresh_users_refresh_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
     "/users/me": {
       "get": {
         "tags": [
@@ -3622,6 +3651,16 @@
             }
           },
           {
+            "name": "own_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Own Only"
+            }
+          },
+          {
             "name": "organization_id",
             "in": "query",
             "required": true,
@@ -5406,6 +5445,157 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MessagingSettingsPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/platform-products": {
+      "get": {
+        "tags": [
+          "platform-products"
+        ],
+        "summary": "List Platform Product Catalog",
+        "operationId": "list_platform_product_catalog_platform_products_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PlatformProductPublic"
+                  },
+                  "type": "array",
+                  "title": "Response List Platform Product Catalog Platform Products Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/organizations/{organization_id}/platform-products": {
+      "get": {
+        "tags": [
+          "platform-products"
+        ],
+        "summary": "List Organization Platform Products",
+        "operationId": "list_organization_platform_products_organizations__organization_id__platform_products_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrganizationPlatformProductPublic"
+                  },
+                  "title": "Response List Organization Platform Products Organizations  Organization Id  Platform Products Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "platform-products"
+        ],
+        "summary": "Replace Organization Platform Products",
+        "operationId": "replace_organization_platform_products_organizations__organization_id__platform_products_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrganizationPlatformProductsReplace"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrganizationPlatformProductPublic"
+                  },
+                  "title": "Response Replace Organization Platform Products Organizations  Organization Id  Platform Products Put"
                 }
               }
             }
@@ -8584,6 +8774,21 @@
           },
           "type": {
             "$ref": "#/components/schemas/OrganizationType"
+          },
+          "platform_product_codes": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PlatformProductCode"
+                },
+                "type": "array",
+                "minItems": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform Product Codes"
           }
         },
         "type": "object",
@@ -8592,6 +8797,56 @@
           "type"
         ],
         "title": "OrganizationCreate"
+      },
+      "OrganizationPlatformProductPublic": {
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/PlatformProductCode"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "name",
+          "enabled"
+        ],
+        "title": "OrganizationPlatformProductPublic"
+      },
+      "OrganizationPlatformProductsReplace": {
+        "properties": {
+          "codes": {
+            "items": {
+              "$ref": "#/components/schemas/PlatformProductCode"
+            },
+            "type": "array",
+            "minItems": 0,
+            "title": "Codes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "codes"
+        ],
+        "title": "OrganizationPlatformProductsReplace"
       },
       "OrganizationPublic": {
         "properties": {
@@ -9361,6 +9616,43 @@
           "status"
         ],
         "title": "PhoneBlacklistStatusPublic"
+      },
+      "PlatformProductCode": {
+        "type": "string",
+        "enum": [
+          "phone_blacklist",
+          "provider_management",
+          "facebook_publishing"
+        ],
+        "title": "PlatformProductCode"
+      },
+      "PlatformProductPublic": {
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/PlatformProductCode"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "name"
+        ],
+        "title": "PlatformProductPublic"
       },
       "ProductCreate": {
         "properties": {
@@ -10660,6 +10952,11 @@
             "minLength": 8,
             "title": "Password"
           },
+          "phone": {
+            "type": "string",
+            "maxLength": 50,
+            "title": "Phone"
+          },
           "client_app": {
             "type": "string",
             "enum": [
@@ -10674,6 +10971,7 @@
           "name",
           "email",
           "password",
+          "phone",
           "client_app"
         ],
         "title": "UserRegister"
