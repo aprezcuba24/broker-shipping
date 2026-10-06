@@ -1,6 +1,7 @@
 import { CreateOrganizationForm } from '@broker/ui'
 import { useOnboarding } from '@/hooks/use-onboarding'
 import { portalTheme } from '@/config/portal-theme'
+import { OnboardingProductsStep } from './onboarding-products-step'
 
 const NAME_HINT = 'Puedes usar otro nombre si lo deseas.'
 
@@ -12,6 +13,18 @@ type OnboardingPageProps = {
 export function OnboardingPage({ title, description }: OnboardingPageProps) {
   const onboarding = useOnboarding()
 
+  if (onboarding.step === 'products') {
+    return (
+      <OnboardingProductsStep
+        portal={portalTheme}
+        isSubmitting={onboarding.isSubmittingOrg}
+        error={onboarding.orgError}
+        onBack={onboarding.onBackToOrganization}
+        onSubmit={onboarding.onProductsSubmit}
+      />
+    )
+  }
+
   return (
     <CreateOrganizationForm
       title={title}
@@ -20,9 +33,8 @@ export function OnboardingPage({ title, description }: OnboardingPageProps) {
       defaultName={onboarding.defaultName}
       nameHint={NAME_HINT}
       linkedProviderName={onboarding.linkedProviderName}
-      isSubmitting={onboarding.isSubmitting}
-      error={onboarding.error}
-      onSubmit={onboarding.onSubmit}
+      isSubmitting={false}
+      onSubmit={onboarding.onOrganizationSubmit}
     />
   )
 }

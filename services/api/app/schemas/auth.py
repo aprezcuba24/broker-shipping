@@ -11,6 +11,7 @@ class UserRegister(BaseModel):
     name: NonEmptyStr = Field(max_length=255)
     email: NormalizedEmail
     password: str = Field(min_length=8, max_length=128)
+    phone: NonEmptyStr = Field(max_length=50)
     client_app: ClientApp
 
 

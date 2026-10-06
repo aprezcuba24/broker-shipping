@@ -5,9 +5,11 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { OrganizationType } from './organizationType';
+import type { OrganizationCreatePlatformProductCodes } from './organizationCreatePlatformProductCodes';
 
 export interface OrganizationCreate {
   /** @maxLength 255 */
   name: string;
   type: OrganizationType;
+  platform_product_codes?: OrganizationCreatePlatformProductCodes;
 }

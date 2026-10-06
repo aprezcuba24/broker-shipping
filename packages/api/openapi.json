@@ -8735,6 +8735,21 @@
           },
           "type": {
             "$ref": "#/components/schemas/OrganizationType"
+          },
+          "platform_product_codes": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PlatformProductCode"
+                },
+                "type": "array",
+                "minItems": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform Product Codes"
           }
         },
         "type": "object",
@@ -10898,6 +10913,11 @@
             "minLength": 8,
             "title": "Password"
           },
+          "phone": {
+            "type": "string",
+            "maxLength": 50,
+            "title": "Phone"
+          },
           "client_app": {
             "type": "string",
             "enum": [
@@ -10912,6 +10932,7 @@
           "name",
           "email",
           "password",
+          "phone",
           "client_app"
         ],
         "title": "UserRegister"

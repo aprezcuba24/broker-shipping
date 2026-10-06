@@ -9,7 +9,10 @@ from sqlalchemy.ext.asyncio import (
 def create_async_engine_and_session_maker(
     database_url: str,
 ) -> tuple[AsyncEngine, async_sessionmaker[AsyncSession]]:
-    engine = create_async_engine(database_url)
+    engine = create_async_engine(
+        database_url,
+        pool_pre_ping=True,
+    )
     session_maker = async_sessionmaker(
         engine,
         class_=AsyncSession,

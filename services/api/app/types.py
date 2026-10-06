@@ -15,7 +15,13 @@ class PlatformProductCode(StrEnum):
 
 DEFAULT_PLATFORM_PRODUCT_CODES: tuple[PlatformProductCode, ...] = (
     PlatformProductCode.phone_blacklist,
-    PlatformProductCode.provider_management,
+)
+
+# Codes a non-admin client may request when creating an organization.
+SELF_SERVICE_PLATFORM_PRODUCT_CODES: frozenset[PlatformProductCode] = frozenset(
+    {
+        PlatformProductCode.phone_blacklist,
+    }
 )
 
 PLATFORM_PRODUCT_DISPLAY_NAMES: dict[PlatformProductCode, str] = {

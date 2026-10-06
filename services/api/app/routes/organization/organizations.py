@@ -39,6 +39,7 @@ async def create_organization(
         user_id=user.id,
         name=body.name,
         org_type=body.type,
+        platform_product_codes=body.platform_product_codes,
     )
     return OrganizationPublic.model_validate(org)
 

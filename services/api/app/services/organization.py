@@ -15,6 +15,8 @@ from app.models.organization.user_organization import UserOrganization
 from app.models.user.user import User
 from app.schemas.pagination import PageResult, PaginationParams
 from app.services import platform_product as platform_product_service
+from app.types import PlatformProductCode
+
 
 async def create_organization_for_user(
     session: AsyncSession,
@@ -22,6 +24,7 @@ async def create_organization_for_user(
     user_id: UUID,
     name: str,
     org_type: OrganizationType,
+    platform_product_codes: list[PlatformProductCode] | None = None,
 ) -> Organization:
     org = Organization(name=name, type=org_type)
     session.add(org)
@@ -35,10 +38,17 @@ async def create_organization_for_user(
     )
     await session.commit()
     await session.refresh(org)
-    await platform_product_service.grant_default_products_for_organization(
-        session,
-        org.id,
-    )
+    if platform_product_codes is None:
+        await platform_product_service.grant_default_products_for_organization(
+            session,
+            org.id,
+        )
+    else:
+        await platform_product_service.grant_products_for_organization(
+            session,
+            org.id,
+            codes=platform_product_codes,
+        )
     return org
 
 async def list_organizations_for_user(

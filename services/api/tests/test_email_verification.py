@@ -44,6 +44,7 @@ async def test_register_sends_verification_email(
             "name": "Ada Lovelace",
             "email": "ada@example.com",
             "password": "secret123",
+            "phone": "55512345",
             "client_app": "backoffice",
         },
     )
@@ -70,6 +71,7 @@ async def test_register_requires_client_app(client: AsyncClient) -> None:
             "name": "Ada Lovelace",
             "email": "ada@example.com",
             "password": "secret123",
+            "phone": "55512345",
         },
     )
     assert response.status_code == 422
@@ -85,6 +87,7 @@ async def test_login_blocked_until_verified(
             "name": "Ada Lovelace",
             "email": "ada@example.com",
             "password": "secret123",
+            "phone": "55512345",
             "client_app": "seller",
         },
     )
@@ -109,6 +112,7 @@ async def test_verify_email_and_login(
             "name": "Ada Lovelace",
             "email": "ada@example.com",
             "password": "secret123",
+            "phone": "55512345",
             "client_app": "backoffice",
         },
     )
@@ -150,6 +154,7 @@ async def test_verify_expired_token(
             "name": "Ada Lovelace",
             "email": "ada@example.com",
             "password": "secret123",
+            "phone": "55512345",
             "client_app": "backoffice",
         },
     )
@@ -179,6 +184,7 @@ async def test_resend_verification_regenerates_token(
             "name": "Ada Lovelace",
             "email": "ada@example.com",
             "password": "secret123",
+            "phone": "55512345",
             "client_app": "backoffice",
         },
     )

@@ -4,7 +4,13 @@ import { Controller, useForm } from 'react-hook-form'
 import type { z } from 'zod'
 import { Button } from '../ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
-import { Field, FieldError, FieldGroup, FieldLabel } from '../ui/field'
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '../ui/field'
 import { Input } from '../ui/input'
 import {
   LinkedProviderCallout,
@@ -16,6 +22,7 @@ import { AuthFormLink } from './login-form'
 export type RegisterFields = {
   name: string
   email: string
+  phone: string
   password: string
 }
 
@@ -25,6 +32,7 @@ export type RegisterFormProps = {
   schema: z.ZodObject<{
     name: z.ZodString
     email: z.ZodString
+    phone: z.ZodString
     password: z.ZodString
   }>
   onSubmit: (values: RegisterFields) => void | Promise<void>
@@ -62,7 +70,7 @@ export function RegisterForm({
 }: RegisterFormProps) {
   const form = useForm<RegisterFields>({
     resolver: zodResolver(schema),
-    defaultValues: { name: '', email: defaultEmail, password: '' },
+    defaultValues: { name: '', email: defaultEmail, phone: '', password: '' },
   })
 
   const isSuccess = Boolean(successMessage)
@@ -126,6 +134,32 @@ export function RegisterForm({
                         className={emailReadOnly ? 'bg-muted' : undefined}
                       />
                       {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    </Field>
+                  )}
+                />
+                <Controller
+                  name="phone"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="phone">Teléfono</FieldLabel>
+                      <Input
+                        {...field}
+                        id="phone"
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        maxLength={50}
+                        placeholder="Ej. 51234567"
+                        aria-invalid={fieldState.invalid}
+                      />
+                      {fieldState.invalid ? (
+                        <FieldError errors={[fieldState.error]} />
+                      ) : (
+                        <FieldDescription className="text-xs">
+                          Número de contacto. Debe ser único en la plataforma.
+                        </FieldDescription>
+                      )}
                     </Field>
                   )}
                 />
