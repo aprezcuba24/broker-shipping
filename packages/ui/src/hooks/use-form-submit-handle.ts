@@ -12,14 +12,15 @@ export function useFormSubmitHandle<T extends FieldValues>(
   onValid: (values: T) => unknown | Promise<unknown>,
 ) {
   useImperativeHandle(ref, () => ({
-    submit: () =>
-      handleSubmit(
-        async (values) => {
-          await onValid(values)
-        },
-        () => {
-          throw new Error('validation')
-        },
-      )(),
+    submit: async () => {
+      let valid = false
+      await handleSubmit(async (values) => {
+        await onValid(values)
+        valid = true
+      })()
+      if (!valid) {
+        throw new Error('validation')
+      }
+    },
   }))
 }

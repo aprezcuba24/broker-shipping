@@ -3622,6 +3622,16 @@
             }
           },
           {
+            "name": "own_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Own Only"
+            }
+          },
+          {
             "name": "organization_id",
             "in": "query",
             "required": true,

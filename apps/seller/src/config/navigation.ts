@@ -63,9 +63,14 @@ export const sellerNavItems: NavItem[] = [
     icon: Truck,
     requiresProduct: PlatformProductCode.provider_management,
   },
-  { to: '/members', label: 'Miembros', icon: Users },
+  { to: '/members', label: 'Miembros', icon: Users, requiresProduct: PlatformProductCode.provider_management },
 ]
 
 export const sellerBottomItems: NavItem[] = [
-  { to: '/settings', label: 'Configurar', icon: Settings },
+  {
+    to: '/settings',
+    label: 'Configurar',
+    icon: Settings,
+    requiresProduct: PlatformProductCode.provider_management,
+  },
 ]

@@ -29,6 +29,15 @@ export function SellerLayout() {
     [hasProduct, productsLoading],
   )
 
+  const bottomItems = useMemo(
+    () =>
+      filterNavItemsByProduct(sellerBottomItems, {
+        hasProduct,
+        isLoading: productsLoading,
+      }),
+    [hasProduct, productsLoading],
+  )
+
   const showCart =
     !productsLoading && hasProduct(PlatformProductCode.provider_management)
 
@@ -43,7 +52,7 @@ export function SellerLayout() {
         userMenuExtra={<OrganizationMenuSection />}
         headerActions={showCart ? <CartHeaderButton /> : undefined}
         navItems={navItems}
-        bottomItems={sellerBottomItems}
+        bottomItems={bottomItems}
         brand={sellerBrand}
         user={
           user

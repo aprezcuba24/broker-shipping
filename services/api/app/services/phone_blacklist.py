@@ -143,11 +143,13 @@ async def list_active_for_organization(
     pagination: PaginationParams,
     phone: str | None = None,
     reason: PhoneBlacklistReason | None = None,
+    own_only: bool = False,
 ) -> PageResult[PhoneBlacklistListItem]:
     stmt = select(PhoneBlacklist).where(
-        PhoneBlacklist.organization_id == organization.id,
         PhoneBlacklist.withdrawn_at.is_(None),
     )
+    if own_only:
+        stmt = stmt.where(PhoneBlacklist.organization_id == organization.id)
     if phone:
         normalized = normalize_phone(phone)
         if normalized:

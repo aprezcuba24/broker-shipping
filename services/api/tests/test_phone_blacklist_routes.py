@@ -322,7 +322,7 @@ async def test_list_own_active_with_customer_and_community(
 
     listed = await client.get(
         "/phone-blacklist/",
-        params=blacklist_ctx["seller_params"],
+        params={**blacklist_ctx["seller_params"], "own_only": True},
         headers=blacklist_ctx["seller_bearer"],
     )
     assert listed.status_code == 200
@@ -331,13 +331,69 @@ async def test_list_own_active_with_customer_and_community(
     row = next(item for item in body["items"] if item["phone"] == normalized)
     assert row["reason"] == "fraud"
     assert row["other_count"] == 1
+    assert row["organization_id"] == blacklist_ctx["seller_org_id"]
     assert row["customer"] is not None
     assert row["customer"]["name"] == customer["name"]
 
     only_fraud = await client.get(
         "/phone-blacklist/",
-        params={**blacklist_ctx["seller_params"], "reason": "fraud", "phone": phone},
+        params={
+            **blacklist_ctx["seller_params"],
+            "reason": "fraud",
+            "phone": phone,
+            "own_only": True,
+        },
         headers=blacklist_ctx["seller_bearer"],
     )
     assert only_fraud.status_code == 200
     assert only_fraud.json()["total"] == 1
+
+
+async def test_list_defaults_to_all_system_entries(
+    client: AsyncClient,
+    blacklist_ctx: dict,
+) -> None:
+    phone = "55500112"
+    normalized = f"53{phone}"
+    await client.post(
+        "/phone-blacklist/",
+        params=blacklist_ctx["seller_params"],
+        headers=blacklist_ctx["seller_bearer"],
+        json={"phone": phone, "reason": "fraud"},
+    )
+    await client.post(
+        "/phone-blacklist/",
+        params=blacklist_ctx["other_seller_params"],
+        headers=blacklist_ctx["other_seller_bearer"],
+        json={"phone": phone, "reason": "abuse"},
+    )
+
+    listed_all = await client.get(
+        "/phone-blacklist/",
+        params={**blacklist_ctx["seller_params"], "phone": phone},
+        headers=blacklist_ctx["seller_bearer"],
+    )
+    assert listed_all.status_code == 200
+    all_body = listed_all.json()
+    assert all_body["total"] == 2
+    org_ids = {item["organization_id"] for item in all_body["items"]}
+    assert org_ids == {
+        blacklist_ctx["seller_org_id"],
+        blacklist_ctx["other_seller_org_id"],
+    }
+    assert all(item["phone"] == normalized for item in all_body["items"])
+
+    listed_own = await client.get(
+        "/phone-blacklist/",
+        params={
+            **blacklist_ctx["seller_params"],
+            "phone": phone,
+            "own_only": True,
+        },
+        headers=blacklist_ctx["seller_bearer"],
+    )
+    assert listed_own.status_code == 200
+    own_body = listed_own.json()
+    assert own_body["total"] == 1
+    assert own_body["items"][0]["organization_id"] == blacklist_ctx["seller_org_id"]
+    assert own_body["items"][0]["reason"] == "fraud"

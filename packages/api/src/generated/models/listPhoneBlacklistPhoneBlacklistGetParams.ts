@@ -9,6 +9,7 @@ import type { PhoneBlacklistReason } from './phoneBlacklistReason';
 export type ListPhoneBlacklistPhoneBlacklistGetParams = {
 phone?: string | null;
 reason?: PhoneBlacklistReason | null;
+own_only?: boolean;
 organization_id: string;
 /**
  * @minimum 1

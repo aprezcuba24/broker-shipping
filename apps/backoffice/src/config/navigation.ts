@@ -74,5 +74,10 @@ export const backofficeNavItems: NavItem[] = [
 ]
 
 export const backofficeBottomItems: NavItem[] = [
-  { to: '/settings', label: 'Configurar', icon: Settings },
+  {
+    to: '/settings',
+    label: 'Configurar',
+    icon: Settings,
+    requiresProduct: PlatformProductCode.provider_management,
+  },
 ]

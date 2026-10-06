@@ -27,6 +27,15 @@ export function BackofficeLayout() {
     [hasProduct, productsLoading],
   )
 
+  const bottomItems = useMemo(
+    () =>
+      filterNavItemsByProduct(backofficeBottomItems, {
+        hasProduct,
+        isLoading: productsLoading,
+      }),
+    [hasProduct, productsLoading],
+  )
+
   const handleLogout = () => {
     logout()
     void navigate('/login')
@@ -37,7 +46,7 @@ export function BackofficeLayout() {
       <AppLayout
         userMenuExtra={<OrganizationMenuSection />}
         navItems={navItems}
-        bottomItems={backofficeBottomItems}
+        bottomItems={bottomItems}
         brand={backofficeBrand}
         user={
           user

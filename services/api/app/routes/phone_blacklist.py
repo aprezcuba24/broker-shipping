@@ -23,6 +23,7 @@ async def list_phone_blacklist(
     pagination: PaginationDep,
     phone: str | None = None,
     reason: PhoneBlacklistReason | None = None,
+    own_only: bool = False,
 ) -> Page[PhoneBlacklistListItem]:
     result = await phone_blacklist_service.list_active_for_organization(
         session,
@@ -30,6 +31,7 @@ async def list_phone_blacklist(
         pagination=pagination,
         phone=phone,
         reason=reason,
+        own_only=own_only,
     )
     return Page.from_result(result, pagination)
 

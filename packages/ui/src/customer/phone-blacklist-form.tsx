@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select'
+import { Textarea } from '../components/ui/textarea'
 import type { EntityFormProps } from '../crud/components/entity-form-dialog'
 import { useFormSubmitHandle } from '../hooks/use-form-submit-handle'
 import { PHONE_BLACKLIST_REASON_LABELS } from './phone-blacklist-labels'
@@ -165,10 +166,11 @@ export function PhoneBlacklistForm({
                 <FieldLabel htmlFor="blacklist-modus-operandi">
                   Modus operandi
                 </FieldLabel>
-                <Input
+                <Textarea
                   {...field}
                   id="blacklist-modus-operandi"
                   maxLength={500}
+                  rows={4}
                   placeholder="Cómo actúa o qué hace este número"
                   disabled={isSubmitting}
                   aria-invalid={fieldState.invalid}

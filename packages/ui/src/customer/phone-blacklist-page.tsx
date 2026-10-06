@@ -26,6 +26,7 @@ import {
 import { buildPhoneBlacklistColumns } from './phone-blacklist-columns'
 import {
   PhoneBlacklistFilters,
+  isOwnOnlyFilter,
   phoneBlacklistListFilterKeys,
 } from './phone-blacklist-filters'
 import {
@@ -54,7 +55,7 @@ function parseReasonFilter(
 }
 
 export function PhoneBlacklistPage({
-  description = 'Números que tu organización tiene en lista negra. La comunidad ve el aviso; no frena pedidos.',
+  description = '',
   customerHref,
 }: PhoneBlacklistPageProps) {
   const { activeOrganization } = useActiveOrganization()
@@ -64,10 +65,13 @@ export function PhoneBlacklistPage({
     defaultPageSize: 20,
   })
 
+  const ownOnly = isOwnOnlyFilter(list.filters.own_only)
+
   const query = useListPhoneBlacklistPhoneBlacklistGet({
     ...list.queryParams,
     phone: list.queryParams.phone || undefined,
     reason: parseReasonFilter(list.queryParams.reason),
+    own_only: ownOnly,
   } as ListPhoneBlacklistPhoneBlacklistGetParams)
 
   const createMutation = useCreatePhoneBlacklistEntryPhoneBlacklistPost()
@@ -131,8 +135,14 @@ export function PhoneBlacklistPage({
         onRemove: crud.remove.run,
         isRemoving: crud.remove.isPending,
         customerHref,
+        activeOrganizationId: activeOrganization?.id,
       }),
-    [crud.remove.isPending, crud.remove.run, customerHref],
+    [
+      activeOrganization?.id,
+      crud.remove.isPending,
+      crud.remove.run,
+      customerHref,
+    ],
   )
 
   return (
@@ -165,7 +175,7 @@ export function PhoneBlacklistPage({
           data={crud.items}
           isLoading={crud.isLoading}
           getRowId={(row) => row.id}
-          emptyMessage="No hay teléfonos en tu lista negra."
+          emptyMessage="No hay teléfonos en la lista negra."
           pagination={{
             page: list.page,
             pageSize: list.pageSize,
