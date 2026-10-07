@@ -22,8 +22,8 @@ export const facebookGroupFormSchema = z.object({
   facebook_id: z
     .string()
     .trim()
-    .min(1, 'El ID de Facebook es obligatorio')
-    .max(255, 'Máximo 255 caracteres'),
+    .min(1, 'El ID o la URL del grupo es obligatorio')
+    .max(2048, 'Máximo 2048 caracteres'),
 })
 
 export type FacebookGroupFormValues = z.infer<typeof facebookGroupFormSchema>
@@ -78,12 +78,13 @@ export function FacebookGroupForm({
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor="facebook-group-facebook-id">
-                  ID de Facebook
+                  ID o URL de Facebook
                 </FieldLabel>
                 <Input
                   {...field}
                   id="facebook-group-facebook-id"
-                  maxLength={255}
+                  maxLength={2048}
+                  placeholder="1090187050273078 o https://www.facebook.com/groups/…"
                   disabled={isSubmitting}
                   aria-invalid={fieldState.invalid}
                 />

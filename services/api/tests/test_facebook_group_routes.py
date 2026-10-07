@@ -84,6 +84,44 @@ async def test_create_list_get_patch_delete_facebook_group(
     assert r_missing.status_code == 404
 
 
+async def test_create_facebook_group_extracts_id_from_url(
+    client: AsyncClient,
+    seller_context: dict,
+) -> None:
+    r = await client.post(
+        "/facebook/groups/",
+        headers=seller_context["headers"],
+        params=seller_context["params"],
+        json={
+            "name": "Desde URL",
+            "facebook_id": "https://www.facebook.com/groups/1090187050273078",
+        },
+    )
+    assert r.status_code == 201
+    assert r.json()["facebook_id"] == "1090187050273078"
+
+
+async def test_patch_facebook_group_extracts_id_from_url(
+    client: AsyncClient,
+    seller_context: dict,
+    facebook_group_factory: FacebookGroupFactory,
+) -> None:
+    group = await facebook_group_factory.build(
+        organization_id=seller_context["organization_id"],
+        facebook_id="111",
+    )
+    r = await client.patch(
+        f"/facebook/groups/{group['id']}",
+        headers=seller_context["headers"],
+        params=seller_context["params"],
+        json={
+            "facebook_id": "https://www.facebook.com/groups/1090187050273078/?ref=share",
+        },
+    )
+    assert r.status_code == 200
+    assert r.json()["facebook_id"] == "1090187050273078"
+
+
 async def test_provider_org_forbidden(
     client: AsyncClient,
     user_factory: UserFactory,
