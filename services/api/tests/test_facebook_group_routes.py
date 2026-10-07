@@ -38,7 +38,9 @@ async def test_create_list_get_patch_delete_facebook_group(
     assert r_create.status_code == 201
     created = r_create.json()
     assert created["name"] == "Grupo Central"
-    assert created["facebook_id"] == "111222333"
+    assert created["facebook_id"] == (
+        "https://www.facebook.com/groups/111222333"
+    )
     assert created["organization_id"] == seller_context["organization_id"]
     group_id = created["id"]
 
@@ -67,7 +69,9 @@ async def test_create_list_get_patch_delete_facebook_group(
     )
     assert r_patch.status_code == 200
     assert r_patch.json()["name"] == "Grupo Renombrado"
-    assert r_patch.json()["facebook_id"] == "111222333"
+    assert r_patch.json()["facebook_id"] == (
+        "https://www.facebook.com/groups/111222333"
+    )
 
     r_delete = await client.delete(
         f"/facebook/groups/{group_id}",
@@ -98,7 +102,9 @@ async def test_create_facebook_group_extracts_id_from_url(
         },
     )
     assert r.status_code == 201
-    assert r.json()["facebook_id"] == "1090187050273078"
+    assert r.json()["facebook_id"] == (
+        "https://www.facebook.com/groups/1090187050273078"
+    )
 
 
 async def test_patch_facebook_group_extracts_id_from_url(
@@ -119,7 +125,9 @@ async def test_patch_facebook_group_extracts_id_from_url(
         },
     )
     assert r.status_code == 200
-    assert r.json()["facebook_id"] == "1090187050273078"
+    assert r.json()["facebook_id"] == (
+        "https://www.facebook.com/groups/1090187050273078"
+    )
 
 
 async def test_provider_org_forbidden(

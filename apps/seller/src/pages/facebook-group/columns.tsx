@@ -23,7 +23,7 @@ export function buildFacebookGroupColumns({
 }: BuildFacebookGroupColumnsOptions): ColumnDef<FacebookGroupPublic>[] {
   return [
     textColumn<FacebookGroupPublic>({ id: 'name', header: 'Nombre' }),
-    textColumn<FacebookGroupPublic>({ id: 'facebook_id', header: 'ID Facebook' }),
+    textColumn<FacebookGroupPublic>({ id: 'facebook_id', header: 'URL Facebook' }),
     createdAtColumn<FacebookGroupPublic>(),
     updatedAtColumn<FacebookGroupPublic>(),
     actionsColumn<FacebookGroupPublic>((row) => (

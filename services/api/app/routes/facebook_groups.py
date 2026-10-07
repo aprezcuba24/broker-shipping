@@ -11,6 +11,7 @@ from app.schemas.facebook_group import (
     FacebookGroupCreate,
     FacebookGroupPublic,
     FacebookGroupUpdate,
+    facebook_group_to_public,
 )
 from app.schemas.pagination import Page
 from app.services import facebook_group as facebook_group_service
@@ -31,7 +32,7 @@ async def list_facebook_groups(
         pagination=pagination,
         name=name,
     )
-    return Page.from_mapped(result, pagination, FacebookGroupPublic.model_validate)
+    return Page.from_mapped(result, pagination, facebook_group_to_public)
 
 
 @router.get("/{group_id}", response_model=FacebookGroupPublic)
@@ -46,7 +47,7 @@ async def get_facebook_group(
         id=group_id,
         organization_id=organization.id,
     )
-    return FacebookGroupPublic.model_validate(group)
+    return facebook_group_to_public(group)
 
 
 @router.post("/", response_model=FacebookGroupPublic, status_code=201)
@@ -60,7 +61,7 @@ async def create_facebook_group(
         organization.id,
         body,
     )
-    return FacebookGroupPublic.model_validate(group)
+    return facebook_group_to_public(group)
 
 
 @router.patch("/{group_id}", response_model=FacebookGroupPublic)
@@ -76,7 +77,7 @@ async def patch_facebook_group(
         organization.id,
         body,
     )
-    return FacebookGroupPublic.model_validate(group)
+    return facebook_group_to_public(group)
 
 
 @router.delete("/{group_id}", status_code=204)

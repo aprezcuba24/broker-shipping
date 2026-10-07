@@ -1,6 +1,8 @@
 import re
 from urllib.parse import urlparse
 
+FACEBOOK_GROUP_URL_PREFIX = "https://www.facebook.com/groups/"
+
 _FACEBOOK_GROUP_PATH_RE = re.compile(r"/groups/([^/?#]+)", re.IGNORECASE)
 
 
@@ -32,6 +34,11 @@ def normalize_phone(value: str | None) -> str | None:
     if len(digits) == 8:
         return f"53{digits}"
     return digits
+
+
+def facebook_group_url(facebook_id: str) -> str:
+    """Build the canonical Facebook group URL from a stored id."""
+    return f"{FACEBOOK_GROUP_URL_PREFIX}{facebook_id}"
 
 
 def normalize_facebook_group_id(value: str) -> str:
