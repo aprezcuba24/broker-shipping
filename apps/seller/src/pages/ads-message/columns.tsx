@@ -5,6 +5,7 @@ import {
   BtnList,
   createdAtColumn,
   DeleteRowButton,
+  ExpandableText,
   imageColumn,
   textColumn,
   updatedAtColumn,
@@ -22,18 +23,30 @@ export function buildAdsMessageColumns({
   isDeleting = false,
 }: BuildAdsMessageColumnsOptions): ColumnDef<AdsMessagePublic>[] {
   return [
-    textColumn<AdsMessagePublic>({ id: 'code', header: 'Código' }),
     imageColumn<AdsMessagePublic>({
       src: (row) => row.photo_url,
       alt: (row) => row.title,
     }),
     textColumn<AdsMessagePublic>({ id: 'title', header: 'Título' }),
-    textColumn<AdsMessagePublic>({
+    textColumn<AdsMessagePublic>({ id: 'code', header: 'Código' }),
+    {
       id: 'description',
       header: 'Descripción',
-      hideInCard: true,
+      accessor: 'description',
       hideOn: 'md',
-    }),
+      cell: (row) => (
+        <ExpandableText
+          text={row.description}
+          dialogTitle="Descripción"
+          cards={{
+            previewChars: 220,
+            clampClassName: 'line-clamp-5',
+            textClassName: 'text-sm text-on-surface-variant',
+            expand: 'inline',
+          }}
+        />
+      ),
+    },
     createdAtColumn<AdsMessagePublic>({ hideInCard: true }),
     updatedAtColumn<AdsMessagePublic>({ hideInCard: true }),
     actionsColumn<AdsMessagePublic>((row) => (

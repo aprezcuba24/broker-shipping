@@ -1,16 +1,9 @@
 import type { PhoneBlacklistListItem } from '@broker/api'
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Badge } from '../components/ui/badge'
-import { Button } from '../components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '../components/ui/dialog'
 import type { ColumnDef } from '../components/data-table/types'
+import { ExpandableText } from '../components/expandable-text'
 import { BtnList } from '../components/btn-list'
 import {
   actionsColumn,
@@ -23,55 +16,12 @@ import {
   phoneBlacklistReasonLabel,
 } from './phone-blacklist-labels'
 
-/** Rough cut for ~2 lines of table cell text; longer values get "Ver más". */
-const MODUS_OPERANDI_PREVIEW_CHARS = 80
-
 export type BuildPhoneBlacklistColumnsOptions = {
   onRemove: (item: PhoneBlacklistListItem) => unknown | Promise<unknown>
   isRemoving?: boolean
   customerHref?: (customerId: string) => string | undefined
   /** When set, only rows from this organization show the remove action. */
   activeOrganizationId?: string
-}
-
-function ModusOperandiCell({ text }: { text: string }) {
-  const [open, setOpen] = useState(false)
-  const needsExpand = text.length > MODUS_OPERANDI_PREVIEW_CHARS
-
-  return (
-    <div className="min-w-0">
-      <p
-        className={
-          needsExpand
-            ? 'line-clamp-2 text-xs text-muted-foreground'
-            : 'text-xs text-muted-foreground'
-        }
-      >
-        {text}
-      </p>
-      {needsExpand ? (
-        <>
-          <Button
-            type="button"
-            variant="link"
-            size="sm"
-            className="h-auto px-0 py-0 text-xs"
-            onClick={() => setOpen(true)}
-          >
-            Ver más
-          </Button>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Modus operandi</DialogTitle>
-              </DialogHeader>
-              <p className="whitespace-pre-wrap text-sm text-on-surface">{text}</p>
-            </DialogContent>
-          </Dialog>
-        </>
-      ) : null}
-    </div>
-  )
 }
 
 export function buildPhoneBlacklistColumns({
@@ -124,7 +74,9 @@ export function buildPhoneBlacklistColumns({
               {row.note}
             </span>
           ) : null}
-          {row.modus_operandi ? <ModusOperandiCell text={row.modus_operandi} /> : null}
+          {row.modus_operandi ? (
+            <ExpandableText text={row.modus_operandi} dialogTitle="Modus operandi" />
+          ) : null}
         </div>
       ),
     },
