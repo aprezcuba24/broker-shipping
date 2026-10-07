@@ -47,10 +47,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       viteStaticCopy({
-        targets: [
-          { src: 'public/icons', dest: '.' },
-          { src: 'config/groups.json', dest: 'config' },
-        ],
+        targets: [{ src: 'public/icons', dest: '.' }],
       }),
       writeManifestPlugin(mode),
     ],

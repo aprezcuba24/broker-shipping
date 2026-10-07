@@ -4,11 +4,13 @@ import {
   ClipboardList,
   Contact,
   LayoutDashboard,
+  Megaphone,
   Package,
   Settings,
   ShoppingBag,
   Truck,
   Users,
+  UsersRound,
 } from 'lucide-react'
 import { PlatformProductCode } from '@broker/api'
 import { PRODUCT_NAME, type NavItem, type SidebarBrand } from '@broker/ui'
@@ -62,6 +64,22 @@ export const sellerNavItems: NavItem[] = [
     label: 'Proveedores',
     icon: Truck,
     requiresProduct: PlatformProductCode.provider_management,
+  },
+  {
+    label: 'Anuncios',
+    icon: Megaphone,
+    children: [
+      {
+        to: '/ads-messages',
+        label: 'Anuncios FB',
+        icon: Megaphone,
+      },
+      {
+        to: '/facebook-groups',
+        label: 'Grupos FB',
+        icon: UsersRound,
+      },
+    ],
   },
   { to: '/members', label: 'Miembros', icon: Users, requiresProduct: PlatformProductCode.provider_management },
 ]

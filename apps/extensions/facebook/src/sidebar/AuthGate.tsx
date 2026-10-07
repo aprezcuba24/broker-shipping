@@ -71,7 +71,7 @@ function OrgPicker({
     <div className="gate">
       <h2 className="gate-title">Elige tu organización</h2>
       <p className="gate-text">
-        Tienes más de una organización vendedora. Selecciona con cuál publicar.
+        Tienes más de una organización vendedora. Selecciona con cuál trabajar.
       </p>
       <ul className="org-list" role="radiogroup" aria-label="Organizaciones">
         {organizations.map((org) => (

@@ -3,11 +3,13 @@ import type { ReactNode } from 'react'
 import type { PlatformProductCode } from '@broker/api'
 
 export type NavItem = {
-  to: string
+  /** Route for leaf items. Optional for group parents that only expand children. */
+  to?: string
   label: string
   icon: LucideIcon
   exact?: boolean
   requiresProduct?: PlatformProductCode
+  children?: NavItem[]
 }
 
 export type SidebarBrand = {

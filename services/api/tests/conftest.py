@@ -41,8 +41,10 @@ from sqlmodel import SQLModel
 from app.db.model_loader import load_all_table_models
 from app.main import app, lifespan
 from app.services import platform_product as platform_product_service
+from tests.factories.ads_message_factory import AdsMessageFactory
 from tests.factories.api_key_factory import ApiKeyFactory
 from tests.factories.customer_factory import CustomerFactory
+from tests.factories.facebook_group_factory import FacebookGroupFactory
 from tests.factories.location_factory import LocationFactory
 from tests.factories.organization_factory import OrganizationFactory
 from tests.factories.product_factory import ProductFactory
@@ -145,3 +147,13 @@ async def location_factory(db_session: AsyncSession) -> LocationFactory:
 @pytest_asyncio.fixture
 async def tag_factory(db_session: AsyncSession) -> TagFactory:
     return TagFactory(db_session)
+
+
+@pytest_asyncio.fixture
+async def facebook_group_factory(db_session: AsyncSession) -> FacebookGroupFactory:
+    return FacebookGroupFactory(db_session)
+
+
+@pytest_asyncio.fixture
+async def ads_message_factory(db_session: AsyncSession) -> AdsMessageFactory:
+    return AdsMessageFactory(db_session)

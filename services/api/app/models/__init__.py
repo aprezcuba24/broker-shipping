@@ -1,8 +1,10 @@
 from sqlmodel import SQLModel
 
 from app.models import (
+    ads,
     commission,
     customer,
+    facebook,
     location,
     messaging,
     order,
@@ -27,6 +29,8 @@ def get_all_table_models() -> tuple[type[SQLModel], ...]:
         *commission.DOMAIN_MODELS,
         *product_stock_movement.DOMAIN_MODELS,
         *messaging.DOMAIN_MODELS,
+        *facebook.DOMAIN_MODELS,
+        *ads.DOMAIN_MODELS,
     )
 
 

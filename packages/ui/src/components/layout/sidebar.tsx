@@ -1,7 +1,8 @@
-import { NavLink } from 'react-router-dom'
-import { X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
+import { ChevronDown, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import type { SidebarProps } from './types'
+import type { NavItem, SidebarProps } from './types'
 
 const linkBaseClassName =
   'flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 hover:translate-x-1'
@@ -10,6 +11,16 @@ const linkInactiveClassName =
   'text-on-surface-variant hover:bg-surface-container-highest/50'
 
 const linkActiveClassName = 'bg-ds-primary text-on-primary shadow-sm font-semibold'
+
+function isPathActive(pathname: string, to: string, exact?: boolean): boolean {
+  if (exact) return pathname === to
+  return pathname === to || pathname.startsWith(`${to}/`)
+}
+
+function itemOrChildIsActive(item: NavItem, pathname: string): boolean {
+  if (item.to && isPathActive(pathname, item.to, item.exact)) return true
+  return (item.children ?? []).some((child) => itemOrChildIsActive(child, pathname))
+}
 
 export function Sidebar({ isOpen, onClose, navItems, bottomItems = [], brand, cta }: SidebarProps) {
   const BrandIcon = brand.icon
@@ -52,7 +63,7 @@ export function Sidebar({ isOpen, onClose, navItems, bottomItems = [], brand, ct
 
         <nav className="flex-1 space-y-1">
           {navItems.map((item) => (
-            <SidebarNavLink key={item.to} item={item} onClose={onClose} />
+            <SidebarNavEntry key={item.to ?? item.label} item={item} onClose={onClose} />
           ))}
         </nav>
 
@@ -69,11 +80,87 @@ export function Sidebar({ isOpen, onClose, navItems, bottomItems = [], brand, ct
           ) : null}
 
           {bottomItems.map((item) => (
-            <SidebarNavLink key={item.to} item={item} onClose={onClose} />
+            <SidebarNavEntry key={item.to ?? item.label} item={item} onClose={onClose} />
           ))}
         </div>
       </aside>
     </>
+  )
+}
+
+function SidebarNavEntry({
+  item,
+  onClose,
+}: {
+  item: NavItem
+  onClose: () => void
+}) {
+  if (item.children && item.children.length > 0) {
+    return <SidebarNavGroup item={item} onClose={onClose} />
+  }
+  if (!item.to) return null
+  return (
+    <SidebarNavLink
+      item={{
+        to: item.to,
+        label: item.label,
+        icon: item.icon,
+        exact: item.exact,
+      }}
+      onClose={onClose}
+    />
+  )
+}
+
+function SidebarNavGroup({
+  item,
+  onClose,
+}: {
+  item: NavItem
+  onClose: () => void
+}) {
+  const location = useLocation()
+  const childActive = itemOrChildIsActive(item, location.pathname)
+  const [open, setOpen] = useState(childActive)
+  const Icon = item.icon
+
+  useEffect(() => {
+    if (childActive) setOpen(true)
+  }, [childActive])
+
+  return (
+    <div className="space-y-1">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        className={[
+          linkBaseClassName,
+          'w-full text-left',
+          childActive ? 'text-ds-primary font-semibold' : linkInactiveClassName,
+        ].join(' ')}
+      >
+        <Icon className="h-[18px] w-[18px]" />
+        <span className="flex-1">{item.label}</span>
+        <ChevronDown
+          className={[
+            'h-4 w-4 shrink-0 transition-transform duration-200',
+            open ? 'rotate-180' : '',
+          ].join(' ')}
+        />
+      </button>
+      {open ? (
+        <div className="ml-3 space-y-1 border-l border-outline-variant/40 pl-2">
+          {item.children?.map((child) => (
+            <SidebarNavEntry
+              key={child.to ?? child.label}
+              item={child}
+              onClose={onClose}
+            />
+          ))}
+        </div>
+      ) : null}
+    </div>
   )
 }
 

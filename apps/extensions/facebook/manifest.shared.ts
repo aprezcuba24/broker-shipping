@@ -51,7 +51,6 @@ export function resolveCdnOrigin(): string | undefined {
 
 export function buildManifest(): Record<string, unknown> {
   const apiOrigin = resolveApiOrigin()
-  const sellerOrigin = resolveSellerOrigin()
   const cdnOrigin = resolveCdnOrigin()
 
   const hostPermissions = [
@@ -66,7 +65,7 @@ export function buildManifest(): Record<string, unknown> {
   return {
     manifest_version: 3,
     name: 'Vendelo360 Facebook',
-    description: 'Publica productos del broker en grupos de Facebook.',
+    description: 'Lista anuncios del broker para Facebook.',
     version: '0.1.0',
     icons: {
       '16': 'icons/icon16.png',
@@ -93,12 +92,6 @@ export function buildManifest(): Record<string, unknown> {
         matches: ['https://www.facebook.com/*', 'https://web.facebook.com/*'],
         js: ['content.js'],
         run_at: 'document_idle',
-      },
-    ],
-    web_accessible_resources: [
-      {
-        resources: ['config/groups.json'],
-        matches: [`${sellerOrigin}/*`, 'https://www.facebook.com/*'],
       },
     ],
   }

@@ -33,6 +33,12 @@ import { VerifyEmailPage } from './pages/verify-email'
 import { ForgotPasswordPage } from './pages/forgot-password'
 import { ResetPasswordPage } from './pages/reset-password'
 import { SettingsPage } from './pages/settings'
+import { FacebookGroupPage } from './pages/facebook-group'
+import {
+  AdsMessageCreatePage,
+  AdsMessageEditPage,
+  AdsMessagePage,
+} from './pages/ads-message'
 
 /** Profile is user-scoped: keep org shell when available, super-admin shell otherwise. */
 function SellerProfileLayout() {
@@ -132,6 +138,10 @@ export default function App() {
           <Route path="customers" element={<CustomerPage />} />
           <Route path="customers/:customerId" element={<CustomerDetailPage />} />
           <Route path="phone-blacklist" element={<PhoneBlacklistPage />} />
+          <Route path="facebook-groups" element={<FacebookGroupPage />} />
+          <Route path="ads-messages" element={<AdsMessagePage />} />
+          <Route path="ads-messages/new" element={<AdsMessageCreatePage />} />
+          <Route path="ads-messages/:adsMessageId/edit" element={<AdsMessageEditPage />} />
           <Route path="orders" element={<OrderPage />} />
           <Route path="orders/:orderId" element={<OrderDetailPage />} />
           <Route path="commissions" element={<CommissionPage />} />
