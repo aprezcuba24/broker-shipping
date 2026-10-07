@@ -7,6 +7,7 @@ import {
   DeleteRowButton,
   ExpandableText,
   imageColumn,
+  selectColumn,
   textColumn,
   updatedAtColumn,
   type ColumnDef,
@@ -16,13 +17,22 @@ import { Pencil } from 'lucide-react'
 export type BuildAdsMessageColumnsOptions = {
   onDelete: (item: AdsMessagePublic) => unknown | Promise<unknown>
   isDeleting?: boolean
+  isSelected: (item: AdsMessagePublic) => boolean
+  onSelectChange: (item: AdsMessagePublic) => void
 }
 
 export function buildAdsMessageColumns({
   onDelete,
   isDeleting = false,
+  isSelected,
+  onSelectChange,
 }: BuildAdsMessageColumnsOptions): ColumnDef<AdsMessagePublic>[] {
   return [
+    selectColumn<AdsMessagePublic>({
+      isSelected,
+      onChange: onSelectChange,
+      getAriaLabel: (row) => `Seleccionar ${row.title}`,
+    }),
     imageColumn<AdsMessagePublic>({
       src: (row) => row.photo_url,
       alt: (row) => row.title,

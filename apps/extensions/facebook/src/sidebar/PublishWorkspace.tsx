@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import type { SessionPublic } from '@broker/extension-auth'
 import type { AdsMessageSummary } from '../auth/types'
 import { sendMessage } from '../auth/messaging'
+import { PUBLISH_QUEUE_STORAGE_KEY } from '../constants'
+import { parsePublishQueue, readPublishQueue } from '../publish-queue'
 
 type AuthenticatedSession = Exclude<SessionPublic, { status: 'loggedOut' }>
 
@@ -12,6 +14,7 @@ type Props = {
 
 export function PublishWorkspace({ session, onSelectOrg }: Props) {
   const [adsMessages, setAdsMessages] = useState<AdsMessageSummary[]>([])
+  const [fromQueue, setFromQueue] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [switchingOrg, setSwitchingOrg] = useState(false)
@@ -20,6 +23,14 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
     setLoading(true)
     setError(null)
     try {
+      const queue = await readPublishQueue()
+      if (queue && queue.adsMessages.length > 0) {
+        setAdsMessages(queue.adsMessages)
+        setFromQueue(true)
+        return
+      }
+
+      setFromQueue(false)
       const response = await sendMessage({ type: 'LIST_ADS_MESSAGES' })
       if (!response.ok) {
         setError(response.error)
@@ -38,6 +49,27 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
     void loadAds()
   }, [loadAds, session.organizationId])
 
+  useEffect(() => {
+    function onStorageChanged(
+      changes: Record<string, chrome.storage.StorageChange>,
+      areaName: string,
+    ) {
+      if (areaName !== 'local' || !(PUBLISH_QUEUE_STORAGE_KEY in changes)) return
+      const next = parsePublishQueue(changes[PUBLISH_QUEUE_STORAGE_KEY]?.newValue)
+      if (next && next.adsMessages.length > 0) {
+        setAdsMessages(next.adsMessages)
+        setFromQueue(true)
+        setLoading(false)
+        setError(null)
+        return
+      }
+      void loadAds()
+    }
+
+    chrome.storage.onChanged.addListener(onStorageChanged)
+    return () => chrome.storage.onChanged.removeListener(onStorageChanged)
+  }, [loadAds])
+
   async function handleOrgChange(organizationId: string) {
     if (organizationId === session.organizationId) return
     setSwitchingOrg(true)
@@ -49,6 +81,15 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
     } finally {
       setSwitchingOrg(false)
     }
+  }
+
+  async function handleClearQueue() {
+    const response = await sendMessage({ type: 'CLEAR_PUBLISH_QUEUE' })
+    if (!response.ok) {
+      setError(response.error)
+      return
+    }
+    await loadAds()
   }
 
   return (
@@ -75,19 +116,33 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
       ) : null}
 
       <div className="selected-row">
-        <p className="section-title">Anuncios</p>
-        <button
-          type="button"
-          className="btn-text"
-          disabled={loading}
-          onClick={() => void loadAds()}
-        >
-          {loading ? 'Cargando…' : 'Actualizar'}
-        </button>
+        <p className="section-title">{fromQueue ? 'Cola de publicación' : 'Anuncios'}</p>
+        <div className="selected-actions">
+          {fromQueue ? (
+            <button
+              type="button"
+              className="btn-text"
+              disabled={loading}
+              onClick={() => void handleClearQueue()}
+            >
+              Limpiar cola
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className="btn-text"
+            disabled={loading}
+            onClick={() => void loadAds()}
+          >
+            {loading ? 'Cargando…' : 'Actualizar'}
+          </button>
+        </div>
       </div>
 
       <p className="muted publish-hint">
-        Mensajes preparados para publicar en Facebook.
+        {fromQueue
+          ? 'Anuncios elegidos en la web de vendedores. Publícalos en este grupo.'
+          : 'Mensajes preparados para publicar en Facebook.'}
       </p>
 
       {error ? <p className="error">{error}</p> : null}

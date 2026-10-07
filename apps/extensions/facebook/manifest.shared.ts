@@ -51,6 +51,7 @@ export function resolveCdnOrigin(): string | undefined {
 
 export function buildManifest(): Record<string, unknown> {
   const apiOrigin = resolveApiOrigin()
+  const sellerOrigin = resolveSellerOrigin()
   const cdnOrigin = resolveCdnOrigin()
 
   const hostPermissions = [
@@ -87,6 +88,9 @@ export function buildManifest(): Record<string, unknown> {
     },
     permissions: ['storage', 'tabs', 'scripting'],
     host_permissions: hostPermissions,
+    externally_connectable: {
+      matches: [`${sellerOrigin}/*`],
+    },
     content_scripts: [
       {
         matches: ['https://www.facebook.com/*', 'https://web.facebook.com/*'],

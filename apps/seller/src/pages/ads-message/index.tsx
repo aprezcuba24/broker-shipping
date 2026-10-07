@@ -9,21 +9,31 @@ import {
 } from '@broker/api'
 import {
   BtnLink,
+  Button,
   DataTable,
   PageWrapper,
   useActiveOrganization,
   useCrudController,
   useListParams,
 } from '@broker/ui'
-import { Megaphone, Plus } from 'lucide-react'
+import { ArrowRight, Megaphone, Plus } from 'lucide-react'
 import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 
+import {
+  getSelectedMessageCount,
+  useFacebookPublishStore,
+} from '../../stores/facebook-publish-store'
 import { buildAdsMessageColumns } from './columns'
 import { AdsMessageFilters } from './filters'
 import type { AdsMessageFormValues } from './form'
 
 export function AdsMessagePage() {
+  const navigate = useNavigate()
   const { activeOrganization } = useActiveOrganization()
+  const messages = useFacebookPublishStore((state) => state.messages)
+  const toggleMessage = useFacebookPublishStore((state) => state.toggleMessage)
+  const selectedCount = getSelectedMessageCount(messages)
   const list = useListParams({
     filterKeys: ['title'] as const,
     defaultPageSize: 20,
@@ -69,8 +79,17 @@ export function AdsMessagePage() {
       buildAdsMessageColumns({
         onDelete: crud.remove.run,
         isDeleting: crud.remove.isPending,
+        isSelected: (row) => messages[row.id] != null,
+        onSelectChange: (row) =>
+          toggleMessage({
+            id: row.id,
+            title: row.title,
+            description: row.description,
+            code: row.code,
+            photo_url: row.photo_url ?? null,
+          }),
       }),
-    [crud.remove.isPending, crud.remove.run],
+    [crud.remove.isPending, crud.remove.run, messages, toggleMessage],
   )
 
   return (
@@ -79,6 +98,13 @@ export function AdsMessagePage() {
       description="Mensajes listos para publicar en grupos."
       icon={Megaphone}
       buttons={[
+        <Button
+          key="next"
+          icon={ArrowRight}
+          label={`Siguiente (${selectedCount})`}
+          disabled={selectedCount === 0}
+          onClick={() => navigate('/ads-messages/publish')}
+        />,
         <BtnLink key="create" to="/ads-messages/new" icon={Plus}>
           Nuevo anuncio
         </BtnLink>,
@@ -112,3 +138,4 @@ export function AdsMessagePage() {
 
 export { AdsMessageCreatePage } from './create-page'
 export { AdsMessageEditPage } from './edit-page'
+export { AdsMessagePublishGroupsPage } from './publish-groups-page'

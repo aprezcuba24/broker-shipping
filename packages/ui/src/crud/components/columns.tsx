@@ -219,3 +219,35 @@ export function actionsColumn<TData>(
     cell,
   }
 }
+
+type SelectColumnOptions<TData> = {
+  isSelected: (row: TData) => boolean
+  onChange: (row: TData) => void
+  getAriaLabel?: (row: TData) => string
+} & Partial<Omit<ColumnDef<TData>, 'id' | 'cell'>>
+
+export function selectColumn<TData>({
+  isSelected,
+  onChange,
+  getAriaLabel,
+  header = '',
+  align = 'center',
+  ...rest
+}: SelectColumnOptions<TData>): ColumnDef<TData> {
+  return {
+    id: 'select',
+    header,
+    align,
+    ...rest,
+    cell: (row) => (
+      <input
+        type="checkbox"
+        className="size-4 accent-primary"
+        checked={isSelected(row)}
+        aria-label={getAriaLabel?.(row) ?? 'Seleccionar fila'}
+        onClick={(event) => event.stopPropagation()}
+        onChange={() => onChange(row)}
+      />
+    ),
+  }
+}

@@ -48,6 +48,7 @@ export {
   imageColumn,
   linkColumn,
   actionsColumn,
+  selectColumn,
 } from './components/columns'
 
 export { FilterBar } from './components/filter-bar'

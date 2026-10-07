@@ -38,6 +38,7 @@ import {
   AdsMessageCreatePage,
   AdsMessageEditPage,
   AdsMessagePage,
+  AdsMessagePublishGroupsPage,
 } from './pages/ads-message'
 
 /** Profile is user-scoped: keep org shell when available, super-admin shell otherwise. */
@@ -141,6 +142,7 @@ export default function App() {
           <Route path="facebook-groups" element={<FacebookGroupPage />} />
           <Route path="ads-messages" element={<AdsMessagePage />} />
           <Route path="ads-messages/new" element={<AdsMessageCreatePage />} />
+          <Route path="ads-messages/publish" element={<AdsMessagePublishGroupsPage />} />
           <Route path="ads-messages/:adsMessageId/edit" element={<AdsMessageEditPage />} />
           <Route path="orders" element={<OrderPage />} />
           <Route path="orders/:orderId" element={<OrderDetailPage />} />

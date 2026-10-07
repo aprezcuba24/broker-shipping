@@ -126,6 +126,7 @@ export {
   imageColumn,
   linkColumn,
   actionsColumn,
+  selectColumn,
   FilterBar,
   FilterForm,
   ClearFiltersButton,
