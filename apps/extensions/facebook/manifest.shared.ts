@@ -88,13 +88,15 @@ export function buildManifest(): Record<string, unknown> {
     },
     permissions: ['storage', 'tabs', 'scripting'],
     host_permissions: hostPermissions,
-    externally_connectable: {
-      matches: [`${sellerOrigin}/*`],
-    },
     content_scripts: [
       {
         matches: ['https://www.facebook.com/*', 'https://web.facebook.com/*'],
         js: ['content.js'],
+        run_at: 'document_idle',
+      },
+      {
+        matches: [`${sellerOrigin}/*`],
+        js: ['seller-bridge.js'],
         run_at: 'document_idle',
       },
     ],

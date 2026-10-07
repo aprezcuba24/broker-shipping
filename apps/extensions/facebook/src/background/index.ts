@@ -138,13 +138,4 @@ chrome.runtime.onMessage.addListener(
   },
 )
 
-chrome.runtime.onMessageExternal.addListener(
-  (message: ExtensionMessage, _sender, sendResponse) => {
-    void (async () => {
-      sendResponse(await dispatchExtensionMessage(message))
-    })()
-    return true
-  },
-)
-
 void validateStoredSession()

@@ -110,7 +110,7 @@ export function AdsMessagePublishGroupsPage() {
       }
       if (result.via === 'window' && result.warned) {
         toast.warning(
-          'Se abrieron los grupos, pero la extensión no recibió la selección. Instálala o configura VITE_FACEBOOK_EXTENSION_ID.',
+          'Se abrieron los grupos, pero la extensión no respondió. Verifica que esté instalada y recargada.',
         )
         return
       }

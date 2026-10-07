@@ -23,6 +23,7 @@ function run(args) {
 async function buildOnce() {
   await run([])
   await run(['--config', 'vite.extension.config.ts'])
+  await run(['--config', 'vite.seller-bridge.config.ts'])
 }
 
 if (!watch) {
