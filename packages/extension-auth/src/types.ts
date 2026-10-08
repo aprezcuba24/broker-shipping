@@ -22,9 +22,7 @@ export type ExtensionSessionAuthenticated = {
   organizationId: string | null
 }
 
-export type ExtensionSession =
-  | ExtensionSessionLoggedOut
-  | ExtensionSessionAuthenticated
+export type ExtensionSession = ExtensionSessionLoggedOut | ExtensionSessionAuthenticated
 
 /** Snapshot safe to send to content scripts / popup UI (no token). */
 export type SessionPublic =
@@ -41,10 +39,41 @@ export type SessionAuthMessage =
   | { type: 'LOGOUT' }
   | { type: 'GET_SESSION' }
   | { type: 'SELECT_ORG'; organizationId: string }
+  | {
+      type: 'SHARE_SESSION'
+      accessToken: string
+      organizationId?: string | null
+    }
 
-export type SessionResponse =
-  | { ok: true; session: SessionPublic }
-  | { ok: false; error: string }
+/**
+ * Tag used by the window.postMessage bridge so the extension only picks up
+ * messages from this app (and so the seller page only answers its peers).
+ */
+export const EXTENSION_BRIDGE_SOURCE = 'vendelo360-extension'
+
+export type ExtensionBridgeRequest = {
+  source: typeof EXTENSION_BRIDGE_SOURCE
+  type: 'REQUEST_SESSION'
+}
+
+export type ExtensionBridgeShare = {
+  source: typeof EXTENSION_BRIDGE_SOURCE
+  type: 'SHARE_SESSION'
+  accessToken: string
+  organizationId?: string | null
+}
+
+export type ExtensionBridgeDenied = {
+  source: typeof EXTENSION_BRIDGE_SOURCE
+  type: 'SHARE_DENIED'
+}
+
+export type ExtensionBridgeMessage =
+  | ExtensionBridgeRequest
+  | ExtensionBridgeShare
+  | ExtensionBridgeDenied
+
+export type SessionResponse = { ok: true; session: SessionPublic } | { ok: false; error: string }
 
 export type ReadySession =
   | { ok: true; accessToken: string; organizationId: string }

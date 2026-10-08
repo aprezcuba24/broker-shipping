@@ -86,17 +86,6 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
     }
   }
 
-  async function handleClearQueue() {
-    const response = await sendMessage({ type: 'CLEAR_PUBLISH_QUEUE' })
-    if (!response.ok) {
-      setError(response.error)
-      return
-    }
-    setReadyIds([])
-    setFillingId(null)
-    await loadAds()
-  }
-
   async function publishAdMessage(adMessageId: string) {
     setError(null)
     setStatus(null)
@@ -163,24 +152,6 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
               Reset
             </button>
           ) : null}
-          {fromQueue ? (
-            <button
-              type="button"
-              className="btn-text"
-              disabled={loading || fillingId !== null}
-              onClick={() => void handleClearQueue()}
-            >
-              Limpiar cola
-            </button>
-          ) : null}
-          <button
-            type="button"
-            className="btn-text"
-            disabled={loading || fillingId !== null}
-            onClick={() => void loadAds()}
-          >
-            {loading ? 'Cargando…' : 'Actualizar'}
-          </button>
         </div>
       </div>
 

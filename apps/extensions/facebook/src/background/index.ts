@@ -1,9 +1,11 @@
 import {
   dispatchSessionAuthMessage,
+  handleShareSession,
   isSessionAuthMessage,
   maybeClearSessionOnAuthError,
   readSession,
   requireReadySession,
+  SELLER_APP_URL,
   toSessionPublic,
   validateStoredSession,
 } from '@broker/extension-auth'
@@ -22,6 +24,32 @@ import {
   type PublishQueueGroup,
 } from '../publish-queue'
 import { buildPostHtml, buildPostText } from '../share-link'
+
+function sellerTabUrlPattern(): string {
+  return `${SELLER_APP_URL}/*`
+}
+
+function senderOriginIsSeller(sender: chrome.runtime.MessageSender): boolean {
+  const origin = sender.origin ?? (sender.url ? new URL(sender.url).origin : null)
+  return origin === SELLER_APP_URL
+}
+
+async function handleRequestSession(): Promise<ExtensionResponse> {
+  try {
+    const tabs = await chrome.tabs.query({ url: sellerTabUrlPattern() })
+    if (tabs.length === 0) {
+      return { ok: false, error: 'App de vendedores no abierta' }
+    }
+    for (const tab of tabs) {
+      if (tab.id === undefined) continue
+      chrome.tabs.sendMessage(tab.id, { type: 'REQUEST_SESSION' })
+    }
+    return { ok: true }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'No se pudo contactar al seller'
+    return { ok: false, error: message }
+  }
+}
 
 async function handleOpenAuth(): Promise<ExtensionResponse> {
   const url = chrome.runtime.getURL('popup.html')
@@ -46,8 +74,7 @@ async function handleListAdsMessages(): Promise<ExtensionResponse> {
     })
     return { ok: true, adsMessages }
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : 'No se pudieron cargar los anuncios'
+    const message = err instanceof Error ? err.message : 'No se pudieron cargar los anuncios'
     await maybeClearSessionOnAuthError(message)
     return { ok: false, error: message }
   }
@@ -69,9 +96,7 @@ function isPublishGroup(value: unknown): value is PublishQueueGroup {
   if (!value || typeof value !== 'object') return false
   const item = value as Record<string, unknown>
   return (
-    typeof item.id === 'string' &&
-    typeof item.name === 'string' &&
-    typeof item.url === 'string'
+    typeof item.id === 'string' && typeof item.name === 'string' && typeof item.url === 'string'
   )
 }
 
@@ -124,9 +149,7 @@ async function arrayBufferToBase64(buffer: ArrayBuffer): Promise<string> {
   return btoa(binary)
 }
 
-async function downloadImage(
-  imageUrl: string,
-): Promise<{ base64: string; mime: string } | null> {
+async function downloadImage(imageUrl: string): Promise<{ base64: string; mime: string } | null> {
   try {
     const response = await fetch(imageUrl)
     if (!response.ok) return null
@@ -144,9 +167,7 @@ async function resolveImage(
 ): Promise<{ base64: string | null; mime: string | null }> {
   if (!imageUrl) return { base64: null, mime: null }
   const image = await downloadImage(imageUrl)
-  return image
-    ? { base64: image.base64, mime: image.mime }
-    : { base64: null, mime: null }
+  return image ? { base64: image.base64, mime: image.mime } : { base64: null, mime: null }
 }
 
 function waitForTabComplete(tabId: number, timeoutMs = 15000): Promise<void> {
@@ -156,10 +177,7 @@ function waitForTabComplete(tabId: number, timeoutMs = 15000): Promise<void> {
       resolve()
     }, timeoutMs)
 
-    function listener(
-      updatedTabId: number,
-      changeInfo: chrome.tabs.TabChangeInfo,
-    ) {
+    function listener(updatedTabId: number, changeInfo: chrome.tabs.TabChangeInfo) {
       if (updatedTabId === tabId && changeInfo.status === 'complete') {
         clearTimeout(timer)
         chrome.tabs.onUpdated.removeListener(listener)
@@ -211,9 +229,7 @@ async function fillTabComposer(
               ? Boolean((r as { dialogVisible?: boolean }).dialogVisible)
               : r.filled
           const imageAttached =
-            'imageAttached' in r
-              ? Boolean((r as { imageAttached?: boolean }).imageAttached)
-              : false
+            'imageAttached' in r ? Boolean((r as { imageAttached?: boolean }).imageAttached) : false
           return {
             filled: Boolean(r.filled && dialogOk),
             imageAttached,
@@ -257,22 +273,14 @@ async function handleFillAdMessage(
   const text = buildPostText(adMessage.title, adMessage.description)
   const html = buildPostHtml(adMessage.title, adMessage.description)
 
-  const { base64: imageBase64, mime: imageMime } = await resolveImage(
-    adMessage.photo_url,
-  )
+  const { base64: imageBase64, mime: imageMime } = await resolveImage(adMessage.photo_url)
 
   // Get group name from queue for logging (first group as fallback)
   const groupName = queue.groups[0]?.name ?? 'grupo'
 
-  const result = await fillTabComposer(
-    senderTabId,
-    groupName,
-    text,
-    html,
-    imageBase64,
-    imageMime,
-    { waitForLoad: false },
-  )
+  const result = await fillTabComposer(senderTabId, groupName, text, html, imageBase64, imageMime, {
+    waitForLoad: false,
+  })
 
   if (!result.filled) {
     return {
@@ -298,6 +306,8 @@ async function dispatchExtensionMessage(
   }
 
   switch (message.type) {
+    case 'REQUEST_SESSION':
+      return handleRequestSession()
     case 'OPEN_AUTH':
       return handleOpenAuth()
     case 'LIST_ADS_MESSAGES':
@@ -313,13 +323,42 @@ async function dispatchExtensionMessage(
   }
 }
 
-chrome.runtime.onMessage.addListener(
-  (message: ExtensionMessage, sender, sendResponse) => {
-    void (async () => {
-      sendResponse(await dispatchExtensionMessage(message, sender.tab?.id))
-    })()
-    return true
-  },
-)
+chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendResponse) => {
+  void (async () => {
+    sendResponse(await dispatchExtensionMessage(message, sender.tab?.id))
+  })()
+  return true
+})
+
+chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
+  void (async () => {
+    if (!senderOriginIsSeller(sender)) {
+      sendResponse({ ok: false, error: 'Origen no autorizado' })
+      return
+    }
+    if (
+      !message ||
+      typeof message !== 'object' ||
+      typeof (message as { type?: unknown }).type !== 'string'
+    ) {
+      sendResponse({ ok: false, error: 'Mensaje inválido' })
+      return
+    }
+    const typed = message as { type: string; accessToken?: string }
+    if (typed.type === 'SHARE_SESSION') {
+      if (typeof typed.accessToken !== 'string') {
+        sendResponse({ ok: false, error: 'Token requerido' })
+        return
+      }
+      const response = await handleShareSession({
+        accessToken: typed.accessToken,
+      })
+      sendResponse(response)
+      return
+    }
+    sendResponse({ ok: false, error: 'Mensaje no soportado' })
+  })()
+  return true
+})
 
 void validateStoredSession()

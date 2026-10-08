@@ -1,9 +1,5 @@
 import { useState } from 'react'
-import {
-  SELLER_APP_URL,
-  type SellerOrganization,
-  type SessionPublic,
-} from '@broker/extension-auth'
+import { SELLER_APP_URL, type SellerOrganization, type SessionPublic } from '@broker/extension-auth'
 
 type Props = {
   session: Exclude<SessionPublic, { status: 'loggedOut' }>
@@ -16,15 +12,8 @@ export function AuthGate({ session, onSelectOrg, onOpenAuth }: Props) {
     return (
       <div className="gate">
         <h2 className="gate-title">Sin organización vendedora</h2>
-        <p className="gate-text">
-          Tu cuenta no pertenece a ninguna organización de tipo vendedor.
-        </p>
-        <a
-          className="btn-gate"
-          href={SELLER_APP_URL}
-          target="_blank"
-          rel="noreferrer"
-        >
+        <p className="gate-text">Tu cuenta no pertenece a ninguna organización de tipo vendedor.</p>
+        <a className="btn-gate" href={SELLER_APP_URL} target="_blank" rel="noreferrer">
           Abrir web de vendedores
         </a>
         <button type="button" className="btn-gate-secondary" onClick={onOpenAuth}>
@@ -35,9 +24,7 @@ export function AuthGate({ session, onSelectOrg, onOpenAuth }: Props) {
   }
 
   if (session.status === 'needsOrgSelection') {
-    return (
-      <OrgPicker organizations={session.organizations} onSelectOrg={onSelectOrg} />
-    )
+    return <OrgPicker organizations={session.organizations} onSelectOrg={onSelectOrg} />
   }
 
   return null
@@ -76,9 +63,7 @@ function OrgPicker({
       <ul className="org-list" role="radiogroup" aria-label="Organizaciones">
         {organizations.map((org) => (
           <li key={org.id}>
-            <label
-              className={`org-option${selected === org.id ? ' is-selected' : ''}`}
-            >
+            <label className={`org-option${selected === org.id ? ' is-selected' : ''}`}>
               <input
                 type="radio"
                 name="seller-org"
@@ -114,6 +99,15 @@ export function LoggedOutGate({ onOpenAuth }: { onOpenAuth: () => void }) {
       <button type="button" className="btn-gate" onClick={onOpenAuth}>
         Iniciar sesión
       </button>
+    </div>
+  )
+}
+
+export function ConnectingGate() {
+  return (
+    <div className="gate">
+      <h2 className="gate-title">Conectando con la app de vendedores…</h2>
+      <p className="gate-text">Si ya iniciaste sesión, tu cuenta aparecerá en unos segundos.</p>
     </div>
   )
 }

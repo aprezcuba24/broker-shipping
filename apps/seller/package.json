@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@broker/api": "workspace:*",
+    "@broker/extension-auth": "workspace:*",
     "@broker/ui": "workspace:*",
     "@tanstack/react-query": "^5.100.9",
     "react-router-dom": "^7.13.1",
@@ -25,6 +26,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@tailwindcss/vite": "^4.3.0",
+    "@types/chrome": "^0.0.287",
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

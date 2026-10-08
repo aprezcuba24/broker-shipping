@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { SIDEBAR_OPEN_STORAGE_KEY } from '../constants'
 import { syncSidebarChrome } from '../layout'
-import { AuthGate, LoggedOutGate } from './AuthGate'
+import { AuthGate, ConnectingGate, LoggedOutGate } from './AuthGate'
 import { PublishWorkspace } from './PublishWorkspace'
 import { useExtensionSession } from './useExtensionSession'
 
@@ -146,8 +146,8 @@ export function App() {
         {session.status !== 'loggedOut' ? (
           <p className="header-org" title={session.user.email}>
             {session.status === 'ready'
-              ? (session.organizations.find((o) => o.id === session.organizationId)
-                  ?.name ?? 'Organización')
+              ? (session.organizations.find((o) => o.id === session.organizationId)?.name ??
+                'Organización')
               : session.user.name}
           </p>
         ) : null}
@@ -155,7 +155,7 @@ export function App() {
 
       <div className="body">
         {loading ? (
-          <div className="empty">Cargando sesión…</div>
+          <ConnectingGate />
         ) : session.status === 'loggedOut' ? (
           <LoggedOutGate onOpenAuth={() => void openAuth()} />
         ) : session.status === 'ready' ? (

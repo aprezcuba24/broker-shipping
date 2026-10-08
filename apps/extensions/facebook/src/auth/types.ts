@@ -15,6 +15,7 @@ export type FillAdMessagePayload = {
 
 export type ExtensionMessage =
   | SessionAuthMessage
+  | { type: 'REQUEST_SESSION' }
   | { type: 'OPEN_AUTH' }
   | { type: 'LIST_ADS_MESSAGES' }
   | {

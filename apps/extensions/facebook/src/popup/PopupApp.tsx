@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
-import type { SessionPublic } from '@broker/extension-auth'
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
+import { requestSellerShare, type SessionPublic } from '@broker/extension-auth'
 import { sendMessage } from '../auth/messaging'
 import type { ExtensionResponse } from '../auth/types'
 
@@ -18,6 +18,7 @@ export function PopupApp() {
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [justLoggedIn, setJustLoggedIn] = useState(false)
+  const handshakeTriedRef = useRef(false)
 
   const applySession = useCallback((next: SessionPublic) => {
     setSession(next)
@@ -25,11 +26,25 @@ export function PopupApp() {
   }, [])
 
   useEffect(() => {
-    void sendMessage({ type: 'GET_SESSION' }).then((response) => {
+    void (async () => {
+      const response = await sendMessage({ type: 'GET_SESSION' })
       const next = sessionFrom(response)
-      if (next) applySession(next)
-      else setView('login')
-    })
+      if (next && next.status !== 'loggedOut') {
+        applySession(next)
+        return
+      }
+      if (handshakeTriedRef.current) {
+        setView('login')
+        return
+      }
+      handshakeTriedRef.current = true
+      const shared = await requestSellerShare()
+      if (shared && shared.status !== 'loggedOut') {
+        applySession(shared)
+        return
+      }
+      setView('login')
+    })()
   }, [applySession])
 
   async function onSubmit(event: FormEvent) {
@@ -85,9 +100,7 @@ export function PopupApp() {
         </header>
 
         {justLoggedIn ? (
-          <p className="success">
-            Sesión iniciada. Abre Facebook: el panel aparece a la derecha.
-          </p>
+          <p className="success">Sesión iniciada. Abre Facebook: el panel aparece a la derecha.</p>
         ) : null}
 
         <div className="card">

@@ -1,68 +1,87 @@
 /**
  * seller-bridge.ts
- * 
- * Content script that runs on the seller page origin.
- * Receives postMessage from the seller page and forwards to extension background.
+ *
+ * Content script that runs on the seller page origin. Three roles:
+ *   1. Forward START_PUBLISH from the seller page to the extension background
+ *      (publish flow, source = "vendelo360-facebook"). Posts the result back
+ *      to the seller page.
+ *   2. Forward SHARE_SESSION / SHARE_DENIED from the seller page to the
+ *      extension background (session handoff, source = "vendelo360-extension").
+ *   3. Re-broadcast REQUEST_SESSION from the extension background to the
+ *      seller page (via window.postMessage). The seller page answers with
+ *      SHARE_SESSION, which goes through role #2.
+ *
  * No UI, no sidebar mounting.
  */
 
-const MESSAGE_SOURCE = 'vendelo360-facebook'
+import { asExtensionBridgeMessage, EXTENSION_BRIDGE_SOURCE } from '@broker/extension-auth'
 
-interface BridgeMessage {
-  source: string
-  type: string
-  adsMessages?: unknown
-  groups?: unknown
+const START_PUBLISH_SOURCE = 'vendelo360-facebook'
+const SESSION_SOURCE = EXTENSION_BRIDGE_SOURCE
+const START_PUBLISH_REQUEST = 'START_PUBLISH'
+const START_PUBLISH_RESPONSE = 'START_PUBLISH_RESPONSE'
+
+interface PublishMessage {
+  source: typeof START_PUBLISH_SOURCE
+  type: typeof START_PUBLISH_REQUEST
+  adsMessages: unknown
+  groups: unknown
 }
 
-interface BridgeResponse {
-  source: string
-  type: string
+interface PublishResponse {
+  source: typeof START_PUBLISH_SOURCE
+  type: typeof START_PUBLISH_RESPONSE
   ok: boolean
   error?: string
 }
 
-// Listen for messages from the seller page
+function isPublishMessage(data: unknown): data is PublishMessage {
+  if (!data || typeof data !== 'object') return false
+  const candidate = data as Partial<PublishMessage>
+  return candidate.source === START_PUBLISH_SOURCE && candidate.type === START_PUBLISH_REQUEST
+}
+
+// 1 + 2. Seller page → background.
 window.addEventListener('message', (event) => {
-  // Only accept messages from the same origin (seller page)
-  if (event.origin !== window.location.origin) {
+  if (event.origin !== window.location.origin) return
+  const data = event.data
+
+  if (isPublishMessage(data)) {
+    chrome.runtime.sendMessage(
+      {
+        type: START_PUBLISH_REQUEST,
+        adsMessages: data.adsMessages,
+        groups: data.groups,
+      },
+      (response) => {
+        const bridgeResponse: PublishResponse = {
+          source: START_PUBLISH_SOURCE,
+          type: START_PUBLISH_RESPONSE,
+          ok: response?.ok ?? false,
+          error: response?.error,
+        }
+        window.postMessage(bridgeResponse, window.location.origin)
+      },
+    )
     return
   }
 
-  const message = event.data as BridgeMessage
-  
-  // Validate message structure
-  if (!message || typeof message !== 'object') {
-    return
+  const sessionMessage = asExtensionBridgeMessage(data)
+  if (
+    sessionMessage &&
+    (sessionMessage.type === 'SHARE_SESSION' || sessionMessage.type === 'SHARE_DENIED')
+  ) {
+    void chrome.runtime.sendMessage(sessionMessage)
   }
+})
 
-  // Only process messages with our source identifier
-  if (message.source !== MESSAGE_SOURCE) {
-    return
-  }
+// 3. Background → seller page.
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (!message || typeof message !== 'object') return
+  const request = message as { type?: string; source?: string }
+  if (request.type !== 'REQUEST_SESSION') return
 
-  // Only handle START_PUBLISH messages
-  if (message.type !== 'START_PUBLISH') {
-    return
-  }
-
-  // Forward to background script (internal runtime.sendMessage, no extension ID needed)
-  chrome.runtime.sendMessage(
-    {
-      type: 'START_PUBLISH',
-      adsMessages: message.adsMessages,
-      groups: message.groups,
-    },
-    (response) => {
-      // Send response back to seller page via postMessage
-      const bridgeResponse: BridgeResponse = {
-        source: MESSAGE_SOURCE,
-        type: 'START_PUBLISH_RESPONSE',
-        ok: response?.ok ?? false,
-        error: response?.error,
-      }
-      
-      window.postMessage(bridgeResponse, window.location.origin)
-    }
-  )
+  window.postMessage({ source: SESSION_SOURCE, type: 'REQUEST_SESSION' }, window.location.origin)
+  sendResponse({ ok: true })
+  return true
 })
