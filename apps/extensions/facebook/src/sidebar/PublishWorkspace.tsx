@@ -17,7 +17,10 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
   const [fromQueue, setFromQueue] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [status, setStatus] = useState<string | null>(null)
   const [switchingOrg, setSwitchingOrg] = useState(false)
+  const [fillingId, setFillingId] = useState<string | null>(null)
+  const [readyIds, setReadyIds] = useState<string[]>([])
 
   const loadAds = useCallback(async () => {
     setLoading(true)
@@ -89,7 +92,40 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
       setError(response.error)
       return
     }
+    setReadyIds([])
+    setFillingId(null)
     await loadAds()
+  }
+
+  async function publishAdMessage(adMessageId: string) {
+    setError(null)
+    setStatus(null)
+    setFillingId(adMessageId)
+    try {
+      const response = await sendMessage({
+        type: 'FILL_AD_MESSAGE',
+        payload: { adMessageId },
+      })
+      if (!response.ok) {
+        setError(response.error)
+        return
+      }
+      if ('filled' in response && response.filled) {
+        setReadyIds((prev) =>
+          prev.includes(adMessageId) ? prev : [...prev, adMessageId],
+        )
+        setStatus('Diálogo listo. Revisa y pulsa Publicar en Facebook.')
+      }
+    } finally {
+      setFillingId(null)
+    }
+  }
+
+  function resetPublishButtons() {
+    setReadyIds([])
+    setFillingId(null)
+    setError(null)
+    setStatus(null)
   }
 
   return (
@@ -118,11 +154,20 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
       <div className="selected-row">
         <p className="section-title">{fromQueue ? 'Cola de publicación' : 'Anuncios'}</p>
         <div className="selected-actions">
+          {fromQueue && readyIds.length > 0 ? (
+            <button
+              type="button"
+              className="btn-text"
+              onClick={resetPublishButtons}
+            >
+              Reset
+            </button>
+          ) : null}
           {fromQueue ? (
             <button
               type="button"
               className="btn-text"
-              disabled={loading}
+              disabled={loading || fillingId !== null}
               onClick={() => void handleClearQueue()}
             >
               Limpiar cola
@@ -131,7 +176,7 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
           <button
             type="button"
             className="btn-text"
-            disabled={loading}
+            disabled={loading || fillingId !== null}
             onClick={() => void loadAds()}
           >
             {loading ? 'Cargando…' : 'Actualizar'}
@@ -141,11 +186,12 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
 
       <p className="muted publish-hint">
         {fromQueue
-          ? 'Anuncios elegidos en la web de vendedores. Publícalos en este grupo.'
+          ? 'Pulsa Publicar en cada anuncio para abrir el diálogo de Facebook.'
           : 'Mensajes preparados para publicar en Facebook.'}
       </p>
 
       {error ? <p className="error">{error}</p> : null}
+      {status ? <p className="success">{status}</p> : null}
 
       {loading && adsMessages.length === 0 ? (
         <div className="empty">Cargando anuncios…</div>
@@ -155,21 +201,38 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
         </div>
       ) : (
         <ul className="queue-list">
-          {adsMessages.map((ad) => (
-            <li key={ad.id} className="queue-item">
-              <div className="queue-item-main">
-                {ad.photo_url ? (
-                  <img className="product-thumb" src={ad.photo_url} alt="" />
-                ) : (
-                  <div className="product-thumb" />
-                )}
-                <div className="queue-item-info">
-                  <p className="product-name">{ad.title}</p>
-                  <p className="product-code">{ad.code}</p>
+          {adsMessages.map((ad) => {
+            const ready = readyIds.includes(ad.id)
+            const filling = fillingId === ad.id
+            return (
+              <li key={ad.id} className="queue-item">
+                <div className="queue-item-main">
+                  {ad.photo_url ? (
+                    <img className="product-thumb" src={ad.photo_url} alt="" />
+                  ) : (
+                    <div className="product-thumb" />
+                  )}
+                  <div className="queue-item-info">
+                    <p className="product-name">{ad.title}</p>
+                    <p className="product-code">{ad.code}</p>
+                    {ready ? (
+                      <span className="queue-ready">Listo</span>
+                    ) : null}
+                  </div>
                 </div>
-              </div>
-            </li>
-          ))}
+                {fromQueue && !ready ? (
+                  <button
+                    type="button"
+                    className="btn-publish-item"
+                    disabled={fillingId !== null}
+                    onClick={() => void publishAdMessage(ad.id)}
+                  >
+                    {filling ? 'Abriendo…' : 'Publicar'}
+                  </button>
+                ) : null}
+              </li>
+            )
+          })}
         </ul>
       )}
     </>

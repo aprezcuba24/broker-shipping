@@ -9,6 +9,10 @@ export type AdsMessageSummary = {
   photo_url: string | null
 }
 
+export type FillAdMessagePayload = {
+  adMessageId: string
+}
+
 export type ExtensionMessage =
   | SessionAuthMessage
   | { type: 'OPEN_AUTH' }
@@ -19,9 +23,18 @@ export type ExtensionMessage =
       groups: PublishQueueGroup[]
     }
   | { type: 'CLEAR_PUBLISH_QUEUE' }
+  | { type: 'FILL_AD_MESSAGE'; payload: FillAdMessagePayload }
+  | {
+      type: 'FILL_COMPOSER'
+      text: string
+      html: string
+      imageBase64: string | null
+      imageMime: string | null
+    }
 
 export type ExtensionResponse =
   | { ok: true; session: SessionPublic }
   | { ok: true; adsMessages: AdsMessageSummary[] }
+  | { ok: true; filled: boolean; imageAttached: boolean; dialogVisible?: boolean }
   | { ok: true }
   | { ok: false; error: string }

@@ -7,14 +7,21 @@ import {
   toSessionPublic,
   validateStoredSession,
 } from '@broker/extension-auth'
-import type { AdsMessageSummary, ExtensionMessage, ExtensionResponse } from '../auth/types'
+import type {
+  AdsMessageSummary,
+  ExtensionMessage,
+  ExtensionResponse,
+  FillAdMessagePayload,
+} from '../auth/types'
 import { listSellerAdsMessages } from '../services/ads-messages'
 import {
   clearPublishQueue,
   parsePublishQueue,
+  readPublishQueue,
   writePublishQueue,
   type PublishQueueGroup,
 } from '../publish-queue'
+import { buildPostHtml, buildPostText } from '../share-link'
 
 async function handleOpenAuth(): Promise<ExtensionResponse> {
   const url = chrome.runtime.getURL('popup.html')
@@ -108,8 +115,183 @@ async function handleClearPublishQueue(): Promise<ExtensionResponse> {
   return { ok: true }
 }
 
+async function arrayBufferToBase64(buffer: ArrayBuffer): Promise<string> {
+  const bytes = new Uint8Array(buffer)
+  let binary = ''
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]!)
+  }
+  return btoa(binary)
+}
+
+async function downloadImage(
+  imageUrl: string,
+): Promise<{ base64: string; mime: string } | null> {
+  try {
+    const response = await fetch(imageUrl)
+    if (!response.ok) return null
+    const mime = response.headers.get('content-type') || 'image/jpeg'
+    const buffer = await response.arrayBuffer()
+    const base64 = await arrayBufferToBase64(buffer)
+    return { base64, mime }
+  } catch {
+    return null
+  }
+}
+
+async function resolveImage(
+  imageUrl: string | null,
+): Promise<{ base64: string | null; mime: string | null }> {
+  if (!imageUrl) return { base64: null, mime: null }
+  const image = await downloadImage(imageUrl)
+  return image
+    ? { base64: image.base64, mime: image.mime }
+    : { base64: null, mime: null }
+}
+
+function waitForTabComplete(tabId: number, timeoutMs = 15000): Promise<void> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      chrome.tabs.onUpdated.removeListener(listener)
+      resolve()
+    }, timeoutMs)
+
+    function listener(
+      updatedTabId: number,
+      changeInfo: chrome.tabs.TabChangeInfo,
+    ) {
+      if (updatedTabId === tabId && changeInfo.status === 'complete') {
+        clearTimeout(timer)
+        chrome.tabs.onUpdated.removeListener(listener)
+        // Extra settle time for Facebook SPA
+        setTimeout(resolve, 1200)
+      }
+    }
+
+    chrome.tabs.get(tabId).then((tab) => {
+      if (tab.status === 'complete') {
+        clearTimeout(timer)
+        setTimeout(resolve, 1200)
+      } else {
+        chrome.tabs.onUpdated.addListener(listener)
+      }
+    })
+  })
+}
+
+async function fillTabComposer(
+  tabId: number,
+  groupName: string,
+  text: string,
+  html: string,
+  imageBase64: string | null,
+  imageMime: string | null,
+  options: { waitForLoad: boolean } = { waitForLoad: true },
+): Promise<{ filled: boolean; imageAttached: boolean; dialogVisible: boolean }> {
+  if (options.waitForLoad) {
+    await waitForTabComplete(tabId)
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+  }
+
+  let lastError: unknown = null
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const result = await chrome.tabs.sendMessage(tabId, {
+        type: 'FILL_COMPOSER',
+        text,
+        html,
+        imageBase64,
+        imageMime,
+      })
+      if (result && typeof result === 'object' && 'ok' in result) {
+        const r = result as ExtensionResponse
+        if (r.ok && 'filled' in r) {
+          const dialogOk =
+            'dialogVisible' in r
+              ? Boolean((r as { dialogVisible?: boolean }).dialogVisible)
+              : r.filled
+          const imageAttached =
+            'imageAttached' in r
+              ? Boolean((r as { imageAttached?: boolean }).imageAttached)
+              : false
+          return {
+            filled: Boolean(r.filled && dialogOk),
+            imageAttached,
+            dialogVisible: Boolean(dialogOk),
+          }
+        }
+        if (!r.ok) {
+          return { filled: false, imageAttached: false, dialogVisible: false }
+        }
+      }
+      break
+    } catch (err) {
+      lastError = err
+      await new Promise((resolve) => setTimeout(resolve, 800))
+    }
+  }
+  if (lastError) {
+    console.warn(`[Vendelo360 Facebook] fill failed for «${groupName}»`, lastError)
+  }
+  return { filled: false, imageAttached: false, dialogVisible: false }
+}
+
+async function handleFillAdMessage(
+  payload: FillAdMessagePayload,
+  senderTabId: number | undefined,
+): Promise<ExtensionResponse> {
+  if (senderTabId == null) {
+    return { ok: false, error: 'No hay pestaña activa' }
+  }
+
+  const queue = await readPublishQueue()
+  if (!queue || queue.adsMessages.length === 0) {
+    return { ok: false, error: 'No hay cola de publicación' }
+  }
+
+  const adMessage = queue.adsMessages.find((msg) => msg.id === payload.adMessageId)
+  if (!adMessage) {
+    return { ok: false, error: 'Mensaje no encontrado en la cola' }
+  }
+
+  const text = buildPostText(adMessage.title, adMessage.description)
+  const html = buildPostHtml(adMessage.title, adMessage.description)
+
+  const { base64: imageBase64, mime: imageMime } = await resolveImage(
+    adMessage.photo_url,
+  )
+
+  // Get group name from queue for logging (first group as fallback)
+  const groupName = queue.groups[0]?.name ?? 'grupo'
+
+  const result = await fillTabComposer(
+    senderTabId,
+    groupName,
+    text,
+    html,
+    imageBase64,
+    imageMime,
+    { waitForLoad: false },
+  )
+
+  if (!result.filled) {
+    return {
+      ok: false,
+      error: `No se abrió el diálogo en «${groupName}». Vuelve a pulsar Publicar.`,
+    }
+  }
+
+  return {
+    ok: true,
+    filled: result.filled,
+    imageAttached: result.imageAttached,
+    dialogVisible: result.dialogVisible,
+  }
+}
+
 async function dispatchExtensionMessage(
   message: ExtensionMessage,
+  senderTabId?: number,
 ): Promise<ExtensionResponse> {
   if (isSessionAuthMessage(message)) {
     return dispatchSessionAuthMessage(message)
@@ -124,15 +306,17 @@ async function dispatchExtensionMessage(
       return handleStartPublish(message)
     case 'CLEAR_PUBLISH_QUEUE':
       return handleClearPublishQueue()
+    case 'FILL_AD_MESSAGE':
+      return handleFillAdMessage(message.payload, senderTabId)
     default:
       return { ok: false, error: 'Mensaje desconocido' }
   }
 }
 
 chrome.runtime.onMessage.addListener(
-  (message: ExtensionMessage, _sender, sendResponse) => {
+  (message: ExtensionMessage, sender, sendResponse) => {
     void (async () => {
-      sendResponse(await dispatchExtensionMessage(message))
+      sendResponse(await dispatchExtensionMessage(message, sender.tab?.id))
     })()
     return true
   },
