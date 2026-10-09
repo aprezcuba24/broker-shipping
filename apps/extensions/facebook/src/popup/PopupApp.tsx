@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
-import type { SessionPublic } from '@broker/extension-auth'
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
+import { requestSellerShare, type SessionPublic } from '@broker/extension-auth'
 import { sendMessage } from '../auth/messaging'
 import type { ExtensionResponse } from '../auth/types'
+import AppIcon from '@/icon'
 
 type View = 'loading' | 'login' | 'loggedIn'
 
@@ -18,6 +19,7 @@ export function PopupApp() {
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [justLoggedIn, setJustLoggedIn] = useState(false)
+  const handshakeTriedRef = useRef(false)
 
   const applySession = useCallback((next: SessionPublic) => {
     setSession(next)
@@ -25,11 +27,25 @@ export function PopupApp() {
   }, [])
 
   useEffect(() => {
-    void sendMessage({ type: 'GET_SESSION' }).then((response) => {
+    void (async () => {
+      const response = await sendMessage({ type: 'GET_SESSION' })
       const next = sessionFrom(response)
-      if (next) applySession(next)
-      else setView('login')
-    })
+      if (next && next.status !== 'loggedOut') {
+        applySession(next)
+        return
+      }
+      if (handshakeTriedRef.current) {
+        setView('login')
+        return
+      }
+      handshakeTriedRef.current = true
+      const shared = await requestSellerShare()
+      if (shared && shared.status !== 'loggedOut') {
+        applySession(shared)
+        return
+      }
+      setView('login')
+    })()
   }, [applySession])
 
   async function onSubmit(event: FormEvent) {
@@ -76,7 +92,7 @@ export function PopupApp() {
       <div className="popup">
         <header className="popup-header">
           <div className="brand-icon" aria-hidden>
-            <FbIcon />
+            <AppIcon size={30} alt="Vendelo360" />
           </div>
           <div>
             <h1 className="title">Vendelo360</h1>
@@ -85,9 +101,7 @@ export function PopupApp() {
         </header>
 
         {justLoggedIn ? (
-          <p className="success">
-            Sesión iniciada. Abre Facebook: el panel aparece a la derecha.
-          </p>
+          <p className="success">Sesión iniciada. Abre Facebook: el panel aparece a la derecha.</p>
         ) : null}
 
         <div className="card">
@@ -108,7 +122,7 @@ export function PopupApp() {
     <div className="popup">
       <header className="popup-header">
         <div className="brand-icon" aria-hidden>
-          <FbIcon />
+          <AppIcon size={30} alt="Vendelo360" />
         </div>
         <div>
           <h1 className="title">Vendelo360</h1>
@@ -151,13 +165,5 @@ export function PopupApp() {
         </button>
       </form>
     </div>
-  )
-}
-
-function FbIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M14 8h3V4h-3c-2.8 0-5 2.2-5 5v2H6v4h3v7h4v-7h3.2L17 11h-4V9c0-.6.4-1 1-1z" />
-    </svg>
   )
 }

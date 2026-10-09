@@ -1,26 +1,55 @@
 import {
   dispatchSessionAuthMessage,
+  handleShareSession,
   isSessionAuthMessage,
   maybeClearSessionOnAuthError,
   readSession,
   requireReadySession,
+  SELLER_APP_URL,
   toSessionPublic,
   validateStoredSession,
 } from '@broker/extension-auth'
 import type {
+  AdsMessageSummary,
   ExtensionMessage,
   ExtensionResponse,
-  FillProductPayload,
-  OpenGroupsPayload,
-  QueuedProduct,
-  TabPublishSession,
+  FillAdMessagePayload,
 } from '../auth/types'
-import { TAB_SESSIONS_STORAGE_KEY } from '../constants'
-import { loadGroupsConfig } from '../services/groups'
-import { searchSellerProducts } from '../services/products'
+import { listSellerAdsMessages } from '../services/ads-messages'
+import {
+  clearPublishQueue,
+  parsePublishQueue,
+  readPublishQueue,
+  writePublishQueue,
+  type PublishQueueGroup,
+} from '../publish-queue'
 import { buildPostHtml, buildPostText } from '../share-link'
 
-type TabSessionsMap = Record<string, TabPublishSession>
+function sellerTabUrlPattern(): string {
+  return `${SELLER_APP_URL}/*`
+}
+
+function senderOriginIsSeller(sender: chrome.runtime.MessageSender): boolean {
+  const origin = sender.origin ?? (sender.url ? new URL(sender.url).origin : null)
+  return origin === SELLER_APP_URL
+}
+
+async function handleRequestSession(): Promise<ExtensionResponse> {
+  try {
+    const tabs = await chrome.tabs.query({ url: sellerTabUrlPattern() })
+    if (tabs.length === 0) {
+      return { ok: false, error: 'App de vendedores no abierta' }
+    }
+    for (const tab of tabs) {
+      if (tab.id === undefined) continue
+      chrome.tabs.sendMessage(tab.id, { type: 'REQUEST_SESSION' })
+    }
+    return { ok: true }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'No se pudo contactar al seller'
+    return { ok: false, error: message }
+  }
+}
 
 async function handleOpenAuth(): Promise<ExtensionResponse> {
   const url = chrome.runtime.getURL('popup.html')
@@ -34,79 +63,81 @@ async function handleOpenAuth(): Promise<ExtensionResponse> {
   return { ok: true, session: toSessionPublic(session) }
 }
 
-async function handleSearchProducts(query: string): Promise<ExtensionResponse> {
+async function handleListAdsMessages(): Promise<ExtensionResponse> {
   const ready = await requireReadySession()
   if (!ready.ok) return ready
 
   try {
-    const products = await searchSellerProducts({
+    const adsMessages = await listSellerAdsMessages({
       accessToken: ready.accessToken,
       organizationId: ready.organizationId,
-      query,
     })
-    return { ok: true, products }
+    return { ok: true, adsMessages }
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : 'No se pudieron buscar productos'
+    const message = err instanceof Error ? err.message : 'No se pudieron cargar los anuncios'
     await maybeClearSessionOnAuthError(message)
     return { ok: false, error: message }
   }
 }
 
-async function handleGetGroups(): Promise<ExtensionResponse> {
-  try {
-    const groups = await loadGroupsConfig()
-    return { ok: true, groups }
-  } catch (err) {
-    const message =
-      err instanceof Error ? err.message : 'No se pudieron cargar los grupos'
-    return { ok: false, error: message }
+function isAdsMessageSummary(value: unknown): value is AdsMessageSummary {
+  if (!value || typeof value !== 'object') return false
+  const item = value as Record<string, unknown>
+  return (
+    typeof item.id === 'string' &&
+    typeof item.title === 'string' &&
+    typeof item.description === 'string' &&
+    typeof item.code === 'string' &&
+    (item.photo_url === null || typeof item.photo_url === 'string')
+  )
+}
+
+function isPublishGroup(value: unknown): value is PublishQueueGroup {
+  if (!value || typeof value !== 'object') return false
+  const item = value as Record<string, unknown>
+  return (
+    typeof item.id === 'string' && typeof item.name === 'string' && typeof item.url === 'string'
+  )
+}
+
+async function handleStartPublish(message: {
+  adsMessages: unknown
+  groups: unknown
+}): Promise<ExtensionResponse> {
+  if (!Array.isArray(message.adsMessages) || !message.adsMessages.every(isAdsMessageSummary)) {
+    return { ok: false, error: 'Anuncios inválidos' }
   }
-}
-
-async function readTabSessions(): Promise<TabSessionsMap> {
-  const data = await chrome.storage.local.get(TAB_SESSIONS_STORAGE_KEY)
-  const raw = data[TAB_SESSIONS_STORAGE_KEY]
-  if (!raw || typeof raw !== 'object') return {}
-  return raw as TabSessionsMap
-}
-
-async function writeTabSessions(sessions: TabSessionsMap): Promise<void> {
-  await chrome.storage.local.set({ [TAB_SESSIONS_STORAGE_KEY]: sessions })
-}
-
-async function setTabSession(session: TabPublishSession): Promise<void> {
-  const sessions = await readTabSessions()
-  sessions[String(session.tabId)] = session
-  await writeTabSessions(sessions)
-}
-
-async function removeTabSession(tabId: number): Promise<void> {
-  const sessions = await readTabSessions()
-  const key = String(tabId)
-  if (!(key in sessions)) return
-  delete sessions[key]
-  await writeTabSessions(sessions)
-}
-
-async function handleGetTabSession(
-  tabId: number | undefined,
-): Promise<ExtensionResponse> {
-  if (tabId == null) {
-    return { ok: true, tabSession: null }
+  if (!Array.isArray(message.groups) || !message.groups.every(isPublishGroup)) {
+    return { ok: false, error: 'Grupos inválidos' }
   }
-  const sessions = await readTabSessions()
-  return { ok: true, tabSession: sessions[String(tabId)] ?? null }
+  if (message.adsMessages.length === 0) {
+    return { ok: false, error: 'Selecciona al menos un anuncio' }
+  }
+  if (message.groups.length === 0) {
+    return { ok: false, error: 'Selecciona al menos un grupo' }
+  }
+
+  const queue = parsePublishQueue({
+    adsMessages: message.adsMessages,
+    groups: message.groups,
+    startedAt: Date.now(),
+  })
+  if (!queue) {
+    return { ok: false, error: 'Cola de publicación inválida' }
+  }
+
+  await writePublishQueue(queue)
+
+  for (const group of queue.groups) {
+    await chrome.tabs.create({ url: group.url, active: false })
+  }
+
+  return { ok: true }
 }
 
-async function handleLeavePublish(
-  tabId: number | undefined,
-): Promise<ExtensionResponse> {
-  if (tabId == null) {
-    return { ok: false, error: 'No hay pestaña activa' }
-  }
-  await removeTabSession(tabId)
-  return { ok: true, tabSession: null }
+async function handleClearPublishQueue(): Promise<ExtensionResponse> {
+  await clearPublishQueue()
+  return { ok: true }
 }
 
 async function arrayBufferToBase64(buffer: ArrayBuffer): Promise<string> {
@@ -118,9 +149,7 @@ async function arrayBufferToBase64(buffer: ArrayBuffer): Promise<string> {
   return btoa(binary)
 }
 
-async function downloadImage(
-  imageUrl: string,
-): Promise<{ base64: string; mime: string } | null> {
+async function downloadImage(imageUrl: string): Promise<{ base64: string; mime: string } | null> {
   try {
     const response = await fetch(imageUrl)
     if (!response.ok) return null
@@ -138,9 +167,7 @@ async function resolveImage(
 ): Promise<{ base64: string | null; mime: string | null }> {
   if (!imageUrl) return { base64: null, mime: null }
   const image = await downloadImage(imageUrl)
-  return image
-    ? { base64: image.base64, mime: image.mime }
-    : { base64: null, mime: null }
+  return image ? { base64: image.base64, mime: image.mime } : { base64: null, mime: null }
 }
 
 function waitForTabComplete(tabId: number, timeoutMs = 15000): Promise<void> {
@@ -150,10 +177,7 @@ function waitForTabComplete(tabId: number, timeoutMs = 15000): Promise<void> {
       resolve()
     }, timeoutMs)
 
-    function listener(
-      updatedTabId: number,
-      changeInfo: chrome.tabs.TabChangeInfo,
-    ) {
+    function listener(updatedTabId: number, changeInfo: chrome.tabs.TabChangeInfo) {
       if (updatedTabId === tabId && changeInfo.status === 'complete') {
         clearTimeout(timer)
         chrome.tabs.onUpdated.removeListener(listener)
@@ -205,9 +229,7 @@ async function fillTabComposer(
               ? Boolean((r as { dialogVisible?: boolean }).dialogVisible)
               : r.filled
           const imageAttached =
-            'imageAttached' in r
-              ? Boolean((r as { imageAttached?: boolean }).imageAttached)
-              : false
+            'imageAttached' in r ? Boolean((r as { imageAttached?: boolean }).imageAttached) : false
           return {
             filled: Boolean(r.filled && dialogOk),
             imageAttached,
@@ -230,128 +252,40 @@ async function fillTabComposer(
   return { filled: false, imageAttached: false, dialogVisible: false }
 }
 
-function cloneQueuedProducts(products: QueuedProduct[]): QueuedProduct[] {
-  return products.map((item) => ({
-    product: { ...item.product },
-    caption: item.caption,
-  }))
-}
-
-async function handleOpenGroups(
-  payload: OpenGroupsPayload,
-): Promise<ExtensionResponse> {
-  if (payload.groups.length === 0) {
-    return { ok: false, error: 'Selecciona al menos un grupo' }
-  }
-  if (payload.products.length === 0) {
-    return { ok: false, error: 'Añade al menos un producto' }
-  }
-  if (!payload.phone.trim()) {
-    return { ok: false, error: 'Teléfono requerido' }
-  }
-
-  const opened: Array<{ tabId: number; groupName: string; groupUrl: string }> =
-    []
-  const products = cloneQueuedProducts(payload.products)
-
-  for (const group of payload.groups) {
-    const tab = await chrome.tabs.create({
-      url: group.url,
-      active: false,
-    })
-    if (tab.id == null) continue
-
-    const session: TabPublishSession = {
-      tabId: tab.id,
-      groupName: group.name,
-      groupUrl: group.url,
-      products,
-      phone: payload.phone,
-    }
-    await setTabSession(session)
-    opened.push({
-      tabId: tab.id,
-      groupName: group.name,
-      groupUrl: group.url,
-    })
-  }
-
-  if (opened.length === 0) {
-    return { ok: false, error: 'No se pudieron abrir las pestañas de Facebook' }
-  }
-
-  const first = opened[0]!
-  await chrome.tabs.update(first.tabId, { active: true })
-  const firstTab = await chrome.tabs.get(first.tabId)
-  if (firstTab.windowId != null) {
-    await chrome.windows.update(firstTab.windowId, { focused: true })
-  }
-
-  return {
-    ok: true,
-    opened: opened.length,
-    tabs: opened,
-    message:
-      opened.length === 1
-        ? `Abierta «${first.groupName}». Usa Publicar en cada producto.`
-        : `Abiertas ${opened.length} pestañas. En cada grupo, usa Publicar en cada producto.`,
-  }
-}
-
-async function handleFillProduct(
-  payload: FillProductPayload,
+async function handleFillAdMessage(
+  payload: FillAdMessagePayload,
   senderTabId: number | undefined,
 ): Promise<ExtensionResponse> {
-  const tabId = senderTabId ?? payload.tabId
-  const sessions = await readTabSessions()
-  const session = sessions[String(tabId)]
-  if (!session) {
-    return { ok: false, error: 'No hay sesión de publicación en esta pestaña' }
+  if (senderTabId == null) {
+    return { ok: false, error: 'No hay pestaña activa' }
   }
 
-  const queued = session.products.find(
-    (item) => item.product.id === payload.productId,
-  )
-  if (!queued) {
-    return { ok: false, error: 'Producto no encontrado en la sesión' }
+  const queue = await readPublishQueue()
+  if (!queue || queue.adsMessages.length === 0) {
+    return { ok: false, error: 'No hay cola de publicación' }
   }
 
-  const { product, caption } = queued
-  const text = buildPostText(
-    product.name,
-    caption,
-    session.phone,
-    product.public_code,
-    product.price,
-    product.sale_price,
-  )
-  const html = buildPostHtml(
-    product.name,
-    caption,
-    session.phone,
-    product.public_code,
-    product.price,
-    product.sale_price,
-  )
+  const adMessage = queue.adsMessages.find((msg) => msg.id === payload.adMessageId)
+  if (!adMessage) {
+    return { ok: false, error: 'Mensaje no encontrado en la cola' }
+  }
 
-  const { base64: imageBase64, mime: imageMime } = await resolveImage(
-    product.image_url,
-  )
+  const text = buildPostText(adMessage.title, adMessage.description)
+  const html = buildPostHtml(adMessage.title, adMessage.description)
 
-  const result = await fillTabComposer(
-    tabId,
-    session.groupName,
-    text,
-    html,
-    imageBase64,
-    imageMime,
-    { waitForLoad: false },
-  )
+  const { base64: imageBase64, mime: imageMime } = await resolveImage(adMessage.photo_url)
+
+  // Get group name from queue for logging (first group as fallback)
+  const groupName = queue.groups[0]?.name ?? 'grupo'
+
+  const result = await fillTabComposer(senderTabId, groupName, text, html, imageBase64, imageMime, {
+    waitForLoad: false,
+  })
 
   if (!result.filled) {
     return {
       ok: false,
-      error: `No se abrió el diálogo en «${session.groupName}». Vuelve a pulsar Publicar.`,
+      error: `No se abrió el diálogo en «${groupName}». Vuelve a pulsar Publicar.`,
     }
   }
 
@@ -363,47 +297,68 @@ async function handleFillProduct(
   }
 }
 
-chrome.tabs.onRemoved.addListener((tabId) => {
-  void removeTabSession(tabId)
+async function dispatchExtensionMessage(
+  message: ExtensionMessage,
+  senderTabId?: number,
+): Promise<ExtensionResponse> {
+  if (isSessionAuthMessage(message)) {
+    return dispatchSessionAuthMessage(message)
+  }
+
+  switch (message.type) {
+    case 'REQUEST_SESSION':
+      return handleRequestSession()
+    case 'OPEN_AUTH':
+      return handleOpenAuth()
+    case 'LIST_ADS_MESSAGES':
+      return handleListAdsMessages()
+    case 'START_PUBLISH':
+      return handleStartPublish(message)
+    case 'CLEAR_PUBLISH_QUEUE':
+      return handleClearPublishQueue()
+    case 'FILL_AD_MESSAGE':
+      return handleFillAdMessage(message.payload, senderTabId)
+    default:
+      return { ok: false, error: 'Mensaje desconocido' }
+  }
+}
+
+chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendResponse) => {
+  void (async () => {
+    sendResponse(await dispatchExtensionMessage(message, sender.tab?.id))
+  })()
+  return true
 })
 
-chrome.runtime.onMessage.addListener(
-  (message: ExtensionMessage, sender, sendResponse) => {
-    void (async () => {
-      let response: ExtensionResponse
-      if (isSessionAuthMessage(message)) {
-        response = await dispatchSessionAuthMessage(message)
-      } else {
-        switch (message.type) {
-          case 'OPEN_AUTH':
-            response = await handleOpenAuth()
-            break
-          case 'SEARCH_PRODUCTS':
-            response = await handleSearchProducts(message.query)
-            break
-          case 'GET_GROUPS':
-            response = await handleGetGroups()
-            break
-          case 'OPEN_GROUPS':
-            response = await handleOpenGroups(message.payload)
-            break
-          case 'GET_TAB_SESSION':
-            response = await handleGetTabSession(sender.tab?.id)
-            break
-          case 'LEAVE_PUBLISH':
-            response = await handleLeavePublish(sender.tab?.id)
-            break
-          case 'FILL_PRODUCT':
-            response = await handleFillProduct(message.payload, sender.tab?.id)
-            break
-          default:
-            response = { ok: false, error: 'Mensaje desconocido' }
-        }
+chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
+  void (async () => {
+    if (!senderOriginIsSeller(sender)) {
+      sendResponse({ ok: false, error: 'Origen no autorizado' })
+      return
+    }
+    if (
+      !message ||
+      typeof message !== 'object' ||
+      typeof (message as { type?: unknown }).type !== 'string'
+    ) {
+      sendResponse({ ok: false, error: 'Mensaje inválido' })
+      return
+    }
+    const typed = message as { type: string; accessToken?: string }
+    if (typed.type === 'SHARE_SESSION') {
+      if (typeof typed.accessToken !== 'string') {
+        sendResponse({ ok: false, error: 'Token requerido' })
+        return
       }
+      const response = await handleShareSession({
+        accessToken: typed.accessToken,
+      })
       sendResponse(response)
-    })()
-    return true
-  },
-)
+      return
+    }
+    sendResponse({ ok: false, error: 'Mensaje no soportado' })
+  })()
+  return true
+})
 
 void validateStoredSession()

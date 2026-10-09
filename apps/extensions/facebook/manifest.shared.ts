@@ -26,9 +26,7 @@ export function resolveApiOrigin(): string {
 
 export function resolveSellerOrigin(): string {
   const raw =
-    process.env.VITE_SELLER_URL ||
-    process.env.VITE_SELLER_APP_URL ||
-    'http://localhost:5174'
+    process.env.VITE_SELLER_URL || process.env.VITE_SELLER_APP_URL || 'http://localhost:5174'
   try {
     return new URL(raw).origin
   } catch {
@@ -38,9 +36,7 @@ export function resolveSellerOrigin(): string {
 
 /** Public origin of product images (same as API S3_PUBLIC_BASE_URL). */
 export function resolveCdnOrigin(): string | undefined {
-  const raw =
-    process.env.VITE_CDN_URL?.trim() ||
-    process.env.S3_PUBLIC_BASE_URL?.trim()
+  const raw = process.env.VITE_CDN_URL?.trim() || process.env.S3_PUBLIC_BASE_URL?.trim()
   if (!raw) return undefined
   try {
     return new URL(raw).origin
@@ -49,10 +45,21 @@ export function resolveCdnOrigin(): string | undefined {
   }
 }
 
+/**
+ * Optional Chrome Web Store public key (PEM body, single line / base64).
+ * When set, Load unpacked uses the same extension ID as the store listing.
+ * See docs/publicar_extension.md.
+ */
+export function resolveExtensionKey(): string | undefined {
+  const raw = process.env.VITE_FACEBOOK_EXTENSION_KEY?.trim()
+  return raw || undefined
+}
+
 export function buildManifest(): Record<string, unknown> {
   const apiOrigin = resolveApiOrigin()
   const sellerOrigin = resolveSellerOrigin()
   const cdnOrigin = resolveCdnOrigin()
+  const extensionKey = resolveExtensionKey()
 
   const hostPermissions = [
     `${apiOrigin}/*`,
@@ -63,10 +70,10 @@ export function buildManifest(): Record<string, unknown> {
     hostPermissions.push(`${cdnOrigin}/*`)
   }
 
-  return {
+  const manifest: Record<string, unknown> = {
     manifest_version: 3,
     name: 'Vendelo360 Facebook',
-    description: 'Publica productos del broker en grupos de Facebook.',
+    description: 'Lista anuncios del broker para Facebook.',
     version: '0.1.0',
     icons: {
       '16': 'icons/icon16.png',
@@ -88,20 +95,28 @@ export function buildManifest(): Record<string, unknown> {
     },
     permissions: ['storage', 'tabs', 'scripting'],
     host_permissions: hostPermissions,
+    externally_connectable: {
+      matches: [`${sellerOrigin}/*`],
+    },
     content_scripts: [
       {
         matches: ['https://www.facebook.com/*', 'https://web.facebook.com/*'],
         js: ['content.js'],
         run_at: 'document_idle',
       },
-    ],
-    web_accessible_resources: [
       {
-        resources: ['config/groups.json'],
-        matches: [`${sellerOrigin}/*`, 'https://www.facebook.com/*'],
+        matches: [`${sellerOrigin}/*`],
+        js: ['seller-bridge.js'],
+        run_at: 'document_idle',
       },
     ],
   }
+
+  if (extensionKey) {
+    manifest.key = extensionKey
+  }
+
+  return manifest
 }
 
 export { rootDir }

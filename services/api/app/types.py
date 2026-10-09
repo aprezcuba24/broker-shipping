@@ -21,6 +21,7 @@ DEFAULT_PLATFORM_PRODUCT_CODES: tuple[PlatformProductCode, ...] = (
 SELF_SERVICE_PLATFORM_PRODUCT_CODES: frozenset[PlatformProductCode] = frozenset(
     {
         PlatformProductCode.phone_blacklist,
+        PlatformProductCode.facebook_publishing,
     }
 )
 

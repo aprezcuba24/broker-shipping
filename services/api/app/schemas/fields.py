@@ -4,6 +4,7 @@ from pydantic import AfterValidator, EmailStr
 
 from app.lib.normalize import (
     normalize_email,
+    normalize_facebook_group_id,
     normalize_phone,
     strip_optional,
     strip_required,
@@ -52,4 +53,16 @@ OptionalStrippedStr = Annotated[str | None, AfterValidator(strip_optional)]
 NormalizedPhone = Annotated[str, AfterValidator(_normalize_phone_required)]
 OptionalNormalizedPhone = Annotated[
     str | None, AfterValidator(_normalize_phone_optional)
+]
+def _normalize_facebook_group_id_optional(value: str | None) -> str | None:
+    stripped = strip_optional(value)
+    if stripped is None:
+        return None
+    return normalize_facebook_group_id(stripped)
+
+
+FacebookGroupId = Annotated[str, AfterValidator(normalize_facebook_group_id)]
+OptionalFacebookGroupId = Annotated[
+    str | None,
+    AfterValidator(_normalize_facebook_group_id_optional),
 ]

@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
+  requestSellerShare,
   SESSION_STORAGE_KEY,
   type ExtensionSession,
   type SessionPublic,
@@ -19,6 +20,12 @@ function toPublic(session: ExtensionSession | null | undefined): SessionPublic {
   }
 }
 
+function asSessionPublic(response: SessionResponse | null): SessionPublic | null {
+  if (!response) return null
+  if (!response.ok || !('session' in response)) return null
+  return response.session
+}
+
 function asSessionResponse(response: unknown): SessionResponse | null {
   if (!response || typeof response !== 'object') return null
   const r = response as SessionResponse
@@ -30,6 +37,7 @@ function asSessionResponse(response: unknown): SessionResponse | null {
 export function useExtensionSession() {
   const [session, setSession] = useState<SessionPublic>({ status: 'loggedOut' })
   const [loading, setLoading] = useState(true)
+  const handshakeTriedRef = useRef(false)
 
   const refresh = useCallback(async () => {
     const response = asSessionResponse(await sendMessage({ type: 'GET_SESSION' }))
@@ -43,8 +51,28 @@ export function useExtensionSession() {
   useEffect(() => {
     let cancelled = false
     void (async () => {
-      await refresh()
-      if (!cancelled) setLoading(false)
+      const initialResponse = asSessionResponse(await sendMessage({ type: 'GET_SESSION' }))
+      const initial = asSessionPublic(initialResponse)
+      if (initial && initial.status !== 'loggedOut') {
+        if (!cancelled) {
+          setSession(initial)
+          setLoading(false)
+        }
+        return
+      }
+
+      let next: SessionPublic | null = null
+      if (!handshakeTriedRef.current) {
+        handshakeTriedRef.current = true
+        next = await requestSellerShare()
+      }
+      if (cancelled) return
+      if (next && next.status !== 'loggedOut') {
+        setSession(next)
+      } else {
+        setSession({ status: 'loggedOut' })
+      }
+      setLoading(false)
     })()
 
     const onChanged: Parameters<typeof chrome.storage.onChanged.addListener>[0] = (
@@ -60,16 +88,14 @@ export function useExtensionSession() {
       cancelled = true
       chrome.storage.onChanged.removeListener(onChanged)
     }
-  }, [refresh])
+  }, [])
 
   const openAuth = useCallback(async () => {
     await sendMessage({ type: 'OPEN_AUTH' })
   }, [])
 
   const selectOrg = useCallback(async (organizationId: string) => {
-    const response = asSessionResponse(
-      await sendMessage({ type: 'SELECT_ORG', organizationId }),
-    )
+    const response = asSessionResponse(await sendMessage({ type: 'SELECT_ORG', organizationId }))
     if (response?.ok) {
       setSession(response.session)
       return response

@@ -147,34 +147,14 @@ function readComposerPlain(box: HTMLElement): string {
   return (box.innerText || box.textContent || '').replace(/\u00a0/g, ' ').trim()
 }
 
-function countMarker(content: string, marker: string): number {
-  if (!marker) return 0
-  let n = 0
-  let from = 0
-  while (true) {
-    const i = content.indexOf(marker, from)
-    if (i < 0) return n
-    n += 1
-    from = i + marker.length
-  }
-}
-
-/** True when our post appears exactly once. */
+/** True when our post appears. */
 function composerLooksFilled(box: HTMLElement, text: string): boolean {
   const content = readComposerPlain(box)
   if (!content) return false
-  if (countMarker(content, 'wa.me') !== 1) return false
-  if (
-    text.includes('Contactar por Whatsapp') &&
-    countMarker(content, 'Contactar por Whatsapp') !== 1
-  ) {
-    return false
-  }
-  return true
-}
-
-function composerHasOurPost(box: HTMLElement): boolean {
-  return countMarker(readComposerPlain(box), 'wa.me') >= 1
+  // Check if the first line of our text appears
+  const firstLine = text.split('\n')[0]?.trim()
+  if (!firstLine) return false
+  return content.includes(firstLine)
 }
 
 function selectAllIn(box: HTMLElement): void {
@@ -191,11 +171,25 @@ function selectAllIn(box: HTMLElement): void {
   }
 }
 
+function clearComposerBox(box: HTMLElement): void {
+  box.focus()
+  selectAllIn(box)
+  // Delete current selection
+  try {
+    document.execCommand('delete', false)
+  } catch {
+    // Fallback: set innerHTML empty (may not work with Lexical)
+    box.innerHTML = ''
+  }
+  // Ensure it's empty
+  box.textContent = ''
+}
+
 /**
  * Lexical (Facebook) duplicates text if you use execCommand('insertText')
  * and/or synthetic InputEvent with data — native insert + beforeinput both fire.
  * Paste replaces the current selection in one Lexical update. Do that only.
- * Include text/html so the price can stay bold and wa.me stays a real link.
+ * Include text/html so the price can stay bold and links stay real links.
  */
 function pasteReplacingSelection(
   box: HTMLElement,
@@ -222,20 +216,30 @@ async function waitFrames(n = 2): Promise<void> {
   }
 }
 
-/** One paste replace. At most one recovery paste if still empty. Never stack inserts. */
+/** 
+ * Clear composer and paste new content.
+ * Always clears first to avoid duplicates when reopening.
+ */
 async function setComposerText(
   box: HTMLElement,
   text: string,
   html?: string,
 ): Promise<boolean> {
+  // First, clear any existing content
+  clearComposerBox(box)
+  await waitFrames(1)
+  
+  // Then paste the new content
   pasteReplacingSelection(box, text, html)
   await waitFrames(2)
   if (composerLooksFilled(box, text)) return true
 
-  if (!composerHasOurPost(box)) {
-    pasteReplacingSelection(box, text, html)
-    await waitFrames(2)
-  }
+  // Retry if it didn't work
+  clearComposerBox(box)
+  await waitFrames(1)
+  pasteReplacingSelection(box, text, html)
+  await waitFrames(2)
+  
   return composerLooksFilled(box, text)
 }
 
@@ -247,11 +251,37 @@ function findFileInput(dialog: HTMLElement): HTMLInputElement | null {
   return null
 }
 
+/**
+ * Remove any previously attached images by clicking close/remove buttons.
+ * Facebook shows a small X button on attached images.
+ */
+function clearAttachedImages(dialog: HTMLElement): void {
+  // Look for close/remove buttons on image previews
+  // Common patterns: aria-label contains "remove", "delete", "eliminar", "quitar"
+  const removeButtons = dialog.querySelectorAll(
+    'div[aria-label*="emove" i], div[aria-label*="liminar" i], div[aria-label*="uitar" i], ' +
+    'div[aria-label*="elete" i], div[role="button"][aria-label*="Quitar" i]'
+  )
+  for (const btn of removeButtons) {
+    if (btn instanceof HTMLElement && isVisible(btn)) {
+      // Check if this button is near an image (within image preview area)
+      const hasImageNearby = btn.closest('[role="dialog"]')?.querySelector('img[src*="blob:"], img[src*="data:"]')
+      if (hasImageNearby) {
+        btn.click()
+      }
+    }
+  }
+}
+
 async function attachImage(
   dialog: HTMLElement,
   base64: string,
   mime: string,
 ): Promise<boolean> {
+  // First, clear any previously attached images
+  clearAttachedImages(dialog)
+  await sleep(300)
+  
   const input = findFileInput(dialog)
   if (!input) return false
 
@@ -367,13 +397,13 @@ async function fillComposer(message: FillMessage): Promise<FillResult> {
       const dialogStillOpen = Boolean(findCreatePostDialog())
 
       if (filled && dialogStillOpen) {
-        showBanner(
-          imageAttached
-            ? 'Listo: mira el diálogo «Crear publicación» en el centro y pulsa Publicar.'
-            : message.imageBase64
-              ? 'Texto listo en el diálogo. Adjunta la foto a mano y pulsa Publicar.'
-              : 'Texto listo en el diálogo. Revisa y pulsa Publicar.',
-        )
+        // showBanner(
+        //   imageAttached
+        //     ? 'Listo: mira el diálogo «Crear publicación» en el centro y pulsa Publicar.'
+        //     : message.imageBase64
+        //       ? 'Texto listo en el diálogo. Adjunta la foto a mano y pulsa Publicar.'
+        //       : 'Texto listo en el diálogo. Revisa y pulsa Publicar.',
+        // )
       } else if (filled && !dialogStillOpen) {
         showBanner(
           'El texto se escribió pero el diálogo se cerró. Usa Reintentar en el panel o ábrelo y pega con Ctrl+V.',

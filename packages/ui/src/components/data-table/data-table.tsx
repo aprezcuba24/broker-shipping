@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
-import { useMemo, useState, type ReactNode } from 'react'
+import { createContext, useContext, useMemo, useState, type ReactNode } from 'react'
 
 import { cn } from '../../lib/utils'
 import { Thumbnail } from '../thumbnail'
@@ -8,6 +8,21 @@ import { formatCellValue, inferColumnType } from './formatters'
 import { DataTablePaginationBar } from './pagination'
 import type { ColumnDef, DataTableProps, DataTableSort, DataTableView } from './types'
 import { DataTableViewToggle } from './view-toggle'
+
+const DataTableViewContext = createContext<DataTableView>('rows')
+
+/** Current DataTable view (`rows` | `cards`). Useful for cell renderers. */
+export function useDataTableView(): DataTableView {
+  return useContext(DataTableViewContext)
+}
+
+function isCardTitleColumn<TData>(column: ColumnDef<TData>): boolean {
+  return column.id === 'name' || column.id === 'title'
+}
+
+function isCardCodeColumn<TData>(column: ColumnDef<TData>): boolean {
+  return column.id === 'code' || column.id === 'public_code'
+}
 
 const PAGE_SIZE = 10
 
@@ -230,24 +245,29 @@ export function DataTableCards<TData>({
 }
 
 function GridCardField<TData>({ row, column }: { row: TData; column: ColumnDef<TData> }) {
-  const isTitle = column.id === 'name'
+  const isTitle = isCardTitleColumn(column)
+  const isBodyText = column.id === 'description'
   return (
     <div
       data-column={column.id}
       className={cn(
         'broker-data-table__grid-card-field',
-        isTitle ? 'min-w-0' : 'flex items-start justify-between gap-2',
+        isTitle || isBodyText ? 'min-w-0' : 'flex items-start justify-between gap-2',
         columnCardVisibilityClass(column),
         column.className,
       )}
     >
-      {isTitle ? null : (
+      {isTitle || isBodyText ? null : (
         <span className="shrink-0 text-xs text-on-surface-variant">{column.header}</span>
       )}
       <span
         className={cn(
           'min-w-0 text-on-surface',
-          isTitle ? 'line-clamp-2 text-sm font-medium' : 'text-right text-sm',
+          isTitle
+            ? 'line-clamp-2 text-sm font-medium'
+            : isBodyText
+              ? 'text-sm'
+              : 'text-right text-sm',
         )}
       >
         {renderCellContent(row, column)}
@@ -256,13 +276,67 @@ function GridCardField<TData>({ row, column }: { row: TData; column: ColumnDef<T
   )
 }
 
+function GridCardHeadline<TData>({
+  row,
+  titleColumn,
+  codeColumn,
+}: {
+  row: TData
+  titleColumn?: ColumnDef<TData>
+  codeColumn?: ColumnDef<TData>
+}) {
+  if (!titleColumn && !codeColumn) return null
+  return (
+    <div className="broker-data-table__grid-card-headline flex items-start justify-between gap-2">
+      {titleColumn ? (
+        <div
+          data-column={titleColumn.id}
+          className={cn(
+            'min-w-0 flex-1 line-clamp-2 text-sm font-medium text-on-surface',
+            columnCardVisibilityClass(titleColumn),
+            titleColumn.className,
+          )}
+        >
+          {renderCellContent(row, titleColumn)}
+        </div>
+      ) : (
+        <span />
+      )}
+      {codeColumn ? (
+        <div
+          data-column={codeColumn.id}
+          className={cn(
+            'shrink-0 text-right text-xs font-medium tabular-nums text-on-surface-variant',
+            columnCardVisibilityClass(codeColumn),
+            codeColumn.className,
+          )}
+        >
+          {renderCellContent(row, codeColumn)}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 function GridCardCover<TData>({ row, column }: { row: TData; column: ColumnDef<TData> }) {
-  const record = row as { image_url?: string | null; name?: unknown }
+  const record = row as { image_url?: string | null; name?: unknown; title?: unknown }
+  const srcFromColumn = column.getImageSrc?.(row)
   const src =
-    typeof record.image_url === 'string' || record.image_url === null || record.image_url === undefined
-      ? record.image_url
-      : null
-  const alt = typeof record.name === 'string' ? record.name : 'Imagen'
+    srcFromColumn !== undefined
+      ? srcFromColumn
+      : typeof record.image_url === 'string' ||
+          record.image_url === null ||
+          record.image_url === undefined
+        ? record.image_url
+        : null
+  const altFromColumn = column.getImageAlt?.(row)
+  const alt =
+    altFromColumn ??
+    (typeof record.title === 'string'
+      ? record.title
+      : typeof record.name === 'string'
+        ? record.name
+        : 'Imagen')
 
   return (
     <div data-column={column.id} className="broker-data-table__grid-card-cover">
@@ -312,9 +386,26 @@ export function DataTableCardGrid<TData>({
           >
             {imageColumn ? <GridCardCover row={row} column={imageColumn} /> : null}
             <div className="broker-data-table__grid-card-body space-y-1 p-2 sm:space-y-1.5 sm:p-3">
-              {columns.map((column) => (
-                <GridCardField key={column.id} row={row} column={column} />
-              ))}
+              {(() => {
+                const titleColumn = columns.find((column) => isCardTitleColumn(column))
+                const codeColumn = columns.find((column) => isCardCodeColumn(column))
+                const bodyColumns = columns.filter(
+                  (column) =>
+                    !isCardTitleColumn(column) && !isCardCodeColumn(column),
+                )
+                return (
+                  <>
+                    <GridCardHeadline
+                      row={row}
+                      titleColumn={titleColumn}
+                      codeColumn={codeColumn}
+                    />
+                    {bodyColumns.map((column) => (
+                      <GridCardField key={column.id} row={row} column={column} />
+                    ))}
+                  </>
+                )
+              })()}
             </div>
             <CardFooter
               row={row}
@@ -598,40 +689,43 @@ export function DataTable<TData>({
     onSortChange,
   }
 
+  const activeView: DataTableView = showCatalogGrid ? 'cards' : 'rows'
   const table = (
-    <div className={cn('broker-data-table', className)}>
-      {showCatalogGrid ? (
-        isLoading ? (
-          <LoadingCardGrid />
-        ) : showEmptyState ? (
-          <EmptyCardState message={resolvedEmptyMessage} />
+    <DataTableViewContext.Provider value={activeView}>
+      <div className={cn('broker-data-table', className)}>
+        {showCatalogGrid ? (
+          isLoading ? (
+            <LoadingCardGrid />
+          ) : showEmptyState ? (
+            <EmptyCardState message={resolvedEmptyMessage} />
+          ) : (
+            <DataTableCardGrid
+              rows={pageData}
+              columns={gridFields}
+              imageColumn={imageColumn}
+              footerColumns={footerColumns}
+              actionsColumn={actionsColumn}
+              getRowId={getRowId}
+              onRowClick={onRowClick}
+              rowClassName={rowClassName}
+            />
+          )
+        ) : hasViewToggle ? (
+          <DataTableRowsView {...rowsViewProps} />
         ) : (
-          <DataTableCardGrid
-            rows={pageData}
-            columns={gridFields}
-            imageColumn={imageColumn}
+          <DataTableResponsiveRows
+            {...rowsViewProps}
+            dataColumns={dataColumns}
             footerColumns={footerColumns}
             actionsColumn={actionsColumn}
-            getRowId={getRowId}
-            onRowClick={onRowClick}
-            rowClassName={rowClassName}
           />
-        )
-      ) : hasViewToggle ? (
-        <DataTableRowsView {...rowsViewProps} />
-      ) : (
-        <DataTableResponsiveRows
-          {...rowsViewProps}
-          dataColumns={dataColumns}
-          footerColumns={footerColumns}
-          actionsColumn={actionsColumn}
-        />
-      )}
+        )}
 
-      {pagination ? (
-        <DataTablePaginationBar {...paginationBar} onPageChange={pagination.onPageChange} />
-      ) : null}
-    </div>
+        {pagination ? (
+          <DataTablePaginationBar {...paginationBar} onPageChange={pagination.onPageChange} />
+        ) : null}
+      </div>
+    </DataTableViewContext.Provider>
   )
 
   if (!hasViewToggle || !views) {

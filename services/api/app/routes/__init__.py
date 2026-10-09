@@ -1,8 +1,10 @@
 from fastapi import APIRouter
 
 from app.routes import (
+    ads_messages,
     api_keys,
     demo,
+    facebook_groups,
     health,
     locations,
     locations_admin,
@@ -53,3 +55,5 @@ router.include_router(platform_products.router)
 router.include_router(organizations.router)
 router.include_router(organizations_provider.router)
 router.include_router(organizations_seller.router)
+router.include_router(facebook_groups.router)
+router.include_router(ads_messages.router)

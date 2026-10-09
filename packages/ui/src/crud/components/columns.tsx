@@ -151,7 +151,7 @@ export function imageColumn<TData>(
     src: (row: TData) => string | null | undefined
     alt: (row: TData) => string
     size?: ThumbnailProps['size']
-  } & Partial<Omit<ColumnDef<TData>, 'id' | 'header' | 'cell'>> & {
+  } & Partial<Omit<ColumnDef<TData>, 'id' | 'header' | 'cell' | 'getImageSrc' | 'getImageAlt'>> & {
       id?: string
       header?: string
     },
@@ -160,6 +160,8 @@ export function imageColumn<TData>(
   return {
     id,
     header,
+    getImageSrc: src,
+    getImageAlt: alt,
     cell: (row) => <Thumbnail src={src(row)} alt={alt(row)} size={size} />,
     ...rest,
   }
@@ -215,5 +217,37 @@ export function actionsColumn<TData>(
     header: '',
     ...options,
     cell,
+  }
+}
+
+type SelectColumnOptions<TData> = {
+  isSelected: (row: TData) => boolean
+  onChange: (row: TData) => void
+  getAriaLabel?: (row: TData) => string
+} & Partial<Omit<ColumnDef<TData>, 'id' | 'cell'>>
+
+export function selectColumn<TData>({
+  isSelected,
+  onChange,
+  getAriaLabel,
+  header = '',
+  align = 'center',
+  ...rest
+}: SelectColumnOptions<TData>): ColumnDef<TData> {
+  return {
+    id: 'select',
+    header,
+    align,
+    ...rest,
+    cell: (row) => (
+      <input
+        type="checkbox"
+        className="size-4 accent-primary"
+        checked={isSelected(row)}
+        aria-label={getAriaLabel?.(row) ?? 'Seleccionar fila'}
+        onClick={(event) => event.stopPropagation()}
+        onChange={() => onChange(row)}
+      />
+    ),
   }
 }

@@ -34,6 +34,9 @@ export type ColumnDef<TData> = {
   className?: string
   sortable?: boolean
   cell?: (row: TData) => ReactNode
+  /** Used by the cards grid cover (preferred over hard-coded `image_url`). */
+  getImageSrc?: (row: TData) => string | null | undefined
+  getImageAlt?: (row: TData) => string
 }
 
 export type DataTablePagination = {

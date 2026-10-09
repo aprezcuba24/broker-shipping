@@ -77,6 +77,11 @@ export type { ImageFieldValue } from './lib/image-field'
 
 export { Button } from './components/button'
 export type { ButtonProps } from './components/button'
+export { ExpandableText } from './components/expandable-text'
+export type {
+  ExpandableTextProps,
+  ExpandableTextVariant,
+} from './components/expandable-text'
 export { CopyTextButton } from './components/copy-text-button'
 export type { CopyTextButtonProps } from './components/copy-text-button'
 export { ButtonModal } from './components/button-modal'
@@ -121,6 +126,7 @@ export {
   imageColumn,
   linkColumn,
   actionsColumn,
+  selectColumn,
   FilterBar,
   FilterForm,
   ClearFiltersButton,
@@ -273,6 +279,7 @@ export {
   DataTableViewToggle,
   renderCellContent,
   resolveRowId,
+  useDataTableView,
 } from './components/data-table/data-table'
 export { ColumnType } from './components/data-table/types'
 export type {
