@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { requestSellerShare, type SessionPublic } from '@broker/extension-auth'
 import { sendMessage } from '../auth/messaging'
 import type { ExtensionResponse } from '../auth/types'
+import AppIcon from '@/icon'
 
 type View = 'loading' | 'login' | 'loggedIn'
 
@@ -91,7 +92,7 @@ export function PopupApp() {
       <div className="popup">
         <header className="popup-header">
           <div className="brand-icon" aria-hidden>
-            <FbIcon />
+            <AppIcon size={30} alt="Vendelo360" />
           </div>
           <div>
             <h1 className="title">Vendelo360</h1>
@@ -121,7 +122,7 @@ export function PopupApp() {
     <div className="popup">
       <header className="popup-header">
         <div className="brand-icon" aria-hidden>
-          <FbIcon />
+          <AppIcon size={30} alt="Vendelo360" />
         </div>
         <div>
           <h1 className="title">Vendelo360</h1>
@@ -164,13 +165,5 @@ export function PopupApp() {
         </button>
       </form>
     </div>
-  )
-}
-
-function FbIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M14 8h3V4h-3c-2.8 0-5 2.2-5 5v2H6v4h3v7h4v-7h3.2L17 11h-4V9c0-.6.4-1 1-1z" />
-    </svg>
   )
 }

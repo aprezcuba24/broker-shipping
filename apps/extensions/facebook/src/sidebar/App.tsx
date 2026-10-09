@@ -4,6 +4,7 @@ import { syncSidebarChrome } from '../layout'
 import { AuthGate, ConnectingGate, LoggedOutGate } from './AuthGate'
 import { PublishWorkspace } from './PublishWorkspace'
 import { useExtensionSession } from './useExtensionSession'
+import AppIcon from '../icon'
 
 function readTheme(): 'dark' | 'light' {
   const scheme = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -26,14 +27,6 @@ function writeSidebarOpen(open: boolean): void {
   } catch {
     // ignore
   }
-}
-
-function FbIcon({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M14 8h3V4h-3c-2.8 0-5 2.2-5 5v2H6v4h3v7h4v-7h3.2L17 11h-4V9c0-.6.4-1 1-1z" />
-    </svg>
-  )
 }
 
 function CloseIcon() {
@@ -102,7 +95,7 @@ export function App() {
         aria-label="Mostrar panel Vendelo360"
         onClick={() => setOpen(true)}
       >
-        <FbIcon size={20} />
+        <AppIcon size={40} alt="Vendelo360" />
       </button>
     )
   }
@@ -113,7 +106,7 @@ export function App() {
         <div className="header-top">
           <div className="brand">
             <div className="brand-icon">
-              <FbIcon />
+              <AppIcon size={35} alt="Vendelo360" />
             </div>
             <div>
               <h1 className="brand-title">Vendelo360</h1>
