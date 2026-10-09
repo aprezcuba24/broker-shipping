@@ -18,9 +18,7 @@ export type OnboardingProductOption = {
   name: string
   description: string
   icon: LucideIcon
-  /** When true, the card is selected and cannot be toggled off. */
   required: boolean
-  /** When true, shows "Próximamente" and is not selectable. */
   comingSoon: boolean
 }
 
@@ -34,18 +32,18 @@ export const SELLER_ONBOARDING_PRODUCTS: OnboardingProductOption[] = [
     comingSoon: false,
   },
   {
-    code: PlatformProductCode.provider_management,
-    name: 'Gestión de productos de proveedores',
-    description: 'Catálogo, pedidos, comisiones y operación comercial.',
-    icon: Package,
-    required: false,
-    comingSoon: true,
-  },
-  {
     code: PlatformProductCode.facebook_publishing,
     name: 'Publicación en Facebook',
     description: 'Publicación de mensajes en grupos de Facebook.',
     icon: Facebook,
+    required: true,
+    comingSoon: false,
+  },
+  {
+    code: PlatformProductCode.provider_management,
+    name: 'Gestión de productos de proveedores',
+    description: 'Catálogo, pedidos, comisiones y operación comercial.',
+    icon: Package,
     required: false,
     comingSoon: true,
   },

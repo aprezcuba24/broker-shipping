@@ -68,6 +68,7 @@ export const sellerNavItems: NavItem[] = [
   {
     label: 'Anuncios',
     icon: Megaphone,
+    requiresProduct: PlatformProductCode.facebook_publishing,
     children: [
       {
         to: '/ads-messages',
