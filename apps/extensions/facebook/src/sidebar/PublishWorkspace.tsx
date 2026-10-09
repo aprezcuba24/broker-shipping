@@ -10,10 +10,9 @@ type AuthenticatedSession = Exclude<SessionPublic, { status: 'loggedOut' }>
 type Props = {
   session: AuthenticatedSession & { status: 'ready' }
   onSelectOrg: (organizationId: string) => Promise<void>
-  closeSidebar: () => void
 }
 
-export function PublishWorkspace({ session, onSelectOrg, closeSidebar }: Props) {
+export function PublishWorkspace({ session, onSelectOrg }: Props) {
   const [adsMessages, setAdsMessages] = useState<AdsMessageSummary[]>([])
   const [fromQueue, setFromQueue] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -100,7 +99,6 @@ export function PublishWorkspace({ session, onSelectOrg, closeSidebar }: Props) 
         setError(response.error)
         return
       }
-      closeSidebar()
       if ('filled' in response && response.filled) {
         setReadyIds((prev) =>
           prev.includes(adMessageId) ? prev : [...prev, adMessageId],
