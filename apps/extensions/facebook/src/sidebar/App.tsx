@@ -153,6 +153,7 @@ export function App() {
           <LoggedOutGate onOpenAuth={() => void openAuth()} />
         ) : session.status === 'ready' ? (
           <PublishWorkspace
+            closeSidebar={() => void setOpen(false)}
             session={{ ...session, status: 'ready' }}
             onSelectOrg={async (organizationId) => {
               const response = await selectOrg(organizationId)

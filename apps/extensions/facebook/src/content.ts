@@ -397,13 +397,13 @@ async function fillComposer(message: FillMessage): Promise<FillResult> {
       const dialogStillOpen = Boolean(findCreatePostDialog())
 
       if (filled && dialogStillOpen) {
-        showBanner(
-          imageAttached
-            ? 'Listo: mira el diálogo «Crear publicación» en el centro y pulsa Publicar.'
-            : message.imageBase64
-              ? 'Texto listo en el diálogo. Adjunta la foto a mano y pulsa Publicar.'
-              : 'Texto listo en el diálogo. Revisa y pulsa Publicar.',
-        )
+        // showBanner(
+        //   imageAttached
+        //     ? 'Listo: mira el diálogo «Crear publicación» en el centro y pulsa Publicar.'
+        //     : message.imageBase64
+        //       ? 'Texto listo en el diálogo. Adjunta la foto a mano y pulsa Publicar.'
+        //       : 'Texto listo en el diálogo. Revisa y pulsa Publicar.',
+        // )
       } else if (filled && !dialogStillOpen) {
         showBanner(
           'El texto se escribió pero el diálogo se cerró. Usa Reintentar en el panel o ábrelo y pega con Ctrl+V.',
