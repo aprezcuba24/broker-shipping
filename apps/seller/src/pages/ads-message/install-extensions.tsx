@@ -20,7 +20,7 @@ export function InstallExtensions() {
         <li>Activa el modo desarrollador (Developer mode)</li>
         <li>Carga la extensión descompresada. Botón <strong>Load unpacked</strong></li>
         <li>Ya está lista para usar</li>
-        <li>Si tienes algún problema, recarga la aplicación o contacta a <a className=" text-amber-500 hover:text-amber-600" href="https://vendelo360.com/contacto" target="_blank" rel="noopener noreferrer">soporte</a></li>
+        <li>Si tienes algún problema, recarga la aplicación o contacta a <a className=" text-amber-500 hover:text-amber-600" href="https://wa.me/5353024637" target="_blank" rel="noopener noreferrer">Whatsapp 53024637</a></li>
       </ul>
     </PageWrapper>
   );
