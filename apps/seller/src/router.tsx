@@ -40,6 +40,7 @@ import {
   AdsMessagePage,
   AdsMessagePublishGroupsPage,
 } from './pages/ads-message'
+import { InstallExtensions } from './pages/ads-message/install-extensions'
 
 /** Profile is user-scoped: keep org shell when available, super-admin shell otherwise. */
 function SellerProfileLayout() {
@@ -144,6 +145,7 @@ export default function App() {
           <Route path="ads-messages/new" element={<AdsMessageCreatePage />} />
           <Route path="ads-messages/publish" element={<AdsMessagePublishGroupsPage />} />
           <Route path="ads-messages/:adsMessageId/edit" element={<AdsMessageEditPage />} />
+          <Route path="ads-messages/install-extensions" element={<InstallExtensions />} />
           <Route path="orders" element={<OrderPage />} />
           <Route path="orders/:orderId" element={<OrderDetailPage />} />
           <Route path="commissions" element={<CommissionPage />} />
