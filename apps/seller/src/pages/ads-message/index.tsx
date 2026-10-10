@@ -16,9 +16,9 @@ import {
   useCrudController,
   useListParams,
 } from '@broker/ui'
-import { ArrowRight, Megaphone, Plus } from 'lucide-react'
+import { ArrowRight, Download, Megaphone, Plus } from 'lucide-react'
 import { useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import {
   getSelectedMessageCount,
@@ -111,6 +111,9 @@ export function AdsMessagePage() {
       ]}
     >
       <div className="space-y-4">
+        <Link className='flex items-center gap-2 text-amber-500 hover:text-amber-600' key="install-extensions" to="/ads-messages/install-extensions">
+          Instalar extensión en chrome <Download size={16} />
+        </Link>
         <AdsMessageFilters
           filters={list.filters}
           setFilter={list.setFilter}
