@@ -170,6 +170,21 @@ async function resolveImage(
   return image ? { base64: image.base64, mime: image.mime } : { base64: null, mime: null }
 }
 
+/** Bypass page CSP (WhatsApp blocks CDN <img> tags); data: URLs are allowed. */
+const thumbnailCache = new Map<string, string>()
+
+async function handleFetchThumbnail(url: string): Promise<ExtensionResponse> {
+  const cached = thumbnailCache.get(url)
+  if (cached) return { ok: true, dataUrl: cached }
+
+  const image = await downloadImage(url)
+  if (!image) return { ok: false, error: 'No se pudo cargar la imagen' }
+
+  const dataUrl = `data:${image.mime};base64,${image.base64}`
+  thumbnailCache.set(url, dataUrl)
+  return { ok: true, dataUrl }
+}
+
 function waitForTabComplete(tabId: number, timeoutMs = 15000): Promise<void> {
   return new Promise((resolve) => {
     const timer = setTimeout(() => {
@@ -252,6 +267,18 @@ async function fillTabComposer(
   return { filled: false, imageAttached: false, dialogVisible: false }
 }
 
+async function loadQueuedAdMessage(adMessageId: string) {
+  const queue = await readPublishQueue()
+  if (!queue || queue.adsMessages.length === 0) {
+    return { ok: false as const, error: 'No hay cola de publicación' }
+  }
+  const adMessage = queue.adsMessages.find((msg) => msg.id === adMessageId)
+  if (!adMessage) {
+    return { ok: false as const, error: 'Mensaje no encontrado en la cola' }
+  }
+  return { ok: true as const, queue, adMessage }
+}
+
 async function handleFillAdMessage(
   payload: FillAdMessagePayload,
   senderTabId: number | undefined,
@@ -260,23 +287,13 @@ async function handleFillAdMessage(
     return { ok: false, error: 'No hay pestaña activa' }
   }
 
-  const queue = await readPublishQueue()
-  if (!queue || queue.adsMessages.length === 0) {
-    return { ok: false, error: 'No hay cola de publicación' }
-  }
+  const loaded = await loadQueuedAdMessage(payload.adMessageId)
+  if (!loaded.ok) return loaded
 
-  const adMessage = queue.adsMessages.find((msg) => msg.id === payload.adMessageId)
-  if (!adMessage) {
-    return { ok: false, error: 'Mensaje no encontrado en la cola' }
-  }
-
-  const text = buildPostText(adMessage.title, adMessage.description)
-  const html = buildPostHtml(adMessage.title, adMessage.description)
-
-  const { base64: imageBase64, mime: imageMime } = await resolveImage(adMessage.photo_url)
-
-  // Get group name from queue for logging (first group as fallback)
-  const groupName = queue.groups[0]?.name ?? 'grupo'
+  const text = buildPostText(loaded.adMessage.title, loaded.adMessage.description)
+  const html = buildPostHtml(loaded.adMessage.title, loaded.adMessage.description)
+  const { base64: imageBase64, mime: imageMime } = await resolveImage(loaded.adMessage.photo_url)
+  const groupName = loaded.queue.groups[0]?.name ?? 'grupo'
 
   const result = await fillTabComposer(senderTabId, groupName, text, html, imageBase64, imageMime, {
     waitForLoad: false,
@@ -294,6 +311,55 @@ async function handleFillAdMessage(
     filled: result.filled,
     imageAttached: result.imageAttached,
     dialogVisible: result.dialogVisible,
+  }
+}
+
+async function handleFillWhatsAppAd(
+  payload: FillAdMessagePayload,
+  senderTabId: number | undefined,
+): Promise<ExtensionResponse> {
+  if (senderTabId == null) {
+    return { ok: false, error: 'No hay pestaña activa' }
+  }
+
+  const loaded = await loadQueuedAdMessage(payload.adMessageId)
+  if (!loaded.ok) return loaded
+
+  const text = buildPostText(loaded.adMessage.title, loaded.adMessage.description)
+  const { base64: imageBase64, mime: imageMime } = await resolveImage(loaded.adMessage.photo_url)
+
+  let lastError: string | null = null
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const result = (await chrome.tabs.sendMessage(senderTabId, {
+        type: 'FILL_WHATSAPP_COMPOSER',
+        text,
+        imageBase64,
+        imageMime,
+      })) as ExtensionResponse
+
+      if (result && typeof result === 'object' && 'ok' in result) {
+        // Do not retry logical failures — a retry would re-attach the image.
+        if (!result.ok) return result
+        if ('filled' in result && result.filled) {
+          return {
+            ok: true,
+            filled: result.filled,
+            imageAttached:
+              'imageAttached' in result ? Boolean(result.imageAttached) : false,
+          }
+        }
+      }
+      break
+    } catch (err) {
+      lastError = err instanceof Error ? err.message : 'No se pudo contactar la pestaña'
+      await new Promise((resolve) => setTimeout(resolve, 800))
+    }
+  }
+
+  return {
+    ok: false,
+    error: lastError ?? 'No se pudo rellenar el chat de WhatsApp. Vuelve a pulsar Publicar.',
   }
 }
 
@@ -316,8 +382,12 @@ async function dispatchExtensionMessage(
       return handleStartPublish(message)
     case 'CLEAR_PUBLISH_QUEUE':
       return handleClearPublishQueue()
+    case 'FETCH_THUMBNAIL':
+      return handleFetchThumbnail(message.url)
     case 'FILL_AD_MESSAGE':
       return handleFillAdMessage(message.payload, senderTabId)
+    case 'FILL_WHATSAPP_AD':
+      return handleFillWhatsAppAd(message.payload, senderTabId)
     default:
       return { ok: false, error: 'Mensaje desconocido' }
   }

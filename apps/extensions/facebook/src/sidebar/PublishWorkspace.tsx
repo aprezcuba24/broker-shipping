@@ -4,6 +4,7 @@ import type { AdsMessageSummary } from '../auth/types'
 import { sendMessage } from '../auth/messaging'
 import { PUBLISH_QUEUE_STORAGE_KEY } from '../constants'
 import { parsePublishQueue, readPublishQueue } from '../publish-queue'
+import { ProductThumb } from './ProductThumb'
 
 type AuthenticatedSession = Exclude<SessionPublic, { status: 'loggedOut' }>
 
@@ -167,11 +168,7 @@ export function PublishWorkspace({ session, onSelectOrg, onPublish, hints }: Pro
             return (
               <li key={ad.id} className="queue-item">
                 <div className="queue-item-main">
-                  {ad.photo_url ? (
-                    <img className="product-thumb" src={ad.photo_url} alt="" />
-                  ) : (
-                    <div className="product-thumb" />
-                  )}
+                  <ProductThumb url={ad.photo_url} />
                   <div className="queue-item-info">
                     <p className="product-name">{ad.title}</p>
                     <p className="product-code">{ad.code}</p>

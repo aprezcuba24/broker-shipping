@@ -1,6 +1,10 @@
 import { mountSidebar } from './sidebar/mount'
 import { SIDEBAR_HOST_ID } from './constants'
 import { syncSidebarChrome } from './layout'
+import {
+  fillWhatsAppComposer,
+  type FillWhatsAppComposerMessage,
+} from './whatsapp-composer'
 
 type FillMessage = {
   type: 'FILL_COMPOSER'
@@ -445,11 +449,18 @@ function boot(): void {
 }
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  if (!message || typeof message !== 'object' || message.type !== 'FILL_COMPOSER') {
+  if (!message || typeof message !== 'object' || typeof message.type !== 'string') {
     return false
   }
-  void fillComposer(message as FillMessage).then(sendResponse)
-  return true
+  if (message.type === 'FILL_COMPOSER') {
+    void fillComposer(message as FillMessage).then(sendResponse)
+    return true
+  }
+  if (message.type === 'FILL_WHATSAPP_COMPOSER') {
+    void fillWhatsAppComposer(message as FillWhatsAppComposerMessage).then(sendResponse)
+    return true
+  }
+  return false
 })
 
 if (document.readyState === 'loading') {

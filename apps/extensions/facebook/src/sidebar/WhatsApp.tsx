@@ -1,9 +1,10 @@
+import { sendMessage } from '../auth/messaging'
 import { PublishWorkspace, type PublishResult } from './PublishWorkspace'
 import { useExtensionSession } from './useExtensionSession'
 
 const HINTS = {
-  queue: 'Pulsa Publicar en cada anuncio para enviarlo por WhatsApp.',
-  catalog: 'Mensajes preparados para publicar en WhatsApp.',
+  queue: 'Abre el chat o grupo y pulsa Publicar para pegar imagen y texto.',
+  catalog: 'Mensajes preparados para WhatsApp. Abre el chat o grupo y publícalos desde la cola.',
 } as const
 
 export function WhatsApp() {
@@ -14,7 +15,19 @@ export function WhatsApp() {
   }
 
   async function onPublish(adMessageId: string): Promise<PublishResult> {
-    console.log('[Vendelo360 WhatsApp] publish', adMessageId)
+    const response = await sendMessage({
+      type: 'FILL_WHATSAPP_AD',
+      payload: { adMessageId },
+    })
+    if (!response.ok) {
+      return { ok: false, error: response.error }
+    }
+    if ('filled' in response && response.filled) {
+      return {
+        ok: true,
+        status: 'Imagen y texto listos. Revisa y pulsa Enviar.',
+      }
+    }
     return { ok: true, status: null }
   }
 
