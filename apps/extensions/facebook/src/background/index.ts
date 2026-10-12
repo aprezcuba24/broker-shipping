@@ -103,7 +103,10 @@ function isPublishGroup(value: unknown): value is PublishQueueGroup {
 async function handleStartPublish(message: {
   adsMessages: unknown
   groups: unknown
+  openTabs: unknown
 }): Promise<ExtensionResponse> {
+  const openTabs = message.openTabs === true
+
   if (!Array.isArray(message.adsMessages) || !message.adsMessages.every(isAdsMessageSummary)) {
     return { ok: false, error: 'Anuncios inválidos' }
   }
@@ -113,13 +116,13 @@ async function handleStartPublish(message: {
   if (message.adsMessages.length === 0) {
     return { ok: false, error: 'Selecciona al menos un anuncio' }
   }
-  if (message.groups.length === 0) {
+  if (openTabs && message.groups.length === 0) {
     return { ok: false, error: 'Selecciona al menos un grupo' }
   }
 
   const queue = parsePublishQueue({
     adsMessages: message.adsMessages,
-    groups: message.groups,
+    groups: openTabs ? message.groups : [],
     startedAt: Date.now(),
   })
   if (!queue) {
@@ -128,8 +131,10 @@ async function handleStartPublish(message: {
 
   await writePublishQueue(queue)
 
-  for (const group of queue.groups) {
-    await chrome.tabs.create({ url: group.url, active: false })
+  if (openTabs) {
+    for (const group of queue.groups) {
+      await chrome.tabs.create({ url: group.url, active: false })
+    }
   }
 
   return { ok: true }

@@ -9,7 +9,7 @@ import {
   PageWrapper,
   useActiveOrganization,
 } from '@broker/ui'
-import { ArrowLeft, Play, Users } from 'lucide-react'
+import { ArrowLeft, Play, Share2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -20,6 +20,14 @@ import {
   getSelectedMessages,
   useFacebookPublishStore,
 } from '../../stores/facebook-publish-store'
+
+type PublishChannel = 'facebook' | 'whatsapp' | 'both'
+
+const CHANNEL_OPTIONS: { value: PublishChannel; label: string }[] = [
+  { value: 'facebook', label: 'Facebook' },
+  { value: 'whatsapp', label: 'WhatsApp' },
+  { value: 'both', label: 'Los dos' },
+]
 
 async function fetchAllFacebookGroups(): Promise<FacebookGroupPublic[]> {
   const all: FacebookGroupPublic[] = []
@@ -40,17 +48,31 @@ async function fetchAllFacebookGroups(): Promise<FacebookGroupPublic[]> {
   return all
 }
 
+function successToast(channel: PublishChannel): string {
+  if (channel === 'whatsapp') {
+    return 'Anuncios listos en la extensión. Abre WhatsApp Web para publicarlos.'
+  }
+  if (channel === 'both') {
+    return 'Se abrieron los grupos de Facebook. Abre WhatsApp cuando quieras.'
+  }
+  return 'Publicación iniciada. Revisa las pestañas de Facebook.'
+}
+
 export function AdsMessagePublishGroupsPage() {
   const { activeOrganization } = useActiveOrganization()
   const messages = useFacebookPublishStore((state) => state.messages)
   const selectedCount = getSelectedMessageCount(messages)
   const selectedMessages = useMemo(() => getSelectedMessages(messages), [messages])
 
+  const [channel, setChannel] = useState<PublishChannel>('facebook')
   const [groups, setGroups] = useState<FacebookGroupPublic[]>([])
   const [selectedGroupIds, setSelectedGroupIds] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [starting, setStarting] = useState(false)
+
+  const needsGroups = channel === 'facebook' || channel === 'both'
+  const openTabs = needsGroups
 
   const loadGroups = useCallback(async () => {
     setLoading(true)
@@ -90,19 +112,22 @@ export function AdsMessagePublishGroupsPage() {
   }
 
   async function handleStart() {
-    const selectedGroups = groups
-      .filter((group) => selectedGroupIds.has(group.id))
-      .map((group) => ({
-        id: group.id,
-        name: group.name,
-        url: group.facebook_id,
-      }))
+    const selectedGroups = needsGroups
+      ? groups
+          .filter((group) => selectedGroupIds.has(group.id))
+          .map((group) => ({
+            id: group.id,
+            name: group.name,
+            url: group.facebook_id,
+          }))
+      : []
 
     setStarting(true)
     try {
       const result = await startFacebookPublish({
         adsMessages: selectedMessages,
         groups: selectedGroups,
+        openTabs,
       })
       if (!result.ok) {
         toast.error(result.error)
@@ -114,7 +139,7 @@ export function AdsMessagePublishGroupsPage() {
         )
         return
       }
-      toast.success('Publicación iniciada. Revisa las pestañas de Facebook.')
+      toast.success(successToast(channel))
     } finally {
       setStarting(false)
     }
@@ -122,12 +147,20 @@ export function AdsMessagePublishGroupsPage() {
 
   const selectedGroupCount = selectedGroupIds.size
   const allSelected = groups.length > 0 && selectedGroupCount === groups.length
+  const startDisabled =
+    starting ||
+    (needsGroups && (loading || selectedGroupCount === 0))
+
+  const pageDescription =
+    channel === 'whatsapp'
+      ? `Prepara ${selectedCount} anuncio${selectedCount === 1 ? '' : 's'} en la extensión para WhatsApp.`
+      : `Elige dónde publicar ${selectedCount} anuncio${selectedCount === 1 ? '' : 's'}.`
 
   return (
     <PageWrapper
-      title="Publicar en Facebook"
-      description={`Elige los grupos donde publicarás ${selectedCount} anuncio${selectedCount === 1 ? '' : 's'}.`}
-      icon={Users}
+      title="Publicar anuncios"
+      description={pageDescription}
+      icon={Share2}
       buttons={[
         <BtnLink key="back" to="/ads-messages" variant="outline" icon={ArrowLeft}>
           Atrás
@@ -136,52 +169,94 @@ export function AdsMessagePublishGroupsPage() {
           key="start"
           icon={Play}
           label="Comenzar"
-          disabled={selectedGroupCount === 0 || loading || starting}
+          disabled={startDisabled}
           isLoading={starting}
           onClick={() => void handleStart()}
         />,
       ]}
     >
       <div className="space-y-4">
-        {error ? <p className="text-sm text-destructive">{error}</p> : null}
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-on-surface">Dónde publicar</p>
+          <div
+            role="radiogroup"
+            aria-label="Canal de publicación"
+            className="grid grid-cols-3 gap-2"
+          >
+            {CHANNEL_OPTIONS.map((option) => {
+              const selected = channel === option.value
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => setChannel(option.value)}
+                  className={
+                    selected
+                      ? 'rounded-lg border border-primary bg-primary/5 px-3 py-2.5 text-sm font-medium text-primary'
+                      : 'rounded-lg border border-outline-variant/30 bg-surface-container-lowest px-3 py-2.5 text-sm font-medium text-on-surface hover:bg-surface-container-low/60'
+                  }
+                >
+                  {option.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
 
-        {loading ? (
-          <p className="text-sm text-muted-foreground">Cargando grupos…</p>
-        ) : groups.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No hay grupos. Agrégalos en Grupos de Facebook.
+        {channel === 'whatsapp' ? (
+          <p className="rounded-lg border border-outline-variant/30 bg-surface-container-lowest px-4 py-3 text-sm text-muted-foreground">
+            No se abrirá ninguna pestaña. Abre WhatsApp Web tú mismo y publica desde el
+            panel de la extensión.
           </p>
         ) : (
-          <div className="rounded-lg border border-outline-variant/30 bg-surface-container-lowest">
-            <label className="flex items-center gap-3 border-b border-outline-variant/20 px-4 py-3 text-sm font-medium">
-              <input
-                type="checkbox"
-                className="size-4 accent-primary"
-                checked={allSelected}
-                onChange={(event) => toggleAll(event.target.checked)}
-              />
-              <span>
-                Todos los grupos ({selectedGroupCount}/{groups.length})
-              </span>
-            </label>
-            <ul className="divide-y divide-outline-variant/15">
-              {groups.map((group) => (
-                <li key={group.id}>
-                  <label className="flex cursor-pointer items-center gap-3 px-4 py-3 text-sm hover:bg-surface-container-low/60">
-                    <input
-                      type="checkbox"
-                      className="size-4 accent-primary"
-                      checked={selectedGroupIds.has(group.id)}
-                      onChange={() => toggleGroup(group.id)}
-                    />
-                    <span className="min-w-0 flex-1 font-medium text-on-surface">
-                      {group.name}
-                    </span>
-                  </label>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <>
+            <p className="text-sm text-muted-foreground">
+              Se abrirá una pestaña por cada grupo seleccionado.
+            </p>
+
+            {error ? <p className="text-sm text-destructive">{error}</p> : null}
+
+            {loading ? (
+              <p className="text-sm text-muted-foreground">Cargando grupos…</p>
+            ) : groups.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No hay grupos. Agrégalos en Grupos de Facebook.
+              </p>
+            ) : (
+              <div className="rounded-lg border border-outline-variant/30 bg-surface-container-lowest">
+                <label className="flex items-center gap-3 border-b border-outline-variant/20 px-4 py-3 text-sm font-medium">
+                  <input
+                    type="checkbox"
+                    className="size-4 accent-primary"
+                    checked={allSelected}
+                    onChange={(event) => toggleAll(event.target.checked)}
+                  />
+                  <span>
+                    Todos los grupos ({selectedGroupCount}/{groups.length})
+                  </span>
+                </label>
+                <ul className="divide-y divide-outline-variant/15">
+                  {groups.map((group) => (
+                    <li key={group.id}>
+                      <label className="flex cursor-pointer items-center gap-3 px-4 py-3 text-sm hover:bg-surface-container-low/60">
+                        <input
+                          type="checkbox"
+                          className="size-4 accent-primary"
+                          checked={selectedGroupIds.has(group.id)}
+                          onChange={() => toggleGroup(group.id)}
+                        />
+                        <span className="min-w-0 flex-1 font-medium text-on-surface">
+                          {group.name}
+                        </span>
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </>
         )}
       </div>
     </PageWrapper>

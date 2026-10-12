@@ -22,6 +22,7 @@ export type ExtensionMessage =
       type: 'START_PUBLISH'
       adsMessages: AdsMessageSummary[]
       groups: PublishQueueGroup[]
+      openTabs: boolean
     }
   | { type: 'CLEAR_PUBLISH_QUEUE' }
   | { type: 'FETCH_THUMBNAIL'; url: string }
