@@ -11,6 +11,7 @@ export type StartPublishMessage = {
   type: 'START_PUBLISH'
   adsMessages: FacebookPublishMessageSnapshot[]
   groups: FacebookPublishGroupPayload[]
+  openTabs: boolean
 }
 
 export type StartPublishResult =
@@ -28,18 +29,20 @@ function openGroupTabs(urls: string[]): void {
 }
 
 /**
- * Ask the Facebook extension to store the publish queue and open group tabs.
- * Falls back to `window.open` when the extension is missing or unreachable.
+ * Ask the extension to store the publish queue.
+ * When `openTabs` is true, also open Facebook group tabs (extension or window.open fallback).
+ * When `openTabs` is false, the extension is required — no tab fallback.
  */
 export function startFacebookPublish(params: {
   adsMessages: FacebookPublishMessageSnapshot[]
   groups: FacebookPublishGroupPayload[]
+  openTabs: boolean
 }): Promise<StartPublishResult> {
-  const { adsMessages, groups } = params
+  const { adsMessages, groups, openTabs } = params
   if (adsMessages.length === 0) {
     return Promise.resolve({ ok: false, error: 'Selecciona al menos un anuncio.' })
   }
-  if (groups.length === 0) {
+  if (openTabs && groups.length === 0) {
     return Promise.resolve({ ok: false, error: 'Selecciona al menos un grupo.' })
   }
 
@@ -49,15 +52,14 @@ export function startFacebookPublish(params: {
     type: 'START_PUBLISH',
     adsMessages,
     groups,
+    openTabs,
   }
 
   return new Promise((resolve) => {
     let timeout: ReturnType<typeof setTimeout> | null = null
     let resolved = false
 
-    // Listener for the response from the extension
     const handleResponse = (event: MessageEvent) => {
-      // Only accept messages from the same origin
       if (event.origin !== window.location.origin) {
         return
       }
@@ -72,14 +74,12 @@ export function startFacebookPublish(params: {
         return
       }
 
-      // Clear timeout and remove listener
       if (timeout) {
         clearTimeout(timeout)
         timeout = null
       }
       window.removeEventListener('message', handleResponse)
 
-      // Avoid resolving twice
       if (resolved) return
       resolved = true
 
@@ -94,21 +94,25 @@ export function startFacebookPublish(params: {
       }
     }
 
-    // Set up listener
     window.addEventListener('message', handleResponse)
-
-    // Send message to the extension via postMessage
     window.postMessage(message, window.location.origin)
 
-    // Timeout: if no response in ~500ms, assume extension is not installed or not reloaded
     timeout = setTimeout(() => {
       window.removeEventListener('message', handleResponse)
       if (resolved) return
       resolved = true
 
-      // Fallback: open tabs manually and warn user
-      openGroupTabs(urls)
-      resolve({ ok: true, via: 'window', warned: true })
+      if (openTabs) {
+        openGroupTabs(urls)
+        resolve({ ok: true, via: 'window', warned: true })
+        return
+      }
+
+      resolve({
+        ok: false,
+        error:
+          'La extensión no respondió. Verifica que esté instalada y recargada.',
+      })
     }, RESPONSE_TIMEOUT_MS)
   })
 }

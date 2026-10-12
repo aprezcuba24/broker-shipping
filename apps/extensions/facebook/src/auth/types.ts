@@ -22,13 +22,22 @@ export type ExtensionMessage =
       type: 'START_PUBLISH'
       adsMessages: AdsMessageSummary[]
       groups: PublishQueueGroup[]
+      openTabs: boolean
     }
   | { type: 'CLEAR_PUBLISH_QUEUE' }
+  | { type: 'FETCH_THUMBNAIL'; url: string }
   | { type: 'FILL_AD_MESSAGE'; payload: FillAdMessagePayload }
+  | { type: 'FILL_WHATSAPP_AD'; payload: FillAdMessagePayload }
   | {
       type: 'FILL_COMPOSER'
       text: string
       html: string
+      imageBase64: string | null
+      imageMime: string | null
+    }
+  | {
+      type: 'FILL_WHATSAPP_COMPOSER'
+      text: string
       imageBase64: string | null
       imageMime: string | null
     }
@@ -37,5 +46,6 @@ export type ExtensionResponse =
   | { ok: true; session: SessionPublic }
   | { ok: true; adsMessages: AdsMessageSummary[] }
   | { ok: true; filled: boolean; imageAttached: boolean; dialogVisible?: boolean }
+  | { ok: true; dataUrl: string }
   | { ok: true }
   | { ok: false; error: string }

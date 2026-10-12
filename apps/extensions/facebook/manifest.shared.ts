@@ -65,6 +65,7 @@ export function buildManifest(): Record<string, unknown> {
     `${apiOrigin}/*`,
     'https://www.facebook.com/*',
     'https://web.facebook.com/*',
+    'https://web.whatsapp.com/*'
   ]
   if (cdnOrigin) {
     hostPermissions.push(`${cdnOrigin}/*`)
@@ -100,7 +101,7 @@ export function buildManifest(): Record<string, unknown> {
     },
     content_scripts: [
       {
-        matches: ['https://www.facebook.com/*', 'https://web.facebook.com/*'],
+        matches: ['https://www.facebook.com/*', 'https://web.facebook.com/*', 'https://web.whatsapp.com/*'],
         js: ['content.js'],
         run_at: 'document_idle',
       },

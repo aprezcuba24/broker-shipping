@@ -2,9 +2,18 @@ import { useEffect, useState } from 'react'
 import { SIDEBAR_OPEN_STORAGE_KEY } from '../constants'
 import { syncSidebarChrome } from '../layout'
 import { AuthGate, ConnectingGate, LoggedOutGate } from './AuthGate'
-import { PublishWorkspace } from './PublishWorkspace'
+import { Facebook } from './Facebook'
 import { useExtensionSession } from './useExtensionSession'
 import AppIcon from '../icon'
+import { WhatsApp } from './WhatsApp'
+
+type HostSite = 'facebook' | 'whatsapp'
+
+function readHostSite(): HostSite {
+  const host = window.location.hostname
+  if (host === 'web.whatsapp.com') return 'whatsapp'
+  return 'facebook'
+}
 
 function readTheme(): 'dark' | 'light' {
   const scheme = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -71,6 +80,7 @@ function LogoutIcon() {
 export function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>(readTheme)
   const [open, setOpen] = useState(readSidebarOpen)
+  const site = readHostSite()
   const { session, loading, openAuth, selectOrg, logout } = useExtensionSession()
 
   useEffect(() => {
@@ -110,7 +120,7 @@ export function App() {
             </div>
             <div>
               <h1 className="brand-title">Vendelo360</h1>
-              <p className="brand-subtitle">Facebook</p>
+              <p className="brand-subtitle">{site === 'whatsapp' ? 'WhatsApp' : 'Facebook'}</p>
             </div>
           </div>
           <div className="header-actions">
@@ -152,13 +162,7 @@ export function App() {
         ) : session.status === 'loggedOut' ? (
           <LoggedOutGate onOpenAuth={() => void openAuth()} />
         ) : session.status === 'ready' ? (
-          <PublishWorkspace
-            session={{ ...session, status: 'ready' }}
-            onSelectOrg={async (organizationId) => {
-              const response = await selectOrg(organizationId)
-              if (!response.ok) throw new Error(response.error)
-            }}
-          />
+          site === 'whatsapp' ? <WhatsApp /> : <Facebook />
         ) : (
           <AuthGate
             session={session}

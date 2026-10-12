@@ -26,6 +26,7 @@ interface PublishMessage {
   type: typeof START_PUBLISH_REQUEST
   adsMessages: unknown
   groups: unknown
+  openTabs: boolean
 }
 
 interface PublishResponse {
@@ -52,6 +53,7 @@ window.addEventListener('message', (event) => {
         type: START_PUBLISH_REQUEST,
         adsMessages: data.adsMessages,
         groups: data.groups,
+        openTabs: data.openTabs === true,
       },
       (response) => {
         const bridgeResponse: PublishResponse = {
