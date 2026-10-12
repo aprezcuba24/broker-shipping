@@ -7,12 +7,18 @@ import { parsePublishQueue, readPublishQueue } from '../publish-queue'
 
 type AuthenticatedSession = Exclude<SessionPublic, { status: 'loggedOut' }>
 
+export type PublishResult =
+  | { ok: true; status: string | null }
+  | { ok: false; error: string }
+
 type Props = {
   session: AuthenticatedSession & { status: 'ready' }
   onSelectOrg: (organizationId: string) => Promise<void>
+  onPublish: (adMessageId: string) => Promise<PublishResult>
+  hints: { queue: string; catalog: string }
 }
 
-export function PublishWorkspace({ session, onSelectOrg }: Props) {
+export function PublishWorkspace({ session, onSelectOrg, onPublish, hints }: Props) {
   const [adsMessages, setAdsMessages] = useState<AdsMessageSummary[]>([])
   const [fromQueue, setFromQueue] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -91,20 +97,13 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
     setStatus(null)
     setFillingId(adMessageId)
     try {
-      const response = await sendMessage({
-        type: 'FILL_AD_MESSAGE',
-        payload: { adMessageId },
-      })
-      if (!response.ok) {
-        setError(response.error)
+      const result = await onPublish(adMessageId)
+      if (!result.ok) {
+        setError(result.error)
         return
       }
-      if ('filled' in response && response.filled) {
-        setReadyIds((prev) =>
-          prev.includes(adMessageId) ? prev : [...prev, adMessageId],
-        )
-        setStatus('Diálogo listo. Revisa y pulsa Publicar en Facebook.')
-      }
+      setReadyIds((prev) => (prev.includes(adMessageId) ? prev : [...prev, adMessageId]))
+      if (result.status) setStatus(result.status)
     } finally {
       setFillingId(null)
     }
@@ -121,11 +120,11 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
     <>
       {session.organizations.length > 1 ? (
         <div className="org-switch">
-          <label htmlFor="fb-org-select" className="muted">
+          <label htmlFor="org-select" className="muted">
             Organización
           </label>
           <select
-            id="fb-org-select"
+            id="org-select"
             className="org-select"
             value={session.organizationId ?? ''}
             disabled={switchingOrg || loading}
@@ -144,22 +143,14 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
         <p className="section-title">{fromQueue ? 'Cola de publicación' : 'Anuncios'}</p>
         <div className="selected-actions">
           {fromQueue && readyIds.length > 0 ? (
-            <button
-              type="button"
-              className="btn-text"
-              onClick={resetPublishButtons}
-            >
+            <button type="button" className="btn-text" onClick={resetPublishButtons}>
               Reset
             </button>
           ) : null}
         </div>
       </div>
 
-      <p className="muted publish-hint">
-        {fromQueue
-          ? 'Pulsa Publicar en cada anuncio para abrir el diálogo de Facebook.'
-          : 'Mensajes preparados para publicar en Facebook.'}
-      </p>
+      <p className="muted publish-hint">{fromQueue ? hints.queue : hints.catalog}</p>
 
       {error ? <p className="error">{error}</p> : null}
       {status ? <p className="success">{status}</p> : null}
@@ -167,9 +158,7 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
       {loading && adsMessages.length === 0 ? (
         <div className="empty">Cargando anuncios…</div>
       ) : adsMessages.length === 0 ? (
-        <div className="empty">
-          No hay anuncios. Créalos en la web de vendedores.
-        </div>
+        <div className="empty">No hay anuncios. Créalos en la web de vendedores.</div>
       ) : (
         <ul className="queue-list">
           {adsMessages.map((ad) => {
@@ -186,9 +175,7 @@ export function PublishWorkspace({ session, onSelectOrg }: Props) {
                   <div className="queue-item-info">
                     <p className="product-name">{ad.title}</p>
                     <p className="product-code">{ad.code}</p>
-                    {ready ? (
-                      <span className="queue-ready">Listo</span>
-                    ) : null}
+                    {ready ? <span className="queue-ready">Listo</span> : null}
                   </div>
                 </div>
                 {fromQueue && !ready ? (
