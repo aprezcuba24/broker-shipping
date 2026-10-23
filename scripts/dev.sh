@@ -6,7 +6,7 @@ cd "$ROOT_DIR"
 
 usage() {
   cat <<EOF
-Usage: pnpm dev [-- backoffice] [admin] [seller] [landing] [all]
+Usage: pnpm dev [-- backoffice] [admin] [seller] [store] [landing] [all]
 
 Always starts dev:api. Optionally start frontends:
 
@@ -14,6 +14,7 @@ Always starts dev:api. Optionally start frontends:
   pnpm dev backoffice
   pnpm dev admin
   pnpm dev seller
+  pnpm dev store
   pnpm dev landing
   pnpm dev backoffice admin
   pnpm dev all
@@ -29,6 +30,7 @@ PIDS=()
 START_BACKOFFICE=false
 START_ADMIN=false
 START_SELLER=false
+START_STORE=false
 START_LANDING=false
 
 for arg in "$@"; do
@@ -42,6 +44,9 @@ for arg in "$@"; do
     seller)
       START_SELLER=true
       ;;
+    store)
+      START_STORE=true
+      ;;
     landing)
       START_LANDING=true
       ;;
@@ -49,6 +54,7 @@ for arg in "$@"; do
       START_BACKOFFICE=true
       START_ADMIN=true
       START_SELLER=true
+      START_STORE=true
       START_LANDING=true
       ;;
     *)
@@ -88,6 +94,10 @@ fi
 
 if [[ "$START_SELLER" == true ]]; then
   start "seller" pnpm run dev:seller
+fi
+
+if [[ "$START_STORE" == true ]]; then
+  start "store" pnpm run dev:store
 fi
 
 if [[ "$START_LANDING" == true ]]; then

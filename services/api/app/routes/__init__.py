@@ -15,6 +15,7 @@ from app.routes import (
     product_stock_movements_provider,
     products_provider,
     products_seller,
+    storefront,
     tags_provider,
     tags_seller,
     users,
@@ -57,3 +58,4 @@ router.include_router(organizations_provider.router)
 router.include_router(organizations_seller.router)
 router.include_router(facebook_groups.router)
 router.include_router(ads_messages.router)
+router.include_router(storefront.router)

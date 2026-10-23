@@ -1,0 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600&display=swap');
+@import 'tailwindcss';
+@source "../../../packages/ui/src";
+@import '@broker/ui/styles.css';
+
+html[data-portal='store'] {
+  --paper: #f4ebe0;
+  --paper-deep: #e8dccb;
+  --ink: #1c1410;
+  --ink-muted: #5c4f45;
+  --spine: #5c1a1b;
+  --spine-soft: #8b3a3b;
+  --gilt: #b08d57;
+  --gilt-soft: #d4b98a;
+  --shelf: #3d2e24;
+
+  --background: 36 33% 92%;
+  --foreground: 24 27% 9%;
+  --card: 36 40% 95%;
+  --card-foreground: 24 27% 9%;
+  --primary: 359 56% 23%;
+  --primary-foreground: 36 40% 96%;
+  --secondary: 36 28% 86%;
+  --secondary-foreground: 24 27% 9%;
+  --muted: 36 24% 88%;
+  --muted-foreground: 24 14% 32%;
+  --accent: 36 36% 80%;
+  --accent-foreground: 24 27% 9%;
+  --destructive: 0 72% 40%;
+  --border: 32 22% 74%;
+  --input: 32 22% 74%;
+  --ring: 359 56% 23%;
+  --radius: 0.35rem;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Literata', Georgia, serif;
+
+  color: var(--ink);
+  background:
+    radial-gradient(ellipse at top, rgba(176, 141, 87, 0.12), transparent 55%),
+    linear-gradient(180deg, var(--paper) 0%, var(--paper-deep) 100%);
+  font-family: var(--font-body);
+  min-height: 100%;
+}
+
+html[data-portal='store'] body {
+  min-height: 100vh;
+  background: transparent;
+}
+
+html[data-portal='store'] .font-display {
+  font-family: var(--font-display);
+}
+
+html[data-portal='store'] .book-cover {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.18) 0%, transparent 8%),
+    linear-gradient(135deg, var(--spine) 0%, var(--spine-soft) 55%, #6e2a2b 100%);
+}
+
+html[data-portal='store'] .shelf-rail {
+  background: linear-gradient(180deg, #4a382c 0%, var(--shelf) 40%, #2a1e18 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 8px 16px rgba(28, 20, 16, 0.18);
+}

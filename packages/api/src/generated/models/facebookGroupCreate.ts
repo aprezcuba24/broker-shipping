@@ -8,6 +8,6 @@
 export interface FacebookGroupCreate {
   /** @maxLength 255 */
   name: string;
-  /** @maxLength 255 */
+  /** @maxLength 2048 */
   facebook_id: string;
 }
