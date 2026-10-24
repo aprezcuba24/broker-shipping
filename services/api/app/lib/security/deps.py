@@ -103,6 +103,21 @@ def require_organization(
     return _resolve
 
 
+async def require_public_seller_organization(
+    organization_id: UUID,
+    session: SessionDep,
+) -> Organization:
+    organization = await get_entity(
+        session,
+        Organization,
+        id=organization_id,
+        required=False,
+    )
+    if organization is None or organization.type != OrganizationType.seller:
+        raise_api_error("not_found")
+    return organization
+
+
 async def optional_seller_organization(
     user: Annotated[User, Depends(get_current_user)],
     session: SessionDep,
@@ -181,6 +196,10 @@ ProviderOrgDep = Annotated[
 SellerOrgDep = Annotated[
     Organization,
     Depends(require_organization(OrganizationType.seller)),
+]
+PublicSellerOrgDep = Annotated[
+    Organization,
+    Depends(require_public_seller_organization),
 ]
 OptionalSellerOrgDep = Annotated[
     Organization | None,

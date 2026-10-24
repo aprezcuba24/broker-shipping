@@ -15,7 +15,6 @@ from app.routes import (
     product_stock_movements_provider,
     products_provider,
     products_seller,
-    storefront,
     tags_provider,
     tags_seller,
     users,
@@ -29,6 +28,7 @@ from app.routes.organization import (
     organizations_provider,
     organizations_seller,
 )
+from app.routes.store import router as store_router
 
 router = APIRouter()
 router.include_router(health.router, prefix="/health", tags=["health"])
@@ -58,4 +58,4 @@ router.include_router(organizations_provider.router)
 router.include_router(organizations_seller.router)
 router.include_router(facebook_groups.router)
 router.include_router(ads_messages.router)
-router.include_router(storefront.router)
+router.include_router(store_router)

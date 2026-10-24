@@ -4,9 +4,17 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.lib.storage.deps import get_object_storage
+from app.models.order.order import Order
+from app.models.product.product import Product
+from app.lib.storage.deps import get_object_storage
+from app.models.order.order import Order
+from app.models.product.product import Product
 from app.schemas.customer import AddressCreate
 from app.schemas.fields import NonEmptyStr, NormalizedPhone
 from app.schemas.money import Money
+from app.services.order.helpers import compute_order_totals
+from app.services.order.helpers import compute_order_totals
 
 
 class StorefrontInfoPublic(BaseModel):
@@ -57,3 +65,99 @@ class StorefrontCheckoutPublic(BaseModel):
     code: str
     items: list[StorefrontCheckoutItemPublic]
     totals: list[Money] = Field(default_factory=list)
+
+
+def storefront_product_to_public(product: Product) -> StorefrontProductPublic:
+    sale_price_amount = getattr(product, "sale_price", None)
+    amount = sale_price_amount if sale_price_amount is not None else product.price
+    return StorefrontProductPublic(
+        id=product.id,
+        name=product.name,
+        description=product.description,
+        price=Money(amount=amount, currency=product.currency),
+        stock=product.stock,
+        image_url=get_object_storage().build_public_url(product.image_key),
+        tags=[
+            StorefrontTagPublic(id=tag.id, name=tag.name)
+            for tag in (getattr(product, "tags", None) or [])
+        ],
+    )
+
+
+def storefront_checkout_to_public(order: Order) -> StorefrontCheckoutPublic:
+    items = getattr(order, "items", []) or []
+    messaging = getattr(order, "messaging", []) or []
+    totals = getattr(order, "totals", None) or compute_order_totals(items, messaging)
+
+    checkout_items: list[StorefrontCheckoutItemPublic] = []
+    for item in items:
+        checkout_items.append(
+            StorefrontCheckoutItemPublic(
+                product_id=item.product_id,
+                product_name=item.product_name,
+                quantity=item.quantity,
+                unit_price=Money(
+                    amount=item.seller_provider_price,
+                    currency=item.currency,
+                ),
+                line_total=Money(
+                    amount=item.seller_provider_price * item.quantity,
+                    currency=item.currency,
+                ),
+            )
+        )
+
+    return StorefrontCheckoutPublic(
+        order_id=order.id,
+        code=order.code,
+        items=checkout_items,
+        totals=list(totals.total),
+    )
+
+
+def storefront_product_to_public(product: Product) -> StorefrontProductPublic:
+    sale_price_amount = getattr(product, "sale_price", None)
+    amount = sale_price_amount if sale_price_amount is not None else product.price
+    return StorefrontProductPublic(
+        id=product.id,
+        name=product.name,
+        description=product.description,
+        price=Money(amount=amount, currency=product.currency),
+        stock=product.stock,
+        image_url=get_object_storage().build_public_url(product.image_key),
+        tags=[
+            StorefrontTagPublic(id=tag.id, name=tag.name)
+            for tag in (getattr(product, "tags", None) or [])
+        ],
+    )
+
+
+def storefront_checkout_to_public(order: Order) -> StorefrontCheckoutPublic:
+    items = getattr(order, "items", []) or []
+    messaging = getattr(order, "messaging", []) or []
+    totals = getattr(order, "totals", None) or compute_order_totals(items, messaging)
+
+    checkout_items: list[StorefrontCheckoutItemPublic] = []
+    for item in items:
+        checkout_items.append(
+            StorefrontCheckoutItemPublic(
+                product_id=item.product_id,
+                product_name=item.product_name,
+                quantity=item.quantity,
+                unit_price=Money(
+                    amount=item.seller_provider_price,
+                    currency=item.currency,
+                ),
+                line_total=Money(
+                    amount=item.seller_provider_price * item.quantity,
+                    currency=item.currency,
+                ),
+            )
+        )
+
+    return StorefrontCheckoutPublic(
+        order_id=order.id,
+        code=order.code,
+        items=checkout_items,
+        totals=list(totals.total),
+    )
