@@ -3,6 +3,7 @@ import { Button, formatMoney } from '@broker/ui'
 import { Link, useParams } from 'react-router-dom'
 
 import { BookCover } from '@/components/book-cover'
+import { BookDescription } from '@/components/book-description'
 import { PayOnDeliveryNote } from '@/components/pay-on-delivery-note'
 import { SaleFlow } from '@/components/sale-flow'
 import { SELLER_ORGANIZATION_ID } from '@/config/env'
@@ -71,9 +72,7 @@ export function BookDetailPage() {
           </div>
 
           {book.description ? (
-            <p className="max-w-2xl text-base leading-relaxed text-[color:var(--ink-secondary)]">
-              {book.description}
-            </p>
+            <BookDescription markdown={book.description} />
           ) : null}
 
           <PayOnDeliveryNote />

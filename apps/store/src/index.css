@@ -152,3 +152,145 @@ html[data-portal='store'] .gilt-rule {
   );
   opacity: 0.55;
 }
+
+html[data-portal='store'] .book-copy > :first-child {
+  margin-top: 0;
+}
+
+html[data-portal='store'] .book-copy > :last-child {
+  margin-bottom: 0;
+}
+
+html[data-portal='store'] .book-copy p {
+  margin: 0.75em 0;
+}
+
+html[data-portal='store'] .book-copy strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+html[data-portal='store'] .book-copy em {
+  font-style: italic;
+}
+
+html[data-portal='store'] .book-copy a {
+  color: var(--spine);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+html[data-portal='store'] .book-copy a:hover {
+  color: var(--spine-soft);
+}
+
+html[data-portal='store'] .book-copy h2,
+html[data-portal='store'] .book-copy h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin: 1.1em 0 0.4em;
+}
+
+html[data-portal='store'] .book-copy h2 {
+  font-size: 1.25rem;
+}
+
+html[data-portal='store'] .book-copy h3 {
+  font-size: 1.1rem;
+}
+
+html[data-portal='store'] .book-copy ul,
+html[data-portal='store'] .book-copy ol {
+  margin: 0.75em 0;
+  padding-left: 1.35em;
+}
+
+html[data-portal='store'] .book-copy ul {
+  list-style: disc;
+}
+
+html[data-portal='store'] .book-copy ol {
+  list-style: decimal;
+}
+
+html[data-portal='store'] .book-copy li {
+  margin: 0.25em 0;
+}
+
+html[data-portal='store'] .book-copy li > ul,
+html[data-portal='store'] .book-copy li > ol {
+  margin: 0.2em 0;
+}
+
+html[data-portal='store'] .book-copy blockquote {
+  margin: 0.85em 0;
+  padding: 0.15em 0 0.15em 0.9em;
+  border-left: 3px solid var(--gilt);
+  color: var(--ink-muted);
+  font-style: italic;
+}
+
+html[data-portal='store'] .book-copy hr {
+  margin: 1.1em 0;
+  border: none;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--gilt) 12%,
+    var(--gilt-soft) 50%,
+    var(--gilt) 88%,
+    transparent
+  );
+  opacity: 0.45;
+}
+
+html[data-portal='store'] .book-copy code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+  background: var(--paper-deep);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+
+html[data-portal='store'] .book-copy pre {
+  margin: 0.85em 0;
+  padding: 0.75em 1em;
+  overflow-x: auto;
+  background: var(--paper-deep);
+  border-radius: var(--radius);
+  border: 1px solid rgba(26, 20, 16, 0.06);
+}
+
+html[data-portal='store'] .book-copy pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 0.85em;
+}
+
+html[data-portal='store'] .book-copy table {
+  width: 100%;
+  margin: 0.85em 0;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+
+html[data-portal='store'] .book-copy th,
+html[data-portal='store'] .book-copy td {
+  border: 1px solid rgba(26, 20, 16, 0.12);
+  padding: 0.4em 0.65em;
+  text-align: left;
+}
+
+html[data-portal='store'] .book-copy th {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--paper-deep);
+}
+
+html[data-portal='store'] .book-copy del {
+  color: var(--ink-faint);
+}
