@@ -21,7 +21,9 @@ export function BookDetailPage() {
   })
 
   if (bookQuery.isLoading) {
-    return <p className="py-16 text-center text-[color:var(--ink-muted)]">Cargando…</p>
+    return (
+      <p className="py-16 text-center text-[color:var(--ink-muted)]">Cargando…</p>
+    )
   }
 
   if (bookQuery.isError || !bookQuery.data) {
@@ -42,24 +44,24 @@ export function BookDetailPage() {
   const canAdd = !soldOut && quantityInCart < book.stock
 
   return (
-    <div className="space-y-8">
-      <div className="grid gap-8 md:grid-cols-[minmax(0,16rem)_1fr] lg:grid-cols-[minmax(0,18rem)_1fr]">
-        <div className="mx-auto w-full max-w-[16rem] overflow-hidden rounded-sm shadow-lg ring-1 ring-[color:var(--border)]">
+    <div className="space-y-12">
+      <div className="grid gap-8 md:grid-cols-[minmax(0,15rem)_1fr] md:gap-10 lg:grid-cols-[minmax(0,17rem)_1fr]">
+        <div className="book-object mx-auto w-full max-w-[15rem] md:mx-0 md:max-w-none">
           <BookCover title={book.name} imageUrl={book.image_url} />
         </div>
 
-        <div className="space-y-5">
+        <div className="space-y-6">
           <div>
-            <p className="text-[0.7rem] font-medium uppercase tracking-[0.16em] text-[color:var(--spine-soft)]">
+            <p className="font-italic text-[0.95rem] text-[color:var(--ink-muted)]">
               {author}
             </p>
-            <h2 className="font-display mt-1 text-3xl font-semibold text-[color:var(--ink)]">
+            <h2 className="font-display mt-2 text-3xl font-semibold tracking-tight text-[color:var(--ink)] sm:text-4xl">
               {book.name}
             </h2>
-            <p className="mt-3 font-display text-2xl text-[color:var(--spine)]">
+            <p className="mt-4 font-display text-2xl text-[color:var(--spine)] sm:text-[1.75rem]">
               {formatMoney(book.price)}
             </p>
-            <p className="mt-1 text-sm text-[color:var(--ink-muted)]">
+            <p className="mt-1.5 text-sm text-[color:var(--ink-faint)]">
               {soldOut
                 ? 'Sin existencias'
                 : book.stock === 1
@@ -69,7 +71,7 @@ export function BookDetailPage() {
           </div>
 
           {book.description ? (
-            <p className="max-w-2xl text-base leading-relaxed text-[color:var(--ink)]">
+            <p className="max-w-2xl text-base leading-relaxed text-[color:var(--ink-secondary)]">
               {book.description}
             </p>
           ) : null}
@@ -97,6 +99,7 @@ export function BookDetailPage() {
         </div>
       </div>
 
+      <div className="gilt-rule" aria-hidden />
       <SaleFlow compact />
     </div>
   )

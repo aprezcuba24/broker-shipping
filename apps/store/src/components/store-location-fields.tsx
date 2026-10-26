@@ -58,7 +58,7 @@ export function StoreLocationFields<T extends FieldValues>({
           <Field data-invalid={fieldState.invalid || undefined}>
             <FieldLabel>Provincia</FieldLabel>
             <select
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              className="store-control"
               value={field.value ?? ''}
               onChange={(event) => {
                 field.onChange(event.target.value)
@@ -84,7 +84,7 @@ export function StoreLocationFields<T extends FieldValues>({
           <Field data-invalid={fieldState.invalid || undefined}>
             <FieldLabel>Municipio</FieldLabel>
             <select
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              className="store-control"
               value={field.value ?? ''}
               onChange={(event) => {
                 field.onChange(event.target.value)
@@ -110,7 +110,7 @@ export function StoreLocationFields<T extends FieldValues>({
           <Field data-invalid={fieldState.invalid || undefined}>
             <FieldLabel>Barrio</FieldLabel>
             <select
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              className="store-control"
               value={field.value ?? ''}
               onChange={(event) => field.onChange(event.target.value)}
               disabled={!municipalityId}

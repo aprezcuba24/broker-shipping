@@ -118,18 +118,18 @@ export function CheckoutPage() {
   if (completed) {
     const whatsappUrl = buildWhatsAppUrl(completed.order, completed.values)
     return (
-      <div className="mx-auto max-w-xl space-y-6 py-6 text-center">
-        <h2 className="font-display text-3xl font-semibold text-[color:var(--spine)]">
-          Pedido registrado
-        </h2>
-        <p className="text-[color:var(--ink-muted)]">
-          Tu código es{' '}
-          <span className="font-display text-xl font-semibold text-[color:var(--ink)]">
+      <div className="mx-auto max-w-lg space-y-8 py-8 text-center">
+        <div className="space-y-3">
+          <p className="text-sm text-[color:var(--ink-muted)]">Pedido registrado</p>
+          <p className="font-display text-4xl font-semibold tracking-tight text-[color:var(--spine)] sm:text-5xl">
             {completed.order.code}
-          </span>
-          . Ahora escribe al vendedor por WhatsApp para coordinar la entrega.
-        </p>
-        <PayOnDeliveryNote />
+          </p>
+          <div className="gilt-rule mx-auto max-w-[12rem]" aria-hidden />
+          <p className="text-[color:var(--ink-secondary)] leading-relaxed">
+            Ahora escribe al vendedor por WhatsApp para coordinar la entrega.
+          </p>
+        </div>
+        <PayOnDeliveryNote className="text-left" />
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Button asChild size="lg">
             <a href={whatsappUrl} target="_blank" rel="noreferrer">
@@ -140,18 +140,19 @@ export function CheckoutPage() {
             <Link to="/">Volver al estante</Link>
           </Button>
         </div>
+        <div className="gilt-rule" aria-hidden />
         <SaleFlow compact />
       </div>
     )
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <div>
-        <h2 className="font-display text-3xl font-semibold text-[color:var(--spine)]">
+        <h2 className="font-display text-3xl font-semibold tracking-tight text-[color:var(--ink)]">
           Tus datos
         </h2>
-        <p className="mt-1 text-[color:var(--ink-muted)]">
+        <p className="mt-1.5 text-[color:var(--ink-muted)]">
           Con estos datos el vendedor puede llevarte los libros a casa.
         </p>
       </div>
@@ -159,7 +160,7 @@ export function CheckoutPage() {
       <PayOnDeliveryNote />
 
       <form
-        className="space-y-5 rounded-md border border-[color:var(--border)] bg-white/75 p-4 sm:p-6"
+        className="paper-sheet space-y-5 p-5 sm:p-7"
         onSubmit={form.handleSubmit(async (values) => {
           setIsSubmitting(true)
           setError(null)
@@ -258,16 +259,16 @@ export function CheckoutPage() {
           municipalityId={municipalityId}
         />
 
-        <div className="rounded-md bg-[color:var(--paper-deep)]/60 px-3 py-3 text-sm">
+        <div className="rounded-md bg-[color:var(--paper-deep)]/70 px-4 py-3.5 text-sm">
           <p className="text-[color:var(--ink-muted)]">Resumen</p>
-          <ul className="mt-1 space-y-1">
+          <ul className="mt-1.5 space-y-1 text-[color:var(--ink-secondary)]">
             {items.map((item) => (
               <li key={item.book.id}>
                 {item.book.name} × {item.quantity}
               </li>
             ))}
           </ul>
-          <p className="mt-2 font-display text-lg text-[color:var(--spine)]">
+          <p className="mt-2.5 font-display text-lg text-[color:var(--spine)]">
             {totals.map((money) => formatMoney(money)).join(' + ')}
           </p>
         </div>
@@ -284,6 +285,7 @@ export function CheckoutPage() {
         </div>
       </form>
 
+      <div className="gilt-rule" aria-hidden />
       <SaleFlow compact />
     </div>
   )

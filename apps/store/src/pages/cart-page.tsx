@@ -17,8 +17,8 @@ export function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="space-y-6 py-10 text-center">
-        <h2 className="font-display text-2xl font-semibold text-[color:var(--spine)]">
+      <div className="mx-auto max-w-md space-y-5 py-16 text-center">
+        <h2 className="font-display text-2xl font-semibold tracking-tight text-[color:var(--ink)]">
           Tu carrito está vacío
         </h2>
         <p className="text-[color:var(--ink-muted)]">
@@ -32,27 +32,24 @@ export function CartPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <div>
-        <h2 className="font-display text-3xl font-semibold text-[color:var(--spine)]">
+        <h2 className="font-display text-3xl font-semibold tracking-tight text-[color:var(--ink)]">
           Carrito
         </h2>
-        <p className="mt-1 text-[color:var(--ink-muted)]">
+        <p className="mt-1.5 text-[color:var(--ink-muted)]">
           Revisa tu pedido antes de registrar tus datos.
         </p>
       </div>
 
       <PayOnDeliveryNote />
 
-      <ul className="space-y-4">
+      <ul className="divide-y divide-[rgba(26,20,16,0.08)] border-y border-[rgba(26,20,16,0.08)]">
         {items.map((item) => (
-          <li
-            key={item.book.id}
-            className="flex gap-4 rounded-md border border-[color:var(--border)] bg-white/70 p-3 sm:p-4"
-          >
+          <li key={item.book.id} className="flex gap-4 py-5 first:pt-4 last:pb-4">
             <Link
               to={`/libros/${item.book.id}`}
-              className="w-20 shrink-0 overflow-hidden rounded-sm shadow ring-1 ring-[color:var(--border)] sm:w-24"
+              className="book-object w-[4.5rem] shrink-0 sm:w-20"
             >
               <BookCover title={item.book.name} imageUrl={item.book.image_url} />
             </Link>
@@ -60,23 +57,23 @@ export function CartPage() {
               <div>
                 <Link
                   to={`/libros/${item.book.id}`}
-                  className="font-display text-lg font-semibold text-[color:var(--ink)] hover:text-[color:var(--spine)]"
+                  className="font-display text-lg font-semibold text-[color:var(--ink)] transition-colors hover:text-[color:var(--spine)]"
                 >
                   {item.book.name}
                 </Link>
-                <p className="text-sm text-[color:var(--ink-muted)]">
+                <p className="mt-0.5 text-sm text-[color:var(--ink-muted)]">
                   {formatMoney(item.book.price)} · stock {item.book.stock}
                 </p>
               </div>
               <div className="mt-auto flex flex-wrap items-center gap-3">
-                <label className="flex items-center gap-2 text-sm">
+                <label className="flex items-center gap-2 text-sm text-[color:var(--ink-secondary)]">
                   Cantidad
                   <input
                     type="number"
                     min={1}
                     max={item.book.stock}
                     value={item.quantity}
-                    className="h-9 w-16 rounded-md border border-input bg-background px-2"
+                    className="store-control h-9 w-16 px-2"
                     onChange={(event) =>
                       setQuantity(item.book.id, Number(event.target.value) || 0)
                     }
@@ -84,12 +81,12 @@ export function CartPage() {
                 </label>
                 <button
                   type="button"
-                  className="text-sm text-[color:var(--spine)] underline-offset-2 hover:underline"
+                  className="text-sm text-[color:var(--spine)] underline-offset-4 hover:underline"
                   onClick={() => removeBook(item.book.id)}
                 >
                   Quitar
                 </button>
-                <p className="ml-auto font-display text-base text-[color:var(--spine)]">
+                <p className="ml-auto font-display text-lg text-[color:var(--spine)]">
                   {formatMoney(
                     item.book.price.amount * item.quantity,
                     item.book.price.currency,
@@ -101,7 +98,7 @@ export function CartPage() {
         ))}
       </ul>
 
-      <div className="flex flex-col gap-4 rounded-md border border-[color:var(--border)] bg-white/80 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="paper-sheet flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm text-[color:var(--ink-muted)]">Total</p>
           <p className="font-display text-2xl text-[color:var(--spine)]">
@@ -113,6 +110,7 @@ export function CartPage() {
         </Button>
       </div>
 
+      <div className="gilt-rule" aria-hidden />
       <SaleFlow compact />
     </div>
   )

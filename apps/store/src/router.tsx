@@ -9,15 +9,21 @@ import { HomePage } from '@/pages/home-page'
 
 function MissingConfigPage() {
   return (
-    <div className="mx-auto flex min-h-screen max-w-lg flex-col justify-center gap-3 px-4 text-center">
-      <h1 className="font-display text-3xl font-semibold text-[color:var(--spine)]">
+    <div className="mx-auto flex min-h-screen max-w-lg flex-col justify-center gap-4 px-4 text-center">
+      <h1 className="font-display text-3xl font-semibold tracking-tight text-[color:var(--ink)]">
         Tienda sin configurar
       </h1>
-      <p className="text-[color:var(--ink-muted)]">
+      <div className="gilt-rule mx-auto max-w-[10rem]" aria-hidden />
+      <p className="text-[color:var(--ink-muted)] leading-relaxed">
         Define{' '}
-        <code className="rounded bg-white/70 px-1">VITE_SELLER_ORGANIZATION_ID</code>{' '}
-        y <code className="rounded bg-white/70 px-1">VITE_WHATSAPP_PHONE</code> en
-        el entorno de esta app.
+        <code className="rounded bg-[color:var(--paper-raised)] px-1.5 py-0.5 text-sm">
+          VITE_SELLER_ORGANIZATION_ID
+        </code>{' '}
+        y{' '}
+        <code className="rounded bg-[color:var(--paper-raised)] px-1.5 py-0.5 text-sm">
+          VITE_WHATSAPP_PHONE
+        </code>{' '}
+        en el entorno de esta app.
       </p>
     </div>
   )

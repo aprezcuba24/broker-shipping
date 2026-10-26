@@ -17,14 +17,14 @@ export function BookCover({ title, imageUrl, className = '' }: BookCoverProps) {
 
   return (
     <div
-      className={`book-cover flex aspect-[2/3] w-full flex-col justify-between p-4 text-[color:var(--paper)] ${className}`}
+      className={`book-cover flex aspect-[2/3] w-full flex-col justify-between p-4 text-[color:var(--paper-raised)] ${className}`}
       aria-hidden
     >
-      <div className="h-px w-10 bg-[color:var(--gilt)]" />
-      <p className="font-display text-sm font-semibold leading-snug sm:text-base">
+      <div className="h-px w-8 bg-[color:var(--gilt-soft)]/80" />
+      <p className="font-display text-sm font-semibold leading-snug sm:text-[0.95rem]">
         {title}
       </p>
-      <div className="h-px w-16 bg-[color:var(--gilt)]/70" />
+      <div className="h-px w-12 bg-[color:var(--gilt-soft)]/60" />
     </div>
   )
 }
