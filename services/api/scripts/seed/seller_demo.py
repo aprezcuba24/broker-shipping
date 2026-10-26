@@ -13,6 +13,7 @@ from app.models.organization.user_organization import UserOrganization
 from app.models.user.user import User
 from app.services.provider_seller_link import link_provider_to_seller
 from scripts.seed.provider_demo import ORG_NAME as PROVIDER_ORG_NAME
+from scripts.seed.product_platform import register_products_platform
 
 NAME = "seller_demo"
 
@@ -47,6 +48,8 @@ async def run(session: AsyncSession) -> None:
         org = Organization(name=ORG_NAME, type=OrganizationType.seller)
         session.add(org)
         await session.flush()
+
+    await register_products_platform(org, session)
 
     result = await session.execute(
         select(UserOrganization).where(

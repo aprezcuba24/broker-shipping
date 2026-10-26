@@ -7,6 +7,7 @@ from sqlmodel import select
 
 from app.models.location.municipality import Municipality
 from app.models.location.province import Province
+from app.models.location.neighborhood import Neighborhood
 
 NAME = "locations_cuba"
 
@@ -160,9 +161,12 @@ async def run(session: AsyncSession) -> None:
         for mun_name in municipalities:
             if mun_name in existing_muns:
                 continue
+            municipality = Municipality(name=mun_name, province_id=province.id)
             session.add(
-                Municipality(name=mun_name, province_id=province.id),
+                Neighborhood(name='aaa', municipality_id=municipality.id),
+                Neighborhood(name='bbb', municipality_id=municipality.id),
             )
+            session.add(municipality)
             created_municipalities += 1
 
     await session.flush()

@@ -8,6 +8,7 @@ import {
   ProvinceAdminPage,
   MunicipalityAdminPage,
   NeighborhoodAdminPage,
+  OrganizationDetailPage,
   RequireOrganization,
   RequireSuperAdmin,
   SuperAdminLayout,
@@ -114,6 +115,7 @@ export default function App() {
           }
         >
           <Route path="/organizations" element={<OrganizationsPage />} />
+          <Route path="/organizations/:organizationId" element={<OrganizationDetailPage />} />
           <Route path="/provinces" element={<ProvinceAdminPage />} />
           <Route path="/municipalities" element={<MunicipalityAdminPage />} />
           <Route path="/neighborhoods" element={<NeighborhoodAdminPage />} />

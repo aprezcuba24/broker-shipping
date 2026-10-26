@@ -259,6 +259,13 @@ ERRORS: dict[str, ErrorDef] = {
         status_code=422,
         template="La orden no tiene barrio; no se puede crear la mensajería.",
     ),
+    "storefront_no_actor": ErrorDef(
+        code="storefront_no_actor",
+        status_code=503,
+        template=(
+            "Esta tienda no tiene un vendedor activo que pueda registrar pedidos."
+        ),
+    ),
 }
 
 ORDER_ITEM_STATUS_LABELS: dict[str, str] = {

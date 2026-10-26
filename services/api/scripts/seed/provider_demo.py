@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from scripts.seed.product_platform import register_products_platform
 from app.lib.public_code import generate_public_code
 from app.lib.security.passwords import hash_password
 from app.lib.utils import utc_now
@@ -13,6 +14,7 @@ from app.models.organization.organization import Organization
 from app.models.organization.user_organization import UserOrganization
 from app.models.product.product import Product
 from app.models.user.user import User
+from app.models.organization.provider_settings import ProviderSettings
 
 NAME = "provider_demo"
 
@@ -39,6 +41,8 @@ async def run(session: AsyncSession) -> None:
     session.add(org)
     await session.flush()
 
+    await register_products_platform(org, session)
+
     session.add(
         UserOrganization(
             user_id=user.id,
@@ -55,6 +59,7 @@ async def run(session: AsyncSession) -> None:
                 price=10000,
                 commission=500,
                 currency=Currency.cup,
+                stock=100,
             ),
             Product(
                 name=PRODUCT_NAME_USD,
@@ -63,8 +68,12 @@ async def run(session: AsyncSession) -> None:
                 price=2500,
                 commission=250,
                 currency=Currency.usd,
+                stock=100,
             ),
         ],
+    )
+    session.add(
+        ProviderSettings(organization_id=org.id, accepts_unconfigured_neighborhoods=True)
     )
     await session.flush()
 

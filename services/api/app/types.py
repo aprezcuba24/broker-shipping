@@ -17,6 +17,12 @@ DEFAULT_PLATFORM_PRODUCT_CODES: tuple[PlatformProductCode, ...] = (
     PlatformProductCode.phone_blacklist,
 )
 
+ALL_PLATFORM_PRODUCT_CODES: tuple[PlatformProductCode, ...] = (
+    PlatformProductCode.phone_blacklist,
+    PlatformProductCode.provider_management,
+    PlatformProductCode.facebook_publishing,
+)
+
 # Codes a non-admin client may request when creating an organization.
 SELF_SERVICE_PLATFORM_PRODUCT_CODES: frozenset[PlatformProductCode] = frozenset(
     {

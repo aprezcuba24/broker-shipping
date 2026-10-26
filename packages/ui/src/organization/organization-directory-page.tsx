@@ -5,10 +5,11 @@ import {
   type ListOrganizationsDirectoryOrganizationsDirectoryGetParams,
   type OrganizationPublic,
 } from '@broker/api'
-import { Building2, LogIn, Plus } from 'lucide-react'
+import { Building2, Eye, LogIn, Plus } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { Button } from '../components/button'
+import { BtnLink } from '../components/btn-link'
 import { BtnList } from '../components/btn-list'
 import { DataTable } from '../components/data-table/data-table'
 import type { ColumnDef } from '../components/data-table/types'
@@ -42,6 +43,15 @@ function buildDirectoryColumns(
     createdAtColumn<OrganizationPublic>(),
     actionsColumn<OrganizationPublic>((row) => (
       <BtnList>
+        <BtnLink
+          to={`/organizations/${row.id}`}
+          variant="ghost"
+          size="sm"
+          icon={Eye}
+          aria-label={`Detalle de ${row.name}`}
+        >
+          Detalle
+        </BtnLink>
         <Button
           type="button"
           variant="ghost"

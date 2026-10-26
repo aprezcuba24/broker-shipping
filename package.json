@@ -10,6 +10,7 @@
     "dev:backoffice": "pnpm --filter @broker/backoffice dev",
     "dev:admin": "pnpm --filter @broker/admin dev",
     "dev:seller": "pnpm --filter @broker/seller dev",
+    "dev:store": "pnpm --filter @broker/store dev",
     "dev:landing": "pnpm --filter @broker/landing dev",
     "dev:whatsapp-web": "pnpm --filter @broker/whatsapp-web dev",
     "dev:facebook": "pnpm --filter @broker/facebook dev",

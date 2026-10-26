@@ -6,9 +6,10 @@ from types import ModuleType
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from scripts.seed import locations_cuba, provider_demo, seller_demo
+from scripts.seed import locations_cuba, provider_demo, seller_demo, admin_user
 
 SEED_MODULES: list[ModuleType] = [
+    admin_user,
     locations_cuba,
     provider_demo,
     seller_demo,
