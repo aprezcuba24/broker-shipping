@@ -3,6 +3,7 @@ import {
   ActiveOrganizationProvider,
   MunicipalityAdminPage,
   NeighborhoodAdminPage,
+  OrganizationDetailPage,
   OrganizationScopedApiProvider,
   PageLoading,
   ProfilePage,
@@ -117,6 +118,7 @@ export default function App() {
           }
         >
           <Route path="/organizations" element={<OrganizationsPage />} />
+          <Route path="/organizations/:organizationId" element={<OrganizationDetailPage />} />
           <Route path="/provinces" element={<ProvinceAdminPage />} />
           <Route path="/municipalities" element={<MunicipalityAdminPage />} />
           <Route path="/neighborhoods" element={<NeighborhoodAdminPage />} />
