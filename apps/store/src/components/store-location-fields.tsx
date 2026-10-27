@@ -3,7 +3,6 @@ import {
   useListNeighborhoodsStorefrontLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet,
   useListProvincesStorefrontLocationsProvincesGet,
 } from '@broker/api'
-import { Field, FieldError, FieldLabel } from '@broker/ui'
 import {
   Controller,
   type Control,
@@ -50,13 +49,13 @@ export function StoreLocationFields<T extends FieldValues>({
   const neighborhoods = neighborhoodsQuery.data ?? []
 
   return (
-    <div className="grid gap-4 sm:grid-cols-3">
+    <div>
       <Controller
         control={control}
         name={provinceName}
         render={({ field, fieldState }) => (
-          <Field data-invalid={fieldState.invalid || undefined}>
-            <FieldLabel>Provincia</FieldLabel>
+          <label className="store-field">
+            Provincia
             <select
               className="store-control"
               value={field.value ?? ''}
@@ -73,16 +72,16 @@ export function StoreLocationFields<T extends FieldValues>({
                 </option>
               ))}
             </select>
-            <FieldError errors={[fieldState.error]} />
-          </Field>
+            <span className="store-err">{fieldState.error?.message}</span>
+          </label>
         )}
       />
       <Controller
         control={control}
         name={municipalityName}
         render={({ field, fieldState }) => (
-          <Field data-invalid={fieldState.invalid || undefined}>
-            <FieldLabel>Municipio</FieldLabel>
+          <label className="store-field">
+            Municipio
             <select
               className="store-control"
               value={field.value ?? ''}
@@ -99,16 +98,16 @@ export function StoreLocationFields<T extends FieldValues>({
                 </option>
               ))}
             </select>
-            <FieldError errors={[fieldState.error]} />
-          </Field>
+            <span className="store-err">{fieldState.error?.message}</span>
+          </label>
         )}
       />
       <Controller
         control={control}
         name={neighborhoodName}
         render={({ field, fieldState }) => (
-          <Field data-invalid={fieldState.invalid || undefined}>
-            <FieldLabel>Barrio</FieldLabel>
+          <label className="store-field">
+            Barrio
             <select
               className="store-control"
               value={field.value ?? ''}
@@ -122,8 +121,8 @@ export function StoreLocationFields<T extends FieldValues>({
                 </option>
               ))}
             </select>
-            <FieldError errors={[fieldState.error]} />
-          </Field>
+            <span className="store-err">{fieldState.error?.message}</span>
+          </label>
         )}
       />
     </div>

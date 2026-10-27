@@ -5,7 +5,6 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 
 import { BookCard } from '@/components/book-card'
-import { SaleFlow } from '@/components/sale-flow'
 import { SELLER_ORGANIZATION_ID } from '@/config/env'
 
 export function HomePage() {
@@ -36,77 +35,91 @@ export function HomePage() {
     [tagsQuery.data?.items],
   )
 
-  const shelfLabel = useMemo(() => {
-    if (tagId) {
-      const tag = tags.find((item) => item.id === tagId)
-      return tag ? tag.name : 'Estante'
-    }
-    if (debouncedSearch) return `“${debouncedSearch}”`
-    return 'En el estante'
-  }, [debouncedSearch, tagId, tags])
-
   return (
-    <div className="space-y-12">
-      <SaleFlow />
-
-      <section aria-labelledby="shelf-title" className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2
-              id="shelf-title"
-              className="font-display text-2xl font-semibold tracking-tight text-[color:var(--ink)] sm:text-[1.75rem]"
-            >
-              {shelfLabel}
-            </h2>
-            {!debouncedSearch && !tagId ? (
-              <p className="mt-1 text-sm text-[color:var(--ink-muted)]">
-                Libros de uso listos para llevar a casa
-              </p>
-            ) : null}
-          </div>
-          <div className="flex w-full flex-col gap-2 sm:max-w-md sm:flex-row">
-            <input
-              type="search"
-              value={search}
-              placeholder="Buscar por título"
-              className="store-control flex-1"
-              onChange={(event) => setSearch(event.target.value)}
-            />
-            <select
-              value={tagId}
-              className="store-control sm:max-w-[12rem]"
-              onChange={(event) => setTagId(event.target.value)}
-            >
-              <option value="">Todos los autores</option>
-              {tags.map((tag) => (
-                <option key={tag.id} value={tag.id}>
-                  {tag.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {productsQuery.isLoading ? (
-          <p className="py-16 text-center text-[color:var(--ink-muted)]">
-            Cargando libros…
+    <>
+      <section className="store-hero">
+        <div>
+          <h1>Elige tu libro. Págalo cuando llegue a tus manos.</h1>
+          <p>
+            Arma tu pedido, avísanos por WhatsApp y coordinamos la entrega. Sin
+            pagos por adelantado: primero recibes, después pagas.
           </p>
+        </div>
+        <aside className="store-ticket" aria-label="Cómo funciona">
+          <h2>Así de simple</h2>
+          <ol>
+            <li>
+              <span>1</span>
+              <div>
+                <strong>Elige tus libros</strong>
+                Agrégalos al carrito.
+              </div>
+            </li>
+            <li>
+              <span>2</span>
+              <div>
+                <strong>Registra tu pedido</strong>
+                Déjanos tu nombre y dirección.
+              </div>
+            </li>
+            <li>
+              <span>3</span>
+              <div>
+                <strong>Confirma por WhatsApp</strong>
+                Hablas directo con el vendedor.
+              </div>
+            </li>
+            <li className="pay">
+              <span>$</span>
+              <div>
+                <strong>Pagas al recibir</strong>
+                El pago es contra entrega.
+              </div>
+            </li>
+          </ol>
+        </aside>
+      </section>
+
+      <div className="store-tools">
+        <input
+          className="store-search"
+          type="search"
+          value={search}
+          placeholder="Buscar por título o autor"
+          aria-label="Buscar libros"
+          onChange={(event) => setSearch(event.target.value)}
+        />
+        <select
+          className="store-tag-select"
+          value={tagId}
+          aria-label="Filtrar por etiqueta"
+          onChange={(event) => setTagId(event.target.value)}
+        >
+          <option value="">Todos los autores</option>
+          {tags.map((tag) => (
+            <option key={tag.id} value={tag.id}>
+              {tag.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <section className="store-grid" aria-live="polite">
+        {productsQuery.isLoading ? (
+          <p className="store-empty">Cargando libros…</p>
         ) : productsQuery.isError ? (
-          <p className="py-16 text-center text-destructive">
+          <p className="store-empty" style={{ color: 'var(--err)' }}>
             No se pudo cargar el catálogo.
           </p>
         ) : books.length === 0 ? (
-          <p className="py-16 text-center text-[color:var(--ink-muted)]">
-            No hay libros en este estante por ahora.
+          <p className="store-empty">
+            No encontramos libros con esa búsqueda. Prueba con otro título o
+            autor.
           </p>
         ) : (
-          <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-5 sm:gap-y-10 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {books.map((book) => (
-              <BookCard key={book.id} book={book} />
-            ))}
-          </div>
+          books.map((book) => <BookCard key={book.id} book={book} />)
         )}
       </section>
-    </div>
+    </>
   )
 }

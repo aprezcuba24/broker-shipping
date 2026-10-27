@@ -9,18 +9,50 @@ import { HomePage } from '@/pages/home-page'
 
 function MissingConfigPage() {
   return (
-    <div className="mx-auto flex min-h-screen max-w-lg flex-col justify-center gap-4 px-4 text-center">
-      <h1 className="font-display text-3xl font-semibold tracking-tight text-[color:var(--ink)]">
+    <div
+      className="store-wrap"
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        gap: '1rem',
+        textAlign: 'center',
+        maxWidth: '32rem',
+      }}
+    >
+      <h1
+        style={{
+          font: '700 1.8rem var(--serif)',
+          margin: 0,
+          color: 'var(--ink)',
+        }}
+      >
         Tienda sin configurar
       </h1>
-      <div className="gilt-rule mx-auto max-w-[10rem]" aria-hidden />
-      <p className="text-[color:var(--ink-muted)] leading-relaxed">
+      <p style={{ color: 'var(--muted)', margin: 0, lineHeight: 1.55 }}>
         Define{' '}
-        <code className="rounded bg-[color:var(--paper-raised)] px-1.5 py-0.5 text-sm">
+        <code
+          style={{
+            borderRadius: 8,
+            background: 'var(--surface)',
+            border: '1px solid var(--line)',
+            padding: '0.15rem 0.45rem',
+            fontSize: '0.9rem',
+          }}
+        >
           VITE_SELLER_ORGANIZATION_ID
         </code>{' '}
         y{' '}
-        <code className="rounded bg-[color:var(--paper-raised)] px-1.5 py-0.5 text-sm">
+        <code
+          style={{
+            borderRadius: 8,
+            background: 'var(--surface)',
+            border: '1px solid var(--line)',
+            padding: '0.15rem 0.45rem',
+            fontSize: '0.9rem',
+          }}
+        >
           VITE_WHATSAPP_PHONE
         </code>{' '}
         en el entorno de esta app.
