@@ -7,6 +7,7 @@ Guía operativa para producción. Arquitectura:
 | Landing (Astro) | Cloudflare Workers (static assets) | `https://vendelo360.app` (apex) |
 | Portal proveedores | Cloudflare Workers (static assets) | `https://proveedores.vendelo360.app` |
 | Portal gestores | Cloudflare Workers (static assets) | `https://gestores.vendelo360.app` |
+| Tienda pública | Cloudflare Workers (static assets) | `https://tienda.vendelo360.app` |
 | API FastAPI | Railway | `https://api.vendelo360.app` |
 | Postgres | Railway (plugin) | red privada |
 | Imágenes | AWS S3 | `S3_PUBLIC_BASE_URL` |
@@ -33,6 +34,7 @@ Dominio de referencia: **vendelo360.app** (canónico en [`apps/landing`](../apps
 | CNAME / redirect | `www` | Redirect 301 → `https://vendelo360.app` | Redirect Rules o custom domain |
 | CNAME | `proveedores` | Target del Worker backoffice | Tras añadir custom domain al Worker |
 | CNAME | `gestores` | Target del Worker seller | Idem |
+| CNAME | `tienda` | Target del Worker store | Idem |
 | CNAME | `api` | Target que da Railway (`xxx.up.railway.app`) | + TXT de verificación si Railway lo pide |
 | CNAME ×3 | DKIM de SES | Valores de la consola SES | Easy DKIM |
 | TXT | `_dmarc` | `v=DMARC1; p=none; rua=mailto:tu@email` | Endurecer a `p=quarantine` más adelante |
@@ -49,7 +51,7 @@ SSL: lo emiten Cloudflare y Railway; no hace falta certificado comprado.
 
 - [ ] Dominio en Cloudflare con nameservers activos
 - [ ] Landing en apex + redirect `www` → apex
-- [ ] `proveedores`, `gestores`, `api` apuntando
+- [ ] `proveedores`, `gestores`, `tienda`, `api` apuntando
 - [ ] Registros SES (DKIM, DMARC, MAIL FROM)
 - [ ] Email Routing activo para `info@` / `hola@`
 
@@ -117,19 +119,20 @@ Comprueba `https://api.vendelo360.app/docs` y `GET /`.
 
 ---
 
-## 3. Cloudflare Workers & Pages: tres sitios estáticos
+## 3. Cloudflare Workers & Pages: sitios estáticos
 
 Cloudflare unificó el dashboard en **Workers & Pages**. Para sitios nuevos recomienda **Workers con Static Assets** (no el flujo Pages antiguo con solo “Build output directory”). Doc oficial: [Astro → Cloudflare](https://docs.astro.build/en/guides/deploy/cloudflare/), [Migrate Pages → Workers](https://developers.cloudflare.com/workers/static-assets/migration-guides/migrate-from-pages/).
 
 Si el deploy muestra **“Hello world”**, Cloudflare desplegó el Worker de plantilla y **no** subió el `dist` de Astro/Vite. Hace falta un `wrangler.jsonc` con `assets.directory` (sin `main`) y un **Deploy command** que apunte a ese config.
 
-Tres Workers (assets-only), mismo monorepo:
+Cuatro Workers (assets-only), mismo monorepo:
 
 | Worker (`name` en wrangler) | App | Build | Deploy | Custom domain |
 |-----------------------------|-----|-------|--------|---------------|
 | `vendeya-landing` | [`apps/landing`](../apps/landing) | ver abajo | `npx wrangler deploy` | `vendelo360.app` + `www` → apex |
 | `vendeya-proveedores` | [`apps/backoffice`](../apps/backoffice) | ver abajo | `npx wrangler deploy` | `proveedores.vendelo360.app` |
 | `vendeya-gestores` | [`apps/seller`](../apps/seller) | ver abajo | `npx wrangler deploy` | `gestores.vendelo360.app` |
+| `vendeya-tienda` | [`apps/store`](../apps/store) | ver abajo | `npx wrangler deploy` | `tienda.vendelo360.app` |
 
 Cada app tiene su [`wrangler.jsonc`](../apps/landing/wrangler.jsonc): solo `assets.directory = "./dist"` (relativo al fichero). **No** pongas `main` (eso es código Worker; sin assets solo servirías Hello World).
 
@@ -148,7 +151,7 @@ Cada app tiene su [`wrangler.jsonc`](../apps/landing/wrangler.jsonc): solo `asse
 
 El build de cada app (`pnpm --filter … build`) copia su `wrangler.jsonc` a la raíz del repo, con `assets.directory` apuntando a `apps/<app>/dist`. Sin ese fichero, Wrangler (que corre en la raíz) falla con *Missing entry-point to Worker script or to assets directory*. `--config apps/.../wrangler.jsonc` sigue siendo válido si el comando de deploy lo pasa explícitamente.
 
-Proveedores / gestores: mismos campos cambiando el filtro pnpm (`@broker/backoffice`, `@broker/seller`).
+Proveedores / gestores / tienda: mismos campos cambiando el filtro pnpm (`@broker/backoffice`, `@broker/seller`, `@broker/store`).
 
 ### 3.2 Variables de build
 
@@ -158,6 +161,9 @@ Proveedores / gestores: mismos campos cambiando el filtro pnpm (`@broker/backoff
 | Proveedores | `VITE_API_URL` | `https://api.vendelo360.app` |
 | Proveedores | `VITE_SELLER_APP_URL` | `https://gestores.vendelo360.app` |
 | Gestores | `VITE_API_URL` | `https://api.vendelo360.app` |
+| Tienda | `VITE_API_URL` | `https://api.vendelo360.app` |
+| Tienda | `VITE_SELLER_ORGANIZATION_ID` | UUID de la org vendedora |
+| Tienda | `VITE_WHATSAPP_PHONE` | Teléfono E.164 (sin `+`) |
 
 ### 3.3 SPA / 404
 
@@ -175,7 +181,7 @@ Proveedores / gestores: mismos campos cambiando el filtro pnpm (`@broker/backoff
 1. Landing en el apex (prelanzamiento; no depende de la API).
 2. Email Routing.
 3. API + Postgres en Railway.
-4. Portales `proveedores` / `gestores`.
+4. Portales `proveedores` / `gestores` / `tienda`.
 
 ---
 
@@ -334,6 +340,7 @@ Convive con el Worker de la landing en el apex (MX + CNAME flattening).
 | Settings / `DATABASE_URL` | [`services/api/app/config.py`](../services/api/app/config.py) |
 | CORS (`allow_origins=["*"]`) | [`services/api/app/main.py`](../services/api/app/main.py) |
 | Landing Worker (assets) | [`apps/landing/wrangler.jsonc`](../apps/landing/wrangler.jsonc) |
+| Tienda Worker (assets) | [`apps/store/wrangler.jsonc`](../apps/store/wrangler.jsonc) |
 | Dockerfile + arranque | [`services/api/Dockerfile`](../services/api/Dockerfile), [`services/api/railway.toml`](../services/api/railway.toml) |
 | S3 presign | [`services/api/app/lib/storage/s3.py`](../services/api/app/lib/storage/s3.py) |
 | Email (SMTP local / SES API) | [`services/api/app/services/email/transport.py`](../services/api/app/services/email/transport.py) |
