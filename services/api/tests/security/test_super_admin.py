@@ -4,6 +4,7 @@ import pytest
 from httpx import AsyncClient
 
 from app.models.organization.enums import OrganizationType
+from app.types import PlatformProductCode
 from tests.factories.auth_helpers import bearer_headers
 from tests.factories.organization_factory import OrganizationFactory
 from tests.factories.product_factory import ProductFactory
@@ -50,7 +51,10 @@ async def test_super_admin_provider_crud_without_membership(
 ) -> None:
     admin = await user_factory.build(is_super_admin=True)
     owner = await user_factory.build()
-    org = await organization_factory.build(user_id=owner["id"])
+    org = await organization_factory.build(
+        user_id=owner["id"],
+        platform_product_codes=[PlatformProductCode.provider_management],
+    )
     headers = bearer_headers(user_id=admin["id"])
     params = {"organization_id": org["id"]}
 
@@ -122,19 +126,24 @@ async def test_super_admin_seller_catalog_without_links(
     admin = await user_factory.build(is_super_admin=True)
     owner = await user_factory.build()
     provider_org = await organization_factory.build(user_id=owner["id"])
-    product = await product_factory.build(
+    seller_org = await organization_factory.build_seller(
+        user_id=owner["id"],
+        platform_product_codes=[PlatformProductCode.provider_management],
+    )
+    await product_factory.build(
         organization_id=provider_org["id"],
         name="Unlinked product",
     )
 
     r = await client.get(
         "/products/seller/",
+        params={"organization_id": seller_org["id"]},
         headers=bearer_headers(user_id=admin["id"]),
     )
     assert r.status_code == 200
     body = r.json()
-    assert body["total"] == 1
-    assert body["items"][0]["id"] == product["id"]
+    assert body["items"] == []
+    assert body["total"] == 0
 
 
 async def test_super_admin_cannot_create_api_key(

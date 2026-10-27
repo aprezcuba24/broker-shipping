@@ -183,14 +183,15 @@ async def resolve_provider_ids_for_seller_management(
 ) -> list[UUID]:
     """Like ``resolve_provider_ids`` but never grants super-admin all providers.
 
-    When ``seller_organization_id`` is omitted, only seller orgs with
+    Always scopes to active ``provider_seller_link`` rows. When
+    ``seller_organization_id`` is omitted, only seller orgs with
     ``provider_management`` enabled are considered.
     """
     from app.services import platform_product as platform_product_service
     from app.types import PlatformProductCode
 
     if seller_organization_id is not None:
-        return await resolve_provider_ids(session, user, seller_organization_id)
+        return await list_active_provider_ids(session, seller_organization_id)
 
     seller_org_ids = await list_seller_org_ids_for_user(session, user.id)
     seller_org_ids = await platform_product_service.filter_organization_ids_with_product(
