@@ -4,6 +4,7 @@ import pytest
 import pytest_asyncio
 from httpx import AsyncClient
 
+from app.types import PlatformProductCode
 from tests.factories.auth_helpers import bearer_headers
 from tests.factories.organization_factory import (
     OrganizationFactory,
@@ -14,6 +15,8 @@ from tests.factories.tag_factory import TagFactory
 from tests.factories.user_factory import UserFactory
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")
+
+_SELLER_MGMT = [PlatformProductCode.provider_management]
 
 
 @pytest_asyncio.fixture
@@ -26,7 +29,10 @@ async def seller_linked_product(
     provider_user = await user_factory.build()
     seller_user = await user_factory.build()
     provider_org = await organization_factory.build(user_id=provider_user["id"])
-    seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
+    seller_org = await organization_factory.build_seller(
+        user_id=seller_user["id"],
+        platform_product_codes=_SELLER_MGMT,
+    )
     await link_provider_to_seller(
         db_session,
         provider_organization_id=provider_org["id"],
@@ -100,7 +106,10 @@ async def test_seller_product_response_omits_notes(
     provider_user = await user_factory.build()
     seller_user = await user_factory.build()
     provider_org = await organization_factory.build(user_id=provider_user["id"])
-    seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
+    seller_org = await organization_factory.build_seller(
+        user_id=seller_user["id"],
+        platform_product_codes=_SELLER_MGMT,
+    )
     await link_provider_to_seller(
         db_session,
         provider_organization_id=provider_org["id"],
@@ -157,7 +166,10 @@ async def test_seller_cannot_see_unlinked_provider_product(
     provider_user = await user_factory.build()
     seller_user = await user_factory.build()
     provider_org = await organization_factory.build(user_id=provider_user["id"])
-    seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
+    seller_org = await organization_factory.build_seller(
+        user_id=seller_user["id"],
+        platform_product_codes=_SELLER_MGMT,
+    )
     product = await product_factory.build(
         organization_id=provider_org["id"],
         name="Hidden",
@@ -197,7 +209,10 @@ async def seller_filter_context(
     seller_user = await user_factory.build()
     provider_a = await organization_factory.build(user_id=provider_a_user["id"])
     provider_b = await organization_factory.build(user_id=provider_b_user["id"])
-    seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
+    seller_org = await organization_factory.build_seller(
+        user_id=seller_user["id"],
+        platform_product_codes=_SELLER_MGMT,
+    )
     await link_provider_to_seller(
         db_session,
         provider_organization_id=provider_a["id"],
@@ -254,7 +269,10 @@ async def test_seller_list_filter_by_public_code(
     provider_user = await user_factory.build()
     seller_user = await user_factory.build()
     provider_org = await organization_factory.build(user_id=provider_user["id"])
-    seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
+    seller_org = await organization_factory.build_seller(
+        user_id=seller_user["id"],
+        platform_product_codes=_SELLER_MGMT,
+    )
     await link_provider_to_seller(
         db_session,
         provider_organization_id=provider_org["id"],
@@ -352,7 +370,10 @@ async def test_seller_list_pagination(
     provider_user = await user_factory.build()
     seller_user = await user_factory.build()
     provider_org = await organization_factory.build(user_id=provider_user["id"])
-    seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
+    seller_org = await organization_factory.build_seller(
+        user_id=seller_user["id"],
+        platform_product_codes=_SELLER_MGMT,
+    )
     await link_provider_to_seller(
         db_session,
         provider_organization_id=provider_org["id"],
@@ -390,7 +411,10 @@ async def test_seller_list_without_links_returns_empty_page(
     organization_factory: OrganizationFactory,
 ) -> None:
     seller_user = await user_factory.build()
-    seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
+    seller_org = await organization_factory.build_seller(
+        user_id=seller_user["id"],
+        platform_product_codes=_SELLER_MGMT,
+    )
     r = await client.get(
         "/products/seller/",
         params={"organization_id": seller_org["id"]},
@@ -403,6 +427,62 @@ async def test_seller_list_without_links_returns_empty_page(
     assert body["pages"] == 0
 
 
+async def test_super_admin_seller_list_only_linked_providers(
+    client: AsyncClient,
+    db_session,
+    user_factory: UserFactory,
+    organization_factory: OrganizationFactory,
+    product_factory: ProductFactory,
+) -> None:
+    admin = await user_factory.build(is_super_admin=True)
+    owner = await user_factory.build()
+    linked_provider = await organization_factory.build(user_id=owner["id"])
+    unlinked_provider = await organization_factory.build(user_id=owner["id"])
+    seller_org = await organization_factory.build_seller(
+        user_id=owner["id"],
+        platform_product_codes=_SELLER_MGMT,
+    )
+    await link_provider_to_seller(
+        db_session,
+        provider_organization_id=linked_provider["id"],
+        seller_organization_id=seller_org["id"],
+    )
+    linked_product = await product_factory.build(
+        organization_id=linked_provider["id"],
+        name="Linked product",
+    )
+    unlinked_product = await product_factory.build(
+        organization_id=unlinked_provider["id"],
+        name="Unlinked product",
+    )
+    headers = bearer_headers(user_id=admin["id"])
+    params = {"organization_id": seller_org["id"]}
+
+    r_list = await client.get(
+        "/products/seller/",
+        params=params,
+        headers=headers,
+    )
+    assert r_list.status_code == 200
+    body = r_list.json()
+    assert body["total"] == 1
+    assert body["items"][0]["id"] == linked_product["id"]
+
+    r_filter = await client.get(
+        "/products/seller/",
+        params={**params, "provider_id": unlinked_provider["id"]},
+        headers=headers,
+    )
+    assert r_filter.status_code == 403
+
+    r_get = await client.get(
+        f"/products/seller/{unlinked_product['id']}",
+        params=params,
+        headers=headers,
+    )
+    assert r_get.status_code == 404
+
+
 async def test_seller_product_includes_only_active_tags(
     client: AsyncClient,
     db_session,
@@ -412,8 +492,14 @@ async def test_seller_product_includes_only_active_tags(
 ) -> None:
     provider_user = await user_factory.build()
     seller_user = await user_factory.build()
-    provider_org = await organization_factory.build(user_id=provider_user["id"])
-    seller_org = await organization_factory.build_seller(user_id=seller_user["id"])
+    provider_org = await organization_factory.build(
+        user_id=provider_user["id"],
+        platform_product_codes=_SELLER_MGMT,
+    )
+    seller_org = await organization_factory.build_seller(
+        user_id=seller_user["id"],
+        platform_product_codes=_SELLER_MGMT,
+    )
     await link_provider_to_seller(
         db_session,
         provider_organization_id=provider_org["id"],

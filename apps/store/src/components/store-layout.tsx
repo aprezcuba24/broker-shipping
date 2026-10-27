@@ -1,10 +1,27 @@
-import { ShoppingBag } from 'lucide-react'
-import { Link, Outlet } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 import { useGetStorefrontStorefrontGet } from '@broker/api'
 
+import { CartPanel } from '@/components/cart-panel'
+import { CheckoutPanel, DonePanel } from '@/components/checkout-panel'
+import { StoreToastProvider } from '@/components/store-toast'
 import { SELLER_ORGANIZATION_ID } from '@/config/env'
+import type { CompletedCheckout } from '@/lib/checkout'
 import { cartItemCount, useCartStore } from '@/stores/cart-store'
+
+type Panel = 'cart' | 'checkout' | 'done' | null
+
+function panelForRoute(
+  pathname: string,
+  itemCount: number,
+  completed: CompletedCheckout | null,
+): Panel {
+  if (completed) return 'done'
+  if (pathname === '/carrito') return 'cart'
+  if (pathname === '/pedido') return itemCount > 0 ? 'checkout' : 'cart'
+  return null
+}
 
 export function StoreLayout() {
   const items = useCartStore((state) => state.items)
@@ -13,43 +30,114 @@ export function StoreLayout() {
     organization_id: SELLER_ORGANIZATION_ID,
   })
   const storeName = storeQuery.data?.name ?? 'Librería'
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [completed, setCompleted] = useState<CompletedCheckout | null>(null)
+  const panel = panelForRoute(location.pathname, items.length, completed)
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setCompleted(null)
+      if (
+        location.pathname === '/carrito' ||
+        location.pathname === '/pedido'
+      ) {
+        navigate('/', { replace: true })
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [location.pathname, navigate])
+
+  function closePanel() {
+    setCompleted(null)
+    if (
+      location.pathname === '/carrito' ||
+      location.pathname === '/pedido'
+    ) {
+      navigate('/', { replace: true })
+    }
+  }
+
+  function openCart() {
+    setCompleted(null)
+    if (location.pathname !== '/carrito') {
+      navigate('/carrito')
+    }
+  }
+
+  function openCheckout() {
+    if (items.length === 0) return
+    setCompleted(null)
+    if (location.pathname !== '/pedido') {
+      navigate('/pedido')
+    }
+  }
+
+  function handleCompleted(payload: CompletedCheckout) {
+    setCompleted(payload)
+  }
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-12 pt-6 sm:px-6">
-      <header className="mb-10">
-        <div className="flex items-start justify-between gap-4">
-          <Link to="/" className="min-w-0 group">
-            <h1 className="font-display truncate text-[1.65rem] font-semibold leading-tight tracking-tight text-[color:var(--ink)] transition-colors group-hover:text-[color:var(--spine)] sm:text-3xl">
-              {storeName}
-            </h1>
-            <p className="mt-1.5 text-sm text-[color:var(--ink-muted)]">
-              Entrega a domicilio · pagas al recibir
-            </p>
-          </Link>
+    <StoreToastProvider>
+      <div className="store-strip">
+        Pagas cuando recibes tu libro. No pedimos tarjeta ni pago en línea.
+      </div>
+      <header className="store-header">
+        <div className="store-wrap store-bar">
           <Link
-            to="/carrito"
-            className="relative mt-0.5 inline-flex items-center gap-2 rounded-full border border-[color:var(--ink)]/10 bg-[color:var(--paper-raised)] px-3.5 py-2 text-sm text-[color:var(--ink-secondary)] shadow-[var(--shadow-soft)] transition hover:border-[color:var(--spine)]/25 hover:text-[color:var(--spine)]"
+            to="/"
+            className="store-logo"
+            onClick={() => setCompleted(null)}
           >
-            <ShoppingBag className="h-4 w-4" aria-hidden />
-            <span className="hidden sm:inline">Carrito</span>
-            {count > 0 ? (
-              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[color:var(--spine)] px-1 text-[0.65rem] font-semibold text-[color:var(--paper-raised)]">
-                {count}
-              </span>
-            ) : null}
+            {storeName}
           </Link>
+          <button
+            type="button"
+            className="store-cartbtn"
+            aria-label="Abrir carrito"
+            onClick={openCart}
+          >
+            Carrito <b>{count}</b>
+          </button>
         </div>
-        <div className="gilt-rule mt-6" aria-hidden />
       </header>
-      <main className="flex-1">
+
+      <main className="store-wrap">
         <Outlet />
       </main>
-      <footer className="mt-16">
-        <div className="gilt-rule mb-5" aria-hidden />
-        <p className="text-center text-sm text-[color:var(--ink-muted)]">
-          Libros de uso · el vendedor te los lleva a casa
-        </p>
+
+      <footer className="store-footer">
+        <div className="store-wrap">
+          {storeName} · Pago contra entrega · Atención por WhatsApp
+        </div>
       </footer>
-    </div>
+
+      <div
+        className={`store-scrim${panel ? ' open' : ''}`}
+        onClick={closePanel}
+        aria-hidden
+      />
+
+      <CartPanel
+        open={panel === 'cart'}
+        onClose={closePanel}
+        onCheckout={openCheckout}
+      />
+      <CheckoutPanel
+        open={panel === 'checkout'}
+        onClose={closePanel}
+        onBackToCart={openCart}
+        onCompleted={handleCompleted}
+      />
+      {completed ? (
+        <DonePanel
+          open={panel === 'done'}
+          onClose={closePanel}
+          completed={completed}
+        />
+      ) : null}
+    </StoreToastProvider>
   )
 }

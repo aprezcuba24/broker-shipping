@@ -10,7 +10,6 @@ from app.lib.exceptions import raise_api_error
 from app.lib.persistence import get_entity
 from app.lib.persistence.pagination import paginate
 from app.lib.product_share import extract_public_code_from_search
-from app.lib.security.access import is_super_admin
 from app.lib.utils import utc_now
 from app.models.product.product import Product
 from app.models.product.seller_product import SellerProduct
@@ -73,20 +72,13 @@ async def list_accessible_products(
     name: str | None = None,
     provider_id: UUID | None = None,
 ) -> PageResult[Product]:
-    if seller_organization_id is None:
-        provider_ids = await link_service.resolve_provider_ids_for_seller_management(
-            session,
-            user,
-            seller_organization_id,
-        )
-    else:
-        provider_ids = await link_service.resolve_provider_ids(
-            session,
-            user,
-            seller_organization_id,
-        )
+    provider_ids = await link_service.resolve_provider_ids_for_seller_management(
+        session,
+        user,
+        seller_organization_id,
+    )
     if provider_id is not None:
-        if not is_super_admin(user) and provider_id not in provider_ids:
+        if provider_id not in provider_ids:
             raise_api_error("forbidden")
         provider_ids = [provider_id]
     if not provider_ids:
@@ -124,18 +116,11 @@ async def get_accessible_product(
     *,
     seller_organization_id: UUID | None = None,
 ) -> Product:
-    if seller_organization_id is None:
-        provider_ids = await link_service.resolve_provider_ids_for_seller_management(
-            session,
-            user,
-            seller_organization_id,
-        )
-    else:
-        provider_ids = await link_service.resolve_provider_ids(
-            session,
-            user,
-            seller_organization_id,
-        )
+    provider_ids = await link_service.resolve_provider_ids_for_seller_management(
+        session,
+        user,
+        seller_organization_id,
+    )
     if not provider_ids:
         raise_api_error("not_found")
 

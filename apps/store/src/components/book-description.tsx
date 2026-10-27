@@ -3,7 +3,15 @@ import remarkGfm from 'remark-gfm'
 
 export function BookDescription({ markdown }: { markdown: string }) {
   return (
-    <div className="book-copy max-w-2xl text-base leading-relaxed text-[color:var(--ink-secondary)]">
+    <div
+      className="book-copy"
+      style={{
+        maxWidth: '42rem',
+        fontSize: '1rem',
+        lineHeight: 1.55,
+        color: 'var(--muted)',
+      }}
+    >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
