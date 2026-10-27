@@ -21,9 +21,11 @@ def _split_share_term(term: str) -> tuple[str, str] | None:
     if not trimmed:
         return None
 
-    prefix, sep, remainder = trimmed.partition("-")
-    if sep and prefix.upper() in _CHANNEL_PREFIXES and remainder.strip():
-        return prefix.upper(), remainder.strip()
+    if "-" in trimmed:
+        prefix, sep, remainder = trimmed.partition("-")
+        if sep and prefix.upper() in _CHANNEL_PREFIXES and remainder.strip():
+            return prefix.upper(), remainder.strip()
+        return None
 
     if len(trimmed) > 2:
         compact_prefix = trimmed[:2].upper()

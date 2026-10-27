@@ -100,7 +100,10 @@ async def test_list_organization_platform_products_as_member(
     organization_factory,
 ) -> None:
     user = await user_factory.build()
-    org = await organization_factory.build(user_id=user["id"])
+    org = await organization_factory.build(
+        user_id=user["id"],
+        platform_product_codes=[PlatformProductCode.phone_blacklist],
+    )
     r = await client.get(
         f"/organizations/{org['id']}/platform-products",
         headers=bearer_headers(user_id=user["id"]),
@@ -177,6 +180,33 @@ async def test_create_organization_rejects_empty_platform_product_codes(
     assert r.status_code == 422
 
 
+async def test_create_organization_accepts_facebook_publishing(
+    client,
+    user_factory,
+) -> None:
+    user = await user_factory.build()
+    r = await client.post(
+        "/organizations/",
+        json={
+            "name": "Con Facebook",
+            "type": "seller",
+            "platform_product_codes": ["facebook_publishing"],
+        },
+        headers=bearer_headers(user_id=user["id"]),
+    )
+    assert r.status_code == 201
+    org_id = r.json()["id"]
+    products = await client.get(
+        f"/organizations/{org_id}/platform-products",
+        headers=bearer_headers(user_id=user["id"]),
+    )
+    assert products.status_code == 200
+    enabled = {row["code"]: row["enabled"] for row in products.json()}
+    assert enabled["facebook_publishing"] is True
+    assert enabled["phone_blacklist"] is False
+    assert enabled["provider_management"] is False
+
+
 async def test_create_organization_rejects_non_self_service_codes(
     client,
     user_factory,
@@ -184,7 +214,6 @@ async def test_create_organization_rejects_non_self_service_codes(
     user = await user_factory.build()
     for codes in (
         ["provider_management"],
-        ["facebook_publishing"],
         ["phone_blacklist", "provider_management"],
     ):
         r = await client.post(

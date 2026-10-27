@@ -8,6 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.organization.enums import OrganizationType
 from app.services import platform_product as platform_product_service
 from app.types import DEFAULT_PLATFORM_PRODUCT_CODES, PlatformProductCode
+
+# Commercial route tests assume gestión de proveedores. Production self-service
+# orgs still default to phone_blacklist only; that path is covered via the API.
+_TEST_ORG_PRODUCT_CODES: tuple[PlatformProductCode, ...] = (
+    *DEFAULT_PLATFORM_PRODUCT_CODES,
+    PlatformProductCode.provider_management,
+)
 from app.models.organization.organization import Organization
 from app.models.organization.provider_seller_link import ProviderSellerLink
 from app.models.organization.provider_settings import ProviderSettings
@@ -36,7 +43,7 @@ async def create_organization_for_user(
     await session.flush()
     await session.commit()
     codes = (
-        list(DEFAULT_PLATFORM_PRODUCT_CODES)
+        list(_TEST_ORG_PRODUCT_CODES)
         if platform_product_codes is None
         else platform_product_codes
     )
