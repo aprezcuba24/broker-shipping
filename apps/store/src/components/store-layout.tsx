@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 import { useGetStorefrontStorefrontGet } from '@broker/api'
+import { WhatsAppChatButton } from '@broker/ui'
 
 import { CartPanel } from '@/components/cart-panel'
 import { CheckoutPanel, DonePanel } from '@/components/checkout-panel'
 import { StoreToastProvider } from '@/components/store-toast'
-import { SELLER_ORGANIZATION_ID } from '@/config/env'
+import { SELLER_ORGANIZATION_ID, WHATSAPP_PHONE } from '@/config/env'
 import type { CompletedCheckout } from '@/lib/checkout'
 import { cartItemCount, useCartStore } from '@/stores/cart-store'
 
@@ -138,6 +139,11 @@ export function StoreLayout() {
           completed={completed}
         />
       ) : null}
+
+      <WhatsAppChatButton
+        phone={WHATSAPP_PHONE}
+        text="Si tienes alguna sugerencia o quieres vender esos libros que tienes en la casa contacta al desarrollador."
+      />
     </StoreToastProvider>
   )
 }
