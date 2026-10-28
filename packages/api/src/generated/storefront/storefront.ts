@@ -431,6 +431,72 @@ export function useListTagsStorefrontTagsGet<TData = Awaited<ReturnType<typeof l
 
 
 /**
+ * @summary Checkout
+ */
+export const checkoutStorefrontCheckoutPost = (
+    storefrontCheckoutCreate: StorefrontCheckoutCreate,
+    params: CheckoutStorefrontCheckoutPostParams,
+ options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
+) => {
+      
+      
+      return brokerFetch<StorefrontCheckoutPublic>(
+      {url: `/storefront/checkout`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: storefrontCheckoutCreate,
+        params, signal
+    },
+      options);
+    }
+  
+
+
+export const getCheckoutStorefrontCheckoutPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkoutStorefrontCheckoutPost>>, TError,{data: StorefrontCheckoutCreate;params: CheckoutStorefrontCheckoutPostParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof checkoutStorefrontCheckoutPost>>, TError,{data: StorefrontCheckoutCreate;params: CheckoutStorefrontCheckoutPostParams}, TContext> => {
+
+const mutationKey = ['checkoutStorefrontCheckoutPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof checkoutStorefrontCheckoutPost>>, {data: StorefrontCheckoutCreate;params: CheckoutStorefrontCheckoutPostParams}> = (props) => {
+          const {data,params} = props ?? {};
+
+          return  checkoutStorefrontCheckoutPost(data,params,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CheckoutStorefrontCheckoutPostMutationResult = NonNullable<Awaited<ReturnType<typeof checkoutStorefrontCheckoutPost>>>
+    export type CheckoutStorefrontCheckoutPostMutationBody = StorefrontCheckoutCreate
+    export type CheckoutStorefrontCheckoutPostMutationError = HTTPValidationError
+
+    /**
+ * @summary Checkout
+ */
+export const useCheckoutStorefrontCheckoutPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkoutStorefrontCheckoutPost>>, TError,{data: StorefrontCheckoutCreate;params: CheckoutStorefrontCheckoutPostParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof checkoutStorefrontCheckoutPost>>,
+        TError,
+        {data: StorefrontCheckoutCreate;params: CheckoutStorefrontCheckoutPostParams},
+        TContext
+      > => {
+
+      const mutationOptions = getCheckoutStorefrontCheckoutPostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * @summary List Provinces
  */
 export const listProvincesStorefrontLocationsProvincesGet = (
@@ -723,70 +789,3 @@ export function useListNeighborhoodsStorefrontLocationsMunicipalitiesMunicipalit
 
 
 
-/**
- * @summary Checkout
- */
-export const checkoutStorefrontCheckoutPost = (
-    storefrontCheckoutCreate: StorefrontCheckoutCreate,
-    params: CheckoutStorefrontCheckoutPostParams,
- options?: SecondParameter<typeof brokerFetch>,signal?: AbortSignal
-) => {
-      
-      
-      return brokerFetch<StorefrontCheckoutPublic>(
-      {url: `/storefront/checkout`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: storefrontCheckoutCreate,
-        params, signal
-    },
-      options);
-    }
-  
-
-
-export const getCheckoutStorefrontCheckoutPostMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkoutStorefrontCheckoutPost>>, TError,{data: StorefrontCheckoutCreate;params: CheckoutStorefrontCheckoutPostParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof checkoutStorefrontCheckoutPost>>, TError,{data: StorefrontCheckoutCreate;params: CheckoutStorefrontCheckoutPostParams}, TContext> => {
-
-const mutationKey = ['checkoutStorefrontCheckoutPost'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof checkoutStorefrontCheckoutPost>>, {data: StorefrontCheckoutCreate;params: CheckoutStorefrontCheckoutPostParams}> = (props) => {
-          const {data,params} = props ?? {};
-
-          return  checkoutStorefrontCheckoutPost(data,params,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CheckoutStorefrontCheckoutPostMutationResult = NonNullable<Awaited<ReturnType<typeof checkoutStorefrontCheckoutPost>>>
-    export type CheckoutStorefrontCheckoutPostMutationBody = StorefrontCheckoutCreate
-    export type CheckoutStorefrontCheckoutPostMutationError = HTTPValidationError
-
-    /**
- * @summary Checkout
- */
-export const useCheckoutStorefrontCheckoutPost = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkoutStorefrontCheckoutPost>>, TError,{data: StorefrontCheckoutCreate;params: CheckoutStorefrontCheckoutPostParams}, TContext>, request?: SecondParameter<typeof brokerFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof checkoutStorefrontCheckoutPost>>,
-        TError,
-        {data: StorefrontCheckoutCreate;params: CheckoutStorefrontCheckoutPostParams},
-        TContext
-      > => {
-
-      const mutationOptions = getCheckoutStorefrontCheckoutPostMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    

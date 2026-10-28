@@ -144,6 +144,32 @@ async def test_customer_crud_happy_path(
     assert missing.status_code == 404
 
 
+async def test_create_customer_without_neighborhood(
+    client: AsyncClient,
+    seller_customer_ctx: dict,
+) -> None:
+    payload = _customer_payload(
+        seller_customer_ctx,
+        phone="59876543",
+        address={
+            "address": "Calle Sin Barrio 10",
+            "province_id": seller_customer_ctx["province_id"],
+            "municipality_id": seller_customer_ctx["municipality_id"],
+        },
+    )
+    created = await client.post(
+        "/customers/seller/",
+        params=seller_customer_ctx["seller_params"],
+        headers=seller_customer_ctx["seller_bearer"],
+        json=payload,
+    )
+    assert created.status_code == 201
+    body = created.json()
+    assert body["address"]["neighborhood_id"] is None
+    assert body["address"]["province_id"] == seller_customer_ctx["province_id"]
+    assert body["address"]["municipality_id"] == seller_customer_ctx["municipality_id"]
+
+
 async def test_list_customers_with_filters(
     client: AsyncClient,
     seller_customer_ctx: dict,

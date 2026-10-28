@@ -4,11 +4,12 @@
  * Vendelo360 API
  * OpenAPI spec version: 0.1.0
  */
+import type { AddressCreateNeighborhoodId } from './addressCreateNeighborhoodId';
 
 export interface AddressCreate {
   /** @maxLength 500 */
   address: string;
   province_id: string;
   municipality_id: string;
-  neighborhood_id: string;
+  neighborhood_id?: AddressCreateNeighborhoodId;
 }

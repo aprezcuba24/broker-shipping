@@ -6,8 +6,8 @@
  */
 
 export type ListTagsStorefrontTagsGetParams = {
-organization_id: string;
 name?: string | null;
+organization_id: string;
 /**
  * @minimum 1
  */

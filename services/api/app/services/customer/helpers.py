@@ -27,12 +27,13 @@ async def create_customer_address(
         id=data.municipality_id,
         province_id=data.province_id,
     )
-    await get_entity(
-        session,
-        Neighborhood,
-        id=data.neighborhood_id,
-        municipality_id=data.municipality_id,
-    )
+    if data.neighborhood_id is not None:
+        await get_entity(
+            session,
+            Neighborhood,
+            id=data.neighborhood_id,
+            municipality_id=data.municipality_id,
+        )
     address = Address(
         address=data.address,
         customer_id=customer_id,

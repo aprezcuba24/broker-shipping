@@ -51,7 +51,11 @@ export const customerFormSchema = z.object({
     .max(500, 'Máximo 500 caracteres'),
   province_id: z.string().uuid('Selecciona una provincia'),
   municipality_id: z.string().uuid('Selecciona un municipio'),
-  neighborhood_id: z.string().uuid('Selecciona un barrio'),
+  neighborhood_id: z
+    .string()
+    .refine((value) => value === '' || z.string().uuid().safeParse(value).success, {
+      message: 'Selecciona un barrio',
+    }),
 })
 
 export type CustomerFormValues = z.infer<typeof customerFormSchema>
