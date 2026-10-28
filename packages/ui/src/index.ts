@@ -84,6 +84,8 @@ export type {
 } from './components/expandable-text'
 export { CopyTextButton } from './components/copy-text-button'
 export type { CopyTextButtonProps } from './components/copy-text-button'
+export { WhatsAppChatButton } from './components/whatsapp-chat-button'
+export type { WhatsAppChatButtonProps } from './components/whatsapp-chat-button'
 export { ButtonModal } from './components/button-modal'
 export type { ButtonModalProps } from './components/button-modal'
 export {
