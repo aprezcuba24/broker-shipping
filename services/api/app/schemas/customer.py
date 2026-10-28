@@ -11,7 +11,7 @@ class AddressCreate(BaseModel):
     address: NonEmptyStr = Field(max_length=500)
     province_id: UUID
     municipality_id: UUID
-    neighborhood_id: UUID
+    neighborhood_id: UUID | None = None
 
 
 class AddressPublic(BaseModel):

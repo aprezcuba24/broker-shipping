@@ -238,7 +238,6 @@ async def test_storefront_checkout_creates_order_and_reserves_stock(
                 "address": "Calle Libro 12",
                 "province_id": storefront_ctx["province_id"],
                 "municipality_id": storefront_ctx["municipality_id"],
-                "neighborhood_id": storefront_ctx["neighborhood_id"],
             },
             "items": [
                 {

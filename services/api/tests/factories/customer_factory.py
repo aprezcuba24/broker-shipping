@@ -35,11 +35,7 @@ async def create_customer(
     await session.flush()
 
     address_payload = None
-    if (
-        province_id is not None
-        and municipality_id is not None
-        and neighborhood_id is not None
-    ):
+    if province_id is not None and municipality_id is not None:
         address_entity = Address(
             address=address if address is not None else "Factory street 1",
             customer_id=entity.id,
@@ -52,9 +48,13 @@ async def create_customer(
                 else UUID(str(municipality_id))
             ),
             neighborhood_id=(
-                neighborhood_id
-                if isinstance(neighborhood_id, UUID)
-                else UUID(str(neighborhood_id))
+                None
+                if neighborhood_id is None
+                else (
+                    neighborhood_id
+                    if isinstance(neighborhood_id, UUID)
+                    else UUID(str(neighborhood_id))
+                )
             ),
         )
         session.add(address_entity)

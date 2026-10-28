@@ -207,6 +207,87 @@ async def test_create_order_blocked_without_price_and_accepts_false(
     assert "Provider B Messaging" in body["message"]
 
 
+async def test_create_order_without_neighborhood_when_accepts_true(
+    client: AsyncClient,
+    order_messaging_ctx: dict,
+    customer_factory: CustomerFactory,
+    location_factory: LocationFactory,
+) -> None:
+    ctx = order_messaging_ctx
+    province = await location_factory.build_province(name="Prov No Barrio Accept")
+    municipality = await location_factory.build_municipality(
+        province_id=province["id"],
+        name="Mun No Barrio Accept",
+    )
+    customer = await customer_factory.build(
+        seller_organization_id=ctx["seller_params"]["organization_id"],
+        name="Cliente Sin Barrio OK",
+        address="Calle Sin Barrio",
+        province_id=province["id"],
+        municipality_id=municipality["id"],
+    )
+    await _set_accepts(
+        client,
+        headers=ctx["provider_a_headers"],
+        params=ctx["provider_a_params"],
+        accepts=True,
+    )
+
+    r = await client.post(
+        "/orders/seller/",
+        params=ctx["seller_params"],
+        headers=ctx["seller_headers"],
+        json={
+            "customer_id": customer["id"],
+            "items": [{"product_id": ctx["product_a_id"], "quantity": 1}],
+        },
+    )
+    assert r.status_code == 201
+    body = r.json()
+    assert body["messaging"] == []
+    assert body["customer"] is not None
+    assert body["customer"]["address"]["neighborhood_id"] is None
+
+
+async def test_create_order_without_neighborhood_blocked_when_required(
+    client: AsyncClient,
+    order_messaging_ctx: dict,
+    customer_factory: CustomerFactory,
+    location_factory: LocationFactory,
+) -> None:
+    ctx = order_messaging_ctx
+    province = await location_factory.build_province(name="Prov No Barrio Req")
+    municipality = await location_factory.build_municipality(
+        province_id=province["id"],
+        name="Mun No Barrio Req",
+    )
+    customer = await customer_factory.build(
+        seller_organization_id=ctx["seller_params"]["organization_id"],
+        name="Cliente Sin Barrio Bloqueado",
+        address="Calle Sin Barrio",
+        province_id=province["id"],
+        municipality_id=municipality["id"],
+    )
+
+    r = await client.post(
+        "/orders/seller/",
+        params=ctx["seller_params"],
+        headers=ctx["seller_headers"],
+        json={
+            "customer_id": customer["id"],
+            "items": [
+                {"product_id": ctx["product_a_id"], "quantity": 1},
+                {"product_id": ctx["product_b_id"], "quantity": 1},
+            ],
+        },
+    )
+    assert r.status_code == 409
+    body = r.json()
+    assert body["code"] == "messaging_neighborhood_required"
+    assert "Provider A Messaging" in body["message"]
+    assert "Provider B Messaging" in body["message"]
+
+
 async def test_create_order_without_price_when_accepts_true(
     client: AsyncClient,
     order_messaging_ctx: dict,

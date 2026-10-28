@@ -41,7 +41,6 @@ const checkoutSchema = z.object({
     .max(500, 'Máximo 500 caracteres'),
   province_id: z.string().uuid('Selecciona una provincia'),
   municipality_id: z.string().uuid('Selecciona un municipio'),
-  neighborhood_id: z.string().uuid('Selecciona un barrio'),
 })
 
 type CheckoutPanelProps = {
@@ -72,15 +71,10 @@ export function CheckoutPanel({
       address: '',
       province_id: '',
       municipality_id: '',
-      neighborhood_id: '',
     },
   })
 
   const provinceId = useWatch({ control: form.control, name: 'province_id' })
-  const municipalityId = useWatch({
-    control: form.control,
-    name: 'municipality_id',
-  })
 
   const totalLabel =
     totals.length > 0
@@ -114,7 +108,6 @@ export function CheckoutPanel({
                   address: values.address,
                   province_id: values.province_id,
                   municipality_id: values.municipality_id,
-                  neighborhood_id: values.neighborhood_id,
                 },
                 items: items.map((item) => ({
                   product_id: item.book.id,
@@ -200,9 +193,7 @@ export function CheckoutPanel({
             setValue={form.setValue}
             provinceName="province_id"
             municipalityName="municipality_id"
-            neighborhoodName="neighborhood_id"
             provinceId={provinceId}
-            municipalityId={municipalityId}
           />
 
           {error ? <p className="store-err">{error}</p> : null}

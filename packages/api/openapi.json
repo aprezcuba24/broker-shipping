@@ -7613,16 +7613,6 @@
         "operationId": "list_products_storefront_products_get",
         "parameters": [
           {
-            "name": "organization_id",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Organization Id"
-            }
-          },
-          {
             "name": "name",
             "in": "query",
             "required": false,
@@ -7653,6 +7643,16 @@
                 }
               ],
               "title": "Tag Id"
+            }
+          },
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
             }
           },
           {
@@ -7765,16 +7765,6 @@
         "operationId": "list_tags_storefront_tags_get",
         "parameters": [
           {
-            "name": "organization_id",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Organization Id"
-            }
-          },
-          {
             "name": "name",
             "in": "query",
             "required": false,
@@ -7788,6 +7778,16 @@
                 }
               ],
               "title": "Name"
+            }
+          },
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
             }
           },
           {
@@ -7821,6 +7821,59 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Page_StorefrontTagPublic_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/storefront/checkout": {
+      "post": {
+        "tags": [
+          "storefront"
+        ],
+        "summary": "Checkout",
+        "operationId": "checkout_storefront_checkout_post",
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCheckoutCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontCheckoutPublic"
                 }
               }
             }
@@ -8017,59 +8070,6 @@
         }
       }
     },
-    "/storefront/checkout": {
-      "post": {
-        "tags": [
-          "storefront"
-        ],
-        "summary": "Checkout",
-        "operationId": "checkout_storefront_checkout_post",
-        "parameters": [
-          {
-            "name": "organization_id",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Organization Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StorefrontCheckoutCreate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StorefrontCheckoutPublic"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/": {
       "get": {
         "summary": "Root",
@@ -8127,8 +8127,15 @@
             "title": "Municipality Id"
           },
           "neighborhood_id": {
-            "type": "string",
-            "format": "uuid",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Neighborhood Id"
           }
         },
@@ -8136,8 +8143,7 @@
         "required": [
           "address",
           "province_id",
-          "municipality_id",
-          "neighborhood_id"
+          "municipality_id"
         ],
         "title": "AddressCreate"
       },

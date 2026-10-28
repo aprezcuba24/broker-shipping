@@ -6,9 +6,9 @@
  */
 
 export type ListProductsStorefrontProductsGetParams = {
-organization_id: string;
 name?: string | null;
 tag_id?: string | null;
+organization_id: string;
 /**
  * @minimum 1
  */

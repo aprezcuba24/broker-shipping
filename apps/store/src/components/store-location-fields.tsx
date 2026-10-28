@@ -1,6 +1,5 @@
 import {
   useListMunicipalitiesStorefrontLocationsProvincesProvinceIdMunicipalitiesGet,
-  useListNeighborhoodsStorefrontLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet,
   useListProvincesStorefrontLocationsProvincesGet,
 } from '@broker/api'
 import {
@@ -16,9 +15,7 @@ type StoreLocationFieldsProps<T extends FieldValues> = {
   setValue: UseFormSetValue<T>
   provinceName: Path<T>
   municipalityName: Path<T>
-  neighborhoodName: Path<T>
   provinceId: string
-  municipalityId: string
 }
 
 export function StoreLocationFields<T extends FieldValues>({
@@ -26,9 +23,7 @@ export function StoreLocationFields<T extends FieldValues>({
   setValue,
   provinceName,
   municipalityName,
-  neighborhoodName,
   provinceId,
-  municipalityId,
 }: StoreLocationFieldsProps<T>) {
   const provincesQuery = useListProvincesStorefrontLocationsProvincesGet()
   const municipalitiesQuery =
@@ -37,16 +32,9 @@ export function StoreLocationFields<T extends FieldValues>({
       undefined,
       { query: { enabled: Boolean(provinceId) } },
     )
-  const neighborhoodsQuery =
-    useListNeighborhoodsStorefrontLocationsMunicipalitiesMunicipalityIdNeighborhoodsGet(
-      municipalityId,
-      undefined,
-      { query: { enabled: Boolean(municipalityId) } },
-    )
 
   const provinces = provincesQuery.data ?? []
   const municipalities = municipalitiesQuery.data ?? []
-  const neighborhoods = neighborhoodsQuery.data ?? []
 
   return (
     <div>
@@ -62,7 +50,6 @@ export function StoreLocationFields<T extends FieldValues>({
               onChange={(event) => {
                 field.onChange(event.target.value)
                 setValue(municipalityName, '' as T[Path<T>])
-                setValue(neighborhoodName, '' as T[Path<T>])
               }}
             >
               <option value="">Selecciona</option>
@@ -87,7 +74,6 @@ export function StoreLocationFields<T extends FieldValues>({
               value={field.value ?? ''}
               onChange={(event) => {
                 field.onChange(event.target.value)
-                setValue(neighborhoodName, '' as T[Path<T>])
               }}
               disabled={!provinceId}
             >
@@ -95,29 +81,6 @@ export function StoreLocationFields<T extends FieldValues>({
               {municipalities.map((municipality) => (
                 <option key={municipality.id} value={municipality.id}>
                   {municipality.name}
-                </option>
-              ))}
-            </select>
-            <span className="store-err">{fieldState.error?.message}</span>
-          </label>
-        )}
-      />
-      <Controller
-        control={control}
-        name={neighborhoodName}
-        render={({ field, fieldState }) => (
-          <label className="store-field">
-            Barrio
-            <select
-              className="store-control"
-              value={field.value ?? ''}
-              onChange={(event) => field.onChange(event.target.value)}
-              disabled={!municipalityId}
-            >
-              <option value="">Selecciona</option>
-              {neighborhoods.map((neighborhood) => (
-                <option key={neighborhood.id} value={neighborhood.id}>
-                  {neighborhood.name}
                 </option>
               ))}
             </select>

@@ -112,6 +112,7 @@ async def _resolve_messaging_lines(
         item.provider_organization_id: item.provider_organization_name
         for item in items
     }
+    missing_names: list[str] = []
     blocked_names: list[str] = []
     lines: list[OrderMessaging] = []
 
@@ -132,8 +133,17 @@ async def _resolve_messaging_lines(
             continue
         if accepts.get(provider_id, False):
             continue
-        blocked_names.append(provider_names.get(provider_id, str(provider_id)))
+        name = provider_names.get(provider_id, str(provider_id))
+        if neighborhood_id is None:
+            missing_names.append(name)
+        else:
+            blocked_names.append(name)
 
+    if enforce and missing_names:
+        raise_api_error(
+            "messaging_neighborhood_required",
+            provider_names=", ".join(missing_names),
+        )
     if enforce and blocked_names:
         raise_api_error(
             "messaging_neighborhood_not_configured",

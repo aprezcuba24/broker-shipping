@@ -241,12 +241,19 @@ ERRORS: dict[str, ErrorDef] = {
         status_code=409,
         template="Ya existe un precio de mensajería para ese barrio.",
     ),
+    "messaging_neighborhood_required": ErrorDef(
+        code="messaging_neighborhood_required",
+        status_code=409,
+        template=(
+            "Los siguientes proveedores exigen un barrio: {provider_names}."
+        ),
+    ),
     "messaging_neighborhood_not_configured": ErrorDef(
         code="messaging_neighborhood_not_configured",
         status_code=409,
         template=(
-            "Los siguientes proveedores no tienen mensajería configurada "
-            "para el barrio del cliente: {provider_names}."
+            "Los siguientes proveedores no permiten el barrio del cliente: "
+            "{provider_names}."
         ),
     ),
     "order_messaging_exists": ErrorDef(

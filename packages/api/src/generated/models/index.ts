@@ -7,6 +7,7 @@
 
 export * from './acceptByTokenBody';
 export * from './addressCreate';
+export * from './addressCreateNeighborhoodId';
 export * from './addressPublic';
 export * from './addressPublicMunicipalityName';
 export * from './addressPublicNeighborhoodId';
